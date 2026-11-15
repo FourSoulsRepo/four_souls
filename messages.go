@@ -5,16 +5,12 @@ import (
 
 	"github.com/FourSoulsRepo/four_souls/internal/lan"
 	"github.com/FourSoulsRepo/four_souls/internal/msgerr"
-	"github.com/FourSoulsRepo/four_souls/internal/protocol"
-	"github.com/FourSoulsRepo/four_souls/internal/settings"
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
 // The app's own lines for the player (ADR 021); their words are in
 // frontend/src/locales/en.json.
 var (
-	errNickname     = engine.NewKey("error.nickname_length")
-	errSettingValue = engine.NewKey("error.setting_value")
 	errLanNoNetwork = engine.NewKey("error.lan_no_network")
 	errDeckRatios   = engine.NewKey("error.deck_ratios")
 )
@@ -26,10 +22,6 @@ func playerError(err error) error {
 	switch {
 	case err == nil:
 		return nil
-	case errors.Is(err, settings.ErrNickname):
-		m = errNickname.Msg(engine.N("n", protocol.MaxName))
-	case errors.Is(err, settings.ErrChoice):
-		m = errSettingValue.Msg()
 	case errors.Is(err, lan.ErrNoNetwork):
 		m = errLanNoNetwork.Msg()
 	default:

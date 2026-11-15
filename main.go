@@ -12,7 +12,9 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 
+	"github.com/FourSoulsRepo/four_souls/bindings/about"
 	"github.com/FourSoulsRepo/four_souls/bindings/host"
+	"github.com/FourSoulsRepo/four_souls/bindings/prefs"
 	"github.com/FourSoulsRepo/four_souls/bindings/updater"
 	"github.com/FourSoulsRepo/four_souls/internal/instance"
 	"github.com/FourSoulsRepo/four_souls/internal/settings"
@@ -46,7 +48,7 @@ func main() {
 			title = fmt.Sprintf("%s (%d)", title, slot.N)
 		}
 	}
-	app := NewApp(settingsFile)
+	app := NewApp()
 	hosting := host.New(appPath("records"), appPath("saves"))
 
 	err = wails.Run(&options.App{
@@ -59,9 +61,12 @@ func main() {
 		},
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
 		// The saved window mode applies from the first frame (ST-01).
-		Fullscreen: settings.Load(app.settings).Fullscreen,
-		Bind:       []any{app, hosting, updater.New(&app.wails)},
-		OnStartup:  app.wails.startup,
+		Fullscreen: settings.Load(settingsFile).Fullscreen,
+		Bind: []any{
+			app, about.New(), prefs.New(settingsFile), hosting,
+			updater.New(&app.wails),
+		},
+		OnStartup: app.wails.startup,
 		// Ending the context stops a running update (ADR 030, item 5).
 		OnShutdown: func(context.Context) {
 			app.wails.shutdown()

@@ -41,7 +41,7 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148                                          | 2     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154 | 37 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164 | 39 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.158, 19.159, 19.161, 19.162 | 26 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
@@ -56,7 +56,7 @@ This step never closes; new reports are appended.
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 
-Totals by system (153 items):
+Totals by system (155 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -64,7 +64,7 @@ Totals by system (153 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 42 |
 | Server    | H, N    | 3     |
-| e2e       | I, J    | 63    |
+| e2e       | I, J    | 65    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
@@ -4998,6 +4998,12 @@ Totals by system (153 items):
 4. Tasks:
    1. Find whether hover-off is sent, and when, under load.
    2. Check: the spec, webkit, 5 workers, 10 repeats.
+5. Seen again (21.3 `make e2e`, 2026-11-16)
+   1. WebKit, line 482, the same hover mark.
+   2. Rerun, webkit, 5 workers, 3 repeats: 0 of 3 passed.
+   3. All three: the "Hal, Ivy" saved games of 3.2, not line 482.
+   4. Evidence: `.cache/e2e-evidence/21.3-full1/`, `21.3-rerun1/`.
+   5. The change under test (21.3) only moved Go bindings.
 
 ### [ ] 19.160 e2e: Ambush! as a Krampus minion ends the minions test
 
@@ -5016,6 +5022,14 @@ Totals by system (153 items):
    1. If the rules hold: ban Ambush! there, with the reason (14.10).
    2. Search for other events that attack or clear minions; ban only those needed.
    3. Check: the spec, both browsers, 5 workers, 10 repeats.
+5. Seen again (21.3 `make e2e`, 2026-11-16)
+   1. WebKit this time; timeout at 180 s; Chromium passed.
+   2. Rerun, webkit, 5 workers, 3 repeats: 2 of 3 passed.
+   3. The failed rerun: "the game never settled" at turn 3, no minions.
+   4. Evidence: `.cache/e2e-evidence/21.3-full1/`, `21.3-rerun1/`.
+   5. `21.3-full1/test-results/` holds stale files from 2026-11-15.
+   6. Their `window.go.host` errors come from the 21.2 fake bridge run.
+   7. The change under test (21.3) only moved Go bindings.
 
 ### [ ] 19.161 e2e: two-click bomb test stalls after the attack, chromium
 
@@ -5048,3 +5062,40 @@ Totals by system (153 items):
 4. Tasks:
    1. Find which roll the test waited for, and why it never came.
    2. Check: the spec, chromium, 5 workers, 10 repeats.
+
+### [ ] 19.163 e2e: Pride's discard after the attack breaks the Soft undo test
+
+1. Goal: `rollback.spec.ts:248` passes on every deal.
+2. Report (21.3 `make e2e`, 2026-11-16)
+   1. Chromium only; WebKit passed in the same run.
+   2. Line 263 (`expectUndone`): the attack row "Sia attacks Pride" was not greyed.
+   3. Pride: "When an attack is declared on this", a player discards 2 loot.
+   4. That discard is one more move after the target pick.
+   5. So the opponent's Undo rolled back the discard, not the target pick.
+   6. Rerun, the spec alone: passed.
+   7. Evidence: `.cache/e2e-evidence/21.3-full2/` (not in git).
+3. Cause: the deal (a monster with an attack-declared trigger).
+   1. The game did what Pride says; no engine bug seen yet.
+   2. The change under test (21.3) only moved Go bindings.
+4. Tasks:
+   1. Check that the history counts Pride's discard as its own move.
+   2. If so: ban Pride there, with the reason (14.10).
+   3. Search every set for monsters that trigger on an attack; ban only those needed.
+   4. Check: the spec, both browsers, 5 workers, 10 repeats.
+
+### [ ] 19.164 e2e: a discard after the attack breaks the restart rollback test
+
+1. Goal: `restart.spec.ts:228` passes on every deal.
+2. Report (21.3 `make e2e`, 2026-11-16)
+   1. Chromium only; WebKit passed in the same run.
+   2. Line 234: Undo's title was "Undo: You discard 3 Cents!", not the attack.
+   3. A discard came after the target pick, as in 19.163.
+   4. The attacked monster is not in the evidence; likely Pride again.
+   5. Rerun, the spec alone: passed.
+   6. Evidence: `.cache/e2e-evidence/21.3-full2/` (not in git).
+3. Cause: the deal, probably the same as 19.163.
+   1. The change under test (21.3) only moved Go bindings.
+4. Tasks:
+   1. Read the match record; name the attacked monster.
+   2. Fix with 19.163: the same bans in `rollbackOverRestart`.
+   3. Check: the spec, chromium, 5 workers, 10 repeats.

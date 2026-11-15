@@ -17,14 +17,12 @@ import {
   Fonts as wailsFonts,
   Icons as wailsIcons,
   Mats as wailsMats,
-  Notice as wailsNotice,
   SaveRecord as wailsSaveRecord,
-  SaveSettings as wailsSaveSettings,
   ServerStatus as wailsServerStatus,
-  Settings as wailsSettings,
   Sounds as wailsSounds,
-  Versions as wailsVersions,
 } from '../../wailsjs/go/main/App';
+import { Notice as wailsNotice, Versions as wailsVersions } from '../../wailsjs/go/about/About';
+import { SaveSettings as wailsSaveSettings, Settings as wailsSettings } from '../../wailsjs/go/prefs/Prefs';
 import { settings } from '../../wailsjs/go/models';
 import { Info as hostInfo, Start as hostStart, Stop as hostStop } from '../../wailsjs/go/host/Host';
 import {

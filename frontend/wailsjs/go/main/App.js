@@ -46,30 +46,14 @@ export function Mats() {
   return window['go']['main']['App']['Mats']();
 }
 
-export function Notice() {
-  return window['go']['main']['App']['Notice']();
-}
-
 export function SaveRecord(arg1) {
   return window['go']['main']['App']['SaveRecord'](arg1);
-}
-
-export function SaveSettings(arg1) {
-  return window['go']['main']['App']['SaveSettings'](arg1);
 }
 
 export function ServerStatus(arg1) {
   return window['go']['main']['App']['ServerStatus'](arg1);
 }
 
-export function Settings() {
-  return window['go']['main']['App']['Settings']();
-}
-
 export function Sounds() {
   return window['go']['main']['App']['Sounds']();
-}
-
-export function Versions() {
-  return window['go']['main']['App']['Versions']();
 }

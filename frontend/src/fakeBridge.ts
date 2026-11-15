@@ -333,12 +333,20 @@ let checkedUrl = '';
 const listeners = new Map<string, Set<(...data: unknown[]) => void>>();
 
 w.go = {
-  main: {
-    App: {
+  about: {
+    About: {
       Versions: () => Promise.resolve({ app: 'demo', engine: 'demo' }),
       Notice: () => Promise.resolve(notice),
+    },
+  },
+  prefs: {
+    Prefs: {
       Settings: () => Promise.resolve(loadSettings()),
       SaveSettings: saveSettings,
+    },
+  },
+  main: {
+    App: {
       // ?requiem adds Requiem, the only set the deck ratios need; other
       // tests keep the older sets.
       CardSets: () => Promise.resolve(['b2', 'g2', 'fsp2', ...(params.has('requiem') ? ['r'] : [])]),

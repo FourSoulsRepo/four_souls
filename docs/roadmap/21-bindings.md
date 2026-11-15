@@ -122,7 +122,7 @@ Shared helpers: `msgError` (`messages.go`), `imageURL`, `soundURLs`, `appContext
        3. Rerun of both: 2 of 2 passed.
        4. A run before the fake bridge change: 446 failed (`window.go.main.Host` gone).
 
-### [ ] 21.3 About and prefs
+### [x] 21.3 About and prefs
 
 1. Goal: version, notice and settings bindings leave `App`.
 2. Tasks:
@@ -132,6 +132,29 @@ Shared helpers: `msgError` (`messages.go`), `imageURL`, `soundURLs`, `appContext
 3. Done when:
    1. `App` has no `Versions`, `Notice`, `Settings`, `SaveSettings`.
    2. Gates pass.
+4. Result (2026-11-16)
+   1. `bindings/about`: `about.New()`; `Versions`, `Notice`; no state.
+   2. `bindings/prefs`: `prefs.New(settingsFile)`; `Settings`, `SaveSettings`.
+      1. Its own keys `error.nickname_length`, `error.setting_value`.
+      2. `settingsError` maps them through `msgerr`.
+      3. `main` keeps `playerError` for LAN only (until 21.5).
+   3. Departure: no `api` for either; they need fixed values only (ADR 030 item 3).
+   4. `App` lost its `settings` field; `NewApp()` takes no argument.
+      1. `main` reads `Fullscreen` from `settingsFile` itself.
+   5. Tests: `TestSettingsSurviveRestart` moved to `prefs`.
+      1. New: `TestSaveSettingsMessages`, `TestAbout`.
+   6. Generated: `wailsjs/go/about/About`, `wailsjs/go/prefs/Prefs`.
+      1. `models.ts` unchanged: no new namespace, no merge.
+      2. File modes as in HEAD (644; `models.ts` 755).
+   7. Bridge: two import paths; exports unchanged.
+   8. `fakeBridge.ts`: the four fakes moved to `go.about.About`, `go.prefs.Prefs`.
+   9. Docs: `Client.md`, UC-10, use-case index.
+   10. Gates: `make lint`, `make test`, `make frontend`, `wails build -m -tags embed`.
+       1. `make e2e`, run 1: 562 passed, 2 failed, 18 skipped.
+       2. Failures, webkit: `aim.spec.ts:406` (19.159), `challenge-table.spec.ts:253` (19.160).
+       3. `make e2e`, run 2: 561 passed, 2 failed, 18 skipped.
+       4. Failures, chromium: `rollback.spec.ts:248`, `restart.spec.ts:228`; logged as 19.163, 19.164.
+       5. Rerun of run 2's failures: 2 of 2 passed.
 
 ### [ ] 21.4 Assets
 

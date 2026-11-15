@@ -4,9 +4,6 @@ import {main} from '../models';
 import {cardinfo} from '../models';
 import {protocol} from '../models';
 import {lan} from '../models';
-import {legal} from '../models';
-import {settings} from '../models';
-import {version} from '../models';
 
 export function Backs():Promise<Array<main.CardBack>>;
 
@@ -30,16 +27,8 @@ export function Icons():Promise<main.Icons>;
 
 export function Mats():Promise<Array<main.MatInfo>>;
 
-export function Notice():Promise<Array<legal.Line>>;
-
 export function SaveRecord(arg1:string):Promise<string>;
-
-export function SaveSettings(arg1:settings.Settings):Promise<settings.Settings>;
 
 export function ServerStatus(arg1:Array<string>):Promise<protocol.ServerStatus>;
 
-export function Settings():Promise<settings.Settings>;
-
 export function Sounds():Promise<main.Sounds>;
-
-export function Versions():Promise<version.Info>;

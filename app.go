@@ -10,10 +10,8 @@ import (
 
 	"github.com/FourSoulsRepo/four_souls/internal/assets"
 	"github.com/FourSoulsRepo/four_souls/internal/instance"
-	"github.com/FourSoulsRepo/four_souls/internal/legal"
 	"github.com/FourSoulsRepo/four_souls/internal/msgerr"
 	"github.com/FourSoulsRepo/four_souls/internal/settings"
-	"github.com/FourSoulsRepo/four_souls/internal/version"
 	engine "github.com/FourSoulsRepo/rules_engine"
 	"github.com/FourSoulsRepo/rules_engine/cards"
 )
@@ -21,14 +19,13 @@ import (
 // App holds the methods the frontend calls through Wails bindings.
 type App struct {
 	wails     wailsContext // the app's lifetime; unbound (ADR 030, item 4)
-	settings  string       // the settings file
 	cardFiles fs.FS        // card data and images
 	cardList  cardList
 }
 
-// NewApp creates the bindings object; settings is its settings file.
-func NewApp(settingsFile string) *App {
-	return &App{settings: settingsFile, cardFiles: assets.CardsFS()}
+// NewApp creates the bindings object.
+func NewApp() *App {
+	return &App{cardFiles: assets.CardsFS()}
 }
 
 // slotSettings is the settings file of this copy of the app. A new
@@ -97,27 +94,6 @@ func (w *wailsContext) Context() context.Context {
 		return context.Background()
 	}
 	return w.ctx
-}
-
-// Versions returns the app and rules engine versions for the main menu.
-func (a *App) Versions() version.Info {
-	return version.Get()
-}
-
-// Notice returns the fan-game notice for the splash screen.
-func (a *App) Notice() []legal.Line {
-	return legal.Notice
-}
-
-// Settings returns the saved settings, or the defaults.
-func (a *App) Settings() settings.Settings {
-	return settings.Load(a.settings)
-}
-
-// SaveSettings stores the settings and returns what was stored.
-func (a *App) SaveSettings(s settings.Settings) (settings.Settings, error) {
-	saved, err := settings.Save(a.settings, s)
-	return saved, playerError(err)
 }
 
 // CardSets returns the codes of the card sets this app has; the client
