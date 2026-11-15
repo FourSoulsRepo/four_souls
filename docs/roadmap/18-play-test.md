@@ -780,3 +780,36 @@ Ideas: B-04, B-05, B-08.
    4. Docs: UC-05 item 18, `docs/wiki/Client.md`.
    5. Gates: `make lint`, `make frontend`, `make e2e` (564 passed, 18 skipped).
    6. **Owner** marks it solved (2026-11-15).
+
+### [ ] 18.26 Fear on the character card
+
+1. Goal: a player sees fear at a glance, as on a real table (owner 2026-11-15).
+2. Why now:
+   1. Fear shows only by the player's name (14.33).
+   2. It has no colour yet (18.15), so it is a small grey dot.
+   3. Players look for it on the character card.
+3. Rules stay: fear is on the player, not the character (R-TRICK-08, Q-45).
+   1. Engine and protocol do not change.
+   2. The card badge is a picture of the player's fear.
+   3. A new character shows the same fear; a death keeps it.
+4. Tasks:
+   1. Colour (owner, 2026-11-15): ghost white, about `#e6ecf5`, dark outline.
+      1. Add `fear` to the colours in `frontend/src/counters.ts`.
+   2. Shape: a small ghost, not the round dot.
+      1. By the name and on the card alike.
+      2. Tells fear apart without colour.
+   3. Card badge: the character card shows the player's fear.
+      1. Own and opponents' characters alike.
+      2. Looks unlike the card's own counter badges, so they do not mix.
+      3. Card counters on the same character still show beside it.
+      4. Zoomed character names it: "Fear: N" and what it does.
+   4. Keep the counter by the name (owner, 2026-11-15).
+   5. A badge that appears or changes follows ADR 012 (`docs/wiki/Animations.md`).
+   6. Text: reuse `table.fear`, `table.fear_title`; new strings in `en.json`.
+   7. Tests: Vitest for the colour and shape; extend `challenge-trick.spec.ts`.
+   8. Docs: `docs/wiki/Client.md`, `docs/wiki/Challenges.md` (UI list), UC-42.
+   9. Gates: `make lint`, `make frontend e2e`.
+5. Done when:
+   1. Screenshots show fear on the card and by the name, own and opponent.
+   2. A character with card counters and fear shows both, told apart.
+   3. **Owner** checks it.
