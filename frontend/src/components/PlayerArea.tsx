@@ -1,13 +1,14 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { fanPose } from '../feel';
 import { t } from '../i18n';
-import { counterColor, playerCounters } from '../counters';
+import { counterColor, fearOf, playerCounters } from '../counters';
 import { Role, type CardView, type PlayerView } from '../protocol';
 import { useApp } from '../store';
 import type { LinePart } from '../stack';
 import { copiesOf, isCurse, isSoul, playerColor, soulCards, soulSlots, type Position } from '../table';
 import { Card, useZoom, type CardSize } from './Card';
 import { Count, useCount, useFlip } from './Count';
+import { Ghost } from './Ghost';
 import { HandCard, useHandGap } from './HandCard';
 import type { Interact } from './Interact';
 import { HiddenHand, RevealedHand } from './Pile';
@@ -101,6 +102,7 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
           damage={character.damage}
           spent={spent(character)}
           counters={character.counters}
+          fear={fearOf(player.counters)}
           copies={copiesOf(character)}
           stats={statsOf(player)}
           objectId={character.id}
@@ -216,6 +218,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
           damage={character.damage}
           spent={spent(character)}
           counters={character.counters}
+          fear={fearOf(player.counters)}
           copies={copiesOf(character)}
           stats={statsOf(player)}
           objectId={character.id}
@@ -247,8 +250,9 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
 }
 
 // PlayerCounters are the counters on a player, not on a card (14.31,
-// 14.33): fear in Trick or Treat. Each kind is a dot in its colour, the
-// number and the kind's word; the tooltip says what it does. None, no
+// 14.33): fear in Trick or Treat. Each kind is a dot in its colour (fear
+// a ghost, 18.26), the number and the kind's word; the tooltip says what
+// it does. Fear also shows on the player's character card. None, no
 // element.
 function PlayerCounters({ player }: { player: PlayerView }) {
   const list = playerCounters(player.counters);
@@ -259,7 +263,7 @@ function PlayerCounters({ player }: { player: PlayerView }) {
     <span className="player-counters">
       {list.map((c) => (
         <span key={c.name} className="player-counter" role="img" aria-label={c.title} title={c.title} style={{ '--fill': counterColor(c.name) } as CSSProperties}>
-          <span className="player-counter-dot" aria-hidden="true" />
+          {c.name === 'fear' ? <Ghost className="player-counter-dot ghost" /> : <span className="player-counter-dot" aria-hidden="true" />}
           <Count value={c.count} />
           <span className="player-counter-word" aria-hidden="true">
             {c.word}

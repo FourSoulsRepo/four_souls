@@ -403,6 +403,14 @@
   vertical-align: middle;
 }
 
+/* Fear's ghost in the zoom (18.26): a little larger than a dot. */
+.card-zoom-dot.ghost {
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 0;
+  overflow: visible;
+}
+
 .card-zoom-stats {
   display: flex;
   flex-direction: column;
@@ -819,6 +827,30 @@
 .card.blank .card-dice {
   top: 40cqi;
   right: 3cqi;
+}
+
+/* The player's fear on their character (18.26): a ghost-white ghost
+   in the middle, its hem between health and attack and its head above
+   them, so its shape shows. Its ink number reads on the pale fill. */
+.card-fear {
+  bottom: 12cqi;
+  left: 50%;
+  width: 32cqi;
+  --fill: #e6ecf5;
+  --digit: #1d120a;
+  translate: -50% 0;
+  rotate: 3deg;
+}
+
+.card-fear .card-badge-value {
+  font-size: 16cqi;
+  -webkit-text-stroke: 0;
+  translate: 0 4cqi;
+}
+
+.card-badge-shape .card-badge-eyes {
+  fill: var(--ink);
+  stroke: none;
 }
 
 /* Damage on a character: a smaller dark-red blob at the top corner. */

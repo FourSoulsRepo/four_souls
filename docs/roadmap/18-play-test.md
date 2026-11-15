@@ -813,3 +813,19 @@ Ideas: B-04, B-05, B-08.
    1. Screenshots show fear on the card and by the name, own and opponent.
    2. A character with card counters and fear shows both, told apart.
    3. **Owner** checks it.
+6. Result (2026-11-15)
+   1. Fear is `#e6ecf5` in `counters.ts`; `ghostPath`, `fearOf` there too.
+   2. By the name: `Ghost.tsx`, a ghost with eyes, in place of the dot.
+   3. On the card: `Card`'s `fear` prop, a ghost badge with eyes and the number.
+      1. Bottom middle, its head above health and attack.
+      2. Card counters stay on the left of the art, apart from it.
+      3. The number counts with `count-flip`, as health does.
+   4. Zoom: "Fear: N — …" under the card's counters (`counterLine`).
+   5. New string: `badge.fear`, the badge's screen-reader name.
+   6. e2e: `challenge-trick.spec.ts` checks the badge, its absence on the other card, the zoom.
+   7. Screenshots: `trick-fear-card`, `trick-fear-opponent`, `trick-fear-gained`.
+   8. Docs: UC-42 13.4–13.5, `Client.md`, `Challenges.md`, `Animations.md`.
+   9. Gates: `make lint`, `make frontend`; `make e2e` 563 passed, 1 failed, 18 skipped.
+      1. The failure: `challenge-table.spec.ts:253`, a deal; logged as 19.160.
+      2. Rerun of both challenge specs: 8 of 8 passed.
+   10. Not covered by a screenshot: card counters and fear on one character.

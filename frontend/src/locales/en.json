@@ -498,6 +498,13 @@
     "text": "Dice to hit (printed {n})",
     "note": "Tooltip of a monster's changed dice badge. n: the number printed on the card."
   },
+  "badge.fear": {
+    "text": {
+      "one": "{n} fear counter on this player",
+      "other": "{n} fear counters on this player"
+    },
+    "note": "Screen-reader name of the ghost badge on a character card (Trick or Treat): fear counters are on the player, shown on their character. n: their fear counters."
+  },
   "badge.hp": {
     "text": {
       "one": "{n} health",

@@ -1,7 +1,7 @@
 // Trick or Treat on the table (14.33, ADR 028 Decision 11, UC-42):
 // Mischievous The Haunt with its trick counters left of the monster
 // slots, the Trick/Treat card in the challenge panel, fear counters by
-// each player's name, and the monsters' evasion and rewards as the
+// each player's name and on their character (18.26), and the monsters' evasion and rewards as the
 // challenge changes them. Saved games reach the exact states: fear on
 // a player, a changed reward, a sure hit or miss, enough souls, the
 // last round.
@@ -134,6 +134,8 @@ function swapTop(save: TrickSave, card: string) {
 interface Seen {
   tricks: number;
   fear: number[];
+  // characters are each player's character object, by seat.
+  characters: number[];
   card: string;
   flipped: boolean;
   monsters: { id: number; card: string; dc: number; printed: number; rewards: number }[];
@@ -151,7 +153,7 @@ async function seenOf(page: Page): Promise<Seen> {
     interface S {
       game: {
         view: {
-          players: { counters?: { name?: string; count: number }[] }[];
+          players: { counters?: { name?: string; count: number }[]; character: { id: number } }[];
           monsters?: { top?: Card }[];
           bosses?: { top?: Card }[];
           challenge?: { card: Card };
@@ -163,6 +165,7 @@ async function seenOf(page: Page): Promise<Seen> {
     return {
       tricks: boss?.counters?.find((c) => c.name === 'trick')?.count ?? 0,
       fear: (v?.players ?? []).map((p) => p.counters?.find((c) => c.name === 'fear')?.count ?? 0),
+      characters: (v?.players ?? []).map((p) => p.character.id),
       card: v?.challenge?.card.card ?? '',
       flipped: v?.challenge?.card.flipped ?? false,
       monsters: (v?.monsters ?? []).flatMap((s) =>
@@ -192,6 +195,11 @@ function tricks(page: Page, n: number) {
 // objectCard is a card on the table by its object ID.
 function objectCard(page: Page, id: number) {
   return board(page).locator(`[data-zone="obj-${String(id)}"]`);
+}
+
+// fearBadge is the ghost on a character card: its player's fear (18.26).
+function fearBadge(page: Page, character: number, n: number) {
+  return page.locator(`[data-zone="obj-${String(character)}"]`).getByLabel(tr('badge.fear', { n }), { exact: true });
 }
 
 // trickNormal is the game list's and the table's line for the game.
@@ -349,8 +357,15 @@ test('fear by the names raises the shown evasion; damage gives fear; changed rew
   const activeSeat = now.fear.indexOf(2);
   expect(activeSeat).toBeGreaterThanOrEqual(0);
   for (const page of pages) {
-    // Both screens show the fear by the active player's name.
+    // Both screens show the fear by the active player's name, and on
+    // their character card (18.26); the other player's card has none.
     await expect(page.getByRole('img', { name: tr('table.fear_title', { n: 2 }), exact: true })).toBeVisible();
+    await expect(fearBadge(page, now.characters[activeSeat] ?? -1, 2)).toBeVisible();
+    for (const [seat, character] of now.characters.entries()) {
+      if (seat !== activeSeat) {
+        await expect(page.locator(`[data-zone="obj-${String(character)}"] .card-fear`)).toHaveCount(0);
+      }
+    }
     // Each monster shows its evasion one higher, up to 6.
     for (const m of now.monsters) {
       expect(m.dc).toBe(Math.min(m.printed + 1, 6));
@@ -372,6 +387,16 @@ test('fear by the names raises the shown evasion; damage gives fear; changed rew
     await expect(zoom.locator('.card-zoom-stats')).toContainText(cardName(haunt));
     await shot(active, 'trick-fear-evasion');
   }
+  // The character's zoom names the player's fear and what it does.
+  await active.locator(`[data-zone="obj-${String(now.characters[activeSeat] ?? -1)}"]`).hover();
+  await expect(active.locator('.card-zoom .card-zoom-counters')).toContainText(tr('table.fear_title', { n: 2 }));
+  await shot(active, 'trick-fear-card');
+  await active.mouse.move(1, 1);
+  // The other player sees the ghost on the active player's card.
+  const other = pages.find((p) => p !== active);
+  if (other) {
+    await shot(other, 'trick-fear-opponent');
+  }
   await objectCard(active, target).hover();
   await expect(active.locator('.card-zoom .card-zoom-stats')).toContainText(trRe('stats.rewards_now'));
   await shot(active, 'trick-rewards');
@@ -383,6 +408,7 @@ test('fear by the names raises the shown evasion; damage gives fear; changed rew
   const fear = (await seenOf(first(pages))).fear[activeSeat] ?? 0;
   for (const page of pages) {
     await expect(page.getByRole('img', { name: tr('table.fear_title', { n: fear }), exact: true })).toBeVisible();
+    await expect(fearBadge(page, now.characters[activeSeat] ?? -1, fear)).toBeVisible();
   }
   await shot(active, 'trick-fear-gained');
 });

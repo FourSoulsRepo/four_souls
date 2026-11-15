@@ -6,7 +6,9 @@ import { keyword, placeZoom, type Place } from '../zoom';
 import { outcomeGrid, type Outcome } from '../history';
 import { translatorsOf } from '../cards';
 import { counterColor } from '../counters';
+import type { CounterView } from '../protocol';
 import { Card, CardText } from './Card';
+import { Ghost } from './Ghost';
 import { starPolygon, still } from './lunge';
 import { skullPath, swordsPath } from './marks';
 import { Part } from './StackPanel';
@@ -104,8 +106,8 @@ export function CardZoom() {
             <ul className="card-zoom-counters" aria-label={t('zoom.counters')}>
               {zoom.counters.map((c) => (
                 <li key={c.name ?? ''}>
-                  <span className="card-zoom-dot" style={{ background: counterColor(c.name) }} aria-hidden="true" />
-                  {c.name ? t('badge.counters_named', { n: c.count, name: c.name }) : t('badge.counters', { n: c.count })}
+                  {c.name === 'fear' ? <Ghost className="card-zoom-dot ghost" /> : <span className="card-zoom-dot" style={{ background: counterColor(c.name) }} aria-hidden="true" />}
+                  {counterLine(c)}
                 </li>
               ))}
             </ul>
@@ -207,6 +209,15 @@ function Outcomes({ list, swords }: { list: Outcome[]; swords: boolean }) {
 }
 
 // resultLabel names one result: "Gaper: 2 damage", "Gaper dies", "+3¢".
+// counterLine names one kind of counter under a zoomed card (18.15).
+// Fear is the player's, on their character: it says what it does (18.26).
+function counterLine(c: CounterView): string {
+  if (c.name === 'fear') {
+    return t('table.fear_title', { n: c.count });
+  }
+  return c.name ? t('badge.counters_named', { n: c.count, name: c.name }) : t('badge.counters', { n: c.count });
+}
+
 function resultLabel(o: Outcome): string {
   if (o.mark === 'damage') return t('zoom.result_damage', { target: o.text, n: o.amount ?? 0 });
   if (o.mark === 'death') return t('zoom.result_death', { target: o.text });

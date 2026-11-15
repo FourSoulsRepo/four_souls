@@ -4998,3 +4998,21 @@ Totals by system (151 items):
 4. Tasks:
    1. Find whether hover-off is sent, and when, under load.
    2. Check: the spec, webkit, 5 workers, 10 repeats.
+
+### [ ] 19.160 e2e: Ambush! as a Krampus minion ends the minions test
+
+1. Goal: `challenge-table.spec.ts:253` passes in the full run.
+2. Report (18.26 `make e2e`, 2026-11-15)
+   1. Chromium only, timeout at 180 s; WebKit passed in the same run.
+   2. The present at 0 brought minions; one draw was Ambush!.
+   3. Ambush!'s attack killed the minion Wizoob at once.
+   4. `settle` waits for `minions > 0`; the row was already empty.
+   5. Rerun, the spec alone: passed.
+   6. Evidence: `.cache/e2e-evidence/18.26-full1/` (not in git).
+3. Cause: the deal (a monster-deck event among the minions).
+   1. The game did what Ambush! says; no engine bug seen yet.
+   2. Check that the engine's minion draw and Ambush! follow the rules.
+4. Tasks:
+   1. If the rules hold: ban Ambush! there, with the reason (14.10).
+   2. Search for other events that attack or clear minions; ban only those needed.
+   3. Check: the spec, both browsers, 5 workers, 10 repeats.
