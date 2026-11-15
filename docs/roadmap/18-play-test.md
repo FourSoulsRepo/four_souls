@@ -755,7 +755,7 @@ Ideas: B-04, B-05, B-08.
    19. `make e2e`: 563 passed, 1 failed: `aim.spec.ts:406`, webkit.
    20. Alone it passed 3 of 3; logged as 19.159.
 
-### [ ] 18.25 Host screen groups
+### [x] 18.25 Host screen groups
 
 1. Goal: the host screen reads in parts, not one long list (GS-10, owner 2026-11-15).
 2. Tasks:
@@ -779,3 +779,4 @@ Ideas: B-04, B-05, B-08.
    3. Random seats moved into the first group; nothing else moved between groups.
    4. Docs: UC-05 item 18, `docs/wiki/Client.md`.
    5. Gates: `make lint`, `make frontend`, `make e2e` (564 passed, 18 skipped).
+   6. **Owner** marks it solved (2026-11-15).
