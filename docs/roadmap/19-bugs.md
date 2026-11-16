@@ -5481,6 +5481,11 @@ Totals by system (170 items):
    2. Option: a structural path through wrappers; closures still unsolved.
    3. Option: keep the state before a parent runs; slower steps.
    4. Option: a save while a nested ask waits keeps the last clean state and the steps since.
+8. Owner decision (2026-11-16): the last option, save and replay.
+   1. A save while a nested ask waits keeps the last clean state.
+   2. It keeps the steps since then, too.
+   3. A load replays those steps; every card works, closures too.
+   4. Covers the host's save, the restart keep, and rollback bases.
 
 
 ### [x] 19.178 No event when a deck is shuffled
