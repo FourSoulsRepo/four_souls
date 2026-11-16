@@ -160,7 +160,7 @@ Rules for this step (owner, 2026-11-16):
 3. Done when:
    1. `TestBotsGame` plays 20 seeded games of 1 human and 3 bots, standard and hard, to the end.
 
-### [ ] 21.9 Saves, restarts, records
+### [x] 21.9 Saves, restarts, records
 
 1. Goal: a game with bots survives a save and a server restart (ADR 030, Decision 16).
 2. Tasks:

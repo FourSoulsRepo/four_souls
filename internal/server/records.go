@@ -54,7 +54,7 @@ func (r *Room) openRecord(s engine.Setup) {
 	}
 	seats := make([]record.Seat, len(r.seats))
 	for i, st := range r.seats {
-		seats[i] = record.Seat{Seat: i, Name: st.name}
+		seats[i] = record.Seat{Seat: i, Name: st.name, Bot: st.bot, BotN: st.botN} // a bot's level and number (ADR 030, Decision 16.5)
 	}
 	v := version.Get()
 	now := time.Now()

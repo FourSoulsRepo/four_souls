@@ -225,9 +225,13 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
 16. Saves and restarts
    1. `savedSeat` gets the level and the number.
    2. A loaded table seats its bots at once; humans come back as today.
+      1. A bot's seat is nobody's to claim, by token or by name.
+      2. A save with a level the server does not allow is not loaded: `error.bot_level`, `error.bots_off` (Decision 17.1.3).
    3. A restart file keeps bot seats of tables and games (N-20).
+      1. A kept game keeps its bots, even of a level `-bots` no longer allows: the flag is for seating, and the game needs them.
    4. After a restart nobody waits for a bot; open thinking starts over.
-   5. `record.Seat` gets the level.
+   5. `record.Seat` gets the level and the number: `bot`, `bot_n`, left out for a human.
+      1. The record format stays 1: old readers skip the fields, and old records read with none (ADR 007, item 2.20).
 17. Server limits (lead, 2026-11-16: the owner's server has 1 CPU and 1 GB)
    1. Flag `-bots=off|standard|all` on the dedicated server, default `all`: the levels a host may seat.
       1. ENV `FOUR_SOULS_BOTS`, config `bots`; any other value stops the start.

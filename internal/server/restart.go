@@ -220,7 +220,10 @@ func (h *Hub) restoreRoom(f *restartFile) {
 	}
 	seats := make([]roomSeat, len(f.Seats))
 	for i, s := range f.Seats {
-		seats[i] = roomSeat{name: s.Name, token: s.Token, kicked: s.Kicked, dice: s.Dice}
+		// A game keeps its bots whatever -bots says now: the flag is for
+		// seating new ones, and the game cannot go on without them. They
+		// think again once the players are back (ADR 030, Decision 16.4).
+		seats[i] = roomSeat{name: s.Name, token: s.Token, kicked: s.Kicked, dice: s.Dice, bot: s.Bot, botN: s.BotN}
 	}
 	setup := engineSetup(f.Seed, len(seats), f.Sets, f.Options)
 	room, err := NewRoom(setup, f.Options, seats)
@@ -248,7 +251,7 @@ func (r *Room) keep() {
 		N:        r.n, Host: r.host, Started: r.born, Seed: r.setup.Seed,
 	}
 	for _, s := range r.seats {
-		f.Seats = append(f.Seats, savedSeat{Name: s.name, Token: s.token, Kicked: s.kicked, Dice: s.dice})
+		f.Seats = append(f.Seats, savedSeat{Name: s.name, Token: s.token, Kicked: s.kicked, Dice: s.dice, Bot: s.bot, BotN: s.botN})
 	}
 	if r.game == nil {
 		f.Kind = keptSetup
@@ -322,7 +325,9 @@ func (h *Hub) lose(f *restartFile, why error) {
 	}
 	var tokens []string
 	for _, s := range f.Seats {
-		tokens = append(tokens, s.Token)
+		if s.Bot == "" { // a bot has no token and nobody to tell
+			tokens = append(tokens, s.Token)
+		}
 	}
 	h.remember(protocol.Notice{Kind: protocol.NoticeLost, Game: f.Game}, tokens)
 }
