@@ -44,6 +44,26 @@ A new field of `Game`, or of any type inside it, must add:
 
 `TestCloneCoversEveryField` fails until the list matches the types. `TestCloneCopiesEveryField` fills every slice, map and pointer of a game, at every depth, and fails when the copy shares one: a `*` field Clone forgets. Both game tests check sharing with `enginetest.NoSharing`, which skips the `!` fields. `TestCloneSavesTheSame` (simulated games of every set and challenge) fails when the copy saves differently or shares memory with the game, and `TestCloneLeavesTheGame` plays 50 steps on a copy and checks the game is unchanged.
 
+A new place that hides a card from a seat (a new face-down zone, a new peek) also needs a line in `hiddenFrom` or `seenBy` (`imagine.go`); see below.
+
+### Imagined game
+
+`Game.Imagine(p, seed, known)` (`imagine.go`) is the game as seat `p` may imagine it (ADR 030, Decision 2). A bot gets games only from it, never the real one. It clones the game and then:
+
+1. lists the objects whose card `p` cannot see now (`hiddenFrom`): every deck card, bottom up; the hands of the other players, unless `p`'s view shows them (a revealed hand, or any hand in a co-op challenge); a challenge's face-down presents;
+2. leaves out what `p` looks at now (`seenBy`), as `ViewFor` shows it: the treasure peek, and the cards of `p`'s own open question (its options' cards and targets, its subject, its order, its deck look at the top);
+3. pools the hidden cards by deck (a card of no deck by its kind), so a hand keeps its kinds of cards: a monster card and an event card share the monster deck's pool;
+4. deals `known` first: each remembered card goes to the hand or deck place `p` remembers, when that place is hidden and the card's pool still holds a copy; else it is skipped. The memory is never checked against the real game, so a wrong memory tells the bot nothing;
+5. shuffles the rest of each pool with a generator from `seed` and deals it to the remaining places in order; objects keep their IDs and every other field, only `Card` changes;
+6. renames each hidden card where the copy still names it: past objects (`ZoneGone`) that nothing in the state points at (a card drawn unseen leaves its old object behind), and the option labels of another player's prompt. A past object the state still points at, say a trigger of a monster that left play, keeps its card: the stack shows it;
+7. reseeds the copy's RNG from the same generator: no real dice or draws.
+
+`Known` holds the cards of each hand by seat, and of each deck's top (top first) and bottom (bottom up); `""` is a place not remembered. Its zero value remembers nothing.
+
+What stays as it is, because `p` sees it or may know it: everything in play, slots and covered cards, discards (public, R-ZONE-07; the view sends only the top, but every card reached the pile in sight), bonus souls, cards outside the game, the revealed monster of a deck attack, deck and hand sizes, `p`'s own hand. Events are not part of the state; what they showed is the memory's work (`Known`, step 21.15).
+
+Tests in `cards/imagine_test.go`: `TestImagineKeepsTheView` imagines every step of simulated games of every set, 2 to 4 players, and each challenge, for every seat, and checks that the seat's `ViewFor` and, when it must answer, its `Allowed` are the game's, that the copy holds the same cards and passes `CheckInvariants`, and that the game's checksum stays. `TestImaginePlayout` plays 200 random steps on imagined games. `TestImagineSeedsDiffer` and `TestImagineKnown` check the deal.
+
 ## Where things happen
 
 | File | What |

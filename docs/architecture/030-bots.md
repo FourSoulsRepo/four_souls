@@ -90,11 +90,17 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    5. A card `p` looks at now (a deck look, a shown card) stays.
    6. The copy's RNG is reseeded from `seed`: no real dice, no real draws.
    7. `known` is what the seat remembers (Decision 19); those cards are dealt where it remembers them.
-   8. A remembered card that is not among the hidden ones there is skipped.
+   8. A remembered card that is not among the hidden cards of its pool is skipped.
+      1. So is one whose remembered place is not hidden, or is taken.
+      2. The memory is never checked against the card's real place: a wrong memory tells nothing.
    9. Empty `known`: every card `p` cannot see now is unknown.
    10. Test: `ViewFor(p)` of the copy equals `ViewFor(p)` of the game.
    11. Test: two seeds give different hidden cards.
    12. The real game is never changed.
+   13. The copy names no hidden card elsewhere either.
+      1. Past objects nothing points at get the redealt card's name.
+      2. So do the options of another player's prompt.
+      3. A past object the state points at keeps its card: the stack shows it.
 3. Engine: `Game.Clone`
    1. A hand-written deep copy replaces the JSON round trip.
    2. Test: the copy's `Checksum` and `Save` equal the game's, on simulated games of every set.

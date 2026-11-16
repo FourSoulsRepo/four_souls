@@ -22,6 +22,7 @@ Rules for this step (owner, 2026-11-16):
 7. Gates before each commit: `make build vet test lint wasm`.
    1. Frontend sub-steps also: `make frontend e2e`.
    2. Bot strength sub-steps also: `make bots`, with its numbers in the commit message.
+   3. `make sims` and `make fuzz-sets FUZZTIME=30s`: once at the end of a batch that changed `pkg/rules_engine`, not per commit (owner, 2026-11-16).
 8. UI sub-steps leave screenshots in `.cache/screenshots/21.N/`; never committed.
 9. Order: 21.15 runs right after 21.6, before 21.7.
 
@@ -51,7 +52,7 @@ Rules for this step (owner, 2026-11-16):
    1. The benchmark shows under 0.3 ms; the number is in the commit message.
    2. `make sims` and `make fuzz-sets FUZZTIME=30s` pass.
 
-### [ ] 21.3 Imagined game
+### [x] 21.3 Imagined game
 
 1. Goal: the game as one seat may imagine it (ADR 030, Decision 2).
 2. Tasks:
