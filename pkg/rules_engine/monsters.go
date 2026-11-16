@@ -38,7 +38,9 @@ func (g *Game) finishEvent(id ObjectID) {
 	default:
 		return
 	}
-	g.discard(id, MonsterDeck)
+	// Its event flies it from its slot to the discard (19.173).
+	nid := g.discard(id, MonsterDeck)
+	g.emit(Event{Kind: EvDiscarded, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Prev: id})
 	g.RefillSlots()
 }
 

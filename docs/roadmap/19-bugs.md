@@ -5349,7 +5349,7 @@ Totals by system (169 items):
    2. Fix the test (14.10) or the bug it shows.
    3. Check: the spec, both browsers, 5 workers, 10 repeats.
 
-### [ ] 19.173 No event when a done event card goes to discard
+### [x] 19.173 No event when a done event card goes to discard
 
 1. Goal: an event card's move from its slot to discard has an event.
 2. Report (22.2 fuzz check, 2026-11-16)
@@ -5364,6 +5364,14 @@ Totals by system (169 items):
 4. Tasks:
    1. Fix it in 22.3, game-wide.
    2. Remove "event done" from the 22.2 list (`event_check.go`).
+5. Fix (22.3, 2026-11-16)
+   1. `finishEvent` emits `discarded`: no player, `Prev` the slot card.
+   2. The same event as `DiscardMonster`; the client flies it already.
+   3. Checked every `discard` caller: only `finishEvent` had no event.
+   4. Checked: `DiscardMonster`, `DiscardRoom`, `DiscardShopItem`, `DestroyObject`.
+   5. Checked: `RerollItem`, `ActDiscardObject`, `DestroyPresent`, stack and hand discards.
+   6. Go test: `TestChest` sees the `discarded` event.
+   7. "event done" is off the 22.2 list.
 
 ### [ ] 19.174 No event when an empty deck takes back its discard
 

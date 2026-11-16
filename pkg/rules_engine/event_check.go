@@ -339,15 +339,6 @@ var silentChanges = []SilentChange{
 		},
 	},
 	{
-		Name:   "event done",
-		Reason: "finishEvent puts a done event card from its slot into the discard with no event",
-		Bug:    "19.173",
-		Match: func(g *Game, c Change, _ []Event) bool {
-			return c.What == "move" && (c.From.Kind == ZoneInPlay || c.From.Kind == ZoneCovered) && eventSlot(c.From) &&
-				c.To == DiscardZone(MonsterDeck) && g.kindOf(c.Object) == EventCard
-		},
-	},
-	{
 		Name:   "deck refill",
 		Reason: "an empty deck takes back its shuffled discard (R-ZONE-05) with no event",
 		Bug:    "19.174",
