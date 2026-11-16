@@ -27,17 +27,16 @@ What it compares:
 * each object's zone, damage and charge;
 * every move: a move makes a new object (R-ZONE-01), and the snapshot turns on a log of moves in `Game.move`, so a card that moves twice in one step is checked twice;
 * the order of every deck: the cards off the longest run kept in order count as moved, so a card put on the bottom with `DeckToBottom` is caught;
-* shuffles: `ShuffleDeck` logs the deck, and its new order is one "shuffle" change.
+* shuffles: `ShuffleDeck` logs the deck, and its new order is one "shuffle" change; its `shuffled` event names it (19.178).
 
 An event names an object by its `Object`, `Prev`, `Source` or stack item source. A move is named when an event names the new object, or the old object at or after the move; an event before the move does not count. A hidden move (a deck card, a hand card) still needs its event: a private event names the object too.
 
-Some events name many objects at once (`wideEvents`): `recharged` and `deactivated` with no object name every thing their player controls, `deck_bottom` names the cards that went into its deck, `moved_to_deck` with no object names the cards an empty deck took back from its discard (R-ZONE-05, 19.174), and `turn_ended` names every heal to 0 (R-TURN-13).
+Some events name many objects at once (`wideEvents`): `recharged` and `deactivated` with no object name every thing their player controls, `deck_bottom` names the cards that went into its deck, `moved_to_deck` with no object names the cards an empty deck took back from its discard (R-ZONE-05, 19.174), `shuffled` names the whole new order of its deck (19.178), and `turn_ended` names every heal to 0 (R-TURN-13).
 
 Changes that need no event are on the `silentChanges` list, each with its reason. A gap the check found that is not fixed yet is on the list too, with its 19.N item in `Bug`; 22.3 fixes those and removes them. Silent on purpose:
 
 * a slot card covered by the card that enters the slot on top; its `entered_play` names the slot (R-ZONE-10);
 * minion slots renumbered after one is removed; no card moves (R-CHAL-11);
-* a shuffle: the deck shows no card and no count change;
 * damage removed by a lower max HP: not healing, and the HP left stays the same (R-MECH-21). The snapshot keeps each object's max HP, so only a drop no larger than the max HP's fall passes (22.3).
 
 When the check fails, the message lists each change no event names, then the step's event kinds. Find the code that made the change; give it an event (log a 19.N item first, as for any bug), or, if it is silent on purpose, add it to the list with its reason.

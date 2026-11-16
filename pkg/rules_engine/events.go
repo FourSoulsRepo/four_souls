@@ -83,6 +83,9 @@ const (
 	// EvMinionArrived: Card came from the monster deck into a new minion
 	// slot (R-CHAL-09).
 	EvMinionArrived EventKind = "minion_arrived"
+	// EvShuffled: the deck Text, "<deck> deck", was shuffled; public, no
+	// card, Player NoPlayer (19.178).
+	EvShuffled EventKind = "shuffled"
 )
 
 // Event is one thing that happened, in order. Hidden cards (e.g. a looted

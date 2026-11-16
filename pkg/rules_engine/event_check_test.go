@@ -52,7 +52,8 @@ func TestCheckEventsSilentMove(t *testing.T) {
 	}
 }
 
-// 22.2: a silent damage change fails; a shuffle is silent on purpose.
+// 22.2: a silent damage change fails. 19.178: a shuffle needs its
+// shuffled event.
 func TestCheckEventsDamageAndShuffle(t *testing.T) {
 	g := eventCheckGame(t)
 	top, _ := g.Monsters[0].TopOf()
@@ -63,8 +64,17 @@ func TestCheckEventsDamageAndShuffle(t *testing.T) {
 	}
 	snap = g.TakeSnapshot()
 	g.ShuffleDeck(LootDeck)
-	if err := g.CheckEvents(snap, nil); err != nil {
-		t.Fatalf("a shuffle: %v", err)
+	events := g.takeEvents()
+	if err := g.CheckEvents(snap, nil); err == nil || !strings.Contains(err.Error(), "shuffled") {
+		t.Fatalf("a silent shuffle passed the check: %v", err)
+	}
+	if len(events) != 1 || events[0].Kind != EvShuffled || events[0].Text != "loot deck" {
+		t.Fatalf("want one shuffled event for the loot deck, got %+v", events)
+	}
+	snap = g.TakeSnapshot()
+	g.ShuffleDeck(LootDeck)
+	if err := g.CheckEvents(snap, g.takeEvents()); err != nil {
+		t.Fatalf("a shuffle with its event: %v", err)
 	}
 }
 

@@ -312,6 +312,12 @@ var wideEvents = []WideEvent{
 		},
 	},
 	{
+		EvShuffled, "a shuffle reorders the whole deck; the event names the deck (19.178)",
+		func(_ *Game, c Change, e Event) bool {
+			return c.What == "shuffle" && e.Text == c.To.Deck.String()+" deck"
+		},
+	},
+	{
 		EvTurnEnded, "every object heals at the end of the turn (R-TURN-13)",
 		func(_ *Game, c Change, _ Event) bool { return c.What == "damage" && c.After == 0 },
 	},
@@ -362,11 +368,6 @@ var silentChanges = []SilentChange{
 			return c.What == "zone" && c.From.Kind == c.To.Kind && c.From.Slot == MinionSlot &&
 				c.To.Slot == MinionSlot && c.To.Index < c.From.Index
 		},
-	},
-	{
-		Name:   "shuffle",
-		Reason: "a shuffled deck shows no card and no count change; nothing to draw",
-		Match:  func(_ *Game, c Change, _ []Event) bool { return c.What == "shuffle" },
 	},
 	{
 		Name:   "max HP fell",

@@ -5483,7 +5483,7 @@ Totals by system (170 items):
    4. Option: a save while a nested ask waits keeps the last clean state and the steps since.
 
 
-### [ ] 19.178 No event when a deck is shuffled
+### [x] 19.178 No event when a deck is shuffled
 
 1. Goal: every shuffle of a deck has an event everyone sees.
 2. Report (owner, 2026-11-16, from the 22.2 review)
@@ -5497,6 +5497,18 @@ Totals by system (170 items):
    1. One event per shuffled deck from `ShuffleDeck`, naming the deck.
    2. Remove "shuffle" from the 22.2 list (`event_check.go`).
    3. Client: a history line only; no animation (a separate idea).
+5. Fix (22.3, 2026-11-16)
+   1. New event `shuffled`: no player, no card, `Text` "<deck> deck".
+   2. `ShuffleDeck` emits it for a deck with cards; no barrier.
+   3. Every deck shuffle uses `ShuffleDeck`: setup, refill, situations.
+   4. Cards: Peep, The Rainmaker, `SearchGuppy` (all its Guppy cards).
+   5. Not a deck shuffle: `ToBottomRandom` (its `deck_bottom`), the character and ratio pools.
+   6. 22.2 check: a wide event; "shuffle" is off the silent list.
+   7. History: "The monster deck is shuffled" (`shuffleText`, UC-15 2f).
+   8. The setup's shuffles get no line: the first update has `character_dealt`.
+   9. Playback: no animation; an idea for the owner.
+   10. Go test: `TestCheckEventsDamageAndShuffle`; Vitest: the history lines.
+   11. `make e2e`: 594 passed; 19.171 and 19.179 failed once, passed on rerun.
 
 ### [ ] 19.179 e2e: the helper roll test never settles once, webkit
 

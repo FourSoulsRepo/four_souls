@@ -118,6 +118,7 @@ var barrierKinds = map[EventKind]bool{
 	EvForgone:          false,
 	EvMinionArrived:    false, // its card_revealed is the barrier
 	EvPlayerCounters:   false,
+	EvShuffled:         false, // public, no card
 	EvAttackStart:      false, // a trigger moment; its rolls are barriers
 	EvRewardsChanged:   false,
 	EvAbilitiesGained:  false, // its card_revealed events are the barriers

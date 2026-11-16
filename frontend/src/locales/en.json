@@ -2548,6 +2548,22 @@
     "text": "Show the history",
     "note": "Tooltip of the history strip's top button."
   },
+  "history.shuffled.loot": {
+    "text": "The loot deck is shuffled",
+    "note": "History: the loot deck was shuffled."
+  },
+  "history.shuffled.monster": {
+    "text": "The monster deck is shuffled",
+    "note": "History: the monster deck was shuffled."
+  },
+  "history.shuffled.room": {
+    "text": "The room deck is shuffled",
+    "note": "History: the room deck was shuffled."
+  },
+  "history.shuffled.treasure": {
+    "text": "The treasure deck is shuffled",
+    "note": "History: the treasure deck was shuffled."
+  },
   "history.skipped.other": {
     "text": "{player}'s turn is skipped",
     "note": "History: a player's turn was skipped."

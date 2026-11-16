@@ -19,12 +19,16 @@ func (g *Game) AddToDeck(d DeckKind, cards ...CardRef) {
 	}
 }
 
-// ShuffleDeck puts a deck in random order.
+// ShuffleDeck puts a deck in random order. Every shuffle of a deck
+// with cards has its shuffled event, which names the deck (19.178).
 func (g *Game) ShuffleDeck(d DeckKind) {
 	deck := g.Decks[d]
 	g.RNG.Shuffle(len(deck), func(i, j int) { deck[i], deck[j] = deck[j], deck[i] })
 	if g.changes != nil {
 		g.changes.shuffled[d] = true
+	}
+	if len(deck) > 0 {
+		g.emit(Event{Kind: EvShuffled, Player: NoPlayer, Text: d.String() + " deck"})
 	}
 }
 
