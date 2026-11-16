@@ -3,6 +3,7 @@ package arena
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -111,9 +112,18 @@ func TestGuards(t *testing.T) {
 // the same items again and again in one turn, past the turn guard: a
 // move that gains nothing over doing nothing is not made (ADR 030,
 // Decision 8.6). Each game is played to its end or the cap.
+//
+// It runs only with FOUR_SOULS_ARENA_GAMES set, never with -short:
+// make bots runs it after the arena. Its games are whole standard games
+// as long as the bots make them: 3-player seed 28 lasts 129 turns and
+// took 15 minutes alone (2026-11-17), past go test's 10-minute timeout.
+// Plain go test checks the rule on built tables in internal/bot:
+// TestJudge (a move must beat doing nothing by wAct and its noise),
+// TestStandardKeepsUselessLoot and TestStandardNoHopelessAttack; and
+// TestGuards here checks the loop guards themselves.
 func TestStandardNoLoop(t *testing.T) {
-	if testing.Short() {
-		t.Skip("whole standard games")
+	if testing.Short() || os.Getenv("FOUR_SOULS_ARENA_GAMES") == "" {
+		t.Skip("whole standard games: FOUR_SOULS_ARENA_GAMES=1, or make bots")
 	}
 	s, r := bot.Standard, bot.Random
 	for _, m := range []Match{
