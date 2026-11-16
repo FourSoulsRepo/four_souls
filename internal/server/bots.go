@@ -2,8 +2,10 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"math/rand/v2"
+	"runtime/debug"
 	"slices"
 	"time"
 
@@ -179,7 +181,7 @@ func (r *Room) think(ctx context.Context, i int) {
 	rng := r.botRng()
 	seed, own := rng.Uint64(), r.game.PromptFor(p).Kind == engine.PromptPriority && r.game.Turn.Active == p
 	answerPace, actionPace := r.botSecond(botAnswerPace), r.botSecond(botActionPace+rng.Float64())
-	worlds, err := world.For(r.game, p, r.known[i], seed)
+	worlds, err := r.botWorlds(i, seed)
 	ctx, cancel := context.WithCancel(ctx)
 	r.thinkN++
 	t := &thinker{id: r.thinkN, step: r.step, done: ctx.Done(), cancel: cancel}
@@ -188,11 +190,12 @@ func (r *Room) think(ctx context.Context, i int) {
 		Seat: p, Level: botLevel(s.bot), Rand: rand.New(rand.NewPCG(seed, rng.Uint64())), //nolint:gosec // bot play, not security
 		Budget: r.botBudget(s.bot), World: botai.World(worlds),
 	}
+	game, gameSeed := r.recInfo.game, r.setup.Seed
 	go func() {
 		begin := time.Now()
 		a := &botAnswer{seat: i, id: t.id, step: t.step, err: err}
 		if err == nil {
-			a.intent, a.err = botai.Choose(ctx, in)
+			botChoose(ctx, in, a, func(v any) { logBotPanic(game, gameSeed, seed, t.step, i, v) })
 		}
 		pace := answerPace
 		if own && a.err == nil && a.intent.Kind != engine.IntentPass {
@@ -209,6 +212,45 @@ func (r *Room) think(ctx context.Context, i int) {
 			r.send(request{bot: a})
 		}
 	}()
+}
+
+// botWorlds copies the game for bot seat i (world.For) on the room's
+// goroutine. A panic there would end the room and the server with it:
+// it is logged and becomes an error, so the bot's fallback move goes
+// (Decision 12.12).
+func (r *Room) botWorlds(i int, seed uint64) (worlds world.Func, err error) {
+	defer func() {
+		if v := recover(); v != nil {
+			logBotPanic(r.recInfo.game, r.setup.Seed, seed, r.step, i, v)
+			worlds, err = nil, fmt.Errorf("server: bot panic: %v", v)
+		}
+	}()
+	worldFor := r.worldFor
+	if worldFor == nil {
+		worldFor = world.For
+	}
+	return worldFor(r.game, engine.PlayerID(i), r.known[i], seed)
+}
+
+// botChoose fills a with bot.Choose's move, on the thinker's goroutine.
+// Choose and the worlds it imagines run on states the real game never
+// reached; a panic there is handed to onPanic and becomes a's error, so
+// the room makes the bot's fallback move and the server goes on
+// (Decision 12.12).
+func botChoose(ctx context.Context, in botai.Input, a *botAnswer, onPanic func(v any)) {
+	defer func() {
+		if v := recover(); v != nil {
+			onPanic(v)
+			a.intent, a.err = engine.Intent{}, fmt.Errorf("server: bot panic: %v", v)
+		}
+	}()
+	a.intent, a.err = botai.Choose(ctx, in)
+}
+
+// logBotPanic logs a bot's panic with what replays it: the room's game,
+// its seed, the bot's seed, the step and the seat, and the stack.
+func logBotPanic(game string, gameSeed, botSeed uint64, step, seat int, v any) {
+	log.Printf("server: game %s: bot panic: seed %d, bot seed %d, step %d, seat %d: %v\n%s", game, gameSeed, botSeed, step, seat, v, debug.Stack())
 }
 
 // botMove applies a thinker's answer like a client's intent: record,

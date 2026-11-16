@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
+	"github.com/FourSoulsRepo/four_souls/internal/world"
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
@@ -534,5 +535,50 @@ func TestBotsMustAttackFallback(t *testing.T) {
 		if k := r.live[len(r.live)-1].rec.Intent.Kind; k != engine.IntentAttack {
 			t.Errorf("the fallback move %v, want an attack", k)
 		}
+	}
+}
+
+// TestBotsPanic: a bot panic, in the room's copy (world.For) or in the
+// thinker (an imagined world), is logged with its stack; the bot's
+// fallback move goes and the game goes on (Decision 12.12).
+func TestBotsPanic(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		worldFor func(*engine.Game, engine.PlayerID, engine.Known, uint64) (world.Func, error)
+	}{
+		{"copy", func(*engine.Game, engine.PlayerID, engine.Known, uint64) (world.Func, error) {
+			panic("a copy that breaks")
+		}},
+		{"world", func(*engine.Game, engine.PlayerID, engine.Known, uint64) (world.Func, error) {
+			return func(int) (*engine.Game, error) { panic("a world that breaks") }, nil
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var buf syncBuffer
+			prev := log.Writer()
+			log.SetOutput(&buf)
+			defer log.SetOutput(prev)
+			r := botRoom(t, protocol.Options{Rollback: protocol.RollbackGod}, "", protocol.BotStandard) // God mode keeps the steps to look at
+			r.stopThinkers()
+			r.worldFor = tc.worldFor
+			r.drive()
+			botSteps := func() int {
+				n := 0
+				for _, l := range r.live {
+					if l.rec.Intent.Player == 1 {
+						n++
+					}
+				}
+				return n
+			}
+			before := botSteps()
+			serveBots(t, r, func() bool { return botSteps() >= before+3 })
+			out := buf.String()
+			for _, want := range []string{"bot panic: seed 7", ", seat 1: a ", "goroutine ", "Bot 1 has no move: server: bot panic"} {
+				if !strings.Contains(out, want) {
+					t.Errorf("log %q: no %q", out, want)
+				}
+			}
+		})
 	}
 }

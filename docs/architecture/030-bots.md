@@ -208,6 +208,11 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       1. The fallback: the forced answer of the response timer (N-07), else any allowed intent (a must-attack forbids pass and end turn).
       2. An allowed intent the engine refuses is an engine bug: logged with seed, step and intent.
    11. The response timer may be off, so a bot never relies on it.
+   12. A bot panic never ends the server (21.8).
+      1. Bot code and the engine run on imagined states the real game never reached.
+      2. The thinker recovers a panic in `Choose` or its `World(i)`; the room recovers one in `world.For`.
+      3. The log line `bot panic` has the game, seed, bot seed, step, seat and the stack.
+      4. The thinker sends an error answer; the room makes the fallback move (12.10).
 13. Pace (owner, 2026-11-16)
    1. A pass or an answer to a prompt: 0.7 s after the prompt came.
    2. An action in the bot's own turn: 1 to 2 s, at random.

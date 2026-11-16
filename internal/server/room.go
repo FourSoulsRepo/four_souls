@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
+	"github.com/FourSoulsRepo/four_souls/internal/world"
 	"github.com/FourSoulsRepo/record"
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
@@ -131,6 +132,7 @@ type Room struct {
 	// the last thinker's number, the bots' random source, what each
 	// seat remembers (empty until 21.15), the hard bot's time budget,
 	// and the longest time the driver held the room, in nanoseconds.
+	// worldFor stands in for world.For when set: a test's bot panic.
 	thinkers []*thinker
 	due      []int // bot seats to think, for Run to start (startThinkers)
 	thinkN   int
@@ -138,6 +140,7 @@ type Room struct {
 	known    []engine.Known
 	botThink time.Duration
 	botWork  atomic.Int64
+	worldFor func(*engine.Game, engine.PlayerID, engine.Known, uint64) (world.Func, error)
 }
 
 // NewRoom prepares a game for seated players; it starts in Run. The
