@@ -101,6 +101,11 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       1. Past objects nothing points at get the redealt card's name.
       2. So do the options of another player's prompt.
       3. A past object the state points at keeps its card: the stack shows it.
+      4. Each new name is drawn from the pool: it says nothing of the old one.
+   14. The copy depends only on what `p` knows: the hidden cards of each pool, `seed` and `known`.
+      1. Each pool is sorted before the shuffle; the real layout never shows.
+      2. Test: an imagined game, imagined again, equals the game imagined, for one seed.
+   15. Discard piles stay real, below the top too: open by R-ZONE-07, every card went there in sight.
 3. Engine: `Game.Clone`
    1. A hand-written deep copy replaces the JSON round trip.
    2. Test: the copy's `Checksum` and `Save` equal the game's, on simulated games of every set.

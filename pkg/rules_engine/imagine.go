@@ -39,18 +39,19 @@ func (g *Game) Imagine(p PlayerID, seed uint64, known Known) (*Game, error) {
 	}
 	rng := NewRNG(seed)
 	slots := g.hiddenFrom(p)
-	dealt := g.dealHidden(slots, known, &rng)
-	// relabel says which card stands in for a hidden card in the copy, so
-	// the copy's past and its other players' prompts name no real one.
-	relabel := map[CardRef]CardRef{}
-	for i, s := range slots {
-		was := g.Objects[s.id].Card
-		c.Objects[s.id].Card = dealt[i]
-		if _, ok := relabel[was]; !ok {
-			relabel[was] = dealt[i]
-		}
+	// hidden is each pool's cards, sorted: what p knows of them is only
+	// the pool (ADR 030, Decision 2.14).
+	hidden := map[int][]CardRef{}
+	for _, s := range slots {
+		hidden[s.pool] = append(hidden[s.pool], g.Objects[s.id].Card)
 	}
-	c.relabelHidden(p, relabel)
+	for _, pool := range hidden {
+		slices.Sort(pool)
+	}
+	for i, ref := range g.dealHidden(slots, hidden, known, &rng) {
+		c.Objects[slots[i].id].Card = ref
+	}
+	c.relabelHidden(p, hidden, &rng)
 	c.RNG = rng
 	return c, nil
 }
@@ -163,15 +164,15 @@ func (g *Game) poolOf(ref CardRef) int {
 
 // dealHidden returns the card each slot gets: first the known cards,
 // each where p remembers it while its pool still holds it, then the
-// rest of each pool, shuffled, in slot order.
-func (g *Game) dealHidden(slots []hiddenSlot, known Known, rng *RNG) []CardRef {
-	pools := map[int][]CardRef{}
-	var keys []int
-	for _, s := range slots {
-		if _, ok := pools[s.pool]; !ok {
-			keys = append(keys, s.pool)
-		}
-		pools[s.pool] = append(pools[s.pool], g.Objects[s.id].Card)
+// rest of each pool, shuffled, in slot order. hidden holds each pool's
+// cards, sorted, so the deal depends on them, known and rng only: never
+// on where the real cards lie.
+func (g *Game) dealHidden(slots []hiddenSlot, hidden map[int][]CardRef, known Known, rng *RNG) []CardRef {
+	pools := make(map[int][]CardRef, len(hidden))
+	keys := make([]int, 0, len(hidden))
+	for k, pool := range hidden {
+		pools[k] = slices.Clone(pool)
+		keys = append(keys, k)
 	}
 	dealt := make([]CardRef, len(slots))
 	// place deals ref to slot i, if the slot is free and ref is still in
@@ -226,18 +227,22 @@ func (g *Game) dealHidden(slots []hiddenSlot, known Known, rng *RNG) []CardRef {
 // relabelHidden renames hidden cards where the copy still names them
 // after the deal: the past objects of the copy (a card drawn unseen
 // left its old object behind) and the options of another player's
-// prompt, which p's view does not show. A past object the state still
-// points at keeps its card: the stack or a boost may show it (a
-// trigger of a monster that left play).
-func (g *Game) relabelHidden(p PlayerID, relabel map[CardRef]CardRef) {
+// prompt, which p's view does not show. Each such name becomes a card
+// drawn by rng from the same pool, so the new name says nothing of the
+// old one. A past object the state still points at keeps its card: the
+// stack or a boost may show it (a trigger of a monster that left play).
+func (g *Game) relabelHidden(p PlayerID, hidden map[int][]CardRef, rng *RNG) {
+	rename := func(ref CardRef) CardRef {
+		pool := hidden[g.poolOf(ref)]
+		if _, ok := slices.BinarySearch(pool, ref); !ok {
+			return ref
+		}
+		return pool[rng.Intn(len(pool))]
+	}
 	used := g.objectRefs()
 	for i := range g.Objects {
-		o := &g.Objects[i]
-		if o.Zone.Kind != ZoneGone || used[o.ID] {
-			continue
-		}
-		if r, ok := relabel[o.Card]; ok {
-			o.Card = r
+		if o := &g.Objects[i]; o.Zone.Kind == ZoneGone && !used[o.ID] {
+			o.Card = rename(o.Card)
 		}
 	}
 	if g.Waiting.Kind == PromptChoose && g.Waiting.Player != p {
@@ -245,9 +250,7 @@ func (g *Game) relabelHidden(p PlayerID, relabel map[CardRef]CardRef) {
 			args := g.Waiting.Options[i].Args
 			for j, a := range args {
 				if v, ok := a.Value.(CardValue); ok {
-					if r, ok := relabel[v.Card]; ok {
-						args[j].Value = CardValue{Card: r}
-					}
+					args[j].Value = CardValue{Card: rename(v.Card)}
 				}
 			}
 		}

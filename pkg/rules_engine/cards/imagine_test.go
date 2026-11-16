@@ -1,6 +1,7 @@
 package cards
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"math/rand/v2"
@@ -105,6 +106,91 @@ func TestImagineKeepsTheView(t *testing.T) {
 			check(-1)
 			playSteps(t, g, rand.New(rand.NewPCG(s.Seed, 99)), imagineSteps, check) //nolint:gosec // test moves, not security
 		})
+	}
+}
+
+// forgetsTheDeal checks that the copy depends only on what seat p
+// knows: imagining g, and imagining an imagined g1 (same view for p,
+// other hidden layout), give the same game for one seed. The whole save
+// is compared: every object's card by ID (past objects too), the other
+// players' option labels, the RNG.
+func forgetsTheDeal(g *engine.Game, p engine.PlayerID, s1, s2 uint64, known engine.Known) error {
+	g1, err := g.Imagine(p, s1, known)
+	if err != nil {
+		return err
+	}
+	a, err := g1.Imagine(p, s2, known)
+	if err != nil {
+		return err
+	}
+	b, err := g.Imagine(p, s2, known)
+	if err != nil {
+		return err
+	}
+	if va, vb := seatView(a, p), seatView(b, p); !reflect.DeepEqual(va, vb) {
+		return fmt.Errorf("seat %d: view differs: %s", p, firstDiff(va, vb))
+	}
+	if ia, ib := a.Allowed(p), b.Allowed(p); !reflect.DeepEqual(ia, ib) {
+		return fmt.Errorf("seat %d: allowed differs:\n%+v\n%+v", p, ia, ib)
+	}
+	sa, err := a.Save()
+	if err != nil {
+		return err
+	}
+	sb, err := b.Save()
+	if err != nil {
+		return err
+	}
+	if !bytes.Equal(sa, sb) {
+		var ja, jb any
+		if err := json.Unmarshal(sa, &ja); err != nil {
+			return err
+		}
+		if err := json.Unmarshal(sb, &jb); err != nil {
+			return err
+		}
+		return fmt.Errorf("seat %d: the copy depends on the real deal: %s", p, firstDiff(ja, jb))
+	}
+	return nil
+}
+
+// TestImagineForgetsTheDeal: at every step of the games of
+// TestImagineKeepsTheView, for every seat, the imagined game does not
+// depend on where the real hidden cards lie (ADR 030, Decision 2.14).
+func TestImagineForgetsTheDeal(t *testing.T) {
+	for name, s := range cloneSetups() {
+		t.Run(name, func(t *testing.T) {
+			g, _, err := engine.NewGame(s)
+			if err != nil {
+				t.Fatal(err)
+			}
+			check := func(step int) {
+				t.Helper()
+				for p := range engine.PlayerID(len(g.Players)) {
+					if err := forgetsTheDeal(g, p, uint64(step)+2000, uint64(step)+3000, engine.Known{}); err != nil { //nolint:gosec // step is small
+						t.Fatalf("step %d: %v", step, err)
+					}
+				}
+			}
+			check(-1)
+			playSteps(t, g, rand.New(rand.NewPCG(s.Seed, 99)), imagineSteps, check) //nolint:gosec // test moves, not security
+		})
+	}
+}
+
+// TestImagineForgetsTheDealKnown: the same with remembered cards, also
+// ones that are wrong or not hidden.
+func TestImagineForgetsTheDealKnown(t *testing.T) {
+	g := fourAllSets(t, 40)
+	shop, _ := g.Shop[0].TopOf()
+	known := engine.Known{Hands: [][]engine.CardRef{nil, handCards(g, 2), handCards(g, 1)}}
+	known.Tops[engine.LootDeck] = []engine.CardRef{"", deckTop(g, engine.LootDeck, 2)[1]}
+	known.Bottoms[engine.MonsterDeck] = deckTop(g, engine.MonsterDeck, 1)
+	known.Tops[engine.TreasureDeck] = []engine.CardRef{g.Objects[shop].Card}
+	for seed := range uint64(10) {
+		if err := forgetsTheDeal(g, 0, seed, seed+100, known); err != nil {
+			t.Fatalf("seed %d: %v", seed, err)
+		}
 	}
 }
 
