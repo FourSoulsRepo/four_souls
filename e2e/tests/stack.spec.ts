@@ -506,7 +506,7 @@ async function quiet(page: Page): Promise<void> {
 }
 
 test('a resolved stack row fades out, then the next slides up (15.51)', async ({ browser }) => {
-  const pages = await startGame(browser, ['Kai', 'Lou'], { url: appURL() });
+  const pages = await startGame(browser, ['Kai', 'Lou'], { animations: true });
   const active = await activePage(pages, click);
   await quiet(active);
   await fakeStack(active, [1, 2, 3]);

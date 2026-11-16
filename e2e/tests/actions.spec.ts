@@ -331,7 +331,8 @@ test('with the question off in the settings, End turn ends at once (V-46)', asyn
 });
 
 test('idle End turn glows softly and breathes, no ring (H-20, 19.76)', async ({ browser }) => {
-  const pages = await startGame(browser, ['Mo', 'Ned'], { url: appURL() });
+  // Animations on: the breath is an animation.
+  const pages = await startGame(browser, ['Mo', 'Ned'], { animations: true });
   const active = await activePage(pages, click);
   const button = endTurnButton(active);
   // A turn starts with its attack left; the class stands in for the
@@ -678,7 +679,8 @@ async function rolls(page: Page): Promise<number[]> {
 }
 
 test('an attack waits for the roller to throw; the die shows the engine\'s value; the last roll stays (15.61, 15.63)', async ({ browser }) => {
-  const pages = await startGame(browser, ['Thea', 'Ruan']);
+  // Animations on: the thrown die is an effect.
+  const pages = await startGame(browser, ['Thea', 'Ruan'], { animations: true });
   const active = await activePage(pages, click);
   const other = pages.find((p) => p !== active);
   if (!other) {
@@ -767,7 +769,8 @@ async function giveLooks(page: Page, own: string): Promise<Record<string, string
 }
 
 test("every screen draws a roll with the roller's dice look (15.6)", async ({ browser }) => {
-  const pages = await startGame(browser, ['Odile', 'Pavo']);
+  // Animations on: the thrown die is an effect.
+  const pages = await startGame(browser, ['Odile', 'Pavo'], { animations: true });
   const active = await activePage(pages, click);
   const other = pages.find((p) => p !== active);
   if (!other) {

@@ -98,7 +98,7 @@ Ideas: TS-07, TS-08, TS-09, TS-10, TS-11, TS-12.
    1. The 22.4 list holds only fields unread on purpose.
    2. `make frontend e2e` passes.
 
-### [ ] 22.6 e2e: animations off by default
+### [x] 22.6 e2e: animations off by default
 
 1. Goal: e2e pages start at speed "off" (TS-10).
 2. Tasks:

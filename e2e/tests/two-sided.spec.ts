@@ -39,7 +39,9 @@ test('Anima Sola flips to The Revenant and back (14.15)', async ({ browser }) =>
   // back when attacked, and attacking an item is 14.14.
   // The pages offer Requiem (?requiem), so they can continue a game
   // with it; the deal stays the Base Game's.
+  // Animations on: the test counts the card-flip animations.
   const pages = await startGame(browser, names, {
+    animations: true,
     url: `${appURL()}&requiem`,
     setup: (host) => host.getByRole('group', { name: tr('host.sets') }).getByLabel(tr('set.requiem')).uncheck(),
     options: { rollback: 'god' },

@@ -1,4 +1,5 @@
-// Event playback and animations (7.6).
+// Event playback and animations (7.6). Every game here plays with
+// animations on: they are what each test checks (22.6).
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { feel } from '../../frontend/src/feel';
@@ -43,7 +44,7 @@ test('the animation speed setting survives a restart', async ({ page }) => {
 
 test('a fast burst of updates plays in order and ends on the last one', async ({ browser }) => {
   test.setTimeout(90_000); // the burst alone plays for 13.6 s (19.51)
-  const [kai] = await startGame(browser, ['Kai', 'Lu']);
+  const [kai] = await startGame(browser, ['Kai', 'Lu'], { animations: true });
   if (!kai) {
     throw new Error('no pages');
   }
@@ -98,7 +99,7 @@ test('a fast burst of updates plays in order and ends on the last one', async ({
 });
 
 test('a thrown die falls, bounces and lands on the engine\'s value (15.62)', async ({ browser }) => {
-  const [mira] = await startGame(browser, ['Mira', 'Noor']);
+  const [mira] = await startGame(browser, ['Mira', 'Noor'], { animations: true });
   if (!mira) {
     throw new Error('no pages');
   }
@@ -166,7 +167,7 @@ test('a thrown die falls, bounces and lands on the engine\'s value (15.62)', asy
 });
 
 test('a roll of several dice throws every die, each with its clatter (19.39)', async ({ browser }) => {
-  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  const [ola] = await startGame(browser, ['Ola', 'Pim'], { animations: true });
   if (!ola) {
     throw new Error('no pages');
   }
@@ -378,7 +379,7 @@ async function box(page: Page, el: Locator): Promise<{ x: number; y: number; wid
 }
 
 test('an attack strikes fast, hits on contact and settles back (20.2, 20.19)', async ({ browser }) => {
-  const [vee] = await startGame(browser, ['Vee', 'Wyn']);
+  const [vee] = await startGame(browser, ['Vee', 'Wyn'], { animations: true });
   if (!vee) {
     throw new Error('no pages');
   }
@@ -440,7 +441,7 @@ test('an attack strikes fast, hits on contact and settles back (20.2, 20.19)', a
 });
 
 test('with reduced motion an attack hits in place (20.2)', async ({ browser }) => {
-  const [vee] = await startGame(browser, ['Vee', 'Wyn']);
+  const [vee] = await startGame(browser, ['Vee', 'Wyn'], { animations: true });
   if (!vee) {
     throw new Error('no pages');
   }
@@ -495,7 +496,7 @@ async function hitAndShoot(page: Page, amount: number, name: string, left?: numb
 }
 
 test('a bigger hit looks and sounds bigger (20.3)', async ({ browser }) => {
-  const [vee] = await startGame(browser, ['Vee', 'Wyn']);
+  const [vee] = await startGame(browser, ['Vee', 'Wyn'], { animations: true });
   if (!vee) {
     throw new Error('no pages');
   }
@@ -539,7 +540,7 @@ interface Store {
 }
 
 test('damage from a card hits every target at once and reddens their HP', async ({ browser }) => {
-  const [mo] = await startGame(browser, ['Mo', 'Nia']);
+  const [mo] = await startGame(browser, ['Mo', 'Nia'], { animations: true });
   if (!mo) {
     throw new Error('no pages');
   }
@@ -606,7 +607,7 @@ test('damage from a card hits every target at once and reddens their HP', async 
 });
 
 test('the damage number stays while the next effect plays, and stacks on its card (20.4)', async ({ browser }) => {
-  const [vee] = await startGame(browser, ['Vee', 'Wyn']);
+  const [vee] = await startGame(browser, ['Vee', 'Wyn'], { animations: true });
   if (!vee) {
     throw new Error('no pages');
   }
@@ -655,7 +656,7 @@ test('the damage number stays while the next effect plays, and stacks on its car
 });
 
 test('a dying monster gets a skull before it leaves', async ({ browser }) => {
-  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  const [ola] = await startGame(browser, ['Ola', 'Pim'], { animations: true });
   if (!ola) {
     throw new Error('no pages');
   }
@@ -683,7 +684,7 @@ test('a dying monster gets a skull before it leaves', async ({ browser }) => {
 });
 
 test('a deck attack places the monster in its slot before the attack roll', async ({ browser }) => {
-  const [dax] = await startGame(browser, ['Dax', 'Ivo']);
+  const [dax] = await startGame(browser, ['Dax', 'Ivo'], { animations: true });
   if (!dax) {
     throw new Error('no pages');
   }
@@ -725,7 +726,7 @@ test('a deck attack places the monster in its slot before the attack roll', asyn
 });
 
 test('a deck attack shows the revealed monster large once (19.4)', async ({ browser }) => {
-  const [vix] = await startGame(browser, ['Vix', 'Wen']);
+  const [vix] = await startGame(browser, ['Vix', 'Wen'], { animations: true });
   if (!vix) {
     throw new Error('no pages');
   }
@@ -776,7 +777,7 @@ test('a deck attack shows the revealed monster large once (19.4)', async ({ brow
 });
 
 test('a deck attack monster does not pop in after it lands (19.6)', async ({ browser }) => {
-  const [yara] = await startGame(browser, ['Yara', 'Bram']);
+  const [yara] = await startGame(browser, ['Yara', 'Bram'], { animations: true });
   if (!yara) {
     throw new Error('no pages');
   }
@@ -821,7 +822,7 @@ test('a deck attack monster does not pop in after it lands (19.6)', async ({ bro
 });
 
 test('a deck attack keeps the drawn monster in view while its slot is picked (19.9)', async ({ browser }) => {
-  const [odo] = await startGame(browser, ['Odo', 'Kye']);
+  const [odo] = await startGame(browser, ['Odo', 'Kye'], { animations: true });
   if (!odo) {
     throw new Error('no pages');
   }
@@ -959,7 +960,7 @@ async function centre(page: Page, selector: string): Promise<{ x: number; y: num
 }
 
 test('a refilled slot\'s card grows out of its deck, then flies from the middle (15.73)', async ({ browser }) => {
-  const [lia] = await startGame(browser, ['Lia', 'Otto']);
+  const [lia] = await startGame(browser, ['Lia', 'Otto'], { animations: true });
   if (!lia) {
     throw new Error('no pages');
   }
@@ -1001,7 +1002,7 @@ test('a refilled slot\'s card grows out of its deck, then flies from the middle 
 });
 
 test('a killed monster\'s covered card shows in its slot, not from the deck (19.72)', async ({ browser }) => {
-  const [ari] = await startGame(browser, ['Ari', 'Bex']);
+  const [ari] = await startGame(browser, ['Ari', 'Bex'], { animations: true });
   if (!ari) {
     throw new Error('no pages');
   }
@@ -1099,7 +1100,7 @@ function near(a: { x: number; y: number } | undefined, b: { x: number; y: number
 }
 
 test('a dead monster flies from its slot to the monster discard (19.73)', async ({ browser }) => {
-  const [ari] = await startGame(browser, ['Ari', 'Bex']);
+  const [ari] = await startGame(browser, ['Ari', 'Bex'], { animations: true });
   if (!ari) {
     throw new Error('no pages');
   }
@@ -1140,7 +1141,7 @@ test('a dead monster flies from its slot to the monster discard (19.73)', async 
 });
 
 test('a dead soul monster flies from its slot to its player after a reward roll (19.73)', async ({ browser }) => {
-  const [ari] = await startGame(browser, ['Ari', 'Bex']);
+  const [ari] = await startGame(browser, ['Ari', 'Bex'], { animations: true });
   if (!ari) {
     throw new Error('no pages');
   }
@@ -1179,7 +1180,7 @@ test('a dead soul monster flies from its slot to its player after a reward roll 
 });
 
 test('a revealed card that stays in its deck shrinks back onto it (15.73)', async ({ browser }) => {
-  const [noa] = await startGame(browser, ['Noa', 'Pim']);
+  const [noa] = await startGame(browser, ['Noa', 'Pim'], { animations: true });
   if (!noa) {
     throw new Error('no pages');
   }
@@ -1288,7 +1289,7 @@ async function putLoot(page: Page, mine: boolean, played: boolean, cents = false
 }
 
 test("another player's loot card rises from their hand and shrinks into the stack (15.74)", async ({ browser }) => {
-  const [ula] = await startGame(browser, ['Ula', 'Vic']);
+  const [ula] = await startGame(browser, ['Ula', 'Vic'], { animations: true });
   if (!ula) {
     throw new Error('no pages');
   }
@@ -1325,7 +1326,7 @@ test("another player's loot card rises from their hand and shrinks into the stac
 for (const mine of [false, true]) {
   const whose = mine ? 'the viewer\'s own play shows no big card' : "another player's play shows big while the game goes on";
   test(`${whose} (20.9)`, async ({ browser }) => {
-    const [cid] = await startGame(browser, ['Cid', 'Dot']);
+    const [cid] = await startGame(browser, ['Cid', 'Dot'], { animations: true });
     if (!cid) {
       throw new Error('no pages');
     }
@@ -1371,7 +1372,7 @@ for (const mine of [false, true]) {
 for (const mine of [false, true]) {
   const from = mine ? 'its stack row' : 'the large card under the stack';
   test(`a resolved loot card flies to the discard from ${from} (15.74)`, async ({ browser }) => {
-    const [wes] = await startGame(browser, ['Wes', 'Xia']);
+    const [wes] = await startGame(browser, ['Wes', 'Xia'], { animations: true });
     if (!wes) {
       throw new Error('no pages');
     }
@@ -1430,7 +1431,7 @@ for (const mine of [false, true]) {
 }
 
 test('stolen cents fly as a coin from the victim to the thief (15.75)', async ({ browser }) => {
-  const [yan] = await startGame(browser, ['Yan', 'Zed']);
+  const [yan] = await startGame(browser, ['Yan', 'Zed'], { animations: true });
   if (!yan) {
     throw new Error('no pages');
   }
@@ -1468,7 +1469,7 @@ test('stolen cents fly as a coin from the victim to the thief (15.75)', async ({
 });
 
 test('a changed roll turns from its old value, hit by the card that changed it (15.76)', async ({ browser }) => {
-  const [abe] = await startGame(browser, ['Abe', 'Bea']);
+  const [abe] = await startGame(browser, ['Abe', 'Bea'], { animations: true });
   if (!abe) {
     throw new Error('no pages');
   }
@@ -1523,7 +1524,7 @@ test('a changed roll turns from its old value, hit by the card that changed it (
 });
 
 test('damage from a card no longer on screen flies from the player who dealt it (15.77)', async ({ browser }) => {
-  const [cy] = await startGame(browser, ['Cy', 'Di']);
+  const [cy] = await startGame(browser, ['Cy', 'Di'], { animations: true });
   if (!cy) {
     throw new Error('no pages');
   }
@@ -1584,7 +1585,7 @@ test('damage from a card no longer on screen flies from the player who dealt it 
 });
 
 test('each looted card makes its sound, from the deck or the discard (18.7)', async ({ browser }) => {
-  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  const [ola] = await startGame(browser, ['Ola', 'Pim'], { animations: true });
   if (!ola) {
     throw new Error('no pages');
   }
@@ -1705,7 +1706,7 @@ async function loot(page: Page, other: boolean, cards: string[], discard = false
 }
 
 test('an own 3-card draw shows each card at the show spot, one at a time (20.7)', async ({ browser }) => {
-  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  const [ola] = await startGame(browser, ['Ola', 'Pim'], { animations: true });
   if (!ola) {
     throw new Error('no pages');
   }
@@ -1733,7 +1734,7 @@ test('an own 3-card draw shows each card at the show spot, one at a time (20.7)'
 });
 
 test('another player\'s draw flies back up to their hand, with no show spot (20.7)', async ({ browser }) => {
-  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  const [ola] = await startGame(browser, ['Ola', 'Pim'], { animations: true });
   if (!ola) {
     throw new Error('no pages');
   }
@@ -1755,7 +1756,7 @@ test('another player\'s draw flies back up to their hand, with no show spot (20.
 });
 
 test('another player\'s draw from the loot discard shows its face (20.16)', async ({ browser }) => {
-  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  const [ola] = await startGame(browser, ['Ola', 'Pim'], { animations: true });
   if (!ola) {
     throw new Error('no pages');
   }
@@ -1776,7 +1777,7 @@ test('another player\'s draw from the loot discard shows its face (20.16)', asyn
 });
 
 test('a player death makes its sound once, a monster death none (18.8)', async ({ browser }) => {
-  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  const [ola] = await startGame(browser, ['Ola', 'Pim'], { animations: true });
   if (!ola) {
     throw new Error('no pages');
   }
@@ -1812,7 +1813,7 @@ test('a player death makes its sound once, a monster death none (18.8)', async (
 });
 
 test('players who die in one update make one death sound (20.14)', async ({ browser }) => {
-  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  const [ola] = await startGame(browser, ['Ola', 'Pim'], { animations: true });
   if (!ola) {
     throw new Error('no pages');
   }
@@ -1843,7 +1844,7 @@ test('players who die in one update make one death sound (20.14)', async ({ brow
 });
 
 test('a lagging client skips small effects, never a player death (20.12)', async ({ browser }) => {
-  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  const [ola] = await startGame(browser, ['Ola', 'Pim'], { animations: true });
   if (!ola) {
     throw new Error('no pages');
   }
@@ -1890,7 +1891,7 @@ test('a lagging client skips small effects, never a player death (20.12)', async
 });
 
 test('every gained soul sounds: a dead one, a bonus soul from the board, the Lost Soul (18.13, 18.14)', async ({ browser }) => {
-  const [ari] = await startGame(browser, ['Ari', 'Bex']);
+  const [ari] = await startGame(browser, ['Ari', 'Bex'], { animations: true });
   if (!ari) {
     throw new Error('no pages');
   }
@@ -1932,7 +1933,7 @@ test('every gained soul sounds: a dead one, a bonus soul from the board, the Los
 });
 
 test('each gained treasure flies in with its sound; a trinket and a starting item do not (18.9)', async ({ browser }) => {
-  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  const [ola] = await startGame(browser, ['Ola', 'Pim'], { animations: true });
   if (!ola) {
     throw new Error('no pages');
   }
@@ -1969,7 +1970,7 @@ test('each gained treasure flies in with its sound; a trinket and a starting ite
 });
 
 test('a turn starts with its banner; a pass during it is accepted (20.8)', async ({ browser }) => {
-  const pages = await startGame(browser, ['Ola', 'Pim']);
+  const pages = await startGame(browser, ['Ola', 'Pim'], { animations: true });
   const active = await activePage(pages, click);
   const next = pages.find((p) => p !== active);
   if (!next) {
@@ -2091,7 +2092,7 @@ async function feedTurn(page: Page, done: boolean, later = 0): Promise<number> {
 }
 
 test('End turn turns green once nothing is left, and cues once per turn (20.10)', async ({ browser }) => {
-  const pages = await startGame(browser, ['Ari', 'Bo']);
+  const pages = await startGame(browser, ['Ari', 'Bo'], { animations: true });
   const active = await activePage(pages, click);
   const button = endTurnButton(active);
   await expect(button).toBeEnabled();
@@ -2129,7 +2130,7 @@ test('End turn turns green once nothing is left, and cues once per turn (20.10)'
 });
 
 test('End turn skips its cue if a play became possible meanwhile (20.10)', async ({ browser }) => {
-  const pages = await startGame(browser, ['Cy', 'Di']);
+  const pages = await startGame(browser, ['Cy', 'Di'], { animations: true });
   const active = await activePage(pages, click);
   await expect(endTurnButton(active)).toBeEnabled();
   await cueTimes(active);
@@ -2187,7 +2188,7 @@ function counts(page: Page): Promise<{ n: number; at: number }[]> {
 }
 
 test('a +3¢ counts 1, 2, 3, a step at a time (20.11)', async ({ browser }) => {
-  const pages = await startGame(browser, ['Ari', 'Bo']);
+  const pages = await startGame(browser, ['Ari', 'Bo'], { animations: true });
   const active = await activePage(pages, click);
   await expect(endTurnButton(active)).toBeEnabled();
   const coins = active.locator('.own-coins .count');
@@ -2218,7 +2219,7 @@ test('a +3¢ counts 1, 2, 3, a step at a time (20.11)', async ({ browser }) => {
 });
 
 test('a buy previews its cost on the cents counter while hovered (20.11)', async ({ browser }) => {
-  const pages = await startGame(browser, ['Cy', 'Di']);
+  const pages = await startGame(browser, ['Cy', 'Di'], { animations: true });
   const active = await activePage(pages, click);
   await expect(turnAction(active, 'Buy')).toBeEnabled();
   await active.keyboard.press('b');

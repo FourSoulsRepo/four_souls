@@ -74,7 +74,7 @@ test('in Godmode each Undo undoes one move, by the author or another player (17.
   // Pride: its trigger's discard resolves before the first throw
   // (R-ATK-25), so the latest move is the discard, not the target pick
   // this test undoes.
-  const pages = await startGame(browser, names, { options: god, bans: ['pride'] });
+  const pages = await startGame(browser, names, { options: god, bans: ['pride'], animations: true });
   const active = await activePage(pages, click);
   const other = pages.find((p) => p !== active);
   if (!other) {

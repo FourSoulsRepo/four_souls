@@ -559,7 +559,10 @@ test.describe('whole random games', () => {
       const problems: string[] = [];
       let opened = 0;
       test.info().annotations.push({ type: 'seed', description: String(seed) });
+      // animations: true keeps the start at its saved speed, as
+      // before 22.6; GAME_SPEED takes over once the game runs.
       const pages = await startGame(browser, names, {
+        animations: true,
         setup: game.setup,
         bans,
         open: (page) => {

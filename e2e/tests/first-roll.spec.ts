@@ -62,7 +62,7 @@ test("every player's first-player roll shows before the first turn", async ({ br
   // Cain makes his player go first without a roll; this test needs the
   // roll. Eden's starting-item dialog comes before the roll and covers
   // the History button this test opens.
-  const pages = await startGame(browser, names, { roll: false, bans: ['cain', 'eden'] });
+  const pages = await startGame(browser, names, { roll: false, bans: ['cain', 'eden'], animations: true });
   const seats = new Map<number, Page>();
   for (const page of pages) {
     await recordBanners(page);

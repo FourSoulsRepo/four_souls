@@ -94,4 +94,4 @@ A rollback (ADR 020, item 8.5) has no animation: its update plays no effects, an
 2. Add its row to the table above, with its Why and Direction.
 3. If it brings a card to its place or shows it large, claim the card (`claimEffect` or `claim`).
 4. If it replaces an older animation for the same event, remove the old one with its tag and row.
-5. Add an e2e test that plays it; the clash fixture then checks it with every other test.
+5. Add an e2e test that plays it, with `startGame(…, { animations: true })`: games start with animations off (22.6, [Frontend tests](Frontend-tests)). The clash fixture then checks it with every other animated test.

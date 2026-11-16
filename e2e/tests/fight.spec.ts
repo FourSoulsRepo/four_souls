@@ -49,7 +49,7 @@ test("another player's loot card shows large, then by the stack (15.31)", async 
   const r = test.info().repeatEachIndex;
   const names = ['Xan', 'Yol'].map((n) => (r > 0 ? `${n}${String(r)}` : n));
   // Animations on: the big card is an effect.
-  const pages = await startGame(browser, names);
+  const pages = await startGame(browser, names, { animations: true });
   await activePage(pages, click);
   await saveAndContinue(pages, names.join(', '), 'a_penny');
   const active = await activePage(pages, click);

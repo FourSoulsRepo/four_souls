@@ -78,7 +78,7 @@ for (const anim of [true, false]) {
     // Own names per variant: the saved games list finds a save by them,
     // and both variants may run at once on one server (19.80).
     const names = anim ? ['Eli', 'Fox'] : ['Kip', 'Lux'];
-    const pages = await startGame(browser, names, { url: anim ? appURL() : fast() });
+    const pages = await startGame(browser, names, { url: anim ? appURL() : fast(), animations: anim });
     await activePage(pages, click);
     await saveAndContinue(pages, names.join(', '), 'xi_strength');
     const active = await activePage(pages, click);

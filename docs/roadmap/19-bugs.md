@@ -42,7 +42,7 @@ This step never closes; new reports are appended.
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166                                  | 3     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169 | 42 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179 | 30 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179, 19.189 | 31 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63, 19.129                                          | 2     |
@@ -57,7 +57,7 @@ This step never closes; new reports are appended.
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 
-Totals by system (179 items):
+Totals by system (180 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -65,7 +65,7 @@ Totals by system (179 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 51 |
 | Server    | H, N    | 4     |
-| e2e       | I, J    | 72    |
+| e2e       | I, J    | 73    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
@@ -2622,6 +2622,8 @@ Totals by system (179 items):
    5. `make e2e` passed just before, both browsers.
    6. 16.5 changes card names only; nothing in playback.
    7. Evidence: `.cache/e2e-evidence/16.5-run2/` (not in git).
+   8. Again in the 22.6 baseline `make screenshots`, old code, line 1129.
+   9. Evidence: `.cache/e2e-evidence/22.6/shots-before/` (not in git).
 3. Cause
    1. Not found yet.
    2. Guess: as 19.43, the short fly ends while the screenshot is taken.
@@ -5741,3 +5743,23 @@ Totals by system (179 items):
    7. e2e: `duties.spec.ts`; UC-14 2s.
 6. Owner notes (2026-11-17)
    1. Owner marks 19.188 solved.
+
+### [ ] 19.189 e2e: three WebKit table tests stall at game start
+
+1. Goal: `table.spec.ts` starts its games in time under a full run.
+2. Report (22.6 baseline `make e2e`, 2026-11-17)
+   1. Old code, before any 22.6 change; WebKit only.
+   2. Lines 193, 220, 266 timed out at 30 s inside `startGame`.
+   3. 193: in `setSpeed` after the first roll; 220, 266: on the main menu.
+   4. The three ran at once; each page stopped answering Playwright.
+   5. The 4-player test next to them took 36.8 s; others 3 to 7 s.
+   6. Load average about 10; the run took 9.8 min (about 3.7 is usual).
+   7. 607 passed, 3 failed, 18 skipped.
+   8. Evidence: `.cache/e2e-evidence/22.6/baseline/` (not in git).
+3. Cause: not found yet.
+   1. A main menu with no game should answer at once.
+   2. Likely the machine under load; not shown.
+   3. No trace: a run keeps none on a first failure.
+4. Tasks:
+   1. Find what blocked the WebKit pages for about 25 s.
+   2. Check: `table.spec.ts`, webkit, 5 workers, 10 repeats.

@@ -99,6 +99,10 @@ export async function startGame(
     listed = (_: Locator) => Promise.resolve(),
     // seated runs on each guest page at the table, before Ready.
     seated = (_: Page) => Promise.resolve(),
+    // animations keeps each page's own speed: its saved setting, or the
+    // url's anim flag. By default every page plays at "off" from Ready
+    // on (TS-10, 22.6): a test that checks a motion or sound sets it.
+    animations = false,
   } = {},
 ): Promise<Page[]> {
   const pages: Page[] = [];
@@ -146,6 +150,9 @@ export async function startGame(
     await expect(page.getByRole('list', { name: tr('lobby.seats.seats') })).toBeVisible();
     await seated(page);
   }
+  if (!animations) {
+    await Promise.all(pages.map((page) => setSpeed(page, 'off')));
+  }
   for (const page of pages) {
     await page.getByRole('button', { name: tr('lobby.seats.ready'), exact: true }).click();
   }
@@ -160,7 +167,8 @@ export async function startGame(
     // with roll: false. Animated, each throw waits for the dice before
     // it, and a tie throws again: 6 s, 12 s after a tie, 17 to 25 s with
     // ties under a full run, which used up a 30 s test (19.120). So it
-    // plays with animations off; each page's speed comes back after.
+    // plays with animations off; each page's speed comes back after:
+    // "off" too, unless the test asked for animations.
     const speeds = await Promise.all(pages.map((page) => setSpeed(page, 'off')));
     await throwFirstRoll(pages);
     await Promise.all(pages.map((page, i) => setSpeed(page, speeds[i] ?? 'normal')));

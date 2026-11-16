@@ -257,7 +257,7 @@ test("an attack's popout: the attacker large, swords, the monster with its marks
 });
 
 test('a new tile slides in from the left while the rest move down; speed scales it (20.21)', async ({ browser }) => {
-  const pages = await startGame(browser, names(['Eli', 'Fay']), { url: appURL() });
+  const pages = await startGame(browser, names(['Eli', 'Fay']), { animations: true });
   const page = pages[0];
   if (!page) {
     throw new Error('no page');
@@ -288,7 +288,7 @@ test('a new tile slides in from the left while the rest move down; speed scales 
 });
 
 test('speed "fast" halves the slide and "off" places a tile at once (20.21)', async ({ browser }) => {
-  const fast = await startGame(browser, names(['Gus', 'Hal']), { url: `${appURL()}&anim=fast` });
+  const fast = await startGame(browser, names(['Gus', 'Hal']), { url: `${appURL()}&anim=fast`, animations: true });
   const page = fast[0];
   if (!page) {
     throw new Error('no page');
@@ -337,7 +337,7 @@ test('nothing moves while the pointer is on the strip; new tiles come in when it
 });
 
 test('the strip is one hit area: the nearest tile shows, sounds once, and the board dims (20.21)', async ({ browser }) => {
-  const pages = await startGame(browser, names(['Mia', 'Ned']), { url: appURL() });
+  const pages = await startGame(browser, names(['Mia', 'Ned']), { animations: true });
   const page = pages[0];
   if (!page) {
     throw new Error('no page');

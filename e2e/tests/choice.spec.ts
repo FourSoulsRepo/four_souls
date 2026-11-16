@@ -148,7 +148,7 @@ test('after The Moon\'s pick no look window repeats the cards; the history keeps
 test('The Moon deals its cards from the loot deck; a pick sends them back; others see backs (20.18)', async ({ browser }) => {
   const who = names(['Cye', 'Dov']);
   // Animations on: the deal and the flight back are the test.
-  const pages = await startGame(browser, who, { url: appURL() });
+  const pages = await startGame(browser, who, { animations: true });
   const { active, other } = await playMoon(pages, who, async (a, o) => {
     await listenSounds(a);
     await listenSounds(o);
@@ -276,7 +276,7 @@ test('an order of more cards than one row holds keeps table size (20.18)', async
 
 test('Sleight of Hand deals the monster deck into the order and puts it back (20.18)', async ({ browser }) => {
   const who = names(['Tam', 'Uri']);
-  const pages = await startGame(browser, who, { url: appURL() });
+  const pages = await startGame(browser, who, { animations: true });
   await activePage(pages, click);
   await saveAndContinue(pages, who.join(', '), 'bomb', 'sleight_of_hand');
   const active = await activePage(pages, click);
@@ -353,7 +353,7 @@ async function feedCards(page: Page, refs: string[]): Promise<void> {
 
 for (const anim of ['on', 'off'] as const) {
   test(`a card choice with no deck grows in; speed ${anim} (20.18)`, async ({ browser }) => {
-    const [vic] = await startGame(browser, names(['Vic', 'Wes']), { url: anim === 'on' ? appURL() : fast() });
+    const [vic] = await startGame(browser, names(['Vic', 'Wes']), { url: anim === 'on' ? appURL() : fast(), animations: anim === 'on' });
     if (!vic) {
       throw new Error('no pages');
     }
@@ -408,7 +408,7 @@ function tucks(page: Page): Promise<Tuck[]> {
 test('XII. The Hanged Man: others see each look; the board shows each card go on top or under (19.147)', async ({ browser }) => {
   const who = names(['Gil', 'Hal']);
   // Animations on: the tuck is the test.
-  const pages = await startGame(browser, who, { url: appURL() });
+  const pages = await startGame(browser, who, { animations: true });
   await activePage(pages, click);
   await saveAndContinue(pages, who.join(', '), 'xii_the_hanged_man');
   const active = await activePage(pages, click);
@@ -463,7 +463,7 @@ test('XII. The Hanged Man: others see each look; the board shows each card go on
 
 test("The Moon: others see the rest go under the deck; the chooser's flight tucks them (19.147)", async ({ browser }) => {
   const who = names(['Ivo', 'Jem']);
-  const pages = await startGame(browser, who, { url: appURL() });
+  const pages = await startGame(browser, who, { animations: true });
   const { active, other } = await playMoon(pages, who, async (a, o) => {
     await watchTucks(a);
     await watchTucks(o);
