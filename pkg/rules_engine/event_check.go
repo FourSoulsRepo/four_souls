@@ -346,18 +346,6 @@ var silentChanges = []SilentChange{
 		},
 	},
 	{
-		Name:   "character recharged before a recharge choice",
-		Reason: "with a recharge limit, recharge charges the character, then asks which item, with no event",
-		Bug:    "19.175",
-		Match: func(g *Game, c Change, _ []Event) bool {
-			if c.What != "charge" || c.After != 1 {
-				return false
-			}
-			o := g.Objects[c.Object]
-			return o.Role == RoleCharacter && g.Waiting.Purpose == ChooseRecharge && g.Waiting.Player == o.Controller
-		},
-	},
-	{
 		Name:   "deactivated by a card",
 		Reason: "Spider Webs, Curse of Impulse and Hourglass deactivate a card with no event",
 		Bug:    "19.176",

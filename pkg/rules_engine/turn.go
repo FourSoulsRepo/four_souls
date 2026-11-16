@@ -320,6 +320,9 @@ func (g *Game) recharge(p PlayerID) {
 			}
 		}
 		if len(items) > 1 {
+			// The character's recharge has its event now; the item's
+			// comes with the answer (19.175).
+			g.emit(Event{Kind: EvRecharged, Player: p})
 			g.ask(Choice{Purpose: ChooseRecharge, Player: p, Rule: "R-TURN-02", Objects: items}, g.Labels(items))
 			return
 		}

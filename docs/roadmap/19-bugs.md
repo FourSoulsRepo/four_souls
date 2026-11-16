@@ -5396,7 +5396,7 @@ Totals by system (169 items):
    7. Client: no line, no flight (`historyKinds`); the board shows the counts.
    8. Go test: `TestCheckEventsDeckRefill`.
 
-### [ ] 19.175 No event for the character's recharge before a recharge choice
+### [x] 19.175 No event for the character's recharge before a recharge choice
 
 1. Goal: the character's recharge has an event when a choice follows.
 2. Report (22.2 fuzz check, 2026-11-16)
@@ -5411,6 +5411,13 @@ Totals by system (169 items):
 4. Tasks:
    1. Fix it in 22.3, game-wide.
    2. Remove the entry from the 22.2 list (`event_check.go`).
+5. Fix (22.3, 2026-11-16)
+   1. `recharge` emits `recharged` (no object) before it asks.
+   2. The turn banner then shows the charged character (`turn_started`).
+   3. The answer's `recharged` stays; it names the chosen item's player.
+   4. Checked every `Charged = true`: `recharge`, `ChooseRecharge`, `Recharge`, `RechargeSelf`, setup.
+   5. Only the recharge choice returned before its event.
+   6. Go test: `TestCurseOfFatigueCharacterRechargeEvent`.
 
 ### [ ] 19.176 No event when a card deactivates a character or item
 
