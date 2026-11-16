@@ -328,6 +328,7 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       3. The texts that name a deck or a discard are the engine's: `DeckText`, `DeckOfText`, `DeckTextTop`, `DeckTextBottom`, `TextFromDiscard`; the engine writes them and the memory reads them, so the two cannot drift (lead review, 2026-11-17).
    17. API, for the arena and the room goroutine: `world.NewMemory(seat)`; `Observe(view, events)` after every step, in order, with the seat's `ViewFor` and `FilterEvents`; `Known()` for `world.For`; `Reset()`. One goroutine at a time.
    18. Test (21.15): 100 simulated games of every set and challenge, 500 steps each, every seat checked against the real game at every step: no wrong memory.
+      1. A long run of the same, 800 games of 2000 steps (`TestMemoryStress`), runs from `make sims` only.
 20. Card values (owner, 2026-11-16; sub-step 21.16)
    1. A flat value for every loot card (0.75) and item (12) misprices cards: a bomb or a cancel is worth more than 1¢.
    2. Cards are added often, so values are measured, never written by hand.

@@ -170,8 +170,9 @@ fuzz-new: ## Fuzz with only the SETS card sets, rooms mostly on (FuzzFocusedSets
 fuzz-challenge: ## Fuzz a test challenge with a final boss and minions, Krampus and Trick or Treat (FuzzChallengeSets)
 	@cd pkg/rules_engine && go test -run '^$$' -fuzz=FuzzChallengeSets -fuzztime=$(FUZZTIME) -fuzzminimizetime=$(MINIMIZE) ./cards/
 
-sims: ## Play SIMS whole random games with the real sets, then the challenges
+sims: ## Play SIMS whole random games with the real sets, then the challenges; then the bot memory's long run
 	@cd pkg/rules_engine && FOUR_SOULS_SIMS=$(SIMS) go test -count=1 -timeout 60m -run '^TestSimulations$$' -v ./cards/
+	@FOUR_SOULS_MEMORY_STRESS=1 go test -count=1 -timeout 60m -run '^TestMemoryStress$$' -v ./internal/world
 
 # The bot arena (ADR 030, Decision 18): whole games between bot levels,
 # BOT_GAMES per line-up; fails on a refused bot intent or when under 95%

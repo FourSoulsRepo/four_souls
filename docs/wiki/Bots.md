@@ -108,7 +108,7 @@ It remembers the cards of other hands and one place per card of each deck, botto
 
 When unsure, it forgets (Decision 19.15): a whole hand when a card leaves it unseen or its size does not add up with the step's events; every remembered copy of a card that leaves in sight; a whole deck on `deck_order` (a shuffle, a refill from the discard, a reorder, a card moved within it), on `deck_bottom`, on a card taken from it unseen, on a look or draw that shows another card than remembered, or when its size does not add up. Draws it does not follow (slots, gains, attacks on the deck) leave the size off, so the deck is forgotten.
 
-A new engine move of a deck card out of sight that keeps the deck's size needs a `deck_order` event (`emitDeckOrder`), or the memory goes wrong. `TestMemoryIsTrue` (`internal/world`) catches it: 100 simulated games of every set and challenge, every seat's memory checked against the real game at every step. `TestMemoryNamesOnlyShownCards` checks that a memory names only cards its seat's views and events showed.
+A new engine move of a deck card out of sight that keeps the deck's size needs a `deck_order` event (`emitDeckOrder`), or the memory goes wrong. `TestMemoryIsTrue` (`internal/world`) catches it: 100 simulated games of every set and challenge, every seat's memory checked against the real game at every step; `make sims` runs it long, on 800 games of 2000 steps (`TestMemoryStress`, see [Fuzzing](Fuzzing)). `TestMemoryNamesOnlyShownCards` checks that a memory names only cards its seat's views and events showed.
 
 ## Arena
 

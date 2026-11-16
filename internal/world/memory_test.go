@@ -3,6 +3,7 @@ package world
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"slices"
 	"sync/atomic"
 	"testing"
@@ -135,10 +136,37 @@ func wrongMemorySeen(g *engine.Game, k engine.Known, seen []bool) (int, error) {
 // every card each seat's memory holds is truly where it says, at every
 // step (Decision 19.9).
 func TestMemoryIsTrue(t *testing.T) {
+	memoryIsTrue(t, memoryGames, memorySteps)
+}
+
+// stressGames and stressSteps size the long memory run (21.15): eight
+// times the games of TestMemoryIsTrue, four times as long, so late-game
+// moves and rare cards come up.
+const (
+	stressGames = 800
+	stressSteps = 2000
+)
+
+// TestMemoryStress is TestMemoryIsTrue at 800 games of 2000 steps, a
+// few minutes on all cores. It runs only with FOUR_SOULS_MEMORY_STRESS
+// set and never with -short: make sims runs it after the simulations
+// (docs/wiki/Fuzzing.md). Plain go test checks the same with
+// TestMemoryIsTrue.
+func TestMemoryStress(t *testing.T) {
+	if testing.Short() || os.Getenv("FOUR_SOULS_MEMORY_STRESS") == "" {
+		t.Skip("long run: FOUR_SOULS_MEMORY_STRESS=1, or make sims")
+	}
+	memoryIsTrue(t, stressGames, stressSteps)
+}
+
+// memoryIsTrue plays games simulated games of at most maxSteps steps
+// each and checks every seat's memory against the real game at every
+// step.
+func memoryIsTrue(t *testing.T, games uint64, maxSteps int) {
 	setups := memorySetups()
 	var steps, checked, remembering atomic.Int64
 	t.Run("games", func(t *testing.T) {
-		for k := range uint64(memoryGames) {
+		for k := range games {
 			s := setups[k%uint64(len(setups))]
 			s.Seed = 100 + k
 			t.Run(fmt.Sprint(k), func(t *testing.T) {
@@ -153,7 +181,7 @@ func TestMemoryIsTrue(t *testing.T) {
 					feed(mems[p], g, setup)
 				}
 				rng := engine.NewRNG(s.Seed)
-				for step := 0; step < memorySteps && !g.Over; step++ {
+				for step := 0; step < maxSteps && !g.Over; step++ {
 					in, ok := pickIntent(g, &rng)
 					if !ok {
 						t.Fatalf("seed %d step %d: nothing allowed", s.Seed, step)
@@ -185,7 +213,7 @@ func TestMemoryIsTrue(t *testing.T) {
 		}
 	})
 	t.Logf("%d games, %d steps, %d seat-steps remembering a card out of sight, %d such cards checked, 0 wrong",
-		memoryGames, steps.Load(), remembering.Load(), checked.Load())
+		games, steps.Load(), remembering.Load(), checked.Load())
 	if checked.Load() == 0 {
 		t.Error("no seat ever remembered a card: the test checks nothing")
 	}
