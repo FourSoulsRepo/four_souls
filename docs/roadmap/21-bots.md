@@ -34,6 +34,15 @@ Rules for this step (owner, 2026-11-16):
    7. Arena while working: `BOT_GAMES=20` on the needed line-up.
 8. UI sub-steps leave screenshots in `.cache/screenshots/21.N/`; never committed.
 9. Order: 21.15 runs right after 21.6, in line 1 (rule 2).
+10. Code first, check later (owner, 2026-11-16); for 21.6, 21.15 and 21.16, wins over rule 7.7.
+   1. A sub-step is code, unit tests and docs; before its commit only the checks of rule 7.1.
+   2. Arena in a sub-step: at most one short run, 20 games, one table size; only to see the bot does not fail or hang.
+   3. No tuning of weights or thresholds in loops; a missed arena gate does not stop the sub-step.
+   4. A miss goes into its "Done when" as "not reached: <number>"; the sub-step is committed.
+   5. Stop only on: no build, a failing unit test, a refused allowed intent, or an architecture choice.
+   6. Tuning once, after 21.16: full arena run; every miss in one list to the lead.
+   7. The "Done when" gates still hold: line 1 is not merged until they pass at its end.
+11. Order: 21.16 runs after 21.15, in line 1, before the merge.
 
 ---
 
@@ -249,6 +258,7 @@ Rules for this step (owner, 2026-11-16):
    4. ADR 030 matches the code: every number that moved.
    5. `cardgen -report` unchanged; `make build vet test lint wasm frontend e2e bots`.
    6. `wails build -m -tags embed` without the private images.
+   7. Rule for new card sets in `Bots.md` and the developer wiki: after cards are added, `make bot-values`, then `make bots` (ADR 030, Decision 20).
 3. Done when:
    1. **Owner** plays a game against three hard bots and approves the merge.
 
@@ -268,3 +278,27 @@ Rules for this step (owner, 2026-11-16):
 3. Done when:
    1. Test 6 finds no wrong memory in 100 games.
    2. `make bots`: hard with memory is not weaker than hard without; both numbers in the commit message.
+
+### [ ] 21.16 Card values
+
+1. Goal: each loot card and item has a measured value in the score (ADR 030, Decision 20).
+2. Tasks:
+   1. First look for a way tests already put a card into a hand or into play (`enginetest`, card tests); use it if there is one.
+   2. Else one helper in `enginetest`, not in the `Game` API: it moves a card from its deck to a seat's hand or play; `CheckInvariants` after it.
+      1. Depguard: `internal/server` and `internal/bot` never import it.
+   3. `make bot-values` (`cmd/bot_values`): sampled positions from saved arena games; each card is put into a clone.
+   4. Loot: in positions where the card can be played, stack positions included: mean of max(0, play − nothing), common seeds, `settledScore` units.
+   5. Item: a clone with the item and one without, policy playout to the end of the seat's next turn, common seeds; the `settledScore` difference.
+   6. Output: a generated data file, card id → value, n, standard error; never written by hand.
+   7. One pass, with the table off (flat loot and item values); no iterations.
+   8. Fixed seed: the same cards give the same file; a mode for cards missing from the table only.
+   9. `cardValue` (score.go) reads the table, shrunk to the mean of the card's kind by n (one constant); an unknown card gets its kind's mean (loot, active item, passive item).
+   10. Same honesty: own hand by card; other hands by the mean.
+   11. The answer-holding bonus of 21.6 stays a multiplier on this base (Decision 7.6).
+   12. `TestBotRules` stays: no card names in bot code; the table is generated data only.
+   13. Test: every card of every set is in the table, or its fallback works.
+   14. Test: on a forced discard the bot drops a cheap card, not an expensive one.
+3. Done when:
+   1. A full run takes at most 30 minutes on all cores of the work machine; else fewer samples a card, and the error says so.
+   2. 200 games of 2 players: standard with the table wins at least 55% against standard without it.
+   3. Time per move does not grow.

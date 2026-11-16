@@ -303,6 +303,29 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    11. An event that lacks what a rule needs gets the field in the engine, filtered like any other.
    12. Not saved: after a save or a restart the memory starts empty.
    13. The arena keeps a memory per hard seat the same way.
+20. Card values (owner, 2026-11-16; sub-step 21.16)
+   1. A flat value for every loot card (0.75) and item (12) misprices cards: a bomb or a cancel is worth more than 1¢.
+   2. Cards are added often, so values are measured, never written by hand.
+   3. `make bot-values` (`cmd/bot_values`) measures each card on sampled positions from saved arena games, not on whole games.
+      1. Whole games are too slow and too biased: a card is played when it helps, and a strong item sits with a seat that is ahead anyway.
+   4. Paired measurement on common seeds, in `settledScore` units, as in Decision 8.6.
+      1. Loot: in positions where the card can be played, stack positions included, so answers are not zero: mean of max(0, play − nothing).
+      2. The positive part assumes a card is played only when it helps.
+      3. Item: a clone with the item and one without it; a policy playout to the end of the seat's next turn; the difference.
+      4. The item is added, never removed: no destroy is needed.
+   5. A card is put into a clone by an existing test path, or by one `enginetest` helper; `CheckInvariants` after it.
+      1. Not in the `Game` API; `internal/server` and `internal/bot` never import it (depguard).
+   6. One pass, with the table off (the flat values); no iterations, so the measure does not feed on itself.
+   7. Output: a generated data file, card id → value, n, standard error. A fixed seed gives the same file for the same cards.
+      1. A mode measures only cards missing from the table, for a new set.
+      2. A full run takes at most 30 minutes on all cores of a work machine; else fewer samples a card, with the error printed.
+   8. `cardValue` (Decision 7.6) reads the table, shrunk to the mean of the card's kind by n with one constant.
+      1. Kinds: loot, active item, passive item; an unknown card gets its kind's mean.
+      2. Own hand by card; other hands by the mean, as before.
+      3. The answer-holding bonus stays a multiplier on top (Decision 7.6); it is not added twice.
+   9. The bot code still names no card: the table is generated data; a test checks every card of every set is in it or falls back.
+   10. After cards are added: `make bot-values`, then `make bots`.
+   11. Gate: 200 games of 2 players, standard with the table wins at least 55% against standard without it; time per move does not grow.
 
 ## Consequences
 
