@@ -81,6 +81,19 @@ Ideas: TS-07, TS-08, TS-09, TS-10, TS-11, TS-12.
 2. Tasks:
    1. One 19.N item per field; fix each under the step 19 rules.
    2. A screen change gets before and after screenshots (19 rule 4).
+   3. Owner (2026-11-16): draw all eight, 19.180 – 19.187.
+   4. Forced attacks (19.180 – 19.182): a mark and the turn banner.
+      1. The monster that must be attacked gets a mark on the table.
+      2. The banner names it and the attacks left: "You must attack: X (2 left)".
+      3. A forced attack on the deck marks the monster deck the same way.
+      4. Reuse the existing banner and mark styles.
+   5. Deck-only extra attack (19.183): the attack count says it is deck only.
+   6. Next attack helpers and sharers (19.184, 19.185): shown for everyone.
+      1. Also check that a running attack shows its helpers (`AttackView`).
+   7. Roll result (19.186): the stack row shows the number.
+   8. Kicked seat (19.187): the player shows as gone for good.
+   9. A new window or mark follows ADR 015 (layers) and ADR 012 (animations).
+   10. Text goes through i18n keys; `make i18n` passes.
 3. Done when:
    1. The 22.4 list holds only fields unread on purpose.
    2. `make frontend e2e` passes.
