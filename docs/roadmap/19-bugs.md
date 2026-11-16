@@ -42,7 +42,7 @@ This step never closes; new reports are appended.
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166                                  | 3     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165 | 40 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.158, 19.159, 19.161, 19.162, 19.168, 19.169, 19.170, 19.171 | 30 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.158, 19.159, 19.161, 19.162, 19.168, 19.169, 19.170, 19.171, 19.172 | 31 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63, 19.129                                          | 2     |
@@ -56,7 +56,7 @@ This step never closes; new reports are appended.
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 
-Totals by system (162 items):
+Totals by system (163 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -64,7 +64,7 @@ Totals by system (162 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 43 |
 | Server    | H, N    | 4     |
-| e2e       | I, J    | 70    |
+| e2e       | I, J    | 71    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
@@ -5261,3 +5261,19 @@ Totals by system (162 items):
 4. Tasks:
    1. Find the cause in the evidence; fix the test or the app.
    2. Check: the spec, both browsers, 5 workers, 10 repeats.
+
+### [ ] 19.172 e2e: The Siren's player target is not offered once
+
+1. Goal: `attack-targets.spec.ts:82` passes on every deal.
+2. Report (10.8 `make e2e`, 2026-11-16)
+   1. Chromium; 595 passed, this one failed.
+   2. The other player's character card never got `hl-pick`.
+   3. Its classes: "card size-table kind-character spent".
+   4. Rerun alone, 3 repeats: 3 of 3 passed.
+   5. Evidence: `.cache/e2e-evidence/10.8/run1/` (not in git).
+3. Cause: not found yet; maybe the deal.
+   1. The change under test (10.8) changes replay mode only.
+4. Tasks:
+   1. Read the match record; find why the player was no target.
+   2. Fix the test (14.10) or the bug it shows.
+   3. Check: the spec, both browsers, 5 workers, 10 repeats.
