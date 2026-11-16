@@ -2817,7 +2817,7 @@ Totals by system (163 items):
 7. Owner notes (2026-10-27)
    1. Owner marks 19.84 solved.
 
-### [ ] 19.85 e2e: the activity test fails when the attacker has Bob's Brain
+### [x] 19.85 e2e: the activity test fails when the attacker has Bob's Brain
 
 1. Goal: `prompt.spec.ts` "the others see what the active player does" passes on every deal.
 2. Report (agent, 2026-10-27)
@@ -2861,6 +2861,8 @@ Totals by system (163 items):
    9. Cause not found yet; the 14.15 change does not touch it.
    10. Evidence: `.cache/e2e-evidence/19.85-reopen-webkit/` (not in git).
    11. It holds the error context, the match records and the run log.
+9. Owner notes (2026-11-16)
+   1. Owner marks 19.85 solved.
 
 ### [x] 19.86 e2e: a Throw click in the Meat! odds test did not land, webkit
 
@@ -4126,7 +4128,7 @@ Totals by system (163 items):
    3. 0 of 30 runs fail, with the engine tests running beside it.
    4. No new test: the race needs a write at the moment of the stop.
 
-### [ ] 19.132 e2e: the strike test reads the target 1 px off home at contact, webkit
+### [x] 19.132 e2e: the strike test reads the target 1 px off home at contact, webkit
 
 1. Goal: the 20.19 strike test passes every run.
 2. Report (agent, 2026-11-08)
@@ -4154,6 +4156,8 @@ Totals by system (163 items):
    4. Seen again in the 20.23 gate, chromium, 5 workers, mid-strike.
    5. Off by under 0.003 px on all four values; the rerun passed.
    6. Evidence: `.cache/e2e-evidence/20.23-gate1/` (not in git).
+6. Owner notes (2026-11-16)
+   1. Owner marks 19.132 solved.
 
 
 ### [x] 19.133 e2e: the curses test takes Curse of the Tower for a curse
@@ -4312,7 +4316,7 @@ Totals by system (163 items):
    3. 4 players: 82 turns, 1411 s; 0.19 s a step, was 0.32.
    4. A 300-turn game would still pass 1 h; none came near that cap.
 
-### [ ] 19.138 A long game gets slower: the history strip draws every tile
+### [x] 19.138 A long game gets slower: the history strip draws every tile
 
 1. Goal: a step costs the same late in a game as early.
 2. Report (main session, 2026-11-08)
@@ -4353,6 +4357,8 @@ Totals by system (163 items):
    6. Before the fix: 0.12 and 0.31.
    7. Steps per turn stayed about 100 in both 4-player runs.
    8. Log: `.cache/e2e-games-19.138.log` (not in git).
+7. Owner notes (2026-11-16)
+   1. Owner marks 19.138 solved.
 
 ### [x] 19.139 Animation clash: cards ordered by a look, then revealed
 
@@ -4423,7 +4429,7 @@ Totals by system (163 items):
    3. A deal without an object: as before.
    4. ADR 012 2.10 added; Animations.md `show` row.
 
-### [ ] 19.142 The first-player roll shows while Eden picks her item
+### [x] 19.142 The first-player roll shows while Eden picks her item
 
 1. Goal: the roll list shows only after every start-of-game choice (UC-26 6a.2).
 2. Report (20.22 research subagent, 2026-11-09)
@@ -4450,6 +4456,8 @@ Totals by system (163 items):
    6. Client: `beforeStart` in `stack.ts`: turn 0 or a roll.
    7. The badge reads "Before turn 1 · Start of game" during the choices.
    8. Tests: `TestEden`, `TestEdenBeforeCain`; Vitest `beforeStart`.
+6. Owner notes (2026-11-16)
+   1. Owner marks 19.142 solved.
 
 ### [ ] 19.143 Fuzz: a nested question asks again after a load
 
@@ -4736,7 +4744,7 @@ Totals by system (163 items):
 7. Owner notes (2026-11-10)
    1. Owner marks 19.150 solved.
 
-### [ ] 19.151 Pride: the attack die is thrown before Pride's ability resolves
+### [x] 19.151 Pride: the attack die is thrown before Pride's ability resolves
 
 1. Goal: "when an attack is declared on this" resolves before the first attack roll.
 2. Report (owner, 2026-11-10)
@@ -4786,6 +4794,8 @@ Totals by system (163 items):
    16. Engine stays 0.5.3: not released yet (as 19.150).
    17. No replay cutoff: only games with such an attack differ (as 19.150).
    18. No screen change beyond the order: no screenshots.
+8. Owner notes (2026-11-16)
+   1. Owner marks 19.151 solved.
 
 ### [x] 19.152 e2e: Requiem attack and room tests stall on webkit
 
