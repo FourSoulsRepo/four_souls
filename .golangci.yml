@@ -96,6 +96,19 @@ linters:
               desc: use the engine's seeded RNG (A-08)
             - pkg: time
               desc: the engine must not depend on wall-clock time (A-08)
+        # A bot never sees the real game, nor a card's name (ADR 030,
+        # Decision 4; TestBotRules checks the rest).
+        bot-honest:
+          files:
+            - "**/internal/bot/**"
+            - "!$test"
+          deny:
+            - pkg: github.com/FourSoulsRepo/four_souls/internal/server
+              desc: the bot gets games only from Input.World, never the server's
+            - pkg: github.com/FourSoulsRepo/four_souls/internal/world
+              desc: internal/world turns the real game into worlds; the bot gets only the World it returns
+            - pkg: github.com/FourSoulsRepo/rules_engine/cards
+              desc: no card sets and no card names in bot code (rule 5.24)
   exclusions:
     generated: strict
     paths:

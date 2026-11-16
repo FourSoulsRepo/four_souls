@@ -113,13 +113,16 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    4. Goal: under 0.3 ms on the game of Context 4.
 4. Package `internal/bot`
    1. Imports the engine; never `internal/server`.
-   2. `Choose(ctx, Input) engine.Intent`.
-   3. `Input`: the seat, the level, a random source, a budget, `World(i)`, the seat's memory.
+   2. `Choose(ctx, Input) (engine.Intent, error)`; an error is no move: the caller sends its forced answer.
+   3. `Input`: the seat, the level, a random source, a budget, `World(i)`.
+      1. No memory: the seat's memory reaches the bot only as `known` inside its worlds (Decision 19.2).
    4. `World(i)` returns a new imagined game; the bot never holds the real one.
    5. The answer is always one of `Allowed`, completed for discards and orders.
    6. With one allowed intent it answers at once.
    7. The bot's random source is its own; never the game's RNG.
    8. The match record needs no bot data: it keeps intents (ADR 007).
+   9. `internal/world` makes `World` for the arena and the server alike: one `Clone` at once, then `Imagine` per world.
+      1. The bot never imports it; a lint rule and `TestBotRules` check the bot's imports and code.
 5. Candidates
    1. Every intent of `Allowed(p)`.
    2. A discard: up to 8 sets of `Count` cards, picked at random.
@@ -181,7 +184,7 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    1. Runs after every broadcast, when the game is not over, paused or voting.
    2. First the old rule: a seat that can only pass is passed at once (N-05).
    3. For each bot seat the prompt waits for, one thinker starts.
-   4. The room makes one `Clone` and gives it to the thinker.
+   4. The room makes one `Clone` and gives it to the thinker: `world.For` (Decision 4.9).
    5. The thinker's `World(i)` is `Imagine` of that copy.
    6. The answer returns as a room request with the room's step number.
    7. The room applies it like a client's intent: record, rollback history, auto passes.
@@ -220,7 +223,13 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    1. `cmd/bot_arena`: whole games between levels, seeded, seats rotated.
    2. It prints wins by level, unfinished games, steps and time per move.
    3. `make bots` runs it; `BOT_GAMES` sets the count.
-   4. Gate: 95% of games end with a winner within the step cap.
+   4. Gate: 95% of games end with a winner within the turn cap.
+      1. The cap: 150 game turns (`Turn.Number`); a game past it is unfinished.
+      2. For line-ups of the levels players meet (standard from 21.5, hard from 21.6) with no `random` seat, each player count on its own: standard×2, ×3 and ×4 each finish 95%.
+      3. `random` and `policy` line-ups print their share for reference only.
+      4. Loop guards fail the gate in any line-up, printed with the seed: a game turn over 1000 applied intents; a game over 30000. So does a refused intent.
+      5. Per line-up the arena prints median and max game turns, intents per turn, the share of passes.
+      6. Policy against policy, 50 games each (2026-11-16): 2 players median 42 turns, max 150, 46 intents a turn, 77% passes; 3 players median 50, max 138, 65, 83%; 4 players median 58, max 150, 86, 87%. Finished within the cap: 96%, 100%, 92%.
    5. Gate: standard wins at least 70% of 2-player games against random.
    6. Gate: hard wins at least 60% of 2-player games against standard.
    7. Gate: one hard among three standard wins over 30%; chance is 25%.
@@ -229,7 +238,9 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    10. A missed gate is tuned in the score and policy, never by a peek at hidden cards.
 19. Memory (owner, 2026-11-16)
    1. The hard bot remembers cards it saw; standard does not.
-   2. `bot.Memory`: one per hard seat, empty at the game start.
+   2. `world.Memory` in `internal/world`: one per hard seat, empty at the game start.
+      1. It names cards (`CardRef`), so it is not in `internal/bot`; the bot never imports it.
+      2. In `internal/world`, next to `world.For`, which takes its `Known`: one package for the arena and the server.
    3. It is fed only what the seat's client gets: `ViewFor` and `FilterEvents` of its seat.
    4. So it cannot hold a card the seat never saw.
    5. It keeps the known cards of each other hand.

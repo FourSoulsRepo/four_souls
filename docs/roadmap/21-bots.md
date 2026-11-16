@@ -72,7 +72,7 @@ Rules for this step (owner, 2026-11-16):
 3. Done when:
    1. Every test above passes; the engine still builds for `js/wasm`.
 
-### [ ] 21.4 Bot core and arena
+### [x] 21.4 Bot core and arena
 
 1. Goal: a bot that plays whole games by a cheap policy, and a place to measure it.
 2. Tasks:
@@ -86,8 +86,9 @@ Rules for this step (owner, 2026-11-16):
    8. Test: `internal/bot` does not import `internal/server` (a lint rule or an import test).
    9. Wiki page `Bots.md` in the developers group: layout, levels, arena.
 3. Done when:
-   1. Policy against policy: 95% of games end with a winner within the step cap.
-   2. If not: the commit says which games stall and why; the policy is fixed, not the cap.
+   1. Policy against policy, 50 games each, within 150 game turns: 2 players 96%, 3 players 100%, 4 players 92%; median 42 / 50 / 58 turns.
+   2. No loop guard hit, no refused intent.
+   3. The 95% gate is checked on the standard level in 21.5 (lead, 2026-11-16); policy line-ups are a reference only.
 
 ### [ ] 21.5 Score and standard level
 
@@ -101,6 +102,7 @@ Rules for this step (owner, 2026-11-16):
 3. Done when:
    1. `make bots`: standard wins at least 70% of 2-player games against random.
    2. Under 50 ms per move on average.
+   3. `make bots`: standard×2, ×3 and ×4 each finish 95% of games with a winner within 150 turns; the finish gate is switched on for standard.
 
 ### [ ] 21.6 Hard level
 
@@ -234,7 +236,7 @@ Rules for this step (owner, 2026-11-16):
 1. Goal: the hard bot remembers cards it saw (ADR 030, Decision 19).
 2. Tasks:
    1. First list every way a seat sees a card that then hides: read `view.go`, `events.go`, `FilterEvents`.
-   2. `bot.Memory` with `Observe(view, events)`; fed with the seat's own view and events only.
+   2. `world.Memory` (ADR 030, Decision 19.2) with `Observe(view, events)`; fed with the seat's own view and events only.
    3. Learn and forget rules of Decision 19.7 – 19.9.
    4. Missing event data: add the field in the engine, filtered for other seats; test the filter.
    5. `Memory.Known()` goes into `Imagine`; the arena keeps one per hard seat.

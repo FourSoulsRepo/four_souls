@@ -1,0 +1,214 @@
+// Command bot_arena plays whole seeded games between bot levels and
+// prints how they went (ADR 030, Decision 18):
+//
+//	bot_arena -games 50
+//	bot_arena -games 20 -match policy,random -match policy,policy,policy
+//
+// Each -match is one line-up of levels, one per seat; the seats rotate
+// from game to game. Without -match it plays the default line-ups. It
+// prints wins by level, unfinished games and why, steps and time per
+// move, and exits 1 when a gate fails: a refused bot intent, a loop guard
+// (a game turn over 1000 intents, a game over 30000), in any line-up;
+// or fewer than 95% of games with a winner within the turn cap, in a
+// line-up of player-visible levels with no random seat (none yet: the
+// standard level brings it in 21.5).
+package main
+
+import (
+	"context"
+	"errors"
+	"flag"
+	"fmt"
+	"io"
+	"log"
+	"maps"
+	"os"
+	"os/signal"
+	"slices"
+	"strconv"
+	"strings"
+	"syscall"
+	"time"
+
+	"github.com/FourSoulsRepo/four_souls/internal/arena"
+	"github.com/FourSoulsRepo/four_souls/internal/bot"
+	engine "github.com/FourSoulsRepo/rules_engine"
+)
+
+// minFinished is the gate of Decision 18.4: the part of games that must
+// end with a winner within the turn cap.
+const minFinished = 0.95
+
+// finishGated are the levels whose line-ups must pass minFinished: the
+// levels players meet. Standard joins in 21.5, hard in 21.6; random and
+// policy line-ups print their share for reference only.
+var finishGated = map[bot.Level]bool{}
+
+// gated: the line-up holds a finish-gated level and no random seat.
+func gated(levels []bot.Level) bool {
+	if slices.Contains(levels, bot.Random) {
+		return false
+	}
+	return slices.ContainsFunc(levels, func(l bot.Level) bool { return finishGated[l] })
+}
+
+// defaultMatches are the line-ups played without -match.
+var defaultMatches = []string{
+	"policy,policy",
+	"policy,policy,policy",
+	"policy,policy,policy,policy",
+	"policy,random",
+}
+
+// errGate is a failed gate; the report says which.
+var errGate = errors.New("a gate failed")
+
+func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	err := run(ctx, os.Args[1:], os.Stdout)
+	if errors.Is(err, errGate) {
+		stop()
+		os.Exit(1)
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// matchFlags collects repeated -match flags.
+type matchFlags []string
+
+func (m *matchFlags) String() string { return strings.Join(*m, " ") }
+
+func (m *matchFlags) Set(s string) error {
+	*m = append(*m, s)
+	return nil
+}
+
+// run parses the flags, plays every match and prints the report.
+func run(ctx context.Context, args []string, out io.Writer) error {
+	fs := flag.NewFlagSet("bot_arena", flag.ContinueOnError)
+	games := fs.Int("games", 50, "games per line-up")
+	seed := fs.Uint64("seed", 1, "seed of each line-up's first game")
+	turnCap := fs.Int("cap", arena.TurnCap, "game turns after which a game counts as unfinished")
+	var matches matchFlags
+	fs.Var(&matches, "match", "a line-up of levels, one per seat, comma-separated (repeat it)")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if len(matches) == 0 {
+		matches = defaultMatches
+	}
+	var ms []arena.Match
+	for _, s := range matches {
+		var levels []bot.Level
+		for name := range strings.SplitSeq(s, ",") {
+			l, err := bot.ParseLevel(strings.TrimSpace(name))
+			if err != nil {
+				return err
+			}
+			levels = append(levels, l)
+		}
+		ms = append(ms, arena.Match{Levels: levels, Games: *games, Seed: *seed, Cap: *turnCap})
+	}
+	failed := false
+	pr := &printer{w: out}
+	for _, m := range ms {
+		start := time.Now()
+		r, err := arena.Play(ctx, m)
+		if err != nil {
+			return err
+		}
+		if !report(pr, r, time.Since(start)) {
+			failed = true
+		}
+		if ctx.Err() != nil {
+			pr.printf("interrupted\n")
+			return ctx.Err()
+		}
+	}
+	if pr.err != nil {
+		return pr.err
+	}
+	if failed {
+		return errGate
+	}
+	return nil
+}
+
+// printer writes the report and keeps the first write error.
+type printer struct {
+	w   io.Writer
+	err error
+}
+
+func (p *printer) printf(format string, args ...any) {
+	if p.err == nil {
+		_, p.err = fmt.Fprintf(p.w, format, args...)
+	}
+}
+
+// report prints one match; it returns false when a gate failed.
+func report(out *printer, r arena.Result, took time.Duration) bool {
+	m := r.Match
+	out.printf("%s: %d games, %d with a winner (%.1f%%) within %d turns, in %s\n",
+		m.Name(), r.Games, r.Finished, 100*r.FinishedShare(), m.Cap, took.Round(time.Millisecond))
+	for _, l := range slices.Sorted(maps.Keys(r.Seats)) {
+		chance := float64(r.Seats[l]) / float64(len(m.Levels))
+		out.printf("  %-8s wins %d of %d games (%.1f by chance)\n", l, r.Wins[l], r.Games, chance)
+	}
+	if r.Games > 0 && r.Moves > 0 && r.Steps > 0 {
+		turns := 0
+		for _, t := range r.Turns {
+			turns += t
+		}
+		out.printf("  turns a game: median %d, max %d; %.0f intents a turn, %.0f%% passes; %s a move\n",
+			r.MedianTurns(), r.MaxTurns(), float64(r.Steps)/float64(max(turns, 1)),
+			100*float64(r.Passes)/float64(r.Steps), (r.Think / time.Duration(r.Moves)).Round(time.Microsecond))
+		out.printf("  %d player deaths, %d monsters killed (%.2f deaths a kill)\n",
+			r.PlayerDeaths, r.MonsterKills, float64(r.PlayerDeaths)/float64(max(r.MonsterKills, 1)))
+	}
+	for _, s := range r.Stalls {
+		out.printf("  stall: seed %d, turn %d, souls %v, last steps %s\n", s.Seed, s.Turns, s.Souls, kinds(s.Last))
+	}
+	ok := true
+	for _, x := range r.Refused {
+		out.printf("  refused: %s\n", x)
+		ok = false
+	}
+	if r.Games > 0 && gated(m.Levels) && r.FinishedShare() < minFinished {
+		out.printf("  FAIL: under %.0f%% of games with a winner (Decision 18.4)\n", 100*minFinished)
+		ok = false
+	}
+	if len(r.Refused) > 0 {
+		out.printf("  FAIL: %d refused bot intents (Decision 18.8)\n", len(r.Refused))
+	}
+	if !gated(m.Levels) {
+		out.printf("  (finish share for reference: no finish gate on this line-up)\n")
+	}
+	for _, x := range r.Guards {
+		out.printf("  FAIL: loop guard: %s (Decision 18.4)\n", x)
+		ok = false
+	}
+	return ok
+}
+
+// kindNames name the intent kinds for the stall lines.
+var kindNames = map[engine.IntentKind]string{
+	engine.IntentPass: "pass", engine.IntentEndTurn: "end", engine.IntentDiscard: "discard",
+	engine.IntentPlayLoot: "loot", engine.IntentChoose: "choose", engine.IntentAttack: "attack",
+	engine.IntentPurchase: "buy", engine.IntentActivate: "use", engine.IntentOrder: "order",
+	engine.IntentThrow: "throw",
+}
+
+// kinds prints intent counts in kind order, e.g. "pass 120 end 30".
+func kinds(c map[engine.IntentKind]int) string {
+	var b strings.Builder
+	for k := engine.IntentPass; k <= engine.IntentThrow; k++ {
+		if c[k] > 0 {
+			b.WriteString(kindNames[k] + " " + strconv.Itoa(c[k]) + " ")
+		}
+	}
+	return strings.TrimSpace(b.String())
+}

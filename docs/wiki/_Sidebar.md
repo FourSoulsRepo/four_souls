@@ -42,5 +42,6 @@
 * [Situation payload](Situation-payload)
 * [Website wasm](Website-wasm)
 * [Fuzzing](Fuzzing)
+* [Bots](Bots)
 * [Server](Server)
 * [Banned cards](Banned-cards)
