@@ -339,9 +339,11 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       6. The item is added, never removed: no destroy is needed.
       7. The playout runs to the end of the seat's next turn that starts after the position, at most 1500 steps; every seat moves by the policy, the seat's own choices get its best option; dice and choices come from the same seeds in both copies. With the item the item counts its flat 12 there, so the value is 12 plus what the item does in that time.
       8. Positions: the tool plays arena games of the `flat` level, 12 of each table size by default, side by side, each to at most 60 game turns, and keeps about one priority position in 23 steps, at most 60 a game, with the seat to move. They stay in memory: the same seed plays the same games, so a run needs no saved file.
-         1. A card is measured on the positions where its card lies in its deck (and, for loot, the seat may play it), in an order of the card's own, up to 32; an item on 4 seeds a position.
+         1. A card is measured on the positions where its card lies in its deck (and, for loot, the seat may play it), in an order of the card's own, up to 32 for a loot card and 64 for an item; an item on 4 seeds a position.
          2. Playing the games is most of a run: 24 games to the 150-turn cap took 16 minutes on 12 cores, the slowest game alone most of it; the cap of 60 turns keeps the early and middle game, where most positions are.
-      9. Each paired difference (a draw of a loot play, a seed of an item) counts at most one soul either way (`ValueClip`): a game won or lost in one copy and not the other is a million points; unclipped, one such sample in a hundred made an item's standard error ten thousand.
+      9. Each paired difference (a draw of a loot play or a use, a seed of an item) counts at most one soul either way (`ValueClip`): a game won or lost in one copy and not the other is a million points; unclipped, one such sample in a hundred made an item's standard error ten thousand.
+      10. An active item is also measured as a loot card is (lead, 2026-11-17): on positions where the seat may use it, stack positions included, the mean of max(0, use − nothing). Its value is the larger of this and its playouts, before the scaling of 20.8.5.
+         1. The policy plays answers badly: in a playout it uses an item at random, rarely when it counts, so the playouts miss what an answer is worth (Godhead measured −1.2 by them). Hence the larger of the two.
    5. A card is put into a clone by an existing test path, or by one `enginetest` helper; `CheckInvariants` after it.
       1. Not in the `Game` API; `internal/server` and `internal/bot` never import it (depguard rule `no-enginetest`).
       2. No test path put a card into a hand of a running game; the engine's `TakeFromDeck` gains an item, but with events and triggers outside `Apply`. So the helper is `enginetest.PlaceFromDeck`: it moves the card from its deck by the exported state fields, as a draw or a gain moves it, as a new object, with no event and no trigger. An item's "when this enters play" is not measured.
@@ -349,14 +351,21 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    7. Output: a generated data file, card id → value, n, standard error. A fixed seed gives the same file for the same cards.
       1. A mode measures only cards missing from the table, for a new set.
       2. A full run takes at most 30 minutes on all cores of a work machine; else fewer samples a card, with the error printed.
-   8. `cardValue` (Decision 7.6) reads the table, shrunk to the mean of the card's kind by n with one constant.
+         1. Measured (2026-11-17, 12 cores, i7-8750H): 11 minutes, 5 of them the games; 32 samples a loot card, 64 an item. Median standard error: loot 0.79, active items 3.05, passive items 2.70. With 32 item samples it was 8 minutes and 4.4 and 3.8.
+   8. `cardValue` (Decision 7.6) reads the table, each value weighed against the mean of the card's kind by its precision.
       1. Kinds: loot, active item (a ↷ ability), passive item; an unknown card gets its kind's mean. A starting item is in no deck, so it is never measured: it gets its kind's mean.
       2. Own hand by card; other hands by the mean, as before.
          1. A card in another seat's hand counts its kind's mean, not its table value (lead, 2026-11-16): in an imagined world it is a guess, and its price would only add noise between worlds.
          2. A card the seat remembers there could count its table value; but `World(i)` does not tell a remembered card from a dealt one, and the API is not widened for it: every card of another hand counts the mean.
       3. The answer-holding bonus stays a multiplier on top (Decision 7.6); it is not added twice.
-         1. A base below 0 holds nothing: the multiplier counts max(0, base), so a held answer is never a loss. Godhead measured −1.2 ± 3.6 (its policy playouts rarely use it well), so its holding value is now near 0; the tuning after 21.16 looks at it.
-      4. The mean of a kind is over its measured cards; shrunk value = (n × value + 8 × mean) / (n + 8) (`valueShrink`). A kind with no measured card keeps the flat value.
+         1. A base below 0 holds nothing: the multiplier counts max(0, base), so a held answer is never a loss. Godhead measured −1.2 ± 3.6 by its playouts alone; with its uses (20.4.10) it is 1.4 ± 1.1 on the 5 positions where it could be used, 3.4 after the shrink and scaling, against an active mean of 10.3.
+      4. Shrink by precision (lead, 2026-11-17): v' = (v/se² + m/τ²) / (1/se² + 1/τ²), m the kind's mean over its measured cards, τ² the variance of their values less their mean se², at least 0.01 (`tauFloor2`). A card with no sample gets m; one with se 0 keeps its value. A kind with no measured card keeps the flat value.
+         1. It replaced (n × v + 8 × m) / (n + 8), which weighed a card by its samples, not by its noise: items have five times the error of loot.
+      5. Items are scaled by `wItem` over the mean of every measured item, active and passive (lead, 2026-11-17): the average item is worth 12 again, the order stays, a bad item stays below 0.
+         1. A correction for the measurement's horizon: an item is measured over about one round (to the end of the seat's next turn), but stays for the game. Unscaled, the means were 4.4 and 7.3 against a price of 10¢, so every purchase lost.
+      6. A loot card in hand counts `wHand` = 0.5 of its value; another seat's hand card 0.5 of the kind's mean (lead, 2026-11-17).
+         1. A card in hand is not played yet: it can be discarded or stolen, and a turn has few loot plays.
+         2. The measure is what playing adds; at full value a card in hand was worth as much as playing it, and standard stopped playing loot (a dime: +10¢ against −10, below `wAct`).
    9. The bot code still names no card: the table is generated data; a test checks every card of every set is in it or falls back.
       1. The table is `internal/bot/values.json`, embedded (`go:embed`). To look a card up the bot reads its identity in one function, `tableKey`; `TestBotRules` allows `Card` there alone, and only for the seat's own hand and cards in play.
    10. After cards are added: `make bot-values`, then `make bots`.

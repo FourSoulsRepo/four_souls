@@ -425,3 +425,49 @@ func TestStandardDiscardsCheap(t *testing.T) {
 		check("Choose", seed, in)
 	}
 }
+
+// TestStandardPlaysLoot: a card in hand counts wHand of its measured
+// value (Decision 20.8.6), so a card that does its usual work is played
+// (a_dime, 10¢), and one whose play gives nothing now is kept.
+func TestStandardPlaysLoot(t *testing.T) {
+	for _, seed := range seeds {
+		g := table(t, engine.SituationSetup{
+			Players: []engine.SituationPlayer{{Character: "isaac", Hand: []engine.CardRef{"a_dime"}}, {Character: "cain"}},
+		})
+		if in := best(t, g, 0, seed); in.Kind != engine.IntentPlayLoot {
+			t.Errorf("seed %d: %+v, want the dime played", seed, in)
+		}
+	}
+}
+
+// TestStandardBuysByValue: items are scaled so the average one is worth
+// wItem (Decision 20.8.5): with 10¢ and an average item in the shop the
+// seat buys it; an item from the bottom of the table it leaves. The
+// values are a table of the test's own.
+func TestStandardBuysByValue(t *testing.T) {
+	defer func(v *values) { cardTable = v }(cardTable)
+	cardTable = newValues(ValueFile{Cards: []ValueEntry{
+		{Key: "breakfast", Kind: KindPassive, Value: 8, N: 64},
+		{Key: "dinner", Kind: KindPassive, Value: 32, N: 64},
+		{Key: "lunch", Kind: KindPassive, Value: 8, N: 64},
+		{Key: "daddy_haunt", Kind: KindPassive, Value: -16, N: 64},
+	}})
+	if v := cardTable.cards[kindPassive]["breakfast"]; v != wItem {
+		t.Fatalf("the average item is worth %v, want %v", v, wItem)
+	}
+	for _, c := range []struct {
+		item engine.CardRef
+		buy  bool
+	}{{"breakfast", true}, {"daddy_haunt", false}} {
+		for _, seed := range seeds {
+			g := table(t, engine.SituationSetup{
+				Players: []engine.SituationPlayer{{Character: "isaac", Cents: 10}, {Character: "cain"}},
+				Shop:    []engine.CardRef{c.item},
+			})
+			in := best(t, g, 0, seed)
+			if got := in.Kind == engine.IntentPurchase; got != c.buy {
+				t.Errorf("%s, seed %d: %+v, want a purchase %v", c.item, seed, in, c.buy)
+			}
+		}
+	}
+}

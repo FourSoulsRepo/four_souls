@@ -14,7 +14,9 @@
 //     counts 0 (Decision 20.4.1 – 20.4.4);
 //   - an item in play under that seat: the copy with it against the copy
 //     without, each played out by the policy to the end of the seat's
-//     next turn on common seeds (Decision 20.4.5 – 20.4.7).
+//     next turn on common seeds (Decision 20.4.5 – 20.4.7); an active
+//     item also as loot is, by its uses, and the larger counts (Decision
+//     20.4.10).
 //
 // Each paired difference counts at most one soul either way
 // (bot.ValueClip, Decision 20.4.9).
@@ -75,6 +77,7 @@ type config struct {
 	every    int
 	perGame  int
 	samples  int
+	items    int
 	draws    int
 	out      string
 	missing  bool
@@ -91,7 +94,8 @@ func run(ctx context.Context, args []string, log io.Writer) error {
 	fs.IntVar(&c.cap, "cap", 60, "game turns the arena games play at most")
 	fs.IntVar(&c.every, "every", 23, "keep about one priority position in this many steps of a game")
 	fs.IntVar(&c.perGame, "per_game", 60, "positions kept of a game at most")
-	fs.IntVar(&c.samples, "samples", 32, "positions a card is measured on at most")
+	fs.IntVar(&c.samples, "samples", 32, "positions a loot card is measured on at most")
+	fs.IntVar(&c.items, "item_samples", 64, "positions an item is measured on at most")
 	fs.IntVar(&c.draws, "draws", 4, "seeds an item is played out on, a position")
 	fs.StringVar(&c.out, "out", "internal/bot/values.json", "the table file")
 	fs.BoolVar(&c.missing, "missing", false, "measure only the cards the table file lacks, keep the rest")
@@ -99,8 +103,8 @@ func run(ctx context.Context, args []string, log io.Writer) error {
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	if c.games < 1 || c.cap < 1 || c.samples < 1 || c.draws < 1 || c.every < 1 || c.perGame < 1 {
-		return errors.New("bot_values: -games, -cap, -samples, -draws, -every and -per_game must be at least 1")
+	if c.games < 1 || c.cap < 1 || c.samples < 1 || c.items < 1 || c.draws < 1 || c.every < 1 || c.perGame < 1 {
+		return errors.New("bot_values: -games, -cap, -samples, -item_samples, -draws, -every and -per_game must be at least 1")
 	}
 	if *only != "" {
 		c.only = map[string]bool{}
@@ -299,6 +303,9 @@ func mix(xs ...uint64) uint64 {
 type measured struct {
 	card
 	xs []float64 // one value a position
+	// uses are an active item's gains of a use over doing nothing,
+	// where it may be used (Decision 20.4.10).
+	uses []float64
 }
 
 // measureAll measures the cards side by side on every core; the result
@@ -314,10 +321,10 @@ func measureAll(ctx context.Context, jobs []card, pos []position, c config) ([]m
 		wg.Go(func() {
 			for i := range next {
 				out[i] = measured{card: jobs[i]}
-				out[i].xs, errs[i] = measure(jobs[i], pos, c)
+				out[i].xs, out[i].uses, errs[i] = measure(jobs[i], pos, c)
 				mu.Lock()
 				done++
-				fmt.Fprintf(c.progress, "  %d/%d %s %s: %d samples\n", done, len(jobs), jobs[i].kind, jobs[i].ref, len(out[i].xs))
+				fmt.Fprintf(c.progress, "  %d/%d %s %s: %d samples, %d uses\n", done, len(jobs), jobs[i].kind, jobs[i].ref, len(out[i].xs), len(out[i].uses))
 				mu.Unlock()
 			}
 		})
@@ -337,16 +344,20 @@ func measureAll(ctx context.Context, jobs []card, pos []position, c config) ([]m
 }
 
 // measure is card x's value on each position it is measured on, up to
-// c.samples: the positions in an order of the card's own, those where
-// the card lies in its deck, and for loot those where the seat may play
-// it.
-func measure(x card, pos []position, c config) ([]float64, error) {
+// c.samples for loot and c.items for an item: the positions in an order
+// of the card's own, those where the card lies in its deck, and for
+// loot those where the seat may play it. For an active item, uses are
+// also the gains of using it over doing nothing, where the seat may.
+func measure(x card, pos []position, c config) (xs, uses []float64, err error) {
 	h := fnv.New64a()
 	_, _ = h.Write([]byte(x.kind + " " + string(x.ref)))
 	rng := rand.New(rand.NewPCG(c.seed, h.Sum64())) //nolint:gosec // samples, not security
-	var xs []float64
+	want := c.samples
+	if x.item() {
+		want = c.items
+	}
 	for _, i := range rng.Perm(len(pos)) {
-		if len(xs) >= c.samples {
+		if len(xs) >= want {
 			break
 		}
 		ps := pos[i]
@@ -356,41 +367,46 @@ func measure(x card, pos []position, c config) ([]float64, error) {
 		}
 		with, err := ps.g.Clone()
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		nid, err := enginetest.PlaceFromDeck(with, id, ps.p, x.item())
 		if err != nil {
-			return nil, fmt.Errorf("%s: %w", x.ref, err)
+			return nil, nil, fmt.Errorf("%s: %w", x.ref, err)
 		}
 		seeds := make([]uint64, max(c.draws, lootDraws))
 		for k := range seeds {
 			seeds[k] = rng.Uint64()
 		}
-		if !x.item() {
-			gain, ok, err := bot.LootGain(fixed(with), ps.p, nid, seeds[:lootDraws])
+		if !x.item() || x.kind == bot.KindActive {
+			gain, ok, err := bot.PlayGain(fixed(with), ps.p, nid, seeds[:lootDraws])
 			if err != nil {
-				return nil, fmt.Errorf("%s: %w", x.ref, err)
+				return nil, nil, fmt.Errorf("%s: %w", x.ref, err)
 			}
-			if ok {
+			switch {
+			case ok && !x.item():
 				xs = append(xs, max(0, gain))
+			case ok:
+				uses = append(uses, max(0, gain))
 			}
-			continue
+			if !x.item() {
+				continue
+			}
 		}
 		sum := 0.0
 		for _, s := range seeds[:c.draws] {
 			a, err := bot.ItemPlayout(fixed(with), ps.p, s)
 			if err != nil {
-				return nil, fmt.Errorf("%s: %w", x.ref, err)
+				return nil, nil, fmt.Errorf("%s: %w", x.ref, err)
 			}
 			b, err := bot.ItemPlayout(fixed(ps.g), ps.p, s)
 			if err != nil {
-				return nil, fmt.Errorf("%s: %w", x.ref, err)
+				return nil, nil, fmt.Errorf("%s: %w", x.ref, err)
 			}
 			sum += min(max(a-b, -bot.ValueClip), bot.ValueClip)
 		}
 		xs = append(xs, sum/float64(c.draws))
 	}
-	return xs, nil
+	return xs, uses, nil
 }
 
 // fixed is a world that is always g: the measure plays on the kept
@@ -414,7 +430,7 @@ func inDeck(g *engine.Game, x card) (engine.ObjectID, bool) {
 // merge puts the measured cards into the old table: a measured card
 // replaces its old entry. The entries are sorted by kind, then card.
 func merge(old bot.ValueFile, got []measured, c config) bot.ValueFile {
-	f := bot.ValueFile{Note: note, Seed: c.seed, Games: c.games, Samples: c.samples}
+	f := bot.ValueFile{Note: note, Seed: c.seed, Games: c.games, Samples: c.samples, ItemSamples: c.items}
 	idx := map[[2]string]int{}
 	for _, e := range old.Cards {
 		idx[[2]string{e.Key, e.Kind}] = len(f.Cards)
@@ -439,26 +455,40 @@ func merge(old bot.ValueFile, got []measured, c config) bot.ValueFile {
 }
 
 // entry is a card's table entry: the mean of its samples and their
-// standard error, rounded so the file stays readable.
+// standard error, rounded so the file stays readable. An active item
+// takes the larger of its two measures, the playouts and the uses
+// (Decision 20.4.10).
 func entry(m measured) bot.ValueEntry {
-	e := bot.ValueEntry{Key: string(m.ref), Kind: m.kind, N: len(m.xs)}
-	if e.N == 0 {
-		return e
+	e := bot.ValueEntry{Key: string(m.ref), Kind: m.kind, Measure: bot.MeasurePlay}
+	if m.item() {
+		e.Measure = bot.MeasurePlayout
 	}
-	sum := 0.0
-	for _, x := range m.xs {
-		sum += x
-	}
-	mean := sum / float64(e.N)
-	ss := 0.0
-	for _, x := range m.xs {
-		ss += (x - mean) * (x - mean)
-	}
-	e.Value = round(mean)
-	if e.N > 1 {
-		e.SE = round(math.Sqrt(ss / float64(e.N-1) / float64(e.N)))
+	e.Value, e.SE, e.N = stats(m.xs)
+	if v, se, n := stats(m.uses); n > 0 && (e.N == 0 || v > e.Value) {
+		e.Value, e.SE, e.N, e.Measure = v, se, n, bot.MeasureUse
 	}
 	return e
+}
+
+// stats are the rounded mean of xs, its standard error and the count.
+func stats(xs []float64) (mean, se float64, n int) {
+	n = len(xs)
+	if n == 0 {
+		return 0, 0, 0
+	}
+	sum := 0.0
+	for _, x := range xs {
+		sum += x
+	}
+	m := sum / float64(n)
+	ss := 0.0
+	for _, x := range xs {
+		ss += (x - m) * (x - m)
+	}
+	if n > 1 {
+		se = round(math.Sqrt(ss / float64(n-1) / float64(n)))
+	}
+	return round(m), se, n
 }
 
 // round keeps three decimals.

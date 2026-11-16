@@ -28,6 +28,13 @@ const (
 	wHP    = 0.5
 	wAlive = 3.0
 
+	// wHand is the share of its measured value a loot card is worth in
+	// hand (Decision 20.8.6): a card in hand is not played yet: it can
+	// be discarded or stolen, few loot plays a turn. Its measured value
+	// is what playing it adds; at a share of it, playing a card that
+	// does its usual work beats holding it.
+	wHand = 0.5
+
 	// digShare: a monster killed lets the next card of the monster deck
 	// in, which gives a soul with the deck's share of soul cards. A
 	// kill is worth wSoul times that share times digShare (Decision
@@ -250,8 +257,9 @@ func side(g *engine.Game, p, by engine.PlayerID, flat bool) float64 {
 // one place a card's worth is set; the hard level's holding value
 // multiplies it (Decision 7.6).
 //
-// A loot card and an item are worth their measured value (values.go,
-// Decision 20.8); with flat, wLoot and wItem. seen: the scoring seat
+// A loot card in hand is worth wHand times its measured value, an item
+// its measured value scaled to wItem on average (values.go, Decision
+// 20.8); with flat, wLoot and wItem. seen: the scoring seat
 // knows the card; a card in another seat's hand is not seen. In an
 // imagined world it is a guess, which the bot cannot tell from a card
 // the seat remembers, so it counts its kind's mean (Decision 20.8.2).
@@ -262,9 +270,9 @@ func cardValue(g *engine.Game, id engine.ObjectID, seen, flat bool) float64 {
 		case flat:
 			return wLoot
 		case !seen:
-			return cardTable.mean(kindLoot)
+			return wHand * cardTable.mean(kindLoot)
 		}
-		return cardTable.value(g, id, kindLoot)
+		return wHand * cardTable.value(g, id, kindLoot)
 	}
 	switch o.Role { //nolint:exhaustive // souls count by SoulValue; the rest is nothing
 	case engine.RoleItem:

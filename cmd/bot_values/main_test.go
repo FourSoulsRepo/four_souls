@@ -14,7 +14,7 @@ import (
 // tiny are the flags of a short run: one short game of each size, a few
 // cards, few samples.
 func tiny(out string, more ...string) []string {
-	return append([]string{"-games", "1", "-cap", "4", "-every", "3", "-samples", "3", "-draws", "1", "-out", out}, more...)
+	return append([]string{"-games", "1", "-cap", "4", "-every", "3", "-samples", "3", "-item_samples", "3", "-draws", "1", "-out", out}, more...)
 }
 
 // TestRunRepeats: a short run writes a table that parses and holds the

@@ -15,11 +15,11 @@ import (
 //go:embed values.json
 var valuesJSON []byte
 
-// valueShrink is how many samples the kind's mean counts as, when a
-// card's value is shrunk towards it (Decision 20.8): a card measured on
-// n positions counts n / (n + valueShrink) of its own value. A card
-// with no sample gets its kind's mean.
-const valueShrink = 8.0
+// tauFloor2 is the least spread τ² the cards of a kind are taken to
+// have (Decision 20.8.4): when their measured spread is no more than
+// their noise, every card is pulled nearly to the kind's mean, never
+// divided by 0.
+const tauFloor2 = 0.01
 
 // valueKind is the kind a card is valued as (Decision 20.8.1).
 type valueKind int
@@ -43,27 +43,39 @@ const (
 // kindNames name the kinds in the table file.
 var kindNames = [kindCount]string{KindLoot, KindActive, KindPassive}
 
+// How a value was measured (Decision 20.4): a loot card's play, an
+// item's playouts, an active item's uses.
+const (
+	MeasurePlay    = "play"
+	MeasurePlayout = "playout"
+	MeasureUse     = "use"
+)
+
 // ValueEntry is one measured card of the table file: Key is the card's
 // ref; its value in settledScore units, the positions it was measured
-// on and the standard error of the value. Kind is KindLoot, KindActive
-// or KindPassive. The file's keys are the field names.
+// on and the standard error of the value; Measure is how. Kind is
+// KindLoot, KindActive or KindPassive. The file's keys are the field
+// names.
 type ValueEntry struct {
-	Key   string
-	Kind  string
-	Value float64
-	N     int
-	SE    float64
+	Key     string
+	Kind    string
+	Measure string
+	Value   float64
+	N       int
+	SE      float64
 }
 
 // ValueFile is the table file: how it was measured, and its cards.
 type ValueFile struct {
 	Note string
-	// Seed, Games and Samples are the run's flags: the seed, the arena
-	// games the positions come from, the samples a card at most.
-	Seed    uint64
-	Games   int
-	Samples int
-	Cards   []ValueEntry
+	// Seed, Games, Samples and ItemSamples are the run's flags: the
+	// seed, the arena games of each size the positions come from, the
+	// samples a loot card and an item at most.
+	Seed        uint64
+	Games       int
+	Samples     int
+	ItemSamples int
+	Cards       []ValueEntry
 }
 
 // ParseValues reads a table file.
@@ -91,10 +103,15 @@ func parseKind(s string) (valueKind, bool) {
 }
 
 // values is the table as the score reads it: each card's value shrunk
-// to its kind's mean, by kind.
+// to its kind's mean, by kind; items scaled to the flat item value.
 type values struct {
 	cards [kindCount]map[string]float64
 	means [kindCount]float64
+	// tau2 is each kind's τ²: the spread of its cards' true values.
+	tau2 [kindCount]float64
+	// scale is what item values are multiplied by: wItem over the mean
+	// of every measured item (Decision 20.8.5).
+	scale float64
 }
 
 // cardTable is the embedded table.
@@ -110,17 +127,28 @@ func mustValues(data []byte) *values {
 	return newValues(f)
 }
 
-// newValues shrinks each card's value to its kind's mean by its samples
-// (Decision 20.8). A kind with no measured card has the flat value.
+// newValues builds the table (Decision 20.8). Each card's value is
+// weighed against its kind's mean by precision: v' = (v/se² + m/τ²) /
+// (1/se² + 1/τ²), τ² the spread of the kind's values less their mean
+// se², at least tauFloor2. A card with no sample gets the mean; one
+// with no error keeps its value. A kind with no measured card has the
+// flat value. Items are then scaled by wItem over the mean of every
+// measured item: they were measured over one round, but stay for the
+// game.
 func newValues(f ValueFile) *values {
-	v := &values{}
-	var sum [kindCount]float64
-	var n [kindCount]int
+	v := &values{scale: 1}
+	var vals, ses [kindCount][]float64
+	items, itemSum := 0, 0.0
 	for _, e := range f.Cards {
 		k, _ := parseKind(e.Kind)
-		if e.N > 0 {
-			sum[k] += e.Value
-			n[k]++
+		if e.N == 0 {
+			continue
+		}
+		vals[k] = append(vals[k], e.Value)
+		ses[k] = append(ses[k], e.SE*e.SE)
+		if k != kindLoot {
+			items++
+			itemSum += e.Value
 		}
 	}
 	for k := range kindCount {
@@ -129,14 +157,39 @@ func newValues(f ValueFile) *values {
 		if k == kindLoot {
 			v.means[k] = wLoot
 		}
-		if n[k] > 0 {
-			v.means[k] = sum[k] / float64(n[k])
+		v.tau2[k] = tauFloor2
+		if n := len(vals[k]); n > 0 {
+			m := mean(vals[k])
+			v.means[k] = m
+			if n > 1 {
+				ss := 0.0
+				for _, x := range vals[k] {
+					ss += (x - m) * (x - m)
+				}
+				v.tau2[k] = max(ss/float64(n-1)-mean(ses[k]), tauFloor2)
+			}
 		}
+	}
+	if items > 0 && itemSum > 0 {
+		v.scale = wItem * float64(items) / itemSum
 	}
 	for _, e := range f.Cards {
 		k, _ := parseKind(e.Kind)
-		w := float64(e.N)
-		v.cards[k][e.Key] = (w*e.Value + valueShrink*v.means[k]) / (w + valueShrink)
+		m, x := v.means[k], e.Value
+		switch {
+		case e.N == 0:
+			x = m
+		case e.SE > 0:
+			p := 1 / (e.SE * e.SE)
+			x = (x*p + m/v.tau2[k]) / (p + 1/v.tau2[k])
+		}
+		if k != kindLoot {
+			x *= v.scale
+		}
+		v.cards[k][e.Key] = x
+	}
+	for k := kindActive; k < kindCount; k++ {
+		v.means[k] *= v.scale
 	}
 	return v
 }

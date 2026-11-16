@@ -9,7 +9,7 @@ import (
 )
 
 // The measurement of card values (ADR 030, Decision 20): make bot-values
-// (cmd/bot_values) calls LootGain and ItemPlayout on positions of arena
+// (cmd/bot_values) calls PlayGain and ItemPlayout on positions of arena
 // games. Both score with the flat values (Decision 20.6), so the
 // measure never feeds on itself.
 const (
@@ -25,15 +25,15 @@ const (
 	ValueClip = wSoul
 )
 
-// LootGain is what playing loot card id gains seat p on world(0), over
-// doing nothing (a pass, or an end of turn in its action phase), in
-// settledScore units (Decision 20.4.1 – 20.4.4): each way to play it and doing
-// nothing are settled as the standard level settles a candidate, on the
-// same draws; the gain is the best play's mean gain, draw by draw, each
-// draw's gain clipped to ±ValueClip. ok
-// is false when the seat may not play the card now, or has no way to
-// do nothing.
-func LootGain(world World, p engine.PlayerID, id engine.ObjectID, draws []uint64) (gain float64, ok bool, err error) {
+// PlayGain is what seat p gains on world(0) by playing loot card id, or
+// by using the abilities of item id, over doing nothing (a pass, or an
+// end of turn in its action phase), in settledScore units (Decision
+// 20.4.1 – 20.4.4, 20.4.10): each such play or use and doing nothing
+// are settled as the standard level settles a candidate, on the same
+// draws; the gain is the best one's mean gain, draw by draw, each draw's
+// gain clipped to ±ValueClip. ok is false when the seat may not play or
+// use the card now, or has no way to do nothing.
+func PlayGain(world World, p engine.PlayerID, id engine.ObjectID, draws []uint64) (gain float64, ok bool, err error) {
 	if len(draws) == 0 {
 		return 0, false, errors.New("bot: no draws")
 	}
@@ -47,7 +47,7 @@ func LootGain(world World, p engine.PlayerID, id engine.ObjectID, draws []uint64
 		switch {
 		case quietRank(in) == 0 && !quietOK:
 			nothing, quietOK = in, true
-		case in.Kind == engine.IntentPlayLoot && len(in.Objects) > 0 && in.Objects[0] == id:
+		case (in.Kind == engine.IntentPlayLoot || in.Kind == engine.IntentActivate) && len(in.Objects) > 0 && in.Objects[0] == id:
 			plays = append(plays, in)
 		}
 	}
