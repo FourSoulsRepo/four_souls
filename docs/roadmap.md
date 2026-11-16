@@ -44,6 +44,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 Step 20 added (owner, 2026-11-06); it starts now, on the step 12 branch.
 Step 20 done (owner, 2026-11-09); its open bugs go to play tests.
 Step 21 added (owner, 2026-11-15); it runs on the step 18 branch.
+Step 21 done (owner, 2026-11-16); it merges with step 18.
 
 ---
 

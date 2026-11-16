@@ -254,3 +254,4 @@ Shared helpers: `msgError` (`messages.go`), `imageURL`, `soundURLs`, `appContext
       1. Old root file names: only engine files (`pkg/rules_engine`).
       2. ADR 026 item 91: past tense, history.
    9. Gates: `make lint`, `make frontend` (Vitest 675 passed, 1 skipped).
+   10. **Owner** marks step 21 solved (2026-11-16).
