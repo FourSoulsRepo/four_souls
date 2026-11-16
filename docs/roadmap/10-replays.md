@@ -14,7 +14,7 @@ Rules for this step (owner, 2026-11-16):
 
 ---
 
-### [ ] 10.1 Records screen
+### [x] 10.1 Records screen
 
 1. Goal: manage saved matches (M-01).
 2. Tasks:

@@ -59,7 +59,7 @@ Use option 1.
    5. Views and events play as they are; no migration.
 3. Code
    1. `internal/replay`: reads a record, serves its live steps.
-   2. `bindings/records` gains: `List`, `Open`, `Step`, `Delete`, `Export`.
+   2. `bindings/records` gains: `List`, `Open`, `Step`, `Delete`, `Export`, `PickFile`.
    3. The binding keeps the open record; the client asks for steps by number.
    4. The client feeds each step to playback as an update: events, view, seats.
    5. Replay updates allow no intents and carry no aims (N-15).

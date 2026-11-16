@@ -77,3 +77,33 @@ func Read(r io.Reader) (*Replay, error) {
 	}
 	return out, nil
 }
+
+// Turn is where a turn starts: the index of its first live step in
+// Steps, the turn's number and its active player, read from the views.
+type Turn struct {
+	Number int `json:"number"`
+	Active int `json:"active"`
+	Step   int `json:"step"`
+}
+
+// Turns lists the turns in order: a new one starts at each step whose
+// view has another turn number than the step before. A view it cannot
+// read starts no turn.
+func (r *Replay) Turns() []Turn {
+	var out []Turn
+	last := -1
+	for i, s := range r.Steps {
+		var v struct {
+			Turn struct {
+				Number int `json:"number"`
+				Active int `json:"active"`
+			} `json:"turn"`
+		}
+		if json.Unmarshal(s.View, &v) != nil || v.Turn.Number == last {
+			continue
+		}
+		last = v.Turn.Number
+		out = append(out, Turn{Number: v.Turn.Number, Active: v.Turn.Active, Step: i})
+	}
+	return out
+}

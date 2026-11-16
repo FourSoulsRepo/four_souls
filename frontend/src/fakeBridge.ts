@@ -312,7 +312,73 @@ const w = window as unknown as {
   fakeOpened?: string;
   // fakeEmit sends a Wails event to the page, e.g. update:progress.
   fakeEmit: (name: string, ...data: unknown[]) => void;
+  // fakeRecords is the records folder (M-01): a test may replace it
+  // before the Records screen opens; Delete takes from it.
+  fakeRecords: FakeRecord[];
+  // fakeExported is the last record Export copied.
+  fakeExported?: string;
+  // fakePick is the file the Open a file dialog picks; unset cancels.
+  fakePick?: string;
 };
+
+// FakeRecord is a records.Entry as Go lists it.
+interface FakeRecord {
+  path: string;
+  name: string;
+  started: number;
+  players: string[];
+  finished: boolean;
+  winners: string[];
+  steps: number;
+  challenge: string;
+  why: string;
+}
+
+// fakeRecord is a listed record in the fake records folder.
+function fakeRecord(name: string, started: string, players: string[], more: Partial<FakeRecord> = {}): FakeRecord {
+  return { path: `/fake/records/${name}.fsrec`, name: `${name}.fsrec`, started: Date.parse(started), players, finished: false, winners: [], steps: 0, challenge: '', why: '', ...more };
+}
+
+// The fake records folder: one of each kind the screen shows.
+const fakeRecords = [
+  fakeRecord('2026-11-16-200000-g3_Ann_Bo', '2026-11-16T20:00:00Z', ['Ann', 'Bo'], { steps: 12 }),
+  fakeRecord('2026-11-15-180000-g2_Ann_Bo_Cy', '2026-11-15T18:00:00Z', ['Ann', 'Bo', 'Cy'], { finished: true, winners: ['Bo'], steps: 840 }),
+  fakeRecord('2026-10-01-120000-g1_Ann_Bo', '2026-10-01T12:00:00Z', ['Ann', 'Bo'], { finished: true, winners: ['Ann'], steps: 500, why: 'before_replays' }),
+  fakeRecord('from-the-future', '', [], { started: 0, why: 'newer' }),
+];
+
+// goError is an error as a Go binding sends a player's message.
+function goError(key: string): Error {
+  return new Error(JSON.stringify({ key }));
+}
+
+// fakeSummary is what Open gives for a record: two turns per ten steps.
+function fakeSummary(path: string): Promise<unknown> {
+  const e = w.fakeRecords.find((r) => r.path === path) ?? (path === w.fakePick ? fakeRecord('picked', '2026-11-14T10:00:00Z', ['Dee', 'Eve'], { path, finished: true, winners: ['Eve'], steps: 40 }) : undefined);
+  if (!e) {
+    return Promise.reject(goError('error.record_unreadable'));
+  }
+  if (e.why) {
+    return Promise.reject(goError(`error.record_${e.why}`));
+  }
+  const seats = e.players.map((name, seat) => ({ seat, name }));
+  const turns = Array.from({ length: Math.ceil(e.steps / 10) }, (_, i) => ({ number: i + 1, active: i % seats.length, step: i * 10 }));
+  const winners = e.winners.map((n) => e.players.indexOf(n));
+  return Promise.resolve({
+    path,
+    game: e.name,
+    server: '',
+    started: e.started,
+    seats,
+    sets: ['b2'],
+    challenge: e.challenge,
+    difficulty: '',
+    cards: [],
+    steps: e.steps,
+    turns,
+    end: e.finished ? { ended: e.started + 3_600_000, finished: true, winners } : undefined,
+  });
+}
 
 // The update the fake check finds unless a test sets fakeUpdate.
 const fakeReleases = 'https://github.com/FourSoulsRepo/four_souls/releases';
@@ -411,6 +477,20 @@ w.go = {
   records: {
     Records: {
       SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
+      List: () => Promise.resolve(w.fakeRecords.map((r) => ({ ...r }))),
+      Open: (path: string) => fakeSummary(path),
+      Delete: (path: string) => {
+        if (!path.endsWith('.fsrec')) {
+          return Promise.reject(goError('error.record_not_a_record'));
+        }
+        w.fakeRecords = w.fakeRecords.filter((r) => r.path !== path);
+        return Promise.resolve();
+      },
+      Export: (path: string) => {
+        w.fakeExported = path;
+        return Promise.resolve(`/fake/export/${path.split('/').pop() ?? ''}`);
+      },
+      PickFile: () => Promise.resolve(w.fakePick ?? ''),
     },
   },
   assets: {
@@ -559,6 +639,7 @@ w.go = {
 };
 w.fakeFullscreen = false;
 w.fakeQuit = false;
+w.fakeRecords = fakeRecords;
 w.fakeEmit = (name, ...data) => {
   for (const callback of listeners.get(name) ?? []) {
     callback(...data);

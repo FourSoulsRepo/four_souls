@@ -7,7 +7,14 @@ import type { Speed } from '../playback';
 import type { Difficulty } from '../protocol';
 import { CardSets as wailsCardSets, Challenges as wailsChallenges, DeckRatios as wailsDeckRatios } from '../../wailsjs/go/setup/Setup';
 import { CheckSeat as wailsCheckSeat, FindGames as wailsFindGames, ServerStatus as wailsServerStatus } from '../../wailsjs/go/join/Join';
-import { SaveRecord as wailsSaveRecord } from '../../wailsjs/go/records/Records';
+import {
+  Delete as wailsDeleteRecord,
+  Export as wailsExportRecord,
+  List as wailsListRecords,
+  Open as wailsOpenRecord,
+  PickFile as wailsPickRecord,
+  SaveRecord as wailsSaveRecord,
+} from '../../wailsjs/go/records/Records';
 import {
   Backs as wailsBacks,
   Cards as wailsCards,
@@ -311,6 +318,79 @@ export function stopHosting(): Promise<void> {
 // it; '' means the player cancelled (RP-05).
 export function saveRecord(link: string): Promise<string> {
   return wailsSaveRecord(link);
+}
+
+// RecordWhy says why a record can't be watched; '' when it can (ADR 031).
+export type RecordWhy = '' | 'before_replays' | 'newer' | 'unreadable';
+
+// RecordEntry is one record in the records folder (M-01).
+export interface RecordEntry {
+  path: string;
+  name: string; // the file name
+  started: number; // Unix ms; 0 when unreadable
+  players: string[];
+  finished: boolean;
+  winners: string[];
+  steps: number;
+  challenge: string;
+  why: RecordWhy;
+}
+
+// RecordSummary is an opened record, before its steps (ADR 031).
+export interface RecordSummary {
+  path: string;
+  game: string;
+  server: string;
+  started: number; // Unix ms
+  seats: { seat: number; name: string }[];
+  sets: string[];
+  challenge: string;
+  difficulty: string;
+  cards: { ref: string; name: string; type: string; effects: string[] }[];
+  steps: number;
+  // turns: where each turn starts, as an index into the steps.
+  turns: { number: number; active: number; step: number }[];
+  end?: { ended: number; finished: boolean; winners: number[] };
+}
+
+// listRecords lists the records folder, newest first.
+export async function listRecords(): Promise<RecordEntry[]> {
+  return (await wailsListRecords()).map((e) => ({
+    path: e.path,
+    name: e.name,
+    started: e.started,
+    players: e.players,
+    finished: e.finished,
+    winners: e.winners,
+    steps: e.steps,
+    challenge: e.challenge,
+    why: recordWhy(e.why),
+  }));
+}
+
+// recordWhy reads Go's reason; one this app doesn't know is unreadable.
+function recordWhy(why: string): RecordWhy {
+  return why === '' || why === 'before_replays' || why === 'newer' ? why : 'unreadable';
+}
+
+// openRecord opens a record for watching; Go keeps it for its steps.
+export function openRecord(path: string): Promise<RecordSummary> {
+  return wailsOpenRecord(path);
+}
+
+// deleteRecord deletes a record file; the screen asks first.
+export function deleteRecord(path: string): Promise<void> {
+  return wailsDeleteRecord(path);
+}
+
+// exportRecord saves a copy where the player picks; '' if cancelled.
+export function exportRecord(path: string): Promise<string> {
+  return wailsExportRecord(path);
+}
+
+// pickRecordFile asks for a record anywhere; '' if cancelled.
+export function pickRecordFile(): Promise<string> {
+  return wailsPickRecord();
 }
 
 // LanServer is a hosting app found on the local network, with its games

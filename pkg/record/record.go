@@ -7,6 +7,7 @@ package record
 
 import (
 	"bufio"
+	"bytes"
 	"compress/gzip"
 	"encoding/json"
 	"errors"
@@ -16,6 +17,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -340,6 +342,36 @@ var ErrNewer = fmt.Errorf("%w: made by a newer app", ErrFormat)
 // Read reads a whole record. A file cut off in the middle (a crash) is
 // read up to its last complete line.
 func Read(r io.Reader) (*Record, error) {
+	return read(r, false)
+}
+
+// ReadBrief reads a record as Read does, but each Step holds only its
+// N: no intent, events or view. It skips decoding the steps, so a list
+// of many records stays fast; Live still works on it.
+func ReadBrief(r io.Reader) (*Record, error) {
+	return read(r, true)
+}
+
+// stepStart is how the encoder starts every step line: Kind, then N.
+var stepStart = []byte(`{"kind":"step","n":`)
+
+// stepNumber is the N of a step line the encoder wrote, without
+// decoding the rest of it; false for any other line.
+func stepNumber(line []byte) (int, bool) {
+	rest, ok := bytes.CutPrefix(line, stepStart)
+	if !ok {
+		return 0, false
+	}
+	end := bytes.IndexByte(rest, ',')
+	if end < 0 {
+		return 0, false
+	}
+	n, err := strconv.Atoi(string(rest[:end]))
+	return n, err == nil
+}
+
+// read reads a record; brief keeps only each step's N (ReadBrief).
+func read(r io.Reader, brief bool) (*Record, error) {
 	gz, err := gzip.NewReader(r)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrFormat, err)
@@ -354,6 +386,10 @@ func Read(r io.Reader) (*Record, error) {
 			Kind string `json:"kind"`
 		}
 		line := sc.Bytes()
+		if n, ok := stepNumber(line); brief && !first && ok {
+			rec.Steps = append(rec.Steps, Step{Kind: "step", N: n})
+			continue
+		}
 		if err := json.Unmarshal(line, &kind); err != nil {
 			return &rec, fmt.Errorf("%w: %w", ErrFormat, err)
 		}

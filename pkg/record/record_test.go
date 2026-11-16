@@ -360,3 +360,59 @@ func TestChallengeSetup(t *testing.T) {
 		}
 	}
 }
+
+// TestReadBrief: a brief read has the header, the end and every step's
+// N, the rollbacks too, but no step's intent, events or view.
+func TestReadBrief(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "g7"+Ext)
+	w, err := Create(path, header())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := range 4 {
+		if serr := w.Step(map[string]int{"kind": i}, []string{"passed"}, json.RawMessage(`{"turn":{"number":1}}`), 1); serr != nil {
+			t.Fatal(serr)
+		}
+	}
+	if rerr := w.Rollback(3, 0, 2); rerr != nil {
+		t.Fatal(rerr)
+	}
+	if cerr := w.Close(End{Ended: time.Now().UTC(), Finished: true, Winners: []int{0}}); cerr != nil {
+		t.Fatal(cerr)
+	}
+	f, err := os.Open(path) //nolint:gosec // a test file
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close() //nolint:errcheck // reading only
+	rec, err := ReadBrief(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rec.Header.Seats[1].Name != "Bo" || rec.End == nil || !rec.End.Finished || len(rec.Rollbacks) != 1 {
+		t.Errorf("brief %+v", rec)
+	}
+	if len(rec.Steps) != 4 || rec.Steps[3].N != 4 || rec.Steps[0].View != nil || rec.Steps[0].Intent != nil {
+		t.Errorf("steps %+v", rec.Steps)
+	}
+	if live := rec.Live(); len(live) != 2 {
+		t.Errorf("live %+v", live)
+	}
+	if _, err := ReadBrief(bytes.NewReader(stepFirst(t))); !errors.Is(err, ErrFormat) {
+		t.Errorf("a step before the header: %v", err)
+	}
+}
+
+// stepFirst is a gzip file whose first line is a step.
+func stepFirst(t *testing.T) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	gz := gzip.NewWriter(&buf)
+	if _, err := gz.Write([]byte(`{"kind":"step","n":1,"intent":{}}` + "\n")); err != nil {
+		t.Fatal(err)
+	}
+	if err := gz.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return buf.Bytes()
+}

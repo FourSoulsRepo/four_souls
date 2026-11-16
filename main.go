@@ -55,7 +55,10 @@ func main() {
 	}
 	app := NewApp()
 	cardFiles := appfiles.CardsFS()
-	hosting := host.New(appPath("records"), appPath("saves"))
+	// The hosted server writes its records where the Records screen
+	// lists them (M-01).
+	recordsDir := appPath("records")
+	hosting := host.New(recordsDir, appPath("saves"))
 
 	err = wails.Run(&options.App{
 		Title:  title,
@@ -71,7 +74,7 @@ func main() {
 		// Only the bindings/* structs; App is not bound (ADR 030, item 4).
 		Bind: []any{
 			about.New(), prefs.New(settingsFile), assets.New(cardFiles), setup.New(),
-			join.New(app), hosting, records.New(app), updater.New(app),
+			join.New(app), hosting, records.New(app, recordsDir), updater.New(app),
 		},
 		OnStartup: app.startup,
 		// Ending the context stops a running update (ADR 030, item 5).

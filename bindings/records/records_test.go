@@ -41,7 +41,7 @@ func TestFetchRecord(t *testing.T) {
 }
 
 func TestSaveRecordChecksTheLink(t *testing.T) {
-	r := New(background{})
+	r := New(background{}, t.TempDir())
 	for _, bad := range []string{"ftp://x/record", "https://x/save", "http://x/save", "file:///etc/passwd", "http:///record", "::"} {
 		if _, err := r.SaveRecord(bad); !errors.Is(err, ErrRecordURL) {
 			t.Errorf("%q: err %v, want ErrRecordURL", bad, err)

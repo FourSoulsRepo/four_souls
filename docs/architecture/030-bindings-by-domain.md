@@ -50,7 +50,7 @@ Use option 1.
    | `setup` | `Setup` | `CardSets`, `Challenges`, `DeckRatios` |
    | `join` | `Join` | `FindGames`, `CheckSeat`, `ServerStatus` |
    | `host` | `Host` | `Start`, `Stop`, `Info` |
-   | `records` | `Records` | `SaveRecord` |
+   | `records` | `Records` | `SaveRecord`, `List`, `Open`, `Delete`, `Export`, `PickFile` |
    | `updater` | `Updater` | `Check`, `Download`, `ApplyAndQuit`, `OpenReleases` |
 
 2. Names avoid the taken namespaces.

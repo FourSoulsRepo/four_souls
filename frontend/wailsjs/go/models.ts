@@ -425,6 +425,155 @@ export namespace protocol {
 
 }
 
+export namespace records {
+	
+	export class Card {
+	    ref: string;
+	    name: string;
+	    type: string;
+	    effects: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Card(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ref = source["ref"];
+	        this.name = source["name"];
+	        this.type = source["type"];
+	        this.effects = source["effects"];
+	    }
+	}
+	export class End {
+	    ended: number;
+	    finished: boolean;
+	    winners: number[];
+	
+	    static createFrom(source: any = {}) {
+	        return new End(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ended = source["ended"];
+	        this.finished = source["finished"];
+	        this.winners = source["winners"];
+	    }
+	}
+	export class Entry {
+	    path: string;
+	    name: string;
+	    started: number;
+	    players: string[];
+	    finished: boolean;
+	    winners: string[];
+	    steps: number;
+	    challenge: string;
+	    why: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Entry(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.path = source["path"];
+	        this.name = source["name"];
+	        this.started = source["started"];
+	        this.players = source["players"];
+	        this.finished = source["finished"];
+	        this.winners = source["winners"];
+	        this.steps = source["steps"];
+	        this.challenge = source["challenge"];
+	        this.why = source["why"];
+	    }
+	}
+	export class Seat {
+	    seat: number;
+	    name: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Seat(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.seat = source["seat"];
+	        this.name = source["name"];
+	    }
+	}
+	export class Turn {
+	    number: number;
+	    active: number;
+	    step: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new Turn(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.number = source["number"];
+	        this.active = source["active"];
+	        this.step = source["step"];
+	    }
+	}
+	export class Summary {
+	    path: string;
+	    game: string;
+	    server: string;
+	    started: number;
+	    seats: Seat[];
+	    sets: string[];
+	    challenge: string;
+	    difficulty: string;
+	    cards: Card[];
+	    steps: number;
+	    turns: Turn[];
+	    end?: End;
+	
+	    static createFrom(source: any = {}) {
+	        return new Summary(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.path = source["path"];
+	        this.game = source["game"];
+	        this.server = source["server"];
+	        this.started = source["started"];
+	        this.seats = this.convertValues(source["seats"], Seat);
+	        this.sets = source["sets"];
+	        this.challenge = source["challenge"];
+	        this.difficulty = source["difficulty"];
+	        this.cards = this.convertValues(source["cards"], Card);
+	        this.steps = source["steps"];
+	        this.turns = this.convertValues(source["turns"], Turn);
+	        this.end = this.convertValues(source["end"], End);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+
+}
+
 export namespace settings {
 	
 	export class HostSetup {

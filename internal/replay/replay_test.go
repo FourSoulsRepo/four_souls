@@ -107,3 +107,21 @@ func TestRefused(t *testing.T) {
 		t.Errorf("format %d: %v", record.Format, err)
 	}
 }
+
+// TestTurns: a turn starts where the view's turn number changes.
+func TestTurns(t *testing.T) {
+	r := &Replay{}
+	for i, v := range []string{
+		`{"turn":{"number":0,"active":0}}`,
+		`{"turn":{"number":1,"active":1}}`,
+		`{"turn":{"number":1,"active":1}}`,
+		`not a view`,
+		`{"turn":{"number":2,"active":0}}`,
+	} {
+		r.Steps = append(r.Steps, Step{N: i + 1, View: json.RawMessage(v)})
+	}
+	got := fmt.Sprint(r.Turns())
+	if want := "[{0 0 0} {1 1 1} {2 0 4}]"; got != want {
+		t.Errorf("turns %s, want %s", got, want)
+	}
+}

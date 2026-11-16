@@ -1,5 +1,6 @@
-// Package records is the binding that saves a finished game's record
-// from the game server (RP-05, ADR 030).
+// Package records is the binding of match records (ADR 030): it saves
+// a finished game's record from the game server (RP-05), and lists,
+// opens, exports and deletes saved records (M-01, ADR 031).
 package records
 
 import (
@@ -11,10 +12,12 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
+	"github.com/FourSoulsRepo/four_souls/internal/replay"
 	"github.com/FourSoulsRepo/record"
 )
 
@@ -35,20 +38,26 @@ type api interface {
 	Context() context.Context
 }
 
-// Records saves match records.
+// Records saves, lists and opens match records.
 type Records struct {
 	api api
+	dir string // the records folder: hosted games' records, and saves by default
+
+	mu   sync.Mutex
+	open *replay.Replay // the record Open opened, for the player (10.2)
 }
 
-// New makes the binding.
-func New(a api) *Records {
-	return &Records{api: a}
+// New makes the binding; dir is the records folder.
+func New(a api, dir string) *Records {
+	return &Records{api: a, dir: dir}
 }
 
 // SaveRecord downloads a finished game's record from the game server
 // and asks where to save it (RP-05). link is http://host:port/record?…,
-// or https://… for a server behind an HTTPS proxy (8.18); the dialog suggests the server's file name, cleaned again. The result
-// is the saved file, or "" when the player cancelled.
+// or https://… for a server behind an HTTPS proxy (8.18). The dialog
+// suggests the server's file name, cleaned again, in the records
+// folder, so the Records screen lists it (M-01). The result is the
+// saved file, or "" when the player cancelled.
 func (r *Records) SaveRecord(link string) (string, error) {
 	u, err := url.Parse(link)
 	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Path != "/record" || u.Host == "" {
@@ -61,10 +70,12 @@ func (r *Records) SaveRecord(link string) (string, error) {
 	if name == "" {
 		name = "four-souls-" + record.SafeName(u.Query().Get("game")) + record.Ext
 	}
+	_ = os.MkdirAll(r.dir, 0o750) //nolint:errcheck // the dialog starts elsewhere without it
 	path, err := runtime.SaveFileDialog(r.api.Context(), runtime.SaveDialogOptions{
-		Title:           "Save the match record",
-		DefaultFilename: name,
-		Filters:         []runtime.FileFilter{{DisplayName: "Four Souls records", Pattern: "*" + record.Ext}},
+		Title:            "Save the match record",
+		DefaultDirectory: r.dir,
+		DefaultFilename:  name,
+		Filters:          []runtime.FileFilter{{DisplayName: "Four Souls records", Pattern: "*" + record.Ext}},
 	})
 	if err != nil || path == "" {
 		return "", err //nolint:wrapcheck // shown to the player as is
