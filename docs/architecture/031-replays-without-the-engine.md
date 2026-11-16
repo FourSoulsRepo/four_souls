@@ -73,6 +73,10 @@ Use option 1.
       1. 0.8 s at 1× after a step with events.
       2. 0.2 s at 1× after a step without.
    7. Show or hide hands (RP-04); hands show by default.
+   8. The bar uses the game's own look: buttons, slider, turn list.
+   9. The viewer can hide the bar while watching (owner, 2026-11-16).
+      1. A small button stays and brings it back.
+      2. Hiding the bar never pauses the replay.
 
 ## Consequences
 

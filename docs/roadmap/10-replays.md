@@ -6,7 +6,7 @@ Ideas: RP-02, RP-04, RP-10, RP-11, M-01.
 
 Rules for this step (owner, 2026-11-16):
 
-1. Work order: 10.5, 10.6, 10.1, 10.2, 10.3.
+1. Work order: 10.5, 10.6, 10.1, 10.2, 10.3, 10.7.
 2. Decisions: ADR 031; read it before any sub-step.
 3. The step runs on the `step-18-play-test` branch.
 4. Playing a record never calls the rules engine.
@@ -80,3 +80,18 @@ Rules for this step (owner, 2026-11-16):
 3. Done when:
    1. A server game's record has a view per step.
    2. That view equals the engine's judge view after the step.
+
+### [ ] 10.7 Replay bar look and hiding
+
+1. Goal: the bar looks like the game; the viewer can hide it (owner, 2026-11-16).
+2. Tasks:
+   1. Buttons, speed choice, turn list and slider in the game's own style.
+   2. Reuse the existing button and panel styles; no new UI library.
+   3. A button hides the bar; a small button stays to bring it back.
+   4. Hiding never pauses autoplay; Esc still leaves the replay.
+   5. The hidden state lasts while the record is open.
+   6. ADR 031, items 4.8 and 4.9.
+3. Done when:
+   1. e2e: hide and show the bar; autoplay goes on while hidden.
+   2. Screenshots: the bar shown and hidden.
+   3. UC-45 and the Client wiki describe it.
