@@ -7,7 +7,8 @@ import (
 )
 
 // Snapshot is what CheckEvents compares: each object's zone, damage
-// and charge, and the order of every deck (22.2, TS-09).
+// and charge, and the order of every deck (22.2, TS-09). It keeps max
+// HP too, so a lower max HP explains only its own damage drop (22.3).
 type Snapshot struct {
 	objects []objectState
 	decks   [deckCount][]ObjectID
@@ -17,6 +18,7 @@ type objectState struct {
 	Zone    Zone
 	Damage  int
 	Charged bool
+	MaxHP   int
 }
 
 // moveLeg is one move: the card of from became the new object to.
@@ -46,6 +48,9 @@ type Change struct {
 	From, To Zone
 	// Before and After are the old and new values of damage or charge.
 	Before, After int
+	// MaxBefore and MaxAfter: for damage, the object's max HP before and
+	// after (checkedMaxHP).
+	MaxBefore, MaxAfter int
 	// at: for a move, the number of the step's events before it.
 	at int
 }
@@ -77,7 +82,7 @@ type SilentChange struct {
 func (g *Game) TakeSnapshot() Snapshot {
 	s := Snapshot{objects: make([]objectState, len(g.Objects))}
 	for i, o := range g.Objects {
-		s.objects[i] = objectState{Zone: o.Zone, Damage: o.Damage, Charged: o.Charged}
+		s.objects[i] = objectState{Zone: o.Zone, Damage: o.Damage, Charged: o.Charged, MaxHP: g.checkedMaxHP(ObjectID(i))}
 	}
 	for d := range deckCount {
 		s.decks[d] = slices.Clone(g.Decks[d])
@@ -166,6 +171,7 @@ func (g *Game) Changes(before Snapshot) []Change {
 		}
 		if b.Damage != o.Damage {
 			c.What, c.Before, c.After = "damage", b.Damage, o.Damage
+			c.MaxBefore, c.MaxAfter = b.MaxHP, g.checkedMaxHP(id)
 			out = append(out, c)
 		}
 		if b.Charged != o.Charged {
@@ -187,6 +193,18 @@ func (g *Game) Changes(before Snapshot) []Change {
 		}
 	}
 	return out
+}
+
+// checkedMaxHP is the max HP checkMaxHP keeps for an object in play
+// with HP, not a player's character (R-MECH-21); else 0.
+func (g *Game) checkedMaxHP(id ObjectID) int {
+	if g.Objects[id].Zone.Kind != ZoneInPlay || g.def(id).HP == 0 {
+		return 0
+	}
+	if _, ok := g.characterOf(id); ok {
+		return 0
+	}
+	return g.objectMaxHP(id)
 }
 
 func boolInt(b bool) int {
@@ -354,7 +372,8 @@ var silentChanges = []SilentChange{
 		Name:   "max HP fell",
 		Reason: "a lower max HP removes as much damage; not healing, and the HP left stays the same (R-MECH-21)",
 		Match: func(_ *Game, c Change, _ []Event) bool {
-			return c.What == "damage" && c.After < c.Before && c.To.Kind == ZoneInPlay
+			fell := c.MaxBefore - c.MaxAfter
+			return c.What == "damage" && c.To.Kind == ZoneInPlay && fell > 0 && c.After < c.Before && c.Before-c.After <= fell
 		},
 	},
 }

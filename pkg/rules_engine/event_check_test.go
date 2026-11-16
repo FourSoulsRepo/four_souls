@@ -110,3 +110,35 @@ func TestCheckEventsDeckRefill(t *testing.T) {
 		t.Fatalf("a silent refill passed the check: %v", err)
 	}
 }
+
+// 22.3: a damage drop passes as "max HP fell" only when the max HP fell
+// at least as much.
+func TestCheckEventsMaxHPFell(t *testing.T) {
+	g := eventCheckGame(t)
+	top, _ := g.Monsters[0].TopOf()
+	g.Object(top).Damage = 1
+	snap := g.TakeSnapshot()
+	g.Object(top).Damage = 0
+	if err := g.CheckEvents(snap, nil); err == nil || !strings.Contains(err.Error(), "damage") {
+		t.Fatalf("a silent heal passed as a lower max HP: %v", err)
+	}
+	var fell SilentChange
+	for _, s := range SilentChanges() {
+		if s.Name == "max HP fell" {
+			fell = s
+		}
+	}
+	inPlay := Zone{Kind: ZoneInPlay}
+	c := Change{What: "damage", To: inPlay, Before: 2, After: 1, MaxBefore: 3, MaxAfter: 2}
+	if !fell.Match(g, c, nil) {
+		t.Error("max HP 3 -> 2 explains damage 2 -> 1")
+	}
+	c.After = 0
+	if fell.Match(g, c, nil) {
+		t.Error("max HP 3 -> 2 does not explain damage 2 -> 0")
+	}
+	c.After, c.MaxAfter = 1, 3
+	if fell.Match(g, c, nil) {
+		t.Error("the same max HP explains no damage drop")
+	}
+}

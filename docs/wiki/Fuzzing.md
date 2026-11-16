@@ -38,7 +38,7 @@ Changes that need no event are on the `silentChanges` list, each with its reason
 * a slot card covered by the card that enters the slot on top; its `entered_play` names the slot (R-ZONE-10);
 * minion slots renumbered after one is removed; no card moves (R-CHAL-11);
 * a shuffle: the deck shows no card and no count change;
-* damage removed by a lower max HP: not healing, and the HP left stays the same (R-MECH-21).
+* damage removed by a lower max HP: not healing, and the HP left stays the same (R-MECH-21). The snapshot keeps each object's max HP, so only a drop no larger than the max HP's fall passes (22.3).
 
 When the check fails, the message lists each change no event names, then the step's event kinds. Find the code that made the change; give it an event (log a 19.N item first, as for any bug), or, if it is silent on purpose, add it to the list with its reason.
 
