@@ -22,6 +22,7 @@ internal/lan/          finds hosted games on the LAN (ADR 009)
 internal/legal/        fan-game notice used by app and server
 internal/msgerr/       player messages out of the bindings (ADR 021)
 internal/protocol/     network messages (never split out)
+internal/replay/       reads a record's live steps and views for the replay player, no engine (ADR 031)
 internal/server/       game rooms and the WebSocket transport (ADR 006)
 internal/settings/     the player's app settings file
 internal/version/      app version stamped at link time

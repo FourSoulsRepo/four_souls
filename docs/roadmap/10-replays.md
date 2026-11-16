@@ -68,7 +68,7 @@ Rules for this step (owner, 2026-11-16):
 3. Done when:
    1. ADR 031 is Accepted.
 
-### [ ] 10.6 Views in the record
+### [x] 10.6 Views in the record
 
 1. Goal: every new record plays without the engine (ADR 031, 1).
 2. Tasks:

@@ -99,6 +99,10 @@ Rules that keep it so:
 
 Found and fixed: an `activate` intent with an unknown object ID made the engine panic, which stopped the whole server. It is now refused (`TestUnknownObjectsAreRefused`).
 
+## Records
+
+`records.go` (ADR 007, ADR 031). `openRecord` starts a game's `.fsrec` with the header; `apply` writes one `step` line per applied intent: the intent, every event, the checksum and, from record format 2, `view`, the judge view after the step (`engine.ViewJudge`: every hand, never deck order). The view is the protocol's hand-written encoder (`protocol.ViewJSON`), the same JSON clients read, so the record needs no second `json.Marshal`. It costs one more view per applied step. A saved or restarted game appends a new part (`record.Append`) through the same `apply`, so its steps have views too. `internal/replay` reads such a record for the replay player without the engine: the header and the live steps with their views; it refuses format 1 (`ErrBeforeReplays`) and newer formats (`ErrNewer`).
+
 ## Rollback
 
 `rollback.go` (ADR 020, 17.3). A game whose `Options.Rollback` is set keeps a base state (`Room.base`, the engine's `Save`) and the live steps since it (`Room.live`: step number, intent and checksum; no events). The base is the game's start, a loaded save, or the state a restart kept when the history did not survive it (`setBase`, below). A game without the mode keeps nothing.
@@ -116,6 +120,6 @@ A server restart (17.5, ADR 020, item 10) keeps the history when it can. `keepHi
 ## Tests
 
 * `hub_test.go`, `setup_test.go`, `challenge_test.go`, `flow_test.go`, `pause_test.go`, `records_test.go`, `saves_test.go`, `presence_test.go`, `rollback_test.go`, `soft_test.go`, `restart_rollback_test.go`: in-memory connections.
-* `integration_test.go`: whole games of bots over real WebSockets, a drop and a reconnect, a save and a load; every record must replay in the engine. Under `-race` only the 2-player game runs.
+* `integration_test.go`: whole games of bots over real WebSockets, a drop and a reconnect, a save and a load; every record must replay in the engine, and each step's view must equal the engine's judge view after it (`replayViews`). Under `-race` only the 2-player game runs.
 * `internal/protocol/testdata/golden.jsonl` pins the JSON of every message: rename or remove a field, bump `protocol.Version`; then `go test ./internal/protocol -update`.
 * Timers count `Hub.second`, so tests make a second one millisecond.

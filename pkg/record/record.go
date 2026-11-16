@@ -1,8 +1,8 @@
 // Package record reads and writes match records (ADR 007): a .fsrec
 // file is gzip-compressed JSON lines, a header, one line per applied
-// step or rollback and, for a game that ended, an end line. Intents
-// and events are kept as raw JSON, so the package needs no engine and
-// old records stay readable.
+// step or rollback and, for a game that ended, an end line. Intents,
+// events and views are kept as raw JSON, so the package needs no engine
+// and old records stay readable.
 package record
 
 import (
@@ -20,8 +20,13 @@ import (
 	"time"
 )
 
-// Format is the record format version.
-const Format = 1
+// Format is the record format version. Format 2 keeps the judge view
+// in every step (ADR 031).
+const Format = 2
+
+// oldestFormat is the oldest format Read reads: format 1 has no views,
+// but tests still replay it through the engine.
+const oldestFormat = 1
 
 // Ext is the file extension of records (RP-09).
 const Ext = ".fsrec"
@@ -76,14 +81,16 @@ type Card struct {
 	Effects []string `json:"effects,omitempty"`
 }
 
-// Step is one applied step: the intent, every event (hands too, RP-04)
-// and the state checksum after it (RP-12).
+// Step is one applied step: the intent, every event (hands too, RP-04),
+// the state checksum after it (RP-12) and, from format 2, the judge
+// view after it (ADR 031).
 type Step struct {
 	Kind     string          `json:"kind"` // "step"
 	N        int             `json:"n"`
 	Intent   json.RawMessage `json:"intent"`
 	Events   json.RawMessage `json:"events"`
 	Checksum uint64          `json:"checksum"`
+	View     json.RawMessage `json:"view,omitempty"` // none in format 1
 }
 
 // Rollback undid the live steps from step To on (ADR 020, item 9).
@@ -210,9 +217,10 @@ func (w *Writer) flushWaiting(dirty *bool) {
 	}
 }
 
-// Step queues one applied step. It returns an error the writer hit on
-// an earlier line.
-func (w *Writer) Step(intent, events any, checksum uint64) error {
+// Step queues one applied step. view is the judge view after it, as
+// JSON (ADR 031); the caller encodes it. It returns an error the writer
+// hit on an earlier line.
+func (w *Writer) Step(intent, events any, view json.RawMessage, checksum uint64) error {
 	if err := w.failure(); err != nil {
 		return err
 	}
@@ -225,7 +233,7 @@ func (w *Writer) Step(intent, events any, checksum uint64) error {
 		return fmt.Errorf("record: %w", err)
 	}
 	w.steps++
-	w.jobs <- Step{Kind: "step", N: w.steps, Intent: in, Events: ev, Checksum: checksum}
+	w.jobs <- Step{Kind: "step", N: w.steps, Intent: in, Events: ev, Checksum: checksum, View: view}
 	return nil
 }
 
@@ -325,6 +333,10 @@ type Record struct {
 // ErrFormat means a file is not a record this package can read.
 var ErrFormat = errors.New("record: not a record of a known format")
 
+// ErrNewer means a record has a newer format than this package: a
+// newer app made it. It is an ErrFormat too.
+var ErrNewer = fmt.Errorf("%w: made by a newer app", ErrFormat)
+
 // Read reads a whole record. A file cut off in the middle (a crash) is
 // read up to its last complete line.
 func Read(r io.Reader) (*Record, error) {
@@ -349,8 +361,11 @@ func Read(r io.Reader) (*Record, error) {
 		case first && kind.Kind != "header":
 			return nil, ErrFormat
 		case kind.Kind == "header":
-			if err := json.Unmarshal(line, &rec.Header); err != nil || rec.Header.Format != Format {
+			if err := json.Unmarshal(line, &rec.Header); err != nil || rec.Header.Format < oldestFormat {
 				return nil, ErrFormat
+			}
+			if rec.Header.Format > Format {
+				return nil, ErrNewer
 			}
 		case kind.Kind == "step":
 			var s Step

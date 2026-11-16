@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"maps"
@@ -24,7 +25,8 @@ import (
 
 // TestRecordReplays: a game's record replays in the engine with every
 // checksum matching; a stopped game is marked unfinished (6.9). The
-// header names the server (N-18).
+// header names the server (N-18). Every step keeps the judge view after
+// it, as the engine builds it (ADR 031).
 func TestRecordReplays(t *testing.T) {
 	dir := t.TempDir()
 	h := NewHub()
@@ -93,6 +95,42 @@ func TestRecordReplays(t *testing.T) {
 	if _, err := engine.Replay(setup, steps); err != nil {
 		t.Fatalf("the record does not replay: %v", err)
 	}
+	replayViews(t, setup, rec)
+}
+
+// replayViews replays a record step by step in the engine. Each step's
+// checksum and judge view must match the engine's after it (ADR 031).
+// It returns the replayed game.
+func replayViews(t *testing.T, setup engine.Setup, rec *record.Record) *engine.Game {
+	t.Helper()
+	if rec.Header.Format != record.Format {
+		t.Errorf("record format %d", rec.Header.Format)
+	}
+	g, err := engine.Replay(setup, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, st := range rec.Steps {
+		var in engine.Intent
+		if jerr := json.Unmarshal(st.Intent, &in); jerr != nil {
+			t.Fatal(jerr)
+		}
+		got, serr := g.Step(in)
+		if serr != nil {
+			t.Fatalf("step %d: %v", st.N, serr)
+		}
+		if got.Checksum != st.Checksum {
+			t.Fatalf("step %d: checksum %d, record %d", st.N, got.Checksum, st.Checksum)
+		}
+		want, merr := json.Marshal(g.View(engine.Viewer{Kind: engine.ViewJudge}))
+		if merr != nil {
+			t.Fatal(merr)
+		}
+		if !bytes.Equal(st.View, want) {
+			t.Fatalf("step %d: record view\n%s\nengine judge view\n%s", st.N, st.View, want)
+		}
+	}
+	return g
 }
 
 // replaySetup rebuilds a game's engine setup from its record header, as
