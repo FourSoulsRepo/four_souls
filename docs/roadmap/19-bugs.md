@@ -5128,7 +5128,7 @@ Totals by system (157 items):
    4. Search every set for them; ban only those needed.
    5. Check: the spec, both browsers, 5 workers, 10 repeats.
 
-### [ ] 19.166 Dedicated server: a finished game never closes
+### [x] 19.166 Dedicated server: a finished game never closes
 
 1. Goal: a finished game leaves the lobby and its room closes.
 2. Report (owner, 2026-11-16)
@@ -5167,3 +5167,5 @@ Totals by system (157 items):
    7. Go test: `TestFinishedGameLeavesLobby` (a lost challenge).
    8. Wiki `Server.md` and UC-07 updated.
    9. No screen change, so no screenshots.
+8. Owner notes (2026-11-16)
+   1. Owner marks 19.166 solved.
