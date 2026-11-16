@@ -61,7 +61,7 @@ Ideas: TS-07, TS-08, TS-09, TS-10, TS-11, TS-12.
    1. The list holds only changes silent on purpose.
    2. `make fuzz` passes.
 
-### [ ] 22.4 The client reads every view field
+### [x] 22.4 The client reads every view field
 
 1. Goal: a field the server sends and the client never reads fails a test (TS-07).
 2. Tasks:
@@ -72,7 +72,7 @@ Ideas: TS-07, TS-08, TS-09, TS-10, TS-11, TS-12.
    5. Log each other unread field as a 19.N item; do not fix it here.
    6. Wiki: the checks in `docs/wiki/Frontend-tests.md`.
 3. Done when:
-   1. Removing the read of `copy` in `Card.tsx` fails the Vitest check.
+   1. Removing the read of `copy` in `table.ts` fails the Vitest check.
    2. `make test frontend` runs both checks.
 
 ### [ ] 22.5 Fix the unread fields from 22.4

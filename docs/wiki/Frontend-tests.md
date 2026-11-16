@@ -1,11 +1,12 @@
 # Frontend tests
 
-The frontend is tested like the Go code (ADR 008). Three layers, from fast to slow:
+The frontend is tested like the Go code (ADR 008). Its layers, from fast to slow:
 
 | Layer | Tool | Where | Run |
 |---|---|---|---|
 | Unit tests | Vitest | `frontend/src/**/*.test.ts` | `make frontend` (with typecheck and lint) |
 | Protocol check | Vitest | reads `internal/protocol/testdata/golden.jsonl` | `make frontend` |
+| Update fields | Go test, Vitest | `view_fields_test.go`, `viewFields.test.ts` | `make test`, `make frontend` |
 | UI tests | Playwright | `e2e/tests/*.spec.ts` | `make e2e` |
 
 Frontend changes gate on `make frontend e2e`, next to the Go gate. `make e2e` runs every test in Chromium and in WebKit (the engine of macOS's WKWebView, and the nearest check for Linux's WebKitGTK).
@@ -29,6 +30,21 @@ The frontend follows the same KISS rules as the backend:
 A test sits next to its file: `store.ts` and `store.test.ts`. They run in Node, without a DOM. `translations.test.ts` is the one that touches files: `make i18n` runs it on the real language files ([Client](Client#translation-checks)); the checks it calls are tested on test tables in `locale.test.ts`, so no trial language sits in `locales/`.
 
 The inventory tests (`animations.test.ts`, `layers.test.ts`, `i18n.test.ts`) list the source files with `import.meta.glob`. Vitest's on-disk module cache (`fsModuleCache`, on by default since Vitest 5) would keep an old file list, so a new file went unchecked; `vite.config.ts` turns that cache off (19.124).
+
+## Every update field is read
+
+The client must read every field the server sends in a game update, or say why not (TS-07, 22.4). Before this check, the engine sent a field and no screen drew it, and nothing failed: Guppy's Eye's revealed hands (19.5), bonus soul counters (19.29), There's Options' top card (19.30). Two tests keep it so:
+
+1. `TestViewFieldsInProtocolTS` (`internal/protocol/view_fields_test.go`, `make test`) walks `protocol.Update` by reflection: the view, the events, the prompt, the seats, every struct inside, by their `json` names (`-` skipped; `engine.Msg` is a text, not walked). Next to it, it reads the same path in `frontend/src/protocol.ts`, starting at `interface Update`. Each field Go sends must be declared there. A small reader of its own does that: one member per line, inline object types (`look?: { deck?: number }`), and a type that names one interface of the file (`(CardView | null)[]`).
+2. `viewFields.test.ts` (`make frontend`) parses `protocol.ts` with the TypeScript compiler and lists every field reachable from `Update`, as `Interface.field` (`Prompt.look.deck` for an inline type). Each must be read in app code under `frontend/src`, or be in its `unread` list with a reason.
+
+A read is the field's name in a property access (`c.copy`, `c?.copy`), an element access with a literal (`c['copy']`) or a destructuring (`{ copy }`). Reads in `protocol.ts`, in tests and in the dev-only fakes (`fakeBridge.ts`, `fakeReplay.ts`) do not count. Writing a field in an object literal is not a read.
+
+The check goes by name, not by type. A common name such as `id`, `kind`, `card` or `amount` counts as read when any object's field of that name is read; `Seat.connected` passes on the lobby's reads alone. So a pass means "the name is read somewhere", not "this field is drawn". It catches a field whose name nothing reads, as most new fields are; a precise check would need the type checker over the whole app.
+
+The `unread` list has two kinds of entries. A field unread on purpose says why: the engine's own bookkeeping (`Turn.entered`), or data that reaches the player another way (`Turn.bonus_attacks_used`: the attacks left are on the player). A gap names its step 19 item (`19.180: …`) and stays until it is fixed. An entry whose field is gone or now read fails the test, so the list stays current.
+
+Scope: the update message only. Lobby, setup and rollback request messages are not checked. A new field in a Go view type fails the Go test until `protocol.ts` has it, then the Vitest check until the app reads it or lists why not.
 
 ## UI tests
 

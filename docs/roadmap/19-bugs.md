@@ -36,7 +36,7 @@ This step never closes; new reports are appended.
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151 | 21 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178 | 15 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
-| D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157      | 7     |
+| D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141 | 15 |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119, 19.167 | 12 |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
@@ -57,13 +57,13 @@ This step never closes; new reports are appended.
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 
-Totals by system (170 items):
+Totals by system (178 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B, T, U, W | 39 |
 | Card data | C       | 2     |
-| Client    | D–G, O, P, S, V | 43 |
+| Client    | D–G, O, P, S, V | 51 |
 | Server    | H, N    | 4     |
 | e2e       | I, J    | 72    |
 | Release   | K       | 4     |
@@ -5565,3 +5565,92 @@ Totals by system (170 items):
    1. Read the match record; find why the item was not spent.
    2. Fix the test or the bug it shows.
    3. Check: the spec, both browsers, 5 workers, 10 repeats.
+
+### [ ] 19.180 The monster a player must attack is not shown
+
+1. Goal: the active player sees which monster they must attack.
+2. Report (22.4 check, 2026-11-16)
+   1. `viewFields.test.ts`: the client never reads `Turn.must_attack`.
+3. Cause (the code)
+   1. The engine sends the monster (Monster Manual, Lust for Blood, Friendly Ball).
+   2. The client draws nothing for it.
+   3. Ending the turn early only says "You must attack first".
+4. Tasks:
+   1. Fix in 22.5: draw it, or list it with a reason.
+
+### [ ] 19.181 How many attacks a player must make is not shown
+
+1. Goal: the active player sees how many more attacks they owe.
+2. Report (22.4 check, 2026-11-16)
+   1. `viewFields.test.ts`: the client never reads `Turn.must_attacks`.
+3. Cause (the code)
+   1. `ForceAttacks` counts them (Envy, Conquest, Portal, Gutted Fatty).
+   2. The client shows only the attacks left, not the ones owed.
+4. Tasks:
+   1. Fix in 22.5: draw it, or list it with a reason.
+
+### [ ] 19.182 Forced attacks on the monster deck are not shown
+
+1. Goal: the active player sees how many deck attacks they owe.
+2. Report (22.4 check, 2026-11-16)
+   1. `viewFields.test.ts`: the client never reads `Turn.must_attack_deck`.
+3. Cause (the code)
+   1. `ForceAttacks(n, true)` counts them (Ambush, I Am Error).
+   2. The client draws nothing for it.
+4. Tasks:
+   1. Fix in 22.5: draw it, or list it with a reason.
+
+### [ ] 19.183 Attacks only on the monster deck are not shown
+
+1. Goal: the active player sees which of their attacks are deck-only.
+2. Report (22.4 check, 2026-11-16)
+   1. `viewFields.test.ts`: the client never reads `Turn.deck_attacks`.
+3. Cause (the code)
+   1. `AddDeckAttack` adds one (Big Spider, Gold Key, Blastocyst).
+   2. The player's attack count includes it, as a plain attack.
+4. Tasks:
+   1. Fix in 22.5: draw it, or list it with a reason.
+
+### [ ] 19.184 Who helps the next attack is not shown
+
+1. Goal: every seat sees who will help the next attack.
+2. Report (22.4 check, 2026-11-16)
+   1. `viewFields.test.ts`: the client never reads `Turn.next_helpers`.
+3. Cause (the code)
+   1. `HelpNextAttack` lists them (Sibling Rivalry).
+   2. The client draws nothing until the attack.
+4. Tasks:
+   1. Fix in 22.5: draw it, or list it with a reason.
+
+### [ ] 19.185 Who shares the next attack's rewards is not shown
+
+1. Goal: every seat sees who will share the next attack's rewards.
+2. Report (22.4 check, 2026-11-16)
+   1. `viewFields.test.ts`: the client never reads `Turn.next_share`.
+3. Cause (the code)
+   1. `HelpNextAttack(p, true)` lists them (Sibling Rivalry).
+   2. The client draws nothing for it.
+4. Tasks:
+   1. Fix in 22.5: draw it, or list it with a reason.
+
+### [ ] 19.186 A roll result on the stack does not show its number
+
+1. Goal: a roll's effect on the stack shows the number it acts on.
+2. Report (22.4 check, 2026-11-16)
+   1. `viewFields.test.ts`: the client never reads `StackItem.roll_result`.
+3. Cause (the code)
+   1. A card's roll pushes its "roll result" trigger with the number.
+   2. The stack line names the card only; a later roll may hide the die.
+4. Tasks:
+   1. Fix in 22.5: draw it, or list it with a reason.
+
+### [ ] 19.187 A kicked player is not shown as gone
+
+1. Goal: every seat sees that a kicked player's seat is empty for good.
+2. Report (22.4 check, 2026-11-16)
+   1. `viewFields.test.ts`: the client never reads `Seat.kicked` in an update.
+3. Cause (the code)
+   1. After a kick vote the server sends `kicked` (N-08).
+   2. In a game the client draws nothing from the seats' state.
+4. Tasks:
+   1. Fix in 22.5: draw it, or list it with a reason.
