@@ -8,7 +8,7 @@ import { cardName, tr, trRe } from './locale';
 import { saveAndContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, passButton, playLoot } from './turn';
+import { activePage, click, holds, Intent, may, passButton, playLoot, question } from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -35,22 +35,23 @@ async function playMoon(pages: Page[], who: string[], before: (active: Page, oth
   await before(active, other);
   const moon = active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: cardName('xviii_the_moon') });
   await playLoot(active, moon.first(), click);
-  await passUntil(pages, active.getByRole('dialog', { name: tr('ask.one_on_top') }));
+  await passUntil(pages, active, 'ask.one_on_top');
+  await expect(active.getByRole('dialog', { name: tr('ask.one_on_top') })).toBeVisible();
   return { active, other };
 }
 
-// passUntil passes on every page until the locator shows.
-async function passUntil(pages: Page[], shown: ReturnType<Page['locator']>): Promise<void> {
+// passUntil passes on every page until the game asks the asked page's
+// player this question (its text key).
+async function passUntil(pages: Page[], asked: Page, key: string): Promise<void> {
   await expect
     .poll(
       async () => {
-        if (await shown.isVisible()) {
+        if (await holds(asked, question(key))) {
           return true;
         }
         for (const page of pages) {
-          const pass = passButton(page);
-          if ((await pass.isVisible()) && (await pass.isEnabled())) {
-            await pass.click().catch(() => undefined);
+          if (await holds(page, may(Intent.pass))) {
+            await passButton(page).click({ timeout: 1000 }).catch(() => undefined);
           }
         }
         return false;
@@ -289,7 +290,7 @@ test('Sleight of Hand deals the monster deck into the order and puts it back (20
   await click(active, item);
   await click(active, active.getByRole('menu').getByRole('menuitem', { name: tr('actions.use') }));
   const deck = active.getByRole('button', { name: tr('ask.deck.monster') });
-  await passUntil(pages, deck);
+  await passUntil(pages, active, 'card.sleight_of_hand.look_at_the_top_5');
   await shot(active, '20.18-sleight-deck');
   await deck.click();
   const dialog = active.getByRole('dialog', { name: tr('ask.put_back') });
@@ -423,7 +424,8 @@ test('XII. The Hanged Man: others see each look; the board shows each card go on
   await playLoot(active, card.first(), click);
   await active.mouse.move(5, 5);
   const dialog = active.getByRole('dialog', { name: tr('card.xii_the_hanged_man.put_this_card_on_the') });
-  await passUntil(pages, dialog);
+  await passUntil(pages, active, 'card.xii_the_hanged_man.put_this_card_on_the');
+  await expect(dialog).toBeVisible();
   // One question per deck: bottom, top, bottom. Others see one back
   // over the deck each question is about.
   const answers = [

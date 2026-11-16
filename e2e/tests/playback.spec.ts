@@ -6,7 +6,7 @@ import { feel } from '../../frontend/src/feel';
 import { startGame } from './game';
 import { shot } from './shot';
 import { tr } from './locale';
-import { activePage, click, endTurn, endTurnButton, seen, settle, tablePicks, turnAction } from './turn';
+import { activePage, click, endTurn, endTurnButton, Intent, may, Purpose, seen, settle, tablePicks, turnAction, until, untilPick } from './turn';
 
 // listenSounds records the file of every sound played from now on, in
 // window.played (15.50). Each sound still plays.
@@ -1983,7 +1983,7 @@ test('a turn starts with its banner; a pass during it is accepted (20.8)', async
   // The end of the turn waits for answers; then both see the banner.
   const banner = next.getByTestId('turn-banner');
   const other = active.getByTestId('turn-banner');
-  await settle(pages, click, async () => (await banner.count()) > 0 || (await other.count()) > 0);
+  await settle(pages, click, async () => (await seen(next)).turn > before.turn);
   await expect(banner).toBeAttached();
   await expect(other).toBeAttached();
   await next.waitForTimeout(100);
@@ -2221,9 +2221,11 @@ test('a +3¢ counts 1, 2, 3, a step at a time (20.11)', async ({ browser }) => {
 test('a buy previews its cost on the cents counter while hovered (20.11)', async ({ browser }) => {
   const pages = await startGame(browser, ['Cy', 'Di'], { animations: true });
   const active = await activePage(pages, click);
+  await until(active, may(Intent.purchase));
   await expect(turnAction(active, 'Buy')).toBeEnabled();
   await active.keyboard.press('b');
-  await settle(pages, click, async () => tablePicks(active).first().isVisible());
+  await untilPick(pages, click, active, Purpose.purchase);
+  await expect(tablePicks(active).first()).toBeVisible();
   const coins = active.locator('.own-coins');
   await expect(coins.locator('.cents-cost')).toHaveCount(0);
   // The treasure deck's top costs the base price whatever the deal.

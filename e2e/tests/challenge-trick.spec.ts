@@ -11,7 +11,7 @@ import { repeatNames, startGame, statMonsters } from './game';
 import { cardName, tr, trRe } from './locale';
 import { editSave, saveEditContinue } from './saves';
 import { shot } from './shot';
-import { activePage, canEndTurn, click, enabled, endTurn, gameOver, settle, throwButton, turnAction } from './turn';
+import { activePage, Ask, asked as askedOf, canEndTurn, click, endTurn, gameOver, holds, Intent, may, Purpose, question, settle, throwButton, turnAction, untilPick } from './turn';
 
 test.setTimeout(180_000);
 
@@ -244,10 +244,11 @@ async function untilTurn(pages: Page[]): Promise<Page | undefined> {
   return undefined;
 }
 
-// asked is the page that shows the dialog, if any.
-async function asked(pages: Page[], name: string): Promise<Page | undefined> {
+// asked is the page whose player the game asks this question (its
+// text key), if any.
+async function asked(pages: Page[], key: string): Promise<Page | undefined> {
   for (const page of pages) {
-    if (await page.getByRole('dialog', { name }).isVisible()) {
+    if (await holds(page, question(key))) {
       return page;
     }
   }
@@ -267,7 +268,7 @@ function first(pages: Page[]): Page {
 async function attack(pages: Page[], active: Page, id: number) {
   await click(active, turnAction(active, 'Attack'));
   const target = board(active).locator(`.card.hl-pick[data-zone="obj-${String(id)}"]`);
-  await settle(pages, click, async () => (await target.count()) > 0);
+  await untilPick(pages, click, active, Purpose.attackTarget);
   await click(active, target);
 }
 
@@ -293,9 +294,10 @@ test('Trick or Treat at Normal: the table, a flip at turn start, the timer runs 
   }
 
   // As the turn starts, the active player may flip it (R-TRICK-11).
-  const question = tr('card.trick_treat.flip_to_treat');
-  await settle(pages, click, async () => (await asked(pages, question)) !== undefined);
-  const flipper = await asked(pages, question);
+  const flip = 'card.trick_treat.flip_to_treat';
+  const question = tr(flip);
+  await settle(pages, click, async () => (await asked(pages, flip)) !== undefined);
+  const flipper = await asked(pages, flip);
   if (!flipper) {
     throw new Error('no flip question');
   }
@@ -432,7 +434,7 @@ test('the boss is guarded; a kill asks the trigger order and removes a trick cou
   // the targets glow (R-TRICK-06).
   await click(active, turnAction(active, 'Attack'));
   const target = objectCard(active, fly);
-  await settle(pages, click, async () => (await active.locator('.board .card.hl-pick').count()) > 0);
+  await untilPick(pages, click, active, Purpose.attackTarget);
   await expect(target).toHaveClass(/hl-pick/);
   await expect(boss(active).locator('.card')).toBeVisible();
   await expect(boss(active).locator('.card.hl-pick')).toHaveCount(0);
@@ -441,14 +443,17 @@ test('the boss is guarded; a kill asks the trigger order and removes a trick cou
 
   // The attack-start roll (Ghostly Trickery) comes before the attack
   // roll: the active player throws it.
-  await settle(pages, click, async () => enabled(throwButton(active)));
+  await settle(pages, click, () => holds(active, may(Intent.throw)));
+  await expect(throwButton(active)).toBeEnabled();
   await shot(active, 'trick-attack-start-roll');
 
   // The Fly dies: the Haunt's roll and the Trick side's counter come at
   // once; the active player orders them (R-ABIL-15).
   const order = tr('choice.title.trigger_order');
-  await settle(pages, click, async () => (await active.locator('.choice').filter({ hasText: order }).count()) > 0 || (await seenOf(active)).tricks < 12);
-  if ((await active.locator('.choice').filter({ hasText: order }).count()) > 0) {
+  const ordering = askedOf(Ask.choose, Purpose.triggerOrder);
+  await settle(pages, click, async () => (await holds(active, ordering)) || (await seenOf(active)).tricks < 12);
+  if (await holds(active, ordering)) {
+    await expect(active.locator('.choice').filter({ hasText: order })).toBeVisible();
     await shot(active, 'trick-trigger-order');
   }
   await settle(pages, click, async () => (await seenOf(first(pages))).tricks === 11);
@@ -479,11 +484,10 @@ test('the boss can be attacked once souls reach its trick counters; the challeng
     if (!active) {
       break;
     }
-    const attackIcon = turnAction(active, 'Attack');
-    if (await attackIcon.isEnabled()) {
-      await click(active, attackIcon);
+    if (await holds(active, may(Intent.attack))) {
+      await click(active, turnAction(active, 'Attack'));
       const target = boss(active).getByRole('button', { name, exact: true });
-      await settle(pages, click, async () => (await target.count()) > 0);
+      await untilPick(pages, click, active, Purpose.attackTarget);
       await expect(target).toHaveClass(/hl-pick/);
       await expect(tricks(active, 2)).toBeVisible();
       if (i === 0) {

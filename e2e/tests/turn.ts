@@ -9,7 +9,29 @@ import { tr, trRe } from './locale';
 // and stack.ts; pkg/rules_engine).
 export const Intent = { pass: 0, endTurn: 1, discard: 2, playLoot: 3, choose: 4, attack: 5, purchase: 6, activate: 7, order: 8, throw: 9 } as const;
 export const Ask = { none: 0, priority: 1, discard: 2, gameOver: 3, choose: 4, order: 5, throw: 6 } as const;
-export const Purpose = { replacement: 0, attackTarget: 1, monsterSlot: 2, penaltyItem: 3, penaltyLoot: 4, purchase: 5, target: 6, triggerOrder: 7, mode: 8, answer: 9, startingItem: 10 } as const;
+export const Purpose = {
+  replacement: 0,
+  attackTarget: 1,
+  monsterSlot: 2,
+  penaltyItem: 3,
+  penaltyLoot: 4,
+  purchase: 5,
+  target: 6,
+  triggerOrder: 7,
+  mode: 8,
+  answer: 9,
+  startingItem: 10,
+  cursed: 11,
+  lowest: 12,
+  recharge: 13,
+  copyAbility: 14,
+  die: 15,
+  redirect: 16,
+  order: 17,
+  passCurse: 18,
+  room: 19,
+  mayReplace: 20,
+} as const;
 export const Item = { loot: 0, ability: 1, trigger: 2, roll: 3, damage: 4, death: 5, penalty: 6, deathStep: 7 } as const;
 
 // SeenItem is one stack item, as a wait needs it.
@@ -102,6 +124,12 @@ export function may(kind: number): Check {
 // of this kind (Ask), and of this purpose when given.
 export function asked(kind: number, purpose?: number): Check {
   return (s) => s.ready && s.waiting === s.you && s.prompt.kind === kind && (purpose === undefined || s.prompt.purpose === purpose);
+}
+
+// question: the game asks the page's player this question (its text
+// key), e.g. 'ask.one_on_top'.
+export function question(key: string): Check {
+  return (s) => asked(Ask.choose)(s) && s.prompt.key === key;
 }
 
 // stackHolds: the stack holds n items.

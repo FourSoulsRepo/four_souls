@@ -6,7 +6,7 @@ import { startGame } from './game';
 import { saveAndContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, endTurn, expectNextTurn, settle, throwButton, turnAction, turnNumber, untilAttackRoll } from './turn';
+import { activePage, click, endTurn, expectNextTurn, holds, settle, stackHolds, throwButton, turnAction, turnNumber, untilAttackRoll } from './turn';
 import { cardName, lineRe, tr, trRe } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
@@ -23,7 +23,21 @@ async function strengthOnSelf(pages: Page[], active: Page) {
 }
 
 // stackDone: the stack is empty for the active player.
-const stackDone = (page: Page) => async () => (await page.getByRole('complementary', { name: tr('stack.title') }).locator('.stack-row').count()) === 0;
+const stackDone = (page: Page) => () => holds(page, stackHolds(0));
+
+// boosted: the page's own character waits with a change for its next
+// attack roll (its view's sources).
+function boosted(page: Page): Promise<boolean> {
+  return page.evaluate(() => {
+    interface S {
+      game: { view: { players: { id: number; sources?: { lasts: string }[] }[] } } | null;
+      lobby: { table: { you: number } | null };
+    }
+    const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+    const me = s.game?.view.players.find((p) => p.id === s.lobby.table?.you);
+    return (me?.sources ?? []).some((x) => x.lasts === 'next_roll');
+  });
+}
 
 test('a lasting item changes the badge; XI. Strength adds an icon (15.92)', async ({ browser }) => {
   const pages = await startGame(browser, ['Ada', 'Ben'], { url: fast() });
@@ -115,7 +129,7 @@ test('a next-roll icon shows till the attack roll uses it (15.93)', async ({ bro
   // Attack; the roll uses the boost, and the icon goes.
   await click(active, turnAction(active, 'Attack'));
   await untilAttackRoll(pages, click, active);
-  await settle(pages, click, async () => (await icon.count()) === 0);
+  await settle(pages, click, async () => !(await boosted(active)));
   await expect(icon).toHaveCount(0);
 });
 

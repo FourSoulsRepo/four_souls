@@ -4,7 +4,7 @@ import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, canEndTurn, click, gameOver, playLoot, settle, turnNumber } from './turn';
+import { activePage, canEndTurn, click, gameOver, holds, Intent, may, playLoot, settle, stackHolds, turnNumber } from './turn';
 import { cardName, lineRe, tr, trRe, whole } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
@@ -98,16 +98,15 @@ test('a resolved loot card goes to the history strip (15.22)', async ({ browser 
   const pages = await startGame(browser, ['Ada', 'Ben'], { url: fast() });
   const active = await activePage(pages, click);
   const loot = active.locator('.hand .card.hl-act').first();
-  test.skip(!(await loot.isVisible()), 'no playable loot card in this deal');
+  test.skip(!(await holds(active, may(Intent.playLoot))), 'no playable loot card in this deal');
   const name = (await loot.getAttribute('aria-label')) ?? '';
   const turn = await turnNumber(active);
   await playLoot(active, loot, click);
   // Targets, passes and anything the card asks, until the stack is empty.
   // The card may end the turn (The Fool, a death): then the next one
   // counts too (19.8).
-  const stackRows = active.getByRole('complementary', { name: tr('stack.title') }).locator('.stack-row');
   const moved = async () => (await canEndTurn(active)) || (await turnNumber(active)) !== turn || (await gameOver(active));
-  await settle(pages, click, async () => (await stackRows.count()) === 0 && (await moved()));
+  await settle(pages, click, async () => (await holds(active, stackHolds(0))) && (await moved()));
   for (const page of pages) {
     const strip = page.getByRole('complementary', { name: tr('history.strip') });
     // The loot is a played spell: a bolt badge (H-08).
