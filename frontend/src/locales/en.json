@@ -3855,6 +3855,10 @@
     "text": "Step forward",
     "note": "Replay bar: button that plays the next step with its effects."
   },
+  "replay.hands": {
+    "text": "Show hands",
+    "note": "Replay bar: toggle button; pressed, every player's hand shows face up, else as card backs."
+  },
   "replay.label": {
     "text": "Replay",
     "note": "Replay bar: screen-reader name of the bar that plays a match record."

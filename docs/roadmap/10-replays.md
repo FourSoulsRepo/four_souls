@@ -45,7 +45,7 @@ Rules for this step (owner, 2026-11-16):
    1. A full Base Game record plays to the end.
    2. Use case: watch a record.
 
-### [ ] 10.3 Hands and unknown cards
+### [x] 10.3 Hands and unknown cards
 
 1. Goal: RP-04, RP-10.
 2. Tasks:

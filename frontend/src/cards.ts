@@ -20,6 +20,9 @@ export interface CardInfo {
   // front (ADR 023). Each face is a card of its own.
   back?: string;
   front?: string;
+  // record: the text comes from the watched record's header, for a card
+  // the app has no data for (RP-10, 10.3).
+  record?: boolean;
 }
 
 // Kind is the deck family a card belongs to; it sets the blank card's

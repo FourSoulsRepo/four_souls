@@ -45,7 +45,7 @@ import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
 import { bonusSlot, chargedIn, createPlayback, effectsFor, hpOf, playedEnds, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
 import { empty } from './presence';
-import { animates, autoplayPause, clampStep, replayUpdate, type Replaying, type ReplaySpeed } from './replay';
+import { animates, autoplayPause, clampStep, hideHands, replayUpdate, withoutRecordCards, withRecordCards, type Replaying, type ReplaySpeed } from './replay';
 import { loadSounds, playSound, setSoundVolume } from './sounds';
 import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
@@ -374,6 +374,9 @@ interface AppState extends Session {
   // replayPlay starts or stops the autoplay (ADR 031, 4.1, 4.6).
   replayPlay: (on: boolean) => void;
   replaySpeed: (speed: ReplaySpeed) => void;
+  // replayHands shows or hides every hand (RP-04, 10.3): the step on
+  // screen shows again at once, as after a jump. It pauses.
+  replayHands: (show: boolean) => Promise<void>;
   // leaveReplay goes back to the records list.
   leaveReplay: () => void;
   // quit closes the connection, stops hosting, and goes to the menu,
@@ -690,7 +693,12 @@ export const useApp = create<AppState>()((set, get) => {
     }
     try {
       const step = await recordStep(index);
-      return jump === moved && get().replay ? replayUpdate(step, r.summary) : null;
+      const now = get().replay;
+      if (jump !== moved || !now) {
+        return null;
+      }
+      const u = replayUpdate(step, r.summary);
+      return now.hands ? u : hideHands(u);
     } catch (e) {
       set({ error: messageOf(e) });
       return null;
@@ -1263,7 +1271,9 @@ export const useApp = create<AppState>()((set, get) => {
       played++;
       playback.cancel();
       stopPlayback();
-      set({ replay: { summary, at: 0, speed: 1, playing: false }, game: null, jumped: false, screen: 'game', error: '', zoom: null });
+      // Cards the app lacks draw from the record's text (RP-10).
+      const cards = withRecordCards(withoutRecordCards(get().cards), summary.cards);
+      set({ replay: { summary, at: 0, speed: 1, playing: false, hands: true }, cards, game: null, jumped: false, screen: 'game', error: '', zoom: null });
       const u = await fetchStep(0, ++moved);
       if (u) {
         showAt(u);
@@ -1306,12 +1316,24 @@ export const useApp = create<AppState>()((set, get) => {
         set({ replay: { ...r, speed } });
       }
     },
+    replayHands: async (show) => {
+      const r = get().replay;
+      if (!r || r.hands === show) {
+        return;
+      }
+      played++;
+      set({ replay: { ...r, hands: show, playing: false } });
+      const u = await fetchStep(r.at, ++moved);
+      if (u) {
+        showAt(u);
+      }
+    },
     leaveReplay: () => {
       played++;
       moved++;
       playback.cancel();
       stopPlayback();
-      set({ replay: null, game: null, jumped: false, screen: 'records', error: '', zoom: null });
+      set({ replay: null, cards: withoutRecordCards(get().cards), game: null, jumped: false, screen: 'records', error: '', zoom: null });
     },
     leaveTable: async () => {
       if (get().hosting) {

@@ -202,7 +202,7 @@ func summary(path string, rp *replay.Replay) Summary {
 		s.Seats = append(s.Seats, Seat{Seat: seat.Seat, Name: seat.Name})
 	}
 	for _, c := range h.Cards {
-		s.Cards = append(s.Cards, Card{Ref: c.Ref, Name: c.Name, Type: c.Type, Effects: c.Effects})
+		s.Cards = append(s.Cards, Card{Ref: c.Ref, Name: c.Name, Type: c.Type, Effects: append([]string{}, c.Effects...)})
 	}
 	for _, t := range rp.Turns() {
 		s.Turns = append(s.Turns, Turn{Number: t.Number, Active: t.Active, Step: t.Step})

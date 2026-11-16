@@ -29,8 +29,15 @@
   font-size: 0.875rem;
 }
 
-.replay-leave {
-  align-self: flex-start;
+/* Show hands (10.3): a toggle at the right, lit while pressed. */
+.replay-hands {
+  margin-left: auto;
+  opacity: 0.6;
+}
+
+.replay-hands[aria-pressed='true'] {
+  opacity: 1;
+  outline: 0.125rem solid #f7de8f;
 }
 
 .replay-speeds {

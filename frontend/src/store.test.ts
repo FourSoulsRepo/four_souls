@@ -517,4 +517,39 @@ describe('replay (10.2, ADR 031)', () => {
     useApp.getState().leaveReplay();
     expect(useApp.getState()).toMatchObject({ screen: 'records', replay: null, game: null });
   });
+
+  it('hides and shows hands on the step shown; hands show first (10.3)', async () => {
+    const withHand = (s: RecordStep): RecordStep => ({
+      ...s,
+      view: { ...s.view, players: [{ id: 0, hand_size: 1, hand: [{ id: 7, card: 'a_penny' }] } as unknown as GameView['players'][number]] },
+    });
+    vi.mocked(recordStep).mockImplementation((i) => {
+      const s = steps.at(i);
+      return s ? Promise.resolve(withHand(s)) : Promise.reject(new Error('no such step'));
+    });
+    await useApp.getState().watch(summary);
+    expect(useApp.getState().replay?.hands).toBe(true);
+    expect(useApp.getState().game?.view.players[0]?.hand).toHaveLength(1);
+    await useApp.getState().replayTo(2);
+    await useApp.getState().replayHands(false);
+    expect(useApp.getState()).toMatchObject({ jumped: true, replay: { at: 2, hands: false, playing: false } });
+    expect(useApp.getState().game?.view.players[0]).toMatchObject({ hand: undefined, hand_size: 1 });
+    // The next step keeps them hidden.
+    await useApp.getState().replayTo(3);
+    expect(useApp.getState().game?.view.players[0]?.hand).toBeUndefined();
+    await useApp.getState().replayHands(true);
+    expect(useApp.getState().game?.view.players[0]?.hand).toHaveLength(1);
+    // A new replay shows them again.
+    await useApp.getState().replayHands(false);
+    await useApp.getState().watch(summary);
+    expect(useApp.getState().replay?.hands).toBe(true);
+  });
+
+  it("draws a card the app lacks from the record's text, only while it plays (RP-10)", async () => {
+    useApp.setState({ cards: new Map() });
+    await useApp.getState().watch({ ...summary, cards: [{ ref: 'zz_future', name: 'Future Card', type: 'Loot Card', effects: ['Gain 9¢.'] }] });
+    expect(useApp.getState().cards.get('zz_future')).toMatchObject({ name: 'Future Card', effects: ['Gain 9¢.'], image: '' });
+    useApp.getState().leaveReplay();
+    expect(useApp.getState().cards.has('zz_future')).toBe(false);
+  });
 });

@@ -20,6 +20,7 @@
    3. Step back, Play or Pause, Step forward.
    4. Speeds 0.5×, 1×, 2×, 4×; 1× at first.
    5. **Back to records**.
+   6. **Show hands**, pressed at first.
 5. The player presses **Step forward**.
    1. The step's events play as effects, as in a live game.
    2. Then the table shows the step's view.
@@ -36,6 +37,12 @@
    1. Play and Step forward turn off.
 10. The player presses **Back to records** or Esc.
     1. The Records screen lists the records again.
+11. The player presses **Show hands** to turn it off.
+    1. Every hand shows as card backs, as an opponent's hand live.
+    2. Effects show no hidden card's face, e.g. a looted card.
+    3. The step shown shows again at once; autoplay pauses.
+    4. Pressed again, every hand shows.
+    5. The choice lasts until another record opens.
 
 ## Alternative scenarios and errors
 
@@ -48,6 +55,10 @@
 * **8b. Animations off in Settings:** steps show without effects.
 * **9a. A finished record:** its last step plays the winner's banner.
 * **\*a. A step can't be read:** the bar says why; the table stays.
+* **\*b. A card the app has no data for (e.g. a newer set):**
+  * It shows as a text card: the record's name, type and words (RP-10).
+  * The app's own data wins for cards it knows.
+  * The app forgets the record's cards when the replay closes.
 
 ## Postconditions
 

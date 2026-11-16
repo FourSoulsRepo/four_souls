@@ -1,5 +1,5 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { fanPose } from '../feel';
+import { fanPose, type FanPose } from '../feel';
 import { t } from '../i18n';
 import { counterColor, fearOf, playerCounters } from '../counters';
 import { Role, type CardView, type PlayerView } from '../protocol';
@@ -177,6 +177,8 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools, watched }: 
   const label = watched ? name : t('table.own_name', { player: name });
   const pick = ui.player(player.id);
   const hand = player.hand ?? [];
+  // A replay with hands hidden (10.3) sends no hand: its backs fan out.
+  const backs = player.hand ? 0 : player.hand_size;
   const spent = useSpent();
   const { character } = player;
   const handRef = useRef<HTMLDivElement>(null);
@@ -240,10 +242,15 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools, watched }: 
         role="group"
         aria-label={t('table.your_hand')}
         data-zone={`hand-${String(player.id)}`}
-        style={fan(hand.length)}
+        style={fan(hand.length + backs)}
       >
         {hand.map((c, i) => (
           <HandCard key={c.id} card={c} ui={ui} pose={fanPose(i, hand.length)} />
+        ))}
+        {Array.from({ length: backs }, (_, i) => (
+          <div key={i} className="hand-card" style={fanStyle(fanPose(i, backs))}>
+            <Card size="table" back="loot" />
+          </div>
         ))}
       </div>
     </section>
@@ -390,6 +397,12 @@ function PlayCard({ card, owner, size, ui }: { card: CardView; owner: number; si
       {...ui.object(card.id)}
     />
   );
+}
+
+// fanStyle turns and drops a card back by its place in the fan, as
+// HandCard does a hand card.
+function fanStyle(pose: FanPose): CSSProperties {
+  return { '--fan-angle': `${String(pose.angle)}deg`, '--fan-drop': rem(pose.drop) } as CSSProperties;
 }
 
 // fan spaces a hand of n cards: more overlap the more cards there are,

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { RecordStep } from './bridge';
 import type { GameView } from './protocol';
-import { animates, autoplayPause, clampStep, replayUpdate, turnAt } from './replay';
+import type { CardInfo } from './cards';
+import type { GameEvent, PlayerView, Update } from './protocol';
+import { animates, autoplayPause, clampStep, hideHands, replayUpdate, turnAt, withoutRecordCards, withRecordCards } from './replay';
 
 const turns = [
   { number: 0, active: 0, step: 0 },
@@ -52,5 +54,75 @@ describe('replay', () => {
     expect(autoplayPause(0, 1)).toBe(200);
     expect(autoplayPause(1, 4)).toBe(200);
     expect(autoplayPause(0, 0.5)).toBe(400);
+  });
+
+  it('hides every hand, the peeked treasure and private cards (RP-04)', () => {
+    const card = (id: number, ref: string) => ({ id, card: ref });
+    const player = (id: number): PlayerView =>
+      ({ id, hand_size: 2, hand: [card(10 + id, 'a_penny'), card(20 + id, 'bomb')], treasure_top: card(30, 'the_d6') }) as unknown as PlayerView;
+    const looted: GameEvent = { kind: 'looted', player: 1, object: 21, card: 'bomb', private: true };
+    const gained: GameEvent = { kind: 'gained_cents', player: 0, amount: 3 };
+    const u: Update = {
+      step: 9,
+      events: [looted, gained],
+      allowed: null,
+      seats: [],
+      view: {
+        players: [player(0), player(1)],
+        waiting: { kind: 4, player: 1, options: [{ key: 'ask.yes' }] },
+        subject: card(40, 'a_dime'),
+        ordering: [card(41, 'a_nickel')],
+        options: [{ object: 21 }],
+        activating: 21,
+        modes: [{ text: 'Gain 3¢.', option: 0 }],
+      } as unknown as GameView,
+    };
+    const hidden = hideHands(u);
+    expect(hidden.view.players.map((p) => [p.hand, p.hand_size, p.treasure_top])).toEqual([
+      [undefined, 2, undefined],
+      [undefined, 2, undefined],
+    ]);
+    expect(hidden.events).toEqual([{ kind: 'looted', player: 1, private: true }, gained]);
+    expect(hidden.view).toMatchObject({ waiting: { kind: 4, player: 1 } });
+    expect(hidden.view.waiting.options).toBeUndefined();
+    const { subject, ordering, options, activating, modes } = hidden.view;
+    expect([subject, ordering, options, activating, modes]).toEqual([undefined, undefined, undefined, undefined, undefined]);
+    // The record's update itself keeps every hand.
+    expect(u.view.players[0]?.hand).toHaveLength(2);
+    expect(hideHands({ ...u, events: null }).events).toBeNull();
+  });
+
+  it("keeps a prompt's options that name no hidden card", () => {
+    const u = { step: 1, events: null, allowed: null, view: { players: [], waiting: { kind: 1, player: 0, options: [{ key: 'ask.yes' }] } } } as unknown as Update;
+    expect(hideHands(u).view.waiting.options).toEqual([{ key: 'ask.yes' }]);
+  });
+
+  it("adds the record's text for cards the app lacks; the app's data wins (RP-10)", () => {
+    const own: CardInfo = { ref: 'a_penny', set: 'b2', type: 'Loot Card', name: 'A Penny!', effects: ['Gain 1¢.'], footnotes: [], stats: [], rewards: [], image: 'penny.png' };
+    const app = new Map([[own.ref, own]]);
+    const header = [
+      { ref: 'a_penny', name: 'Old Penny', type: 'Loot Card', effects: ['Gain 2¢.'] },
+      { ref: 'zz_future', name: 'Future Card', type: 'Treasure Card', effects: ['Gain 9¢.'] },
+    ];
+    const merged = withRecordCards(app, header);
+    expect(merged.get('a_penny')).toBe(own);
+    expect(merged.get('zz_future')).toEqual({
+      ref: 'zz_future',
+      set: '',
+      type: 'Treasure Card',
+      name: 'Future Card',
+      effects: ['Gain 9¢.'],
+      footnotes: [],
+      stats: [],
+      rewards: [],
+      image: '',
+      record: true,
+    });
+    expect(app.has('zz_future')).toBe(false);
+    expect(withRecordCards(app, header.slice(0, 1))).toBe(app);
+    // Leaving the replay drops them again.
+    const back = withoutRecordCards(merged);
+    expect([...back.keys()]).toEqual(['a_penny']);
+    expect(withoutRecordCards(app)).toBe(app);
   });
 });

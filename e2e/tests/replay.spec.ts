@@ -10,7 +10,7 @@ import { expect, test } from './fixtures';
 import { gameId, startGame } from './game';
 import { appURL, serverPort } from './server';
 import { shot } from './shot';
-import { tr, trRe } from './locale';
+import { cardName, tr, trRe } from './locale';
 import { activePage, click, endTurn, expectNextTurn } from './turn';
 
 // watch opens the Records screen and watches the record of exactly
@@ -124,6 +124,123 @@ test('pause stops the autoplay where it is', async ({ page }) => {
   const at = await where(page).textContent();
   await page.waitForTimeout(1500);
   await expect(where(page)).toHaveText(at ?? '');
+});
+
+test('Show hands hides every hand as backs and shows them again (10.3)', async ({ page }) => {
+  await watch(page, 'Ann, Bo');
+  const toggle = bar(page).getByRole('button', { name: tr('replay.hands') });
+  const ann = page.getByRole('region', { name: 'Ann', exact: true });
+  const bo = page.getByRole('region', { name: 'Bo', exact: true });
+  // Hands show at first (ADR 031, 4.7): Ann's at the bottom, Bo's revealed.
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await expect(ann.getByRole('img', { name: cardName('a_penny'), exact: true })).toBeVisible();
+  await expect(bo.getByRole('group', { name: tr('table.revealed_hand', { n: 3 }) })).toBeVisible();
+
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  await expect(ann.getByRole('img', { name: cardName('a_penny'), exact: true })).toHaveCount(0);
+  await expect(ann.getByRole('group', { name: tr('table.your_hand') }).getByRole('img', { name: tr('deck.face_down.loot') })).toHaveCount(2);
+  await expect(bo.getByRole('group', { name: tr('table.hand', { n: 3 }) })).toBeVisible();
+  await expect(bo.getByRole('img', { name: cardName('bomb'), exact: true })).toHaveCount(0);
+  // A step forward keeps them hidden.
+  await bar(page).getByRole('button', { name: tr('replay.forward') }).click();
+  await expect(where(page)).toHaveText(tr('replay.where', { i: 2, n: 12, turn: 1 }));
+  await expect(ann.getByRole('group', { name: tr('table.your_hand') }).getByRole('img', { name: tr('deck.face_down.loot') })).toHaveCount(2);
+  await shot(page, 'replay-hands-hidden');
+
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await expect(ann.getByRole('img', { name: cardName('a_penny'), exact: true })).toBeVisible();
+  await expect(bo.getByRole('group', { name: tr('table.revealed_hand', { n: 3 }) })).toBeVisible();
+});
+
+// futureCard is a card of a set this app does not know; only the
+// record's header has its text (RP-10).
+const futureCard = { ref: 'zz_future_card', name: 'Future Penny', type: 'Loot Card', effects: ['Gain 9¢. Then loot 1.'] };
+
+// futureRecord is a two-step record: the future card lies in the shop,
+// and Ann loots another copy of it in step 2.
+function futureRecord(): { path: string; summary: object; steps: object[] } {
+  const view = (looted: boolean) => {
+    const card = (id: number, ref: string, more: object = {}) => ({ id, card: ref, charged: true, ...more });
+    const hand = [card(11, 'a_penny'), ...(looted ? [card(12, futureCard.ref)] : [])];
+    return {
+      players: [
+        { id: 0, character: card(1, 'isaac', { role: 1 }), hp: 2, atk: 1, cents: 3, souls: 0, in_play: [], hand_size: hand.length, hand, loot_plays: 1, attacks: 1, purchases: 1 },
+        { id: 1, character: card(2, 'cain', { role: 1 }), hp: 2, atk: 1, cents: 3, souls: 0, in_play: [], hand_size: 1, hand: [card(21, 'bomb')], loot_plays: 1, attacks: 1, purchases: 1 },
+      ],
+      shop: [{ top: card(31, futureCard.ref) }, { top: card(32, 'breakfast') }],
+      monsters: [{ top: card(41, 'big_spider', { stats: { hp: 2, dc: 3, atk: 1, printed_hp: 2, printed_dc: 3, printed_atk: 1 } }) }],
+      deck_sizes: [80, 60, 90, 0],
+      discards: [null, null, null, null],
+      discard_sizes: [0, 0, 0, 0],
+      stack: null,
+      turn: { active: 0, number: 1, step: 4, loot_plays: 1, attacks: 1, purchases: 1 },
+      waiting: { kind: 1, player: 0 },
+      win_souls: 4,
+    };
+  };
+  const path = '/fake/records/future.fsrec';
+  return {
+    path,
+    summary: {
+      path,
+      game: 'future',
+      server: '',
+      started: Date.parse('2026-11-16T10:00:00Z'),
+      seats: [
+        { seat: 0, name: 'Ann' },
+        { seat: 1, name: 'Bo' },
+      ],
+      sets: ['b2', 'zz'],
+      challenge: '',
+      difficulty: '',
+      cards: [futureCard],
+      steps: 2,
+      turns: [{ number: 1, active: 0, step: 0 }],
+    },
+    steps: [
+      { index: 0, n: 1, events: [], view: view(false) },
+      { index: 1, n: 2, events: [{ kind: 'looted', player: 0, object: 12, card: futureCard.ref, private: true }], view: view(true) },
+    ],
+  };
+}
+
+test("a card the app lacks plays from the record's text (10.3)", async ({ page }) => {
+  await page.goto('/?fake&nosplash');
+  const record = futureRecord();
+  await page.evaluate((r) => {
+    const w = window as unknown as { fakeFiles: Record<string, unknown>; fakePick: string };
+    w.fakeFiles = { [r.path]: { summary: r.summary, steps: r.steps } };
+    w.fakePick = r.path;
+  }, record);
+  await page.getByRole('button', { name: tr('menu.records'), exact: true }).click();
+  await page.getByRole('button', { name: tr('records.open_file') }).click();
+  await expect(where(page)).toHaveText(tr('replay.where', { i: 1, n: 2, turn: 1 }));
+  // The shop's card is a text card with the record's name and type.
+  const shopCard = page.getByRole('group', { name: tr('board.shop') }).getByRole('img', { name: futureCard.name, exact: true });
+  await expect(shopCard).toHaveCount(1);
+  await expect(shopCard).toContainText(futureCard.type);
+  // Ann loots one: the record plays on and her hand shows it.
+  await bar(page).getByRole('button', { name: tr('replay.forward') }).click();
+  await expect(where(page)).toHaveText(tr('replay.where', { i: 2, n: 2, turn: 1 }));
+  const ann = page.getByRole('region', { name: 'Ann', exact: true });
+  await expect(ann.getByRole('group', { name: tr('table.your_hand') }).getByRole('img', { name: futureCard.name, exact: true })).toBeVisible();
+  // Its zoom shows the record's words.
+  await shopCard.hover();
+  await expect(page.getByTestId('card-zoom')).toContainText(futureCard.effects[0] ?? '');
+  await shot(page, 'replay-unknown-card');
+
+  // Back on the records list, the app forgets the record's cards.
+  await bar(page).getByRole('button', { name: tr('replay.leave') }).click();
+  await expect(page.getByRole('list', { name: tr('records.list_label') })).toBeVisible();
+  const known = await page.evaluate((ref) => {
+    interface S {
+      cards: Map<string, unknown>;
+    }
+    return (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState().cards.has(ref);
+  }, futureCard.ref);
+  expect(known).toBe(false);
 });
 
 // Line is one line of a record file (pkg/record).

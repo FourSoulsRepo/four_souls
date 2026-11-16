@@ -22,7 +22,7 @@ func header(game string, started time.Time) record.Header {
 		App: "1.0.0", Engine: "1.0.0", Protocol: 1, Game: game, Started: started,
 		Setup: record.Setup{Seed: 7, Players: 2, Sets: []string{"b2"}},
 		Seats: []record.Seat{{Seat: 0, Name: "Ann"}, {Seat: 1, Name: "Bo"}},
-		Cards: []record.Card{{Ref: "the_d6", Name: "The D6", Effects: []string{"Reroll a dice roll."}}},
+		Cards: []record.Card{{Ref: "the_d6", Name: "The D6", Effects: []string{"Reroll a dice roll."}}, {Ref: "blank", Name: "Blank"}},
 	}
 }
 
@@ -131,6 +131,10 @@ func TestOpen(t *testing.T) {
 	}
 	if s.Game != "g1" || s.Steps != 6 || len(s.Seats) != 2 || s.Seats[1].Name != "Bo" || s.Cards[0].Name != "The D6" || s.Sets[0] != "b2" {
 		t.Errorf("summary %+v", s)
+	}
+	// A card with no effects still sends a list: the client reads it as is.
+	if c := s.Cards[1]; c.Effects == nil {
+		t.Errorf("card %+v: effects are nil", c)
 	}
 	if fmt.Sprint(s.Turns) != "[{1 0 0} {2 1 2} {3 0 4}]" {
 		t.Errorf("turns %v", s.Turns)

@@ -6,7 +6,8 @@ import './Replay.css';
 
 // ReplayBar steps through the record on the table (10.2, ADR 031, 4):
 // play and pause, a step back or forward, a jump to a turn, a slider
-// over all steps, and the speed. Esc goes back to the records.
+// over all steps, the speed, and whether hands show (10.3). Esc goes
+// back to the records.
 export function ReplayBar() {
   const replay = useApp((s) => s.replay);
   const turn = useApp((s) => s.game?.view.turn.number ?? 0);
@@ -14,12 +15,13 @@ export function ReplayBar() {
   const replayTo = useApp((s) => s.replayTo);
   const replayPlay = useApp((s) => s.replayPlay);
   const replaySpeed = useApp((s) => s.replaySpeed);
+  const replayHands = useApp((s) => s.replayHands);
   const leave = useApp((s) => s.leaveReplay);
   useEscape(leave);
   if (!replay) {
     return null;
   }
-  const { at, speed, playing, summary } = replay;
+  const { at, speed, playing, hands, summary } = replay;
   const last = summary.steps - 1;
   const turns = summary.turns;
   const goTo = (index: number) => {
@@ -111,9 +113,21 @@ export function ReplayBar() {
           goTo(Number(e.target.value) - 1);
         }}
       />
-      <button type="button" className="replay-leave" onClick={leave}>
-        {t('replay.leave')}
-      </button>
+      <div className="replay-row">
+        <button type="button" onClick={leave}>
+          {t('replay.leave')}
+        </button>
+        <button
+          type="button"
+          className="replay-hands"
+          aria-pressed={hands}
+          onClick={() => {
+            void replayHands(!hands);
+          }}
+        >
+          {t('replay.hands')}
+        </button>
+      </div>
       {error && (
         <p className="replay-error" role="alert">
           {error}
