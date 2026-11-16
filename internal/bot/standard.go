@@ -240,7 +240,11 @@ func settle(g *engine.Game, p engine.PlayerID, rng *rand.Rand, o *outcome) {
 			break
 		}
 		pr := g.Prompt()
-		q := pr.Who()[0]
+		who := pr.Who()
+		if len(who) == 0 {
+			break
+		}
+		q := who[0]
 		// A priority prompt is passed: tried at once, as Allowed costs
 		// about as much as the pass.
 		ev, err := []engine.Event(nil), errNoPass
