@@ -5587,6 +5587,8 @@ Totals by system (179 items):
    7. Cards checked: Monster Manual, Lust for Blood, Friendly Ball, `common.go` (r, fsp2).
    8. Vitest: `forced attacks` (`prompt.test.ts`); e2e: `duties.spec.ts`.
    9. Use case UC-46; screenshots in `.cache/screenshots/19.180/`.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.180 solved.
 
 ### [x] 19.181 How many attacks a player must make is not shown
 
@@ -5604,6 +5606,8 @@ Totals by system (179 items):
    3. Nothing while an attack is open: its target is picked or fought.
    4. Cards checked: every `ForceAttacks` caller in all sets.
    5. Vitest and e2e as 19.180; UC-46 3a.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.181 solved.
 
 ### [x] 19.182 Forced attacks on the monster deck are not shown
 
@@ -5622,6 +5626,8 @@ Totals by system (179 items):
    4. The deck comes first, as `askAttackTarget` asks for it first.
    5. Cards checked: Ambush, I Am Error, Gaper (g2), `ForceAttacks(n, true)`.
    6. Vitest and e2e as 19.180; UC-46 2a.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.182 solved.
 
 ### [x] 19.183 Attacks only on the monster deck are not shown
 
@@ -5638,6 +5644,8 @@ Totals by system (179 items):
    2. On the active seat for everyone; by the loot count for the player.
    3. Cards checked: Big Spider, Gold Key, Blastocyst (`AddDeckAttack`).
    4. e2e: `duties.spec.ts`; UC-46 2b.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.183 solved.
 
 ### [x] 19.184 Who helps the next attack is not shown
 
@@ -5655,6 +5663,8 @@ Totals by system (179 items):
    3. A running attack had the same gap: 19.188.
    4. Cards checked: Sibling Rivalry (`HelpNextAttack`), the only caller.
    5. Vitest: `helpLine`; e2e: `duties.spec.ts`; UC-46 2c.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.184 solved.
 
 ### [x] 19.185 Who shares the next attack's rewards is not shown
 
@@ -5669,6 +5679,8 @@ Totals by system (179 items):
 5. Fix (22.5, 2026-11-16)
    1. The same line adds "· Rewards shared with Bo".
    2. Fixed with 19.184; the same tests and use case.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.185 solved.
 
 ### [x] 19.186 A roll result on the stack does not show its number
 
@@ -5685,6 +5697,8 @@ Totals by system (179 items):
    2. `stackParts` in `stack.ts`; the history keeps the card's own words.
    3. Every card roll's result trigger is pushed in one place (`stack.go`).
    4. Vitest: `a roll result on the stack`; e2e: `duties.spec.ts`; UC-14 2r.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.186 solved.
 
 ### [x] 19.187 A kicked player is not shown as gone
 
@@ -5701,6 +5715,8 @@ Totals by system (179 items):
    2. Its tooltip: "Kicked by a vote: this seat plays no more".
    3. `GameScreen` reads `Seat.kicked`; `PlayerArea` draws it.
    4. e2e: `duties.spec.ts`; UC-07 2f.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.187 solved.
 
 ### [x] 19.188 A running attack's helpers are not shown
 
@@ -5723,3 +5739,5 @@ Totals by system (179 items):
    5. Also `startAttack`'s next helpers and share (Sibling Rivalry).
    6. Go test: `TestViewShowsTheAttackHelpers`; Vitest: `helpLine`.
    7. e2e: `duties.spec.ts`; UC-14 2s.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.188 solved.
