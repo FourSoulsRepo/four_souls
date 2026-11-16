@@ -75,10 +75,10 @@ func winGateOf(levels []bot.Level) (winGate, bool) {
 		}
 		mine, theirs := 0, 0
 		for _, l := range levels {
-			switch l {
-			case w.Level:
+			if l == w.Level {
 				mine++
-			case w.Against:
+			}
+			if l == w.Against {
 				theirs++
 			}
 		}
