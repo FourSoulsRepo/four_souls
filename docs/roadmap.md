@@ -45,6 +45,7 @@ Step 20 added (owner, 2026-11-06); it starts now, on the step 12 branch.
 Step 20 done (owner, 2026-11-09); its open bugs go to play tests.
 Step 21 added (owner, 2026-11-15); it runs on the step 18 branch.
 Step 21 done (owner, 2026-11-16); it merges with step 18.
+Step 10 starts now, before 9 (owner, 2026-11-16); it runs on the step 18 branch.
 
 ---
 
@@ -161,9 +162,11 @@ Step 21 done (owner, 2026-11-16); it merges with step 18.
 1. Records screen: list, watch, export, delete.
 2. Replay player: speed, pause, step, jump to turn.
 3. Show or hide hands.
-4. Optional check against the current engine.
+4. Engine check: dropped for now (owner, 2026-11-16).
 5. Ideas: RP-02, RP-04, RP-10, RP-11, M-01.
 6. Replays never show live aiming or hover (N-15).
+7. Records keep a view per step; replays need no engine (ADR 031).
+8. Only records made from now on can be watched; no migrations.
 
 ## 11. Learning
 

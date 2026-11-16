@@ -1144,6 +1144,8 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    3. It marks the moves that would not work there.
    4. This check is information only; steps are never rejected.
    5. The viewer can turn these marks off.
+   6. Owner, 2026-11-16: records play on later versions without the engine.
+   7. Owner, 2026-11-16: the engine check is dropped for now.
 3. RP-03. Record format.
    1. Stores only steps that really happened.
    2. Rejected attempts are not recorded.
