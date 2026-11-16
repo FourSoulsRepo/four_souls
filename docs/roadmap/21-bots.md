@@ -8,9 +8,14 @@ Decision: ADR 030; every sub-step follows it.
 Rules for this step (owner, 2026-11-16):
 
 1. Branch: `step-21-bots`.
-2. Sub-steps run one after another, each in a fresh subagent (5.21).
-   1. The main agent plans and checks; it writes no feature code.
-   2. It checks each result against ADR 030 before the next one starts.
+2. Two lines in two worktrees (owner, 2026-11-16); each runs its sub-steps one after another, each in a fresh subagent (5.21).
+   1. Line 1, bot: this branch; 21.5, 21.6, 21.15.
+   2. Line 2, server: worktree on branch `step-21-bots-server` from 21.4; 21.7, 21.8, 21.9.
+   3. At most two subagents at once; each line edits only its own lines in shared files.
+   4. Time-per-move numbers are taken while the other line runs no tests.
+   5. Both done: `git merge --no-ff step-21-bots-server`; then 21.10 and 21.13, one at a time.
+   6. The main agent plans and checks; it writes no feature code.
+   7. It checks each result against ADR 030 before the next one starts.
 3. A bot never reads the real game.
    1. `internal/bot` gets games only from `World(i)` (ADR 030, Decision 4).
    2. Never fix a weak bot by a look at hidden cards.
@@ -24,7 +29,7 @@ Rules for this step (owner, 2026-11-16):
    2. Bot strength sub-steps also: `make bots`, with its numbers in the commit message.
    3. `make sims` and `make fuzz-sets FUZZTIME=30s`: once at the end of a batch that changed `pkg/rules_engine`, not per commit (owner, 2026-11-16).
 8. UI sub-steps leave screenshots in `.cache/screenshots/21.N/`; never committed.
-9. Order: 21.15 runs right after 21.6, before 21.7.
+9. Order: 21.15 runs right after 21.6, in line 1 (rule 2).
 
 ---
 
