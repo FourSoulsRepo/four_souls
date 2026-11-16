@@ -120,7 +120,8 @@
 /* Inputs are parchment slips with an ink outline; what the player
    types stays in the plain UI font, so it reads exactly. */
 .screen input:not([type="checkbox"]),
-.screen select {
+.screen select,
+.replay-bar select {
   padding: 0.4375rem 0.625rem;
   border: 0.1562rem solid var(--ink);
   border-radius: 0.5rem 0.625rem 0.5625rem 0.4375rem;
@@ -133,7 +134,8 @@
 }
 
 /* The select's arrow is drawn in ink. */
-.screen select {
+.screen select,
+.replay-bar select {
   appearance: none;
   padding-right: 1.875rem;
   background:
@@ -144,7 +146,8 @@
 }
 
 .screen input:focus-visible,
-.screen select:focus-visible {
+.screen select:focus-visible,
+.replay-bar select:focus-visible {
   outline: 0.1875rem solid #f7de8f;
   outline-offset: 1px;
 }

@@ -3,7 +3,7 @@ import type { RecordStep } from './bridge';
 import type { GameView } from './protocol';
 import type { CardInfo } from './cards';
 import type { GameEvent, PlayerView, Update } from './protocol';
-import { animates, autoplayPause, clampStep, hideHands, replayUpdate, turnAt, withoutRecordCards, withRecordCards } from './replay';
+import { animates, autoplayPause, clampStep, hideHands, replayUpdate, sliderFill, turnAt, withoutRecordCards, withRecordCards } from './replay';
 
 const turns = [
   { number: 0, active: 0, step: 0 },
@@ -47,6 +47,14 @@ describe('replay', () => {
     expect(turnAt(turns, 2)).toBe(1);
     expect(turnAt(turns, 25)).toBe(2);
     expect(turnAt([{ number: 1, active: 0, step: 3 }], 1)).toBe(-1);
+  });
+
+  it('fills the slider from the first step to the last (10.7)', () => {
+    expect(sliderFill(0, 5)).toBe(0);
+    expect(sliderFill(2, 5)).toBe(50);
+    expect(sliderFill(4, 5)).toBe(100);
+    expect(sliderFill(9, 5)).toBe(100);
+    expect(sliderFill(0, 1)).toBe(100);
   });
 
   it('pauses 0.8 s after events and 0.2 s after none at 1×, divided by the speed', () => {

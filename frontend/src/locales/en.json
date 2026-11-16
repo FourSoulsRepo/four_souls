@@ -3859,6 +3859,10 @@
     "text": "Show hands",
     "note": "Replay bar: toggle button; pressed, every player's hand shows face up, else as card backs."
   },
+  "replay.hide": {
+    "text": "Hide the controls",
+    "note": "Replay bar: small button that hides the bar; the replay goes on, and a small button brings the bar back."
+  },
   "replay.label": {
     "text": "Replay",
     "note": "Replay bar: screen-reader name of the bar that plays a match record."
@@ -3874,6 +3878,10 @@
   "replay.play": {
     "text": "Play",
     "note": "Replay bar: button that plays the record step by step."
+  },
+  "replay.show": {
+    "text": "Show the controls",
+    "note": "Replay: the small button left on screen while the replay bar is hidden; it shows the bar again."
   },
   "replay.slider": {
     "text": "Step",

@@ -19,6 +19,9 @@ export interface Replaying {
   playing: boolean;
   // hands: every hand shows face up (RP-04); true at first (ADR 031, 4.7).
   hands: boolean;
+  // bar: the replay bar shows; false while the viewer hides it (ADR
+  // 031, 4.9). True at each Watch; it never pauses the autoplay.
+  bar: boolean;
 }
 
 // replayUpdate is a step as playback takes it (ADR 031, 3.4, 3.5): its
@@ -49,6 +52,15 @@ export function animates(from: number, to: number): boolean {
 // before the first.
 export function turnAt(turns: RecordSummary['turns'], index: number): number {
   return turns.findLastIndex((t) => t.step <= index);
+}
+
+// sliderFill is how far the slider is along, in percent: 0 at the
+// first step, 100 at the last. The bar paints the track up to it.
+export function sliderFill(at: number, steps: number): number {
+  if (steps <= 1) {
+    return 100;
+  }
+  return (Math.min(Math.max(at, 0), steps - 1) / (steps - 1)) * 100;
 }
 
 // Autoplay waits this long after a step's effects at 1×, in ms (ADR 031,

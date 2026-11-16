@@ -107,7 +107,8 @@ button {
 .screen button,
 .menu-buttons button,
 .overlay-buttons button,
-.game-menu-button {
+.game-menu-button,
+.replay-bar button {
   padding: 0.4375rem 1.25rem 0.3125rem;
   border: 0.1875rem solid var(--ink);
   border-radius: 0.875rem 1.125rem 1rem 0.75rem / 0.75rem 1rem 1.125rem 0.875rem;
@@ -139,7 +140,8 @@ button {
 .screen button:enabled:hover,
 .menu-buttons button:enabled:hover,
 .overlay-buttons button:enabled:hover,
-.game-menu-button:hover {
+.game-menu-button:hover,
+.replay-bar button:enabled:hover {
   translate: 0 -0.125rem;
   box-shadow:
     0 0.3125rem 0 var(--ink),
@@ -149,14 +151,16 @@ button {
 .screen button:enabled:active,
 .menu-buttons button:enabled:active,
 .overlay-buttons button:enabled:active,
-.game-menu-button:active {
+.game-menu-button:active,
+.replay-bar button:enabled:active {
   translate: 0 0.125rem;
   box-shadow: 0 1px 0 var(--ink);
 }
 
 .screen button:disabled,
 .menu-buttons button:disabled,
-.overlay-buttons button:disabled {
+.overlay-buttons button:disabled,
+.replay-bar button:disabled {
   filter: grayscale(0.8) brightness(0.75);
   opacity: 0.6;
   cursor: not-allowed;
@@ -165,7 +169,8 @@ button {
 .screen button:focus-visible,
 .menu-buttons button:focus-visible,
 .overlay-buttons button:focus-visible,
-.game-menu-button:focus-visible {
+.game-menu-button:focus-visible,
+.replay-bar button:focus-visible {
   outline: 0.1875rem solid #f7de8f;
   outline-offset: 0.125rem;
 }

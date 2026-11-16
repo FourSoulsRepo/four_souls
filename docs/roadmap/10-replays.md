@@ -81,7 +81,7 @@ Rules for this step (owner, 2026-11-16):
    1. A server game's record has a view per step.
    2. That view equals the engine's judge view after the step.
 
-### [ ] 10.7 Replay bar look and hiding
+### [x] 10.7 Replay bar look and hiding
 
 1. Goal: the bar looks like the game; the viewer can hide it (owner, 2026-11-16).
 2. Tasks:

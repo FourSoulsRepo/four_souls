@@ -21,6 +21,8 @@
    4. Speeds 0.5×, 1×, 2×, 4×; 1× at first.
    5. **Back to records**.
    6. **Show hands**, pressed at first.
+   7. It wears the game's look: parchment buttons on a dark board (10.7).
+   8. **Hide the controls**, top right of the bar.
 5. The player presses **Step forward**.
    1. The step's events play as effects, as in a live game.
    2. Then the table shows the step's view.
@@ -43,6 +45,13 @@
     3. The step shown shows again at once; autoplay pauses.
     4. Pressed again, every hand shows.
     5. The choice lasts until another record opens.
+12. The player presses **Hide the controls** (10.7).
+    1. Only a small **Show the controls** button stays, bottom left.
+    2. Autoplay goes on; the table keeps playing the steps.
+    3. Esc still leaves the replay.
+    4. The player presses **Show the controls**: the bar is back.
+    5. The bar shows step and turn as they are now.
+    6. The next **Watch** shows the bar again.
 
 ## Alternative scenarios and errors
 

@@ -377,6 +377,9 @@ interface AppState extends Session {
   // replayHands shows or hides every hand (RP-04, 10.3): the step on
   // screen shows again at once, as after a jump. It pauses.
   replayHands: (show: boolean) => Promise<void>;
+  // replayBar shows or hides the replay bar (ADR 031, 4.9); a small
+  // button brings it back. It never pauses the autoplay.
+  replayBar: (show: boolean) => void;
   // leaveReplay goes back to the records list.
   leaveReplay: () => void;
   // quit closes the connection, stops hosting, and goes to the menu,
@@ -1273,7 +1276,7 @@ export const useApp = create<AppState>()((set, get) => {
       stopPlayback();
       // Cards the app lacks draw from the record's text (RP-10).
       const cards = withRecordCards(withoutRecordCards(get().cards), summary.cards);
-      set({ replay: { summary, at: 0, speed: 1, playing: false, hands: true }, cards, game: null, jumped: false, screen: 'game', error: '', zoom: null });
+      set({ replay: { summary, at: 0, speed: 1, playing: false, hands: true, bar: true }, cards, game: null, jumped: false, screen: 'game', error: '', zoom: null });
       const u = await fetchStep(0, ++moved);
       if (u) {
         showAt(u);
@@ -1326,6 +1329,12 @@ export const useApp = create<AppState>()((set, get) => {
       const u = await fetchStep(r.at, ++moved);
       if (u) {
         showAt(u);
+      }
+    },
+    replayBar: (show) => {
+      const r = get().replay;
+      if (r) {
+        set({ replay: { ...r, bar: show } });
       }
     },
     leaveReplay: () => {

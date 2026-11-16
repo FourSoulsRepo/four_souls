@@ -512,6 +512,26 @@ describe('replay (10.2, ADR 031)', () => {
     }
   });
 
+  it('hiding the bar never pauses the autoplay; Watch shows it again (10.7)', async () => {
+    vi.useFakeTimers();
+    try {
+      await useApp.getState().watch(summary);
+      expect(useApp.getState().replay?.bar).toBe(true);
+      useApp.getState().replayPlay(true);
+      useApp.getState().replayBar(false);
+      expect(useApp.getState().replay).toMatchObject({ bar: false, playing: true });
+      await vi.advanceTimersByTimeAsync(2000);
+      expect(useApp.getState().replay).toMatchObject({ bar: false, at: 5 });
+      useApp.getState().replayBar(true);
+      expect(useApp.getState().replay?.bar).toBe(true);
+      useApp.getState().replayBar(false);
+      await useApp.getState().watch(summary);
+      expect(useApp.getState().replay?.bar).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('leaving goes back to the records list', async () => {
     await useApp.getState().watch(summary);
     useApp.getState().leaveReplay();

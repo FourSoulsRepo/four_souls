@@ -126,6 +126,35 @@ test('pause stops the autoplay where it is', async ({ page }) => {
   await expect(where(page)).toHaveText(at ?? '');
 });
 
+test('the bar hides and shows; autoplay goes on meanwhile; Esc still leaves (10.7)', async ({ page }) => {
+  await watch(page, 'Ann, Bo');
+  const hide = bar(page).getByRole('button', { name: tr('replay.hide') });
+  const show = bar(page).getByRole('button', { name: tr('replay.show') });
+  await expect(show).toHaveCount(0);
+  await bar(page).getByRole('button', { name: tr('replay.speed_n', { n: 2 }) }).click();
+  await bar(page).getByRole('button', { name: tr('replay.play') }).click();
+  await hide.click();
+  // Only the small button stays, in the same corner.
+  await expect(show).toBeVisible();
+  await expect(where(page)).toHaveCount(0);
+  await expect(bar(page).getByRole('button', { name: tr('replay.pause') })).toHaveCount(0);
+  await shot(page, 'replay-bar-hidden');
+  // The record plays on into turn 2 while the bar is hidden.
+  await expect(page.getByRole('main', { name: tr('game.turn', { n: 2 }) })).toBeVisible({ timeout: 15_000 });
+  await show.click();
+  await expect(hide).toBeVisible();
+  await expect(where(page)).toHaveText(trRe('replay.where', { turn: 2 }));
+  await expect(where(page)).toHaveText(tr('replay.where', { i: 12, n: 12, turn: 2 }), { timeout: 15_000 });
+
+  // Esc leaves the replay with the bar hidden too.
+  await hide.click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('list', { name: tr('records.list_label') })).toBeVisible();
+  // The next Watch shows the bar again.
+  await watch(page, 'Ann, Bo');
+  await expect(hide).toBeVisible();
+});
+
 test('Show hands hides every hand as backs and shows them again (10.3)', async ({ page }) => {
   await watch(page, 'Ann, Bo');
   const toggle = bar(page).getByRole('button', { name: tr('replay.hands') });
