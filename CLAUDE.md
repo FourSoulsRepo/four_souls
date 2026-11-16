@@ -145,6 +145,19 @@
        5. Put such a rule in one shared place in the engine.
        6. Cards use it; no per-set copies of the rule.
        7. The bug entry lists every card and helper checked.
+   25. A test's expected value comes from the rules, not the code (owner, 2026-11-16).
+       1. Take it from the card text, an R-xxx rule, or a ruling.
+       2. Name the source in a comment next to the check.
+       3. Never run the code to learn what to assert.
+       4. If the code disagrees with the source, the code is the bug.
+       5. Seen in 19.110 (asserted 3 HP) and 19.45 (two uses a turn).
+   26. A client fix covers every place with the same mechanism (owner, 2026-11-16).
+       1. As 5.24, but for screens, playback and tests.
+       2. Search every component for the same pattern.
+       3. E.g. a hover on a node that is redrawn (19.99, 19.102).
+       4. E.g. a copy mark drawn for players but not monsters (19.157).
+       5. Fix them all in the same change.
+       6. The bug entry lists every component checked.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.

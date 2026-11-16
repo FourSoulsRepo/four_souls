@@ -775,6 +775,26 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    3. A named wait in `turn.ts` checks the exact state in the store.
    4. `settle` answers whatever comes on the way; no ban is needed.
    5. Later: run key tests with each card known to interrupt them.
+9. TS-09. Every state change is named in an event (owner, 2026-11-16).
+   1. 19.2, 19.39, 19.73, 19.90, 19.147: state changed with no event.
+   2. Each was seen only by eye in a play test.
+   3. Fuzz compares the state before and after every step.
+   4. A moved object, or one whose damage or charge changed, is in an event.
+   5. A change silent on purpose is listed with its reason.
+10. TS-10. e2e plays with animations off (owner, 2026-11-16).
+   1. Many e2e failures were checks made mid-animation (19.37, 19.122, 19.132).
+   2. Every page starts at speed "off".
+   3. A test that checks an animation turns it on itself.
+   4. A failed test is still investigated every time; no retry rule.
+11. TS-11. Each e2e test has a fixed deal (owner, 2026-11-16).
+   1. About 30 step 19 items: a random deal broke a test.
+   2. No card bug was found by a random e2e deal.
+   3. A seed per test, from its title; ADR 032.
+   4. Random deals stay in `make e2e-games`, fuzz and sims.
+12. TS-12. Long games stay fast (owner, 2026-11-16).
+   1. 19.135, 19.137, 19.138 showed only after thousands of steps.
+   2. `make e2e-games` checks each page at the game's end.
+   3. Page elements and script time per step stay under a limit.
 
 ## Localization
 

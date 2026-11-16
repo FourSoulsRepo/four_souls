@@ -334,6 +334,16 @@ Step 10 done (owner, 2026-11-16); it merges with step 18.
 3. No change the player sees; the bridge API stays.
 4. Ideas: A-17.
 
+## 22. Test reliability
+
+1. Fuzz checks that every state change is named in an event.
+2. The client reads every view field the server sends.
+3. e2e plays with animations off; animation tests opt in.
+4. Each e2e test has a fixed deal (ADR 032).
+5. e2e waits name the exact store state they need.
+6. Long games stay under a size and speed limit.
+7. Ideas: TS-07 – TS-12.
+
 ## Future
 
 Not scheduled; revisit after the MVP.
