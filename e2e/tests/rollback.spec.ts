@@ -210,7 +210,10 @@ test('in Soft the author asks; another player opens a vote that passes (17.4, 17
 
 test('in Soft a declined ask leaves the move; the author may ask again (17.4)', async ({ browser }) => {
   const names = ['Pia', 'Quin'];
-  const pages = await startGame(browser, names, { url: `${appURL()}&anim=off`, setup: pickSoft });
+  // Pride: its trigger's discard resolves before the first throw
+  // (R-ATK-25), so the latest move is the discard, not the target pick
+  // this ask undoes (19.158, 19.169).
+  const pages = await startGame(browser, names, { url: `${appURL()}&anim=off`, setup: pickSoft, bans: ['pride'] });
   const active = await activePage(pages, click);
   const other = pages.find((p) => p !== active);
   if (!other) {
@@ -247,7 +250,10 @@ test('in Soft a declined ask leaves the move; the author may ask again (17.4)', 
 
 test('in Soft with two players Undo rolls back at once; after a roll it is greyed (17.4, 17.7)', async ({ browser }) => {
   const names = ['Rex', 'Sia'];
-  const pages = await startGame(browser, names, { url: `${appURL()}&anim=off`, options: { rollback: 'soft' } });
+  // Pride: its trigger's discard resolves before the first throw
+  // (R-ATK-25), so the latest move is the discard, not the target pick
+  // this Undo rolls back (19.163).
+  const pages = await startGame(browser, names, { url: `${appURL()}&anim=off`, options: { rollback: 'soft' }, bans: ['pride'] });
   const active = await activePage(pages, click);
   const other = pages.find((p) => p !== active);
   if (!other) {

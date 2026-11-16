@@ -206,11 +206,11 @@ test('server notices: a newer engine, a lost game', async ({ browser }) => {
 });
 
 // rollbackOverRestart plays a Godmode game to an attack's throw, then
-// restarts the server; edit runs while it is down. It returns the
-// active page with its History open.
-async function rollbackOverRestart(browser: Browser, names: string[], edit?: () => void): Promise<Page> {
+// restarts the server; edit runs while it is down; bans go to the host.
+// It returns the active page with its History open.
+async function rollbackOverRestart(browser: Browser, names: string[], edit?: () => void, bans: string[] = []): Promise<Page> {
   await server.start();
-  pages = await startGame(browser, names, { port: server.port, url: `${appURL(server.port)}&anim=off`, options: { rollback: 'god' } });
+  pages = await startGame(browser, names, { port: server.port, url: `${appURL(server.port)}&anim=off`, options: { rollback: 'god' }, bans });
   const active = await activePage(pages, click);
   await expect(turnAction(active, 'Attack')).toBeEnabled();
   await click(active, turnAction(active, 'Attack'));
@@ -226,7 +226,10 @@ async function rollbackOverRestart(browser: Browser, names: string[], edit?: () 
 }
 
 test('Godmode: a rollback reaches past a server restart (17.5)', async ({ browser }) => {
-  const active = await rollbackOverRestart(browser, ['Gus', 'Hex']);
+  // Pride: its trigger's discard resolves before the first throw
+  // (R-ATK-25), so the latest move is the discard, not the target pick
+  // the first Undo names (19.164).
+  const active = await rollbackOverRestart(browser, ['Gus', 'Hex'], undefined, ['pride']);
   const history = active.getByRole('complementary', { name: tr('history.title'), exact: true });
   await expect(history.getByText(tr('history.restarted'))).toHaveCount(0);
   // Two presses: the target pick, then the declaration (17.7).

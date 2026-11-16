@@ -41,8 +41,8 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119, 19.167 | 12 |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166                                  | 3     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165 | 40 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.158, 19.159, 19.161, 19.162, 19.168, 19.169, 19.170, 19.171, 19.172 | 31 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169 | 42 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172 | 29 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63, 19.129                                          | 2     |
@@ -4991,6 +4991,18 @@ Totals by system (163 items):
 4. Tasks:
    1. Read the saved match record for the deal.
    2. Check: the spec, both browsers, 5 workers, 10 repeats.
+5. Fix (2026-11-16)
+   1. Record cut short; the title "Pia discards 3 Cents!" matches 19.164's Pride discard.
+   2. Pride's trigger (19.151) resolves before the throw; its discard is the latest move.
+   3. These tests deal b2 only; Pride is the only b2 card with such a trigger (19.151 list).
+   4. So one ban, `pride`, with the reason in a comment (14.10).
+   5. Other Undo tests after an attack: Godmode and Soft vote already ban it (19.151).
+   6. `two-sided.spec.ts` undoes a flip, not an attack: no change.
+   7. Check: rollback tests, both browsers, 5 workers, 10 repeats: 40 of 40.
+   8. Check: restart test, both browsers, 1 worker, 10 repeats: 20 of 20.
+   9. The restart spec is serial with one server per browser; 5 workers clash on it.
+   10. No engine bug: the game did what Pride says.
+   11. Same test as 19.169: `rollback.spec.ts` "declined ask" bans Pride.
 
 ### [ ] 19.159 e2e: hover mark stays after the mouse leaves, webkit
 
@@ -5107,6 +5119,18 @@ Totals by system (163 items):
    2. If so: ban Pride there, with the reason (14.10).
    3. Search every set for monsters that trigger on an attack; ban only those needed.
    4. Check: the spec, both browsers, 5 workers, 10 repeats.
+5. Fix (2026-11-16)
+   1. The report names the target: "Sia attacks Pride".
+   2. Pride's trigger (19.151) resolves before the throw; its discard is the latest move.
+   3. These tests deal b2 only; Pride is the only b2 card with such a trigger (19.151 list).
+   4. So one ban, `pride`, with the reason in a comment (14.10).
+   5. Other Undo tests after an attack: Godmode and Soft vote already ban it (19.151).
+   6. `two-sided.spec.ts` undoes a flip, not an attack: no change.
+   7. Check: rollback tests, both browsers, 5 workers, 10 repeats: 40 of 40.
+   8. Check: restart test, both browsers, 1 worker, 10 repeats: 20 of 20.
+   9. The restart spec is serial with one server per browser; 5 workers clash on it.
+   10. No engine bug: the game did what Pride says.
+   11. `rollback.spec.ts` "two players Undo" bans Pride.
 
 ### [ ] 19.164 e2e: a discard after the attack breaks the restart rollback test
 
@@ -5124,6 +5148,18 @@ Totals by system (163 items):
    1. Read the match record; name the attacked monster.
    2. Fix with 19.163: the same bans in `rollbackOverRestart`.
    3. Check: the spec, chromium, 5 workers, 10 repeats.
+5. Fix (2026-11-16)
+   1. Record `g4_Gus_Hex` (restart-chromium): target `pride`, then two discards.
+   2. Pride's trigger (19.151) resolves before the throw; its discard is the latest move.
+   3. These tests deal b2 only; Pride is the only b2 card with such a trigger (19.151 list).
+   4. So one ban, `pride`, with the reason in a comment (14.10).
+   5. Other Undo tests after an attack: Godmode and Soft vote already ban it (19.151).
+   6. `two-sided.spec.ts` undoes a flip, not an attack: no change.
+   7. Check: rollback tests, both browsers, 5 workers, 10 repeats: 40 of 40.
+   8. Check: restart test, both browsers, 1 worker, 10 repeats: 20 of 20.
+   9. The restart spec is serial with one server per browser; 5 workers clash on it.
+   10. No engine bug: the game did what Pride says.
+   11. `rollbackOverRestart` takes bans; only the Undo test passes `pride`.
 
 ### [ ] 19.165 e2e: a 0-attack monster gives no fear in the fear test
 
@@ -5242,6 +5278,18 @@ Totals by system (163 items):
 4. Tasks:
    1. Fix with 19.163 and 19.164: the same bans, with reasons.
    2. Check: the spec, both browsers, 5 workers, 10 repeats.
+5. Fix (2026-11-16)
+   1. Record cut short; same title and test as 19.158.
+   2. Pride's trigger (19.151) resolves before the throw; its discard is the latest move.
+   3. These tests deal b2 only; Pride is the only b2 card with such a trigger (19.151 list).
+   4. So one ban, `pride`, with the reason in a comment (14.10).
+   5. Other Undo tests after an attack: Godmode and Soft vote already ban it (19.151).
+   6. `two-sided.spec.ts` undoes a flip, not an attack: no change.
+   7. Check: rollback tests, both browsers, 5 workers, 10 repeats: 40 of 40.
+   8. Check: restart test, both browsers, 1 worker, 10 repeats: 20 of 20.
+   9. The restart spec is serial with one server per browser; 5 workers clash on it.
+   10. No engine bug: the game did what Pride says.
+   11. Fixed with 19.158: the same ban.
 
 ### [ ] 19.170 e2e: the dead soul monster fly is missed once
 
@@ -5271,6 +5319,10 @@ Totals by system (163 items):
 4. Tasks:
    1. Find the cause in the evidence; fix the test or the app.
    2. Check: the spec, both browsers, 5 workers, 10 repeats.
+5. Seen again (19.163 `make e2e`, 2026-11-16)
+   1. WebKit; the same `.choice-subject .card` not found.
+   2. The change under test (19.163) only bans Pride in Undo tests.
+   3. Evidence: `.cache/e2e-evidence/19.163/run1/` (not in git).
 
 ### [ ] 19.172 e2e: The Siren's player target is not offered once
 
