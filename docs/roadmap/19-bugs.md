@@ -4976,7 +4976,7 @@ Totals by system (163 items):
    19. Evidence: `.cache/e2e-evidence/19.157-full1/` (not in git).
    20. Screenshots: `.cache/screenshots/19.157/before/` and `after/`.
 
-### [ ] 19.158 e2e: Soft rollback test sees Undo instead of Ask to undo
+### [x] 19.158 e2e: Soft rollback test sees Undo instead of Ask to undo
 
 1. Goal: `rollback.spec.ts:211` passes whatever the deal.
 2. Report (19.157 `make e2e`, 2026-11-11)
@@ -5003,6 +5003,8 @@ Totals by system (163 items):
    9. The restart spec is serial with one server per browser; 5 workers clash on it.
    10. No engine bug: the game did what Pride says.
    11. Same test as 19.169: `rollback.spec.ts` "declined ask" bans Pride.
+6. Owner notes (2026-11-16)
+   1. Owner marks 19.158 solved.
 
 ### [ ] 19.159 e2e: hover mark stays after the mouse leaves, webkit
 
@@ -5100,7 +5102,7 @@ Totals by system (163 items):
    4. Evidence: `.cache/e2e-evidence/21.4-run1/` (not in git).
    5. The change under test (21.4) only moved Go bindings.
 
-### [ ] 19.163 e2e: Pride's discard after the attack breaks the Soft undo test
+### [x] 19.163 e2e: Pride's discard after the attack breaks the Soft undo test
 
 1. Goal: `rollback.spec.ts:248` passes on every deal.
 2. Report (21.3 `make e2e`, 2026-11-16)
@@ -5131,8 +5133,10 @@ Totals by system (163 items):
    9. The restart spec is serial with one server per browser; 5 workers clash on it.
    10. No engine bug: the game did what Pride says.
    11. `rollback.spec.ts` "two players Undo" bans Pride.
+6. Owner notes (2026-11-16)
+   1. Owner marks 19.163 solved.
 
-### [ ] 19.164 e2e: a discard after the attack breaks the restart rollback test
+### [x] 19.164 e2e: a discard after the attack breaks the restart rollback test
 
 1. Goal: `restart.spec.ts:228` passes on every deal.
 2. Report (21.3 `make e2e`, 2026-11-16)
@@ -5160,6 +5164,8 @@ Totals by system (163 items):
    9. The restart spec is serial with one server per browser; 5 workers clash on it.
    10. No engine bug: the game did what Pride says.
    11. `rollbackOverRestart` takes bans; only the Undo test passes `pride`.
+6. Owner notes (2026-11-16)
+   1. Owner marks 19.164 solved.
 
 ### [ ] 19.165 e2e: a 0-attack monster gives no fear in the fear test
 
@@ -5263,7 +5269,7 @@ Totals by system (163 items):
    1. Run 1 of 10.3: Blue Baby with Forever Alone, as 19.97 bans elsewhere.
    2. Evidence: `.cache/e2e-evidence/10.3/run1/` (not in git).
 
-### [ ] 19.169 e2e: a discard after the move breaks the Soft ask test
+### [x] 19.169 e2e: a discard after the move breaks the Soft ask test
 
 1. Goal: `rollback.spec.ts:211` passes on every deal.
 2. Report (10.2 `make screenshots`, 2026-11-16)
@@ -5290,6 +5296,8 @@ Totals by system (163 items):
    9. The restart spec is serial with one server per browser; 5 workers clash on it.
    10. No engine bug: the game did what Pride says.
    11. Fixed with 19.158: the same ban.
+6. Owner notes (2026-11-16)
+   1. Owner marks 19.169 solved.
 
 ### [ ] 19.170 e2e: the dead soul monster fly is missed once
 
