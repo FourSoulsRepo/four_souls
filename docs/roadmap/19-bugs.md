@@ -5419,7 +5419,7 @@ Totals by system (169 items):
    5. Only the recharge choice returned before its event.
    6. Go test: `TestCurseOfFatigueCharacterRechargeEvent`.
 
-### [ ] 19.176 No event when a card deactivates a character or item
+### [x] 19.176 No event when a card deactivates a character or item
 
 1. Goal: a deactivation by a card effect has an event.
 2. Report (22.2 fuzz check, 2026-11-16)
@@ -5435,6 +5435,15 @@ Totals by system (169 items):
 4. Tasks:
    1. Fix it in 22.3, game-wide: one engine helper with the event.
    2. Remove "deactivated by a card" from the 22.2 list (`event_check.go`).
+5. Fix (22.3, 2026-11-16)
+   1. New `Game.Deactivate(id)`, next to `Recharge` (`ability.go`).
+   2. It emits `deactivated` naming the object and its controller.
+   3. Spider Webs, Curse of Impulse and Hourglass use it.
+   4. Searched every set for `Charged = false`: no other card.
+   5. Also checked: `tapCost` (its `activated`), the death penalty (`deactivated`).
+   6. Also checked: The Chest's soul (`gained_soul`), `EntersDeactivated` (`entered_play`).
+   7. Client: no line, no flight (`historyKinds`); the card turns on the table.
+   8. Go tests: Spider Webs, Curse of Impulse, Hourglass see the event.
 
 ### [ ] 19.177 Fuzz: a redo replay differs from the record
 

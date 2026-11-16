@@ -16,10 +16,10 @@ var curseOfImpulse = engine.CardDef{
 		Text:    "At the end of your turn, deactivate each item you control and your character.",
 		Trigger: engine.AtEndOfYourTurn(),
 		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
-			c.G.Object(c.G.Players[c.Controller].Character).Charged = false
+			c.G.Deactivate(c.G.Players[c.Controller].Character)
 			for _, id := range itemsOf(c.G, c.Controller) {
 				if c.G.HasTap(id) { // passive items stay charged (Q-25)
-					c.G.Object(id).Charged = false
+					c.G.Deactivate(id)
 				}
 			}
 		})},

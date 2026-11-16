@@ -346,14 +346,6 @@ var silentChanges = []SilentChange{
 		},
 	},
 	{
-		Name:   "deactivated by a card",
-		Reason: "Spider Webs, Curse of Impulse and Hourglass deactivate a card with no event",
-		Bug:    "19.176",
-		Match: func(_ *Game, c Change, _ []Event) bool {
-			return c.What == "charge" && c.After == 0
-		},
-	},
-	{
 		Name:   "shuffle",
 		Reason: "a shuffled deck shows no card and no count change; nothing to draw",
 		Match:  func(_ *Game, c Change, _ []Event) bool { return c.What == "shuffle" },

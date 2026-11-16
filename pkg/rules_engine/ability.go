@@ -509,6 +509,17 @@ func (g *Game) Recharge(id ObjectID) {
 	g.emit(Event{Kind: EvRecharged, Player: o.Controller, Object: id, Card: o.Card})
 }
 
+// Deactivate turns a charged object in play sideways, with its event:
+// "deactivate a character or item" by a card effect (19.176).
+func (g *Game) Deactivate(id ObjectID) {
+	o := g.Object(id)
+	if o.Zone.Kind != ZoneInPlay || !o.Charged {
+		return
+	}
+	o.Charged = false
+	g.emit(Event{Kind: EvDeactivated, Player: o.Controller, Object: id, Card: o.Card})
+}
+
 type killEffect struct{ target int }
 
 // Kill kills the target player or monster: its death goes on the stack

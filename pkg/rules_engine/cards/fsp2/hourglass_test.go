@@ -3,14 +3,20 @@ package fsp2
 import (
 	"slices"
 	"testing"
+
+	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
 func TestHourglass(t *testing.T) {
 	tb := table(t, seat("isaac", "hourglass", "mystery_sack"), seat("cain", "boomerang"))
 	tb.G.ForceRolls(2)
-	tb.Activate(0, "mystery_sack", 0, "boomerang")
-	if tb.G.Object(tb.Find(1, "boomerang")).Charged {
+	boomerang := tb.Find(1, "boomerang")
+	ev := tb.Activate(0, "mystery_sack", 0, "boomerang")
+	if tb.G.Object(boomerang).Charged {
 		t.Error("on a 2 an item may be deactivated")
+	}
+	if !slices.ContainsFunc(ev, func(e engine.Event) bool { return e.Kind == engine.EvDeactivated && e.Object == boomerang }) {
+		t.Error("no deactivated event names Boomerang (19.176)")
 	}
 }
 

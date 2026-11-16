@@ -128,15 +128,19 @@ func (tb *Table) Refused(p int, card engine.CardRef, i int) string {
 
 // EndTurn ends the active player's turn and runs the game up to the next
 // player's action phase, answering prompts with choices on the way.
-func (tb *Table) EndTurn(choices ...string) {
+// It returns every event on the way.
+func (tb *Table) EndTurn(choices ...string) []engine.Event {
 	tb.T.Helper()
+	var out []engine.Event
 	active, number := tb.G.Turn.Active, tb.G.Turn.Number
-	if _, err := tb.G.Apply(engine.Intent{Player: active, Kind: engine.IntentEndTurn}); err != nil {
+	ev, err := tb.G.Apply(engine.Intent{Player: active, Kind: engine.IntentEndTurn})
+	if err != nil {
 		tb.T.Fatal(err)
 	}
+	out = append(out, ev...)
 	for range 1000 {
 		if tb.G.Turn.Number != number && tb.G.Turn.Step == engine.StepAction && tb.G.Prompt().Kind == engine.PromptPriority && len(tb.G.Stack) == 0 {
-			return
+			return out
 		}
 		w := tb.G.Prompt()
 		var in engine.Intent
@@ -166,11 +170,14 @@ func (tb *Table) EndTurn(choices ...string) {
 		default:
 			tb.T.Fatalf("unexpected prompt %+v", w)
 		}
-		if _, err := tb.G.Apply(in); err != nil {
+		ev, err := tb.G.Apply(in)
+		if err != nil {
 			tb.T.Fatal(err)
 		}
+		out = append(out, ev...)
 	}
 	tb.T.Fatal("the next turn never came")
+	return nil
 }
 
 func (tb *Table) option(_ engine.Prompt, label string) int {
