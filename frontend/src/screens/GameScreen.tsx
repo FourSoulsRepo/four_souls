@@ -28,7 +28,7 @@ import type { Block, Update } from '../protocol';
 import { seatOf, useApp } from '../store';
 import { PickScreen } from './PickScreen';
 import { activity, askedSeat, myMove, picking, promptBanner, stackPrompt, tablePick } from '../prompt';
-import { beforeStart, seatNames, waitTurn, type Names } from '../stack';
+import { beforeStart, helpLine, seatNames, waitTurn, type Names } from '../stack';
 import { seatPositions } from '../table';
 import '../components/Table.css';
 import './screens.css';
@@ -209,6 +209,8 @@ function Table({ game, you, replaying }: { game: Update; you: number; replaying:
   // player is rolled for, nobody has a turn: no active seat, no turn
   // buttons (15.43, 19.142).
   const started = !beforeStart(view);
+  // Who helps the next attack, on the active seat for everyone (19.184).
+  const nextAttack = helpLine(view.turn.next_helpers, view.turn.next_share, names);
   return (
     <main className={`game ${look.className}${dim ? ' picking' : ''}`} style={look.style} aria-label={t('game.turn', { n: view.turn.number })}>
       {seatPositions(view.players.length, you).map(({ position, player }) => {
@@ -226,6 +228,7 @@ function Table({ game, you, replaying }: { game: Update; you: number; replaying:
               asked={asked === p.id}
               doing={doing}
               deckAttacks={view.turn.deck_attacks ?? 0}
+              nextAttack={nextAttack}
               winSouls={view.win_souls ?? 0}
               ui={ui}
               tools={

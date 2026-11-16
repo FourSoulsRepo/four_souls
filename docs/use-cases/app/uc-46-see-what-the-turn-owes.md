@@ -28,6 +28,10 @@
   * On Ann's seat for everyone; by her loot count for Ann.
 * **3b. The marked monster leaves the table:** the frame and the line go.
 * **3c. Others' banners:** they see Ann's turn; the marks are for everyone.
+* **2c. Someone helps the next attack (19.184, 19.185):** Ann's seat says so.
+  * "Next attack: Helped by Bo · Rewards shared with Bo".
+  * Every player sees it until the attack starts.
+  * Then the attack's stack row names them (UC-14 2s).
 
 ## Postconditions
 

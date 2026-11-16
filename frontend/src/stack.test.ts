@@ -5,6 +5,7 @@ import {
   beforeStart,
   declaration,
   findCard,
+  helpLine,
   playedCard,
   secondsLeft,
   stackBadge,
@@ -280,5 +281,21 @@ describe('stackRows', () => {
     const rows = stackRows({ ...view, attack: { target: 9 }, stack: [a] }, names);
     expect(rows.map((r) => r.key)).toEqual(['declared', 'item-4']);
     expect(keys({ ...view, attack: { target: 9 } })).toEqual(['declared']);
+  });
+});
+
+describe('helpLine', () => {
+  it('names who helps an attack and who shares its rewards (19.184, 19.185, 19.188)', () => {
+    expect(helpLine(undefined, undefined, names)).toBeUndefined();
+    expect(helpLine([], [], names)).toBeUndefined();
+    expect(helpLine([1], undefined, names)).toBe('Helped by Bo');
+    expect(helpLine([1, 0], [1], names)).toBe('Helped by Bo, Ann · Rewards shared with Bo');
+  });
+
+  it("adds the open attack's helpers to its row (19.188)", () => {
+    const [top] = stackRows({ ...view, attack: { target: 9, helpers: [1], share: [1] } }, names);
+    expect(top).toMatchObject({ key: 'declared', help: 'Helped by Bo · Rewards shared with Bo' });
+    const [plain] = stackRows({ ...view, attack: { target: 9 } }, names);
+    expect(plain).not.toHaveProperty('help');
   });
 });

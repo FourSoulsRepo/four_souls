@@ -600,6 +600,10 @@ export interface AttackView {
   target?: number;
   deck?: boolean;
   odds?: OddsView; // once aimed (15.94)
+  // helpers roll after each attack roll; share also gain its rewards
+  // (R-ATK-21, Sibling Rivalry, 19.188).
+  helpers?: number[];
+  share?: number[];
 }
 
 // OddsView is the attacker's next roll against the target (15.94): its

@@ -447,6 +447,14 @@
     "text": "yes",
     "note": "Option of a yes-or-no question."
   },
+  "attack.helped_by": {
+    "text": "Helped by {players}",
+    "note": "Game table: who helps an attack (they roll after each attack roll). players: names, comma-separated. In the stack's attack row, and after Next attack: on the active player's seat."
+  },
+  "attack.shared_with": {
+    "text": "Rewards shared with {players}",
+    "note": "Game table: who also gains the attack's rewards if the monster dies (Sibling Rivalry). players: names, comma-separated. Joined to Helped by with a dot."
+  },
   "badge.atk": {
     "text": {
       "one": "{n} attack",
@@ -4646,6 +4654,10 @@
   "table.loot_left_label": {
     "text": "Loot plays left",
     "note": "Game table: screen-reader name of the viewer's loot plays left on their turn."
+  },
+  "table.next_attack": {
+    "text": "Next attack: {line}",
+    "note": "Game table, by the active player's name, for everyone: who joins their next attack this turn (Sibling Rivalry). line: Helped by Bo · Rewards shared with Bo."
   },
   "table.own_name": {
     "text": "{player} (you)",

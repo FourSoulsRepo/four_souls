@@ -413,6 +413,26 @@ func TestViewShowsTheAttackToEveryone(t *testing.T) {
 	}
 }
 
+// TestViewShowsTheAttackHelpers: everyone sees who helps the attack in
+// progress and who shares its rewards (19.188).
+func TestViewShowsTheAttackHelpers(t *testing.T) {
+	g := toAction(t, 3)
+	a := g.Turn.Active
+	h, s := g.next(a), g.next(g.next(a))
+	putMonster(g, 0, "gaper")
+	g.HelpNextAttack(h, true)
+	g.HelpNextAttack(s, false)
+	attack(t, g)
+	g.forcedRolls = []int{1}
+	choose(t, g, "gaper")
+	for _, v := range []Viewer{{Kind: ViewPlayer, Player: a}, {Kind: ViewPlayer, Player: s}, {Kind: ViewSpectator}} {
+		at := g.View(v).Attack
+		if at == nil || !slices.Equal(at.Helpers, []PlayerID{h, s}) || !slices.Equal(at.Share, []PlayerID{h}) {
+			t.Errorf("viewer %+v: attack %+v, want helpers %d, %d and share %d", v, at, h, s, h)
+		}
+	}
+}
+
 func TestViewShowsADeclaredPurchase(t *testing.T) {
 	g := toAction(t, 2)
 	a := g.Turn.Active

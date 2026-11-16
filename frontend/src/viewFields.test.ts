@@ -48,8 +48,6 @@ const unread: Record<string, string> = {
   'Turn.room_replaced': 'the room replace comes as a prompt',
   'Turn.late_rooms': 'blocked says why such a room waits (R-TURN-18)',
   'Turn.entered': "the engine's own step state",
-  'Turn.next_helpers': '19.184: who helps the next attack is not shown',
-  'Turn.next_share': '19.185: who shares the next attack\'s rewards is not shown',
   'Seat.kicked': '19.187: a kicked player is not shown as gone',
 };
 

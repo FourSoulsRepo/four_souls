@@ -142,3 +142,26 @@ test('the attack count says which attacks are deck only (19.183)', async ({ brow
     await expect(page.locator('.player-allowance').getByText(line, { exact: true })).toBeVisible();
   }
 });
+
+test('everyone sees who helps the next attack and shares its rewards (19.184, 19.185)', async ({ browser }) => {
+  const { active, other, t } = await twoPages(browser, ['Sol', 'Tam']);
+  const helper = t.otherName;
+  await feed([active, other], { turn: { next_helpers: [t.other], next_share: [t.other] } });
+  await shot(active, 'next-attack-helpers');
+  const help = `${tr('attack.helped_by', { players: helper })} · ${tr('attack.shared_with', { players: helper })}`;
+  for (const page of [active, other]) {
+    await expect(page.locator('.player-next-attack')).toHaveText(tr('table.next_attack', { line: help }));
+  }
+});
+
+test('a running attack shows its helpers on the stack (19.188)', async ({ browser }) => {
+  const { active, other, t } = await twoPages(browser, ['Uma', 'Vic']);
+  const helper = t.otherName;
+  await feed([active, other], { attack: { target: t.monster.id, helpers: [t.other], share: [t.other] } });
+  await shot(other, 'attack-helpers');
+  const help = `${tr('attack.helped_by', { players: helper })} · ${tr('attack.shared_with', { players: helper })}`;
+  for (const page of [active, other]) {
+    const stack = page.getByRole('complementary', { name: tr('stack.title') });
+    await expect(stack.locator('.stack-help')).toHaveText(help);
+  }
+});

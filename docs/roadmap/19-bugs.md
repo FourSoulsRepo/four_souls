@@ -5639,7 +5639,7 @@ Totals by system (179 items):
    3. Cards checked: Big Spider, Gold Key, Blastocyst (`AddDeckAttack`).
    4. e2e: `duties.spec.ts`; UC-46 2b.
 
-### [ ] 19.184 Who helps the next attack is not shown
+### [x] 19.184 Who helps the next attack is not shown
 
 1. Goal: every seat sees who will help the next attack.
 2. Report (22.4 check, 2026-11-16)
@@ -5649,8 +5649,14 @@ Totals by system (179 items):
    2. The client draws nothing until the attack.
 4. Tasks:
    1. Fix in 22.5: draw it, or list it with a reason.
+5. Fix (22.5, 2026-11-16)
+   1. The active seat says "Next attack: Helped by Bo", for everyone.
+   2. `helpLine` in `stack.ts`; `NextAttack` in `PlayerArea.tsx`.
+   3. A running attack had the same gap: 19.188.
+   4. Cards checked: Sibling Rivalry (`HelpNextAttack`), the only caller.
+   5. Vitest: `helpLine`; e2e: `duties.spec.ts`; UC-46 2c.
 
-### [ ] 19.185 Who shares the next attack's rewards is not shown
+### [x] 19.185 Who shares the next attack's rewards is not shown
 
 1. Goal: every seat sees who will share the next attack's rewards.
 2. Report (22.4 check, 2026-11-16)
@@ -5660,6 +5666,9 @@ Totals by system (179 items):
    2. The client draws nothing for it.
 4. Tasks:
    1. Fix in 22.5: draw it, or list it with a reason.
+5. Fix (22.5, 2026-11-16)
+   1. The same line adds "· Rewards shared with Bo".
+   2. Fixed with 19.184; the same tests and use case.
 
 ### [ ] 19.186 A roll result on the stack does not show its number
 
@@ -5683,7 +5692,7 @@ Totals by system (179 items):
 4. Tasks:
    1. Fix in 22.5: draw it, or list it with a reason.
 
-### [ ] 19.188 A running attack's helpers are not shown
+### [x] 19.188 A running attack's helpers are not shown
 
 1. Goal: every seat sees who helps the attack in progress.
 2. Report (22.5 check, 2026-11-16)
@@ -5696,3 +5705,11 @@ Totals by system (179 items):
    4. The client sees a helper only by their attack roll.
 4. Tasks:
    1. Fix in 22.5: send them in `AttackView`; draw them for everyone.
+5. Fix (22.5, 2026-11-16)
+   1. `AttackView` sends `helpers` and `share` (`view.go`).
+   2. The stack's attack row adds "Helped by Bo · Rewards shared with Bo".
+   3. View only: no engine version change; steps and checksums stay.
+   4. Checked every writer: `AddAttackHelpers` (Gus, Sisters Vis, Ultra Greed).
+   5. Also `startAttack`'s next helpers and share (Sibling Rivalry).
+   6. Go test: `TestViewShowsTheAttackHelpers`; Vitest: `helpLine`.
+   7. e2e: `duties.spec.ts`; UC-14 2s.
