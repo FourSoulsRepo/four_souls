@@ -214,8 +214,9 @@ func (r *Room) think(ctx context.Context, i int) {
 // botMove applies a thinker's answer like a client's intent: record,
 // rollback history, automatic passes (Decision 12.7). An answer for an
 // older step, or one that comes while the game is over, paused or
-// voting, is dropped. An error or a refused intent gives the forced
-// answer, and is logged (Decision 12.10).
+// voting, is dropped. An error or a refused intent gives the bot's
+// fallback move, and is logged (Decision 12.10): the response timer may
+// be off, so a bot never waits for it.
 func (r *Room) botMove(a *botAnswer) {
 	if a.seat < 0 || a.seat >= len(r.thinkers) {
 		return
@@ -230,29 +231,47 @@ func (r *Room) botMove(a *botAnswer) {
 		return
 	}
 	p := engine.PlayerID(a.seat)
-	in := a.intent
-	if a.err != nil {
-		log.Printf("server: game %s: %s has no move: %v; the forced answer goes", r.recInfo.game, r.seats[a.seat].name, a.err)
-		forced, ok := r.forcedIntent(p)
-		if !ok {
-			return // the response timer is the last net (Decision 12.11)
-		}
-		in = forced
-	}
-	in.Player = p
-	events, err := r.apply(in)
-	if err != nil {
-		log.Printf("server: game %s: %s: the engine refused %+v: %v; the forced answer goes", r.recInfo.game, r.seats[a.seat].name, in, err)
-		forced, ok := r.forcedIntent(p)
-		if !ok {
+	name := r.seats[a.seat].name
+	if a.err == nil {
+		in := a.intent
+		in.Player = p
+		events, err := r.apply(in)
+		if err == nil {
+			r.after(events, true)
 			return
 		}
-		if events, err = r.apply(forced); err != nil {
-			log.Printf("server: game %s: %s: the forced answer was refused too: %v", r.recInfo.game, r.seats[a.seat].name, err)
+		log.Printf("server: game %s: %s: the engine refused %+v: %v; the fallback move goes", r.recInfo.game, name, in, err)
+	} else {
+		log.Printf("server: game %s: %s has no move: %v; the fallback move goes", r.recInfo.game, name, a.err)
+	}
+	for _, in := range r.botFallbacks(p) {
+		in.Player = p
+		events, err := r.apply(in)
+		if err == nil {
+			r.after(events, true)
 			return
 		}
+		// Allowed gave what the engine refuses: an engine bug.
+		log.Printf("server: game %s: engine bug: seed %d, step %d: %s's allowed %+v was refused: %v", r.recInfo.game, r.setup.Seed, r.step, name, in, err)
 	}
-	r.after(events, true)
+	r.drive() // nothing went: the bot thinks again
+}
+
+// botFallbacks are a bot's moves when its own is missing or refused:
+// first the forced answer of the response timer, then each allowed
+// intent. forcedIntent completes a discard; the other allowed intents
+// are complete as they are. Priority's forced answer is a pass or the
+// end of the turn; when both are forbidden (a must-attack, R-ABIL-12),
+// an allowed action goes.
+func (r *Room) botFallbacks(p engine.PlayerID) []engine.Intent {
+	var out []engine.Intent
+	if in, ok := r.forcedIntent(p); ok {
+		out = append(out, in)
+	}
+	if r.game.PromptFor(p).Kind != engine.PromptDiscard {
+		out = append(out, r.game.Allowed(p)...)
+	}
+	return out
 }
 
 // noteBotWork keeps the longest time the driver held the room: the

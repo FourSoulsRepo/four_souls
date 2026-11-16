@@ -505,3 +505,34 @@ func passOrForced(u protocol.Update) (engine.Intent, bool) {
 	}
 	return in, true
 }
+
+// TestBotsMustAttackFallback: with the response timer off, a bot that
+// must attack (no pass, no end of turn: R-ABIL-12, R-TURN-09) and has
+// no move, or gives one the engine refuses, still moves: the forced
+// answer has none, so an allowed attack goes, and the game goes on.
+func TestBotsMustAttackFallback(t *testing.T) {
+	for _, a := range []botAnswer{
+		{err: context.Canceled},
+		{intent: engine.Intent{Kind: engine.IntentAttack, Objects: []engine.ObjectID{99999}}},
+	} {
+		r := botRoom(t, protocol.Options{ResponseTimer: 0, Rollback: protocol.RollbackGod}, "", protocol.BotStandard) // God mode keeps the steps to look at
+		serveBots(t, r, func() bool {
+			g := r.game
+			return thinking(r, 1)() && g.Turn.Active == 1 && slices.ContainsFunc(g.Allowed(1), func(x engine.Intent) bool { return x.Kind == engine.IntentEndTurn }) &&
+				slices.ContainsFunc(g.Allowed(1), func(x engine.Intent) bool { return x.Kind == engine.IntentAttack })
+		})
+		r.game.Turn.MustAttacks = 1
+		if _, ok := r.forcedIntent(1); ok {
+			t.Fatalf("a forced answer while the bot must attack: allowed %+v", r.game.Allowed(1))
+		}
+		th, step := r.thinkers[1], r.step
+		a.seat, a.id, a.step = 1, th.id, th.step
+		r.handle(request{bot: &a})
+		if r.step == step || r.live[len(r.live)-1].rec.Intent.Player != 1 {
+			t.Fatalf("no bot step after %+v: the bot stands", a)
+		}
+		if k := r.live[len(r.live)-1].rec.Intent.Kind; k != engine.IntentAttack {
+			t.Errorf("the fallback move %v, want an attack", k)
+		}
+	}
+}

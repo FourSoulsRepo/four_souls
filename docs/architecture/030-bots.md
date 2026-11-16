@@ -204,8 +204,10 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    7. The room applies it like a client's intent: record, rollback history, auto passes.
    8. An answer for an older step is dropped.
    9. Any applied step, rollback, pause or vote cancels the open thinkers.
-   10. An intent the engine refuses is logged; the forced answer is used (N-07).
-   11. The response timer stays the last net for a stuck bot.
+   10. An intent the engine refuses is logged; the fallback move is used.
+      1. The fallback: the forced answer of the response timer (N-07), else any allowed intent (a must-attack forbids pass and end turn).
+      2. An allowed intent the engine refuses is an engine bug: logged with seed, step and intent.
+   11. The response timer may be off, so a bot never relies on it.
 13. Pace (owner, 2026-11-16)
    1. A pass or an answer to a prompt: 0.7 s after the prompt came.
    2. An action in the bot's own turn: 1 to 2 s, at random.
