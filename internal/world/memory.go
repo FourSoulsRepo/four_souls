@@ -3,7 +3,6 @@ package world
 import (
 	"slices"
 	"strconv"
-	"strings"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
@@ -135,7 +134,7 @@ type step struct {
 
 // event takes one event.
 func (s *step) event(e engine.Event) {
-	if e.Kind == engine.EvLooted && e.Text != fromDiscard {
+	if e.Kind == engine.EvLooted && e.Text != engine.TextFromDiscard {
 		// A draw from the loot deck, or a card taken out of it
 		// (DeckToHand): loot_done tells which.
 		s.addToHand(e.Player, 1)
@@ -175,10 +174,6 @@ func (s *step) event(e engine.Event) {
 	}
 }
 
-// fromDiscard is the text of a card looted from a discard pile, in sight
-// of all.
-const fromDiscard = "from the discard"
-
 // lookedAt learns a card the seat looked at: in a deck, or in a hand.
 func (s *step) lookedAt(e engine.Event) {
 	if e.Player != s.m.seat || e.Card == "" {
@@ -197,13 +192,13 @@ func (s *step) lookedAt(e engine.Event) {
 // put it on the bottom.
 func (s *step) topChoice(e engine.Event) {
 	mine := e.Player == s.m.seat && e.Card != ""
-	if d, ok := deckNamed(e.Text, " top"); ok {
+	if d, ok := deckNamed(e.Text, engine.DeckTextTop); ok {
 		if mine {
 			s.set(d, 0, e.Card)
 		}
 		return
 	}
-	d, ok := deckNamed(e.Text, " bottom")
+	d, ok := deckNamed(e.Text, engine.DeckTextBottom)
 	if !ok {
 		return
 	}
@@ -224,7 +219,7 @@ func (s *step) topChoice(e engine.Event) {
 // movedToDeck puts a card on a deck, under its top Amount cards, or on
 // its bottom; one from a hand (HandToDeckTop) leaves that hand.
 func (s *step) movedToDeck(e engine.Event) {
-	if d, ok := deckNamed(e.Text, " bottom"); ok {
+	if d, ok := deckNamed(e.Text, engine.DeckTextBottom); ok {
 		s.insert(d, len(s.m.deck[d]), e.Card)
 		return
 	}
@@ -459,16 +454,9 @@ func (m *Memory) forgetHands() {
 	}
 }
 
-// deckNamed reads "<deck> deck" plus suffix, as events name decks.
-func deckNamed(text, suffix string) (int, bool) {
-	name, ok := strings.CutSuffix(text, " deck"+suffix)
-	if !ok {
-		return 0, false
-	}
-	for d := range decks {
-		if engine.DeckKind(d).String() == name {
-			return d, true
-		}
-	}
-	return 0, false
+// deckNamed reads "<deck> deck" plus where, as events name decks
+// (engine.DeckText).
+func deckNamed(text, where string) (int, bool) {
+	d, ok := engine.DeckOfText(text, where)
+	return int(d), ok
 }

@@ -93,3 +93,33 @@ func TestDeckOrderEvents(t *testing.T) {
 		})
 	}
 }
+
+// TestDeckText: every deck's event text reads back as that deck, with
+// its place; a text with another place, or none of a deck, does not.
+func TestDeckText(t *testing.T) {
+	wheres := []string{"", DeckTextTop, DeckTextBottom}
+	for d := range deckCount {
+		for _, w := range wheres {
+			text := DeckText(d, w)
+			if got, ok := DeckOfText(text, w); !ok || got != d {
+				t.Errorf("DeckOfText(%q, %q) = %v, %v; want %v", text, w, got, ok, d)
+			}
+			for _, other := range wheres {
+				if other == w {
+					continue
+				}
+				if _, ok := DeckOfText(text, other); ok {
+					t.Errorf("DeckOfText(%q, %q) reads a deck", text, other)
+				}
+			}
+		}
+	}
+	for _, text := range []string{"", "deck", TextFromDiscard, "shop deck"} {
+		if _, ok := DeckOfText(text, ""); ok {
+			t.Errorf("DeckOfText(%q) reads a deck", text)
+		}
+	}
+	if got := DeckText(LootDeck, DeckTextBottom); got != "loot deck bottom" {
+		t.Errorf("DeckText = %q: the client reads \"loot deck bottom\"", got)
+	}
+}

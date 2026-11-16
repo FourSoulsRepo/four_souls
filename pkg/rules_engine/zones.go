@@ -36,7 +36,7 @@ func (g *Game) shuffleDeck(d DeckKind) {
 // emitDeckOrder tells that deck d's cards changed places out of sight
 // (ADR 030, Decision 19.8).
 func (g *Game) emitDeckOrder(d DeckKind) {
-	g.emit(Event{Kind: EvDeckOrder, Player: NoPlayer, Text: d.String() + " deck"})
+	g.emit(Event{Kind: EvDeckOrder, Player: NoPlayer, Text: DeckText(d, "")})
 }
 
 // drawTop removes the top card of a deck and returns its object.
@@ -128,7 +128,7 @@ func (g *Game) MillTop(d DeckKind) {
 		return
 	}
 	nid := g.discard(id, d)
-	g.emit(Event{Kind: EvDiscarded, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Text: d.String() + " deck"})
+	g.emit(Event{Kind: EvDiscarded, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Text: DeckText(d, "")})
 }
 
 // DiscardTopToDeck puts the top card of a discard on top of its deck.
@@ -141,7 +141,7 @@ func (g *Game) DiscardTopToDeck(d DeckKind) {
 	g.Discards[d] = pile[:len(pile)-1]
 	nid := g.move(id, DeckZone(d), NoPlayer)
 	g.Decks[d] = append(g.Decks[d], nid)
-	g.emit(Event{Kind: EvMovedToDeck, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Text: d.String() + " deck"})
+	g.emit(Event{Kind: EvMovedToDeck, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Text: DeckText(d, "")})
 }
 
 // HandToDeckTop puts a loot card from p's hand on top of the loot deck.
@@ -150,7 +150,7 @@ func (g *Game) HandToDeckTop(p PlayerID, id ObjectID) {
 	g.Players[p].Hand = remove(g.Players[p].Hand, id)
 	nid := g.move(id, DeckZone(LootDeck), NoPlayer)
 	g.Decks[LootDeck] = append(g.Decks[LootDeck], nid)
-	g.emit(Event{Kind: EvMovedToDeck, Player: p, Object: nid, Card: g.Object(nid).Card, Text: "loot deck", Private: true})
+	g.emit(Event{Kind: EvMovedToDeck, Player: p, Object: nid, Card: g.Object(nid).Card, Text: DeckText(LootDeck, ""), Private: true})
 }
 
 // GiveHandCard moves a loot card from one hand to another (R-MECH-37).
@@ -221,12 +221,12 @@ func (g *Game) deckToBottom(d DeckKind, id ObjectID) {
 // d: it stays on top, or goes to the bottom. Everyone learns which;
 // only p sees the card (19.90).
 func (g *Game) KeepOrBottom(p PlayerID, d DeckKind, id ObjectID, bottom bool) {
-	where := " deck top"
+	where := DeckTextTop
 	if bottom {
 		g.deckToBottom(d, id)
-		where = " deck bottom"
+		where = DeckTextBottom
 	}
-	g.emit(Event{Kind: EvTopChoice, Player: p, Object: id, Card: g.Object(id).Card, Text: d.String() + where, Private: true})
+	g.emit(Event{Kind: EvTopChoice, Player: p, Object: id, Card: g.Object(id).Card, Text: DeckText(d, where), Private: true})
 }
 
 // RevealUntilMonster reveals cards from the top of the monster deck,
@@ -294,7 +294,7 @@ func (g *Game) ToBottomRandom(d DeckKind, ids []ObjectID) {
 		}
 	}
 	if n > 0 {
-		g.emit(Event{Kind: EvDeckBottom, Player: NoPlayer, Amount: n, Text: d.String() + " deck"})
+		g.emit(Event{Kind: EvDeckBottom, Player: NoPlayer, Amount: n, Text: DeckText(d, "")})
 	}
 }
 
@@ -475,7 +475,7 @@ func (g *Game) SlotToDeckBottom(id ObjectID) {
 	g.removeFromSlot(id)
 	nid := g.move(id, DeckZone(d), NoPlayer)
 	g.Decks[d] = append([]ObjectID{nid}, g.Decks[d]...)
-	g.emit(Event{Kind: EvMovedToDeck, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Text: d.String() + " deck bottom", Prev: id})
+	g.emit(Event{Kind: EvMovedToDeck, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Text: DeckText(d, DeckTextBottom), Prev: id})
 }
 
 // DiscardToDeckTop puts a card from a discard pile on top of its deck.
@@ -483,13 +483,13 @@ func (g *Game) DiscardToDeckTop(d DeckKind, id ObjectID) {
 	g.Discards[d] = remove(g.Discards[d], id)
 	nid := g.move(id, DeckZone(d), NoPlayer)
 	g.Decks[d] = append(g.Decks[d], nid)
-	g.emit(Event{Kind: EvMovedToDeck, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Text: d.String() + " deck"})
+	g.emit(Event{Kind: EvMovedToDeck, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Text: DeckText(d, "")})
 }
 
 // RevealTop shows the top card of a deck to everyone.
 func (g *Game) RevealTop(d DeckKind) {
 	if top := g.DeckTop(d, 1); len(top) > 0 {
-		g.emit(Event{Kind: EvCardRevealed, Player: NoPlayer, Object: top[0], Card: g.Object(top[0]).Card, Text: d.String() + " deck"})
+		g.emit(Event{Kind: EvCardRevealed, Player: NoPlayer, Object: top[0], Card: g.Object(top[0]).Card, Text: DeckText(d, "")})
 	}
 }
 
@@ -505,7 +505,7 @@ func (g *Game) lootFromDiscard(p PlayerID, n int) {
 		g.Discards[LootDeck] = pile[:len(pile)-1]
 		nid := g.move(id, Zone{Kind: ZoneHand}, p)
 		g.Players[p].Hand = append(g.Players[p].Hand, nid)
-		g.emit(Event{Kind: EvLooted, Player: p, Object: nid, Card: g.Object(nid).Card, Text: "from the discard"})
+		g.emit(Event{Kind: EvLooted, Player: p, Object: nid, Card: g.Object(nid).Card, Text: TextFromDiscard})
 	}
 }
 
@@ -566,7 +566,7 @@ func (g *Game) DiscardToHand(d DeckKind, id ObjectID, p PlayerID) {
 	g.Discards[d] = remove(g.Discards[d], id)
 	nid := g.move(id, Zone{Kind: ZoneHand}, p)
 	g.Players[p].Hand = append(g.Players[p].Hand, nid)
-	g.emit(Event{Kind: EvLooted, Player: p, Object: nid, Card: g.Object(nid).Card, Text: "from the discard"})
+	g.emit(Event{Kind: EvLooted, Player: p, Object: nid, Card: g.Object(nid).Card, Text: TextFromDiscard})
 }
 
 // PlaceFromDiscard puts a monster card from the monster discard on top

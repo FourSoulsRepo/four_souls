@@ -140,3 +140,34 @@ type DeckPlace struct {
 	Deck  DeckKind `json:"deck"`
 	Depth int      `json:"depth"`
 }
+
+// Texts of events that name a deck or a discard. The engine writes them
+// and a seat's memory (internal/world) reads them, so both use these:
+// the client's history and its board read the same words.
+const (
+	// TextFromDiscard is the Text of EvLooted for a card taken from a
+	// discard pile into a hand, in sight of all.
+	TextFromDiscard = "from the discard"
+	// DeckTextTop and DeckTextBottom follow "<deck> deck" in an
+	// event's Text for a card on the deck's top or bottom (EvTopChoice,
+	// and EvMovedToDeck to the bottom).
+	DeckTextTop    = " top"
+	DeckTextBottom = " bottom"
+)
+
+// DeckText is how an event names deck d: "<deck> deck", then where (""
+// for the deck itself, DeckTextTop or DeckTextBottom).
+func DeckText(d DeckKind, where string) string {
+	return d.String() + " deck" + where
+}
+
+// DeckOfText reads a Text DeckText wrote with where; false for any
+// other text, a deck's text with another where too.
+func DeckOfText(text, where string) (DeckKind, bool) {
+	for d := range deckCount {
+		if text == DeckText(d, where) {
+			return d, true
+		}
+	}
+	return 0, false
+}

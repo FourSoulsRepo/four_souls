@@ -323,6 +323,7 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    16. Engine fields for it (19.11):
       1. `Event.Deck` on `looked_at` of a deck card: the deck and the depth from the top. `FilterEvents` hides it with the card.
       2. Event `deck_order` ("<deck> deck"), public, no card, no barrier: `ShuffleDeck`, a refill of an empty deck from its discard, `SetDeckTop` and `DeckToBottom`; these moved deck cards with no event. Setup shuffles tell nothing: no one remembers yet. The client's history skips it.
+      3. The texts that name a deck or a discard are the engine's: `DeckText`, `DeckOfText`, `DeckTextTop`, `DeckTextBottom`, `TextFromDiscard`; the engine writes them and the memory reads them, so the two cannot drift (lead review, 2026-11-17).
    17. API, for the arena and the room goroutine: `world.NewMemory(seat)`; `Observe(view, events)` after every step, in order, with the seat's `ViewFor` and `FilterEvents`; `Known()` for `world.For`; `Reset()`. One goroutine at a time.
    18. Test (21.15): 100 simulated games of every set and challenge, 500 steps each, every seat checked against the real game at every step: no wrong memory.
 20. Card values (owner, 2026-11-16; sub-step 21.16)
