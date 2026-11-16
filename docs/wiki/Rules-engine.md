@@ -32,6 +32,18 @@ There are no maps in the saved state (map order is random). The card index is no
 
 Every card is an object with an ID. Moving a card to another zone gives it a new ID, as the rules treat it as a new object. So `g.Objects` only grows. Code that looks at "what is in play" must use `g.inPlay()` (characters, play areas, slot tops), not scan all objects.
 
+### Copies and new state fields
+
+`Game.Clone` (`clone.go`) is a deep copy written by hand, no JSON (ADR 030, Decision 3): a bot copies the game for every move it tries, so it must stay cheap (`BenchmarkClone` in `cards/clone_test.go`: under 0.3 ms for a 4-player game with every set). The copy saves to the same bytes and has the same checksum, and shares no slice, map or pointer with the game; only the card definitions are shared. Like a save and a load, it drops the last step's events and the test dice.
+
+A new field of `Game`, or of any type inside it, must add:
+
+1. a copy line in `Game.Clone` when it holds a slice, map or pointer (`slices.Clone`, or the type's own `clone`); a plain value is copied with its struct;
+2. its name in `cloneRules` (`clone_test.go`), in field order: `Name` for a plain value, `Name*` for one Clone copies, `Name!` for one shared or left out on purpose;
+3. a new struct type inside the state: its own line in `cloneRules`.
+
+`TestCloneCoversEveryField` fails until the list matches the types. `TestCloneSavesTheSame` (simulated games of every set and challenge) fails when the copy saves differently or shares memory with the game, and `TestCloneLeavesTheGame` plays 50 steps on a copy and checks the game is unchanged.
+
 ## Where things happen
 
 | File | What |

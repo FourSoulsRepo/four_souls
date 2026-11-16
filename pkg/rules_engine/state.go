@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
-	"maps"
 	"slices"
 )
 
@@ -390,22 +389,6 @@ func (g *Game) move(id ObjectID, to Zone, controller PlayerID) ObjectID {
 	card := old.Card
 	old.Zone = Zone{Kind: ZoneGone}
 	return g.newObject(card, to, controller)
-}
-
-// Clone returns a deep copy of the game.
-func (g *Game) Clone() (*Game, error) {
-	data, err := json.Marshal(g)
-	if err != nil {
-		return nil, fmt.Errorf("clone: %w", err)
-	}
-	var c Game
-	if err := json.Unmarshal(data, &c); err != nil {
-		return nil, fmt.Errorf("clone: %w", err)
-	}
-	c.cards = g.cards // definitions are not part of the saved state
-	c.asks = maps.Clone(g.asks)
-	c.maxHP = maps.Clone(g.maxHP)
-	return &c, nil
 }
 
 // Checksum is a stable hash of the whole state (RP-12).

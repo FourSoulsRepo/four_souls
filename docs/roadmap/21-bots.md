@@ -37,7 +37,7 @@ Rules for this step (owner, 2026-11-16):
 3. Done when:
    1. The owner's answers are in ADR 030: votes, challenges, pace, names, memory.
 
-### [ ] 21.2 Fast clone
+### [x] 21.2 Fast clone
 
 1. Goal: a game copy cheap enough to search on (ADR 030, Decision 3).
 2. Tasks:
