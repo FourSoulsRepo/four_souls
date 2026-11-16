@@ -55,12 +55,13 @@ This step never closes; new reports are appended.
 | T  | Events and view: data sent too early     | Engine     | 19.142                                                 | 1     |
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
+| W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 
-Totals by system (167 items):
+Totals by system (168 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U | 37 |
+| Engine    | A, B, T, U, W | 38 |
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 43 |
 | Server    | H, N    | 4     |
@@ -5410,3 +5411,16 @@ Totals by system (167 items):
 4. Tasks:
    1. Fix it in 22.3, game-wide: one engine helper with the event.
    2. Remove "deactivated by a card" from the 22.2 list (`event_check.go`).
+
+### [ ] 19.177 Fuzz: a redo replay differs from the record
+
+1. Goal: undo and redo replay a game exactly as it was played.
+2. Report (22.2 subagent, 2026-11-16)
+   1. `make fuzz-sets`: "redo from step 70: step 0: replay: state differs from the record".
+   2. Fails the same on a clean HEAD worktree; not from 22.2.
+   3. Input: `.cache/fuzz-22.2/FuzzSets/55bb281b0c9ed398` (not in git).
+3. Cause
+   1. Not found yet.
+4. Tasks:
+   1. Replay the saved input; find the first differing step.
+   2. Fix under the step 19 rules; 22.3 needs `make fuzz` green.

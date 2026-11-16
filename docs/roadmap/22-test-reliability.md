@@ -55,6 +55,8 @@ Ideas: TS-07, TS-08, TS-09, TS-10, TS-11, TS-12.
    1. One 19.N item per kind of gap; fix each under the step 19 rules.
    2. The client plays each new event, or lists why not.
    3. Remove each fixed gap from the 22.2 list.
+   4. Fix 19.177 (redo replay differs); `make fuzz-sets` fails on it.
+   5. Snapshot max HP; "max HP fell" matches only a real fall.
 3. Done when:
    1. The list holds only changes silent on purpose.
    2. `make fuzz` passes.
