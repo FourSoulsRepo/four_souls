@@ -77,6 +77,12 @@ Use option 1.
    9. The viewer can hide the bar while watching (owner, 2026-11-16).
       1. A small button stays and brings it back.
       2. Hiding the bar never pauses the replay.
+   10. The viewer watches from one player's seat (owner, 2026-11-16).
+       1. Seat 0 by default; that player sits at the bottom.
+       2. A click on a player's character card moves the view to that seat.
+       3. Any moment; the step on screen is drawn again at once.
+       4. Hands still follow item 7 only: all or none.
+       5. History and banners still name every player; no "you".
 
 ## Consequences
 

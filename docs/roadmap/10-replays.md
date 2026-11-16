@@ -6,7 +6,7 @@ Ideas: RP-02, RP-04, RP-10, RP-11, M-01.
 
 Rules for this step (owner, 2026-11-16):
 
-1. Work order: 10.5, 10.6, 10.1, 10.2, 10.3, 10.7.
+1. Work order: 10.5, 10.6, 10.1, 10.2, 10.3, 10.7, 10.8.
 2. Decisions: ADR 031; read it before any sub-step.
 3. The step runs on the `step-18-play-test` branch.
 4. Playing a record never calls the rules engine.
@@ -94,4 +94,21 @@ Rules for this step (owner, 2026-11-16):
 3. Done when:
    1. e2e: hide and show the bar; autoplay goes on while hidden.
    2. Screenshots: the bar shown and hidden.
+   3. UC-45 and the Client wiki describe it.
+
+### [ ] 10.8 Watch from a player's seat
+
+1. Goal: the viewer picks whose seat the table is seen from (owner, 2026-11-16).
+2. Tasks:
+   1. Seat 0 by default, as before; no "everyone" view.
+   2. A click on a character card moves the view to that player's seat.
+   3. The table turns: that player sits at the bottom, the others as live.
+   4. Any moment, autoplay too; the step on screen is drawn again at once.
+   5. Show hands stays all or none (ADR 031, 4.7).
+   6. History and banners still name every player; no "you".
+   7. The bar names whose seat it is.
+   8. ADR 031, item 4.10.
+3. Done when:
+   1. e2e: a click on another character card moves the seat; autoplay goes on.
+   2. Screenshots: 3 players, seen from two seats.
    3. UC-45 and the Client wiki describe it.
