@@ -122,6 +122,9 @@ export interface Options {
   // regular game (ADR 028). It needs 2 seats; bonus souls are off.
   challenge?: string;
   difficulty?: Difficulty;
+  // seed fixes the deal; only a test server takes it (ADR 032). The
+  // app never sends it; e2e tests do.
+  seed?: number;
 }
 
 // Difficulty is a challenge's difficulty (ADR 028, Decision 4.2).

@@ -266,6 +266,7 @@
   "error.setting_value",
   "error.sit_first",
   "error.started",
+  "error.test_seed",
   "error.update_bad_archive",
   "error.update_check",
   "error.update_checksum",

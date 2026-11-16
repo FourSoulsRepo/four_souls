@@ -641,3 +641,41 @@ func TestServerName(t *testing.T) {
 		t.Errorf("welcome name %q", w.Name)
 	}
 }
+
+// TestTestSeed: a server started with -test_seeds deals a create's
+// seed; the same seed deals the same game. Any other server refuses a
+// create that names a seed (ADR 032).
+func TestTestSeed(t *testing.T) {
+	h := startHub(t)
+	ann, _ := arrive(t, h, "Ann", "")
+	ann.say(protocol.TypeCreate, protocol.Create{Seats: 2, Options: &protocol.Options{Seed: 42}})
+	var er protocol.Error
+	ann.next(protocol.TypeError, &er)
+	if er.Code != protocol.ErrBadSetup || er.Message != "error.test_seed" {
+		t.Fatalf("a seed on a normal server: %+v", er)
+	}
+
+	h = startHub(t)
+	done := make(chan struct{})
+	h.send(hubRequest{run: func(h *Hub) { h.testSeeds = true; close(done) }})
+	<-done
+	deal := func() ([]engine.CardRef, uint64) {
+		players := startTableWith(t, h, protocol.Create{Seats: 3, Options: &protocol.Options{Seed: 42}})
+		var u protocol.Update
+		players[0].next(protocol.TypeUpdate, &u)
+		var chars []engine.CardRef
+		for _, p := range u.View.Players {
+			chars = append(chars, p.Character.Card)
+		}
+		seed := make(chan uint64)
+		h.send(hubRequest{run: func(h *Hub) { seed <- h.games[len(h.games)-1].room.setup.Seed }})
+		return chars, <-seed
+	}
+	first, seed := deal()
+	if seed != 42 {
+		t.Errorf("the game's seed is %d, want 42", seed)
+	}
+	if again, _ := deal(); !slices.Equal(first, again) || len(first) != 3 {
+		t.Errorf("seed 42 dealt %v, then %v", first, again)
+	}
+}

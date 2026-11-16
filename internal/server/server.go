@@ -32,6 +32,10 @@ type Config struct {
 	// Seed makes game seeds reproducible: game n gets Seed+n. 0 seeds
 	// from the clock. For tests and bug reports.
 	Seed uint64 `json:"seed,omitempty"`
+	// TestSeeds lets a create choose its game's seed (options.seed,
+	// ADR 032). Only the e2e test server sets it, by flag or ENV: a
+	// player on a real server could rig their own deal.
+	TestSeeds bool `json:"-"`
 	// Discovery answers LAN probes while a game waits (N-13, ADR 009).
 	// Only the app's host sets it; a dedicated server never announces.
 	Discovery bool `json:"-"`
@@ -118,7 +122,7 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 	s := &Server{cfg: cfg, ln: ln, cancel: cancel}
 	hub := NewHub()
 	hub.records, hub.cards, hub.seed, hub.saves = cfg.Records, cardTexts(), cfg.Seed, cfg.Saves
-	hub.hostOnly, hub.presence = cfg.HostOnly, cfg.Presence
+	hub.hostOnly, hub.presence, hub.testSeeds = cfg.HostOnly, cfg.Presence, cfg.TestSeeds
 	hub.name, _ = protocol.CleanServerName(cfg.Name)
 	hub.emptyLimit = time.Duration(cfg.EmptyMinutes) * time.Minute
 	hub.gameLimit = time.Duration(cfg.GameHours) * time.Hour

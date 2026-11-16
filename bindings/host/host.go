@@ -56,6 +56,7 @@ func (h *Host) Start() (Info, error) {
 	cfg.Saves = h.saves
 	cfg.Discovery = true // friends on the LAN find the game (N-13)
 	cfg.HostOnly = true  // friends join; only this app opens games (N-17)
+	// TestSeeds stays off: no player picks the deal (ADR 032).
 	srv, err := server.Start(context.Background(), cfg)
 	if err != nil {
 		return Info{}, err //nolint:wrapcheck // shown to the player as is

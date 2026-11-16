@@ -144,6 +144,8 @@ type Hub struct {
 	cards []record.Card
 	// seed, if not 0, makes game n's seed seed+n.
 	seed uint64
+	// testSeeds lets a create choose its game's seed (ADR 032).
+	testSeeds bool
 	// saves is the folder for saved games (N-11); "" keeps none.
 	saves string
 	// hostOnly lets only local clients create or load games (N-17).
@@ -378,6 +380,10 @@ func (h *Hub) create(c *Client, env protocol.Envelope) {
 	if m.Options != nil {
 		opts = *m.Options
 	}
+	if opts.Seed != 0 && !h.testSeeds {
+		c.fail(env.ID, protocol.ErrBadSetup, errTestSeed.Msg())
+		return
+	}
 	if msg := checkChallenge(&opts, m.Seats); !msg.IsZero() {
 		c.fail(env.ID, protocol.ErrBadSetup, msg)
 		return
@@ -495,6 +501,9 @@ func (h *Hub) start(t *table) {
 	gameSeed := seed()
 	if h.seed != 0 {
 		gameSeed = h.seed + uint64(t.n) //nolint:gosec // n is positive
+	}
+	if t.opts.Seed != 0 {
+		gameSeed = t.opts.Seed // a test server's chosen deal (ADR 032)
 	}
 	if t.opts.RandomSeats {
 		shuffleSeats(seats, gameSeed)

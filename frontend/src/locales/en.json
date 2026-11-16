@@ -1809,6 +1809,10 @@
     "text": "That game has started.",
     "note": "Error from the server, shown in the lobby or on the table. Joining a game that already started."
   },
+  "error.test_seed": {
+    "text": "This server does not let a game choose its own deal.",
+    "note": "Error from the server, shown in the lobby. A new game asked for a fixed seed (its deal), which only a test server allows."
+  },
   "error.unknown": {
     "text": "something went wrong",
     "note": "Status line for a failure that came with no message."

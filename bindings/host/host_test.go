@@ -28,6 +28,9 @@ func TestHostAndRemoteClient(t *testing.T) {
 			t.Error(err)
 		}
 	}()
+	if h.cfg.TestSeeds {
+		t.Error("the app's host lets a player choose the deal (ADR 032)")
+	}
 	_, again := h.Start()
 	if !errors.Is(again, ErrHosting) {
 		t.Error("hosted twice")
