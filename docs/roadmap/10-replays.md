@@ -112,3 +112,7 @@ Rules for this step (owner, 2026-11-16):
    1. e2e: a click on another character card moves the seat; autoplay goes on.
    2. Screenshots: 3 players, seen from two seats.
    3. UC-45 and the Client wiki describe it.
+
+---
+
+Owner marks step 10 solved (2026-11-16).

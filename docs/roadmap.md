@@ -46,6 +46,7 @@ Step 20 done (owner, 2026-11-09); its open bugs go to play tests.
 Step 21 added (owner, 2026-11-15); it runs on the step 18 branch.
 Step 21 done (owner, 2026-11-16); it merges with step 18.
 Step 10 starts now, before 9 (owner, 2026-11-16); it runs on the step 18 branch.
+Step 10 done (owner, 2026-11-16); it merges with step 18.
 
 ---
 
