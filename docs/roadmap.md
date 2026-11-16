@@ -25,6 +25,7 @@ Each step ends in something that runs and is tested.
 | 12 | Rules website | Engine in WebAssembly on GitHub Pages, in English and Russian | 8, 16 |
 | 20 | Game feel | Hearthstone-like timing, impacts and pacing (ADR 027) | 8 |
 | 18 | Play-test | New-user check, play-test, docs check | 14 |
+| 21 | Bots | Standard and hard bots fill free seats in network games (ADR 030) | 8, 14 |
 | 9 | Spectators | Viewers watch live | 8 |
 | 10 | Replays | Records screen and replay player | 8 |
 | 11 | Learning | Rules viewer, sandbox, tutorial, bot | 8, 12 |
@@ -42,6 +43,7 @@ Step 15 is paused (owner, 2026-10-26); work goes on with 17, then 16.
 Step numbers stay as IDs; the table lists steps in work order.
 Step 20 added (owner, 2026-11-06); it starts now, on the step 12 branch.
 Step 20 done (owner, 2026-11-09); its open bugs go to play tests.
+Step 21 added (owner, 2026-11-16); it starts now and takes the bot from step 11.
 
 ---
 
@@ -167,7 +169,7 @@ Step 20 done (owner, 2026-11-09); its open bugs go to play tests.
 1. Rules text viewer in the app.
 2. Sandbox on the game table; export payload and link.
 3. Tutorial lessons.
-4. Simple random bot; seeded and free practice games.
+4. Seeded and free practice games; the bot moved to step 21.
 5. FAQ from frequent rules questions: moved to 12.6.
 6. Ideas: LR-01 – LR-06.
 7. Any event on the stack in payloads: moved to 12.5.
@@ -318,6 +320,16 @@ Step 20 done (owner, 2026-11-09); its open bugs go to play tests.
 5. Counting counters, catch-up by importance, others' hands live.
 6. One sound per moment; response timer only near its end.
 7. Ideas: V-54, V-13, V-22.
+
+## 21. Bots
+
+1. Bots of two levels, standard and hard, on free seats of a network game.
+2. Honest: a bot plays an imagined game built from its own view.
+3. Moves are judged by trying them on copies; no per-card advice.
+4. The host adds bots in the lobby; solo play runs on the app's server.
+5. Bots in challenges, saves, restarts and records.
+6. An arena measures strength: hard over standard over random.
+7. Ideas: N-21, LR-06; decision: ADR 030.
 
 ## Future
 

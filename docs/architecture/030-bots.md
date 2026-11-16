@@ -1,0 +1,270 @@
+# 30. Bots in network games
+
+* **Status:** Accepted
+* **Date:** 2026-11-16
+* **Authors:** @HardDie
+
+---
+
+## Context
+
+1. Owner, 2026-11-16: bots fill the free seats of a network game (N-21).
+   1. Two levels: `standard` and `hard`; the host picks one per bot.
+   2. A table has 0 to 3 bots and at least one human.
+   3. A bot sees only what a player in its seat sees.
+   4. Bots sit down only in the lobby; a kicked seat stays empty (N-08).
+   5. No offline mode: the app's own server runs a solo game.
+   6. Bots play challenges too (ADR 028).
+2. This replaces LR-06: a random bot, never in network games.
+3. What the engine gives today
+   1. `Game.Allowed(p)`: every intent the engine accepts now.
+   2. `Game.Clone()`: a deep copy through JSON.
+   3. `Game.ViewFor`: the table as one player sees it.
+4. Measured on a 4-player game with every set, 687 objects (2026-11-16)
+   1. `Clone`: 1.9 ms.
+   2. One applied intent: 0.1 ms.
+   3. `Allowed`: 0.01 ms.
+   4. Random legal moves: no winner after 6000 steps.
+5. So a bot cannot play a game to its end to judge a move.
+   1. A random playout never ends.
+   2. A 2 ms copy allows about 500 tries a second.
+6. The cards: five sets, hundreds of effects, more to come.
+   1. A table of per-card advice would never be complete.
+   2. Rule 5.24 of `CLAUDE.md`: fix game-wide, never one card.
+7. The room (`internal/server`) is one goroutine.
+   1. A request that holds it over 100 ms is logged as a stall (18.17).
+   2. A seat without a client pauses the game (N-08).
+8. A public server runs many games on a few cores.
+
+## Considered options
+
+1. **Bot code in `internal/bot`, on the engine only**
+   1. Won. No server import; tests and the arena run it without a network.
+2. **Bot as a network client of its own server**
+   1. Lost. A view has no game to try moves on.
+3. **Bot inside the engine module**
+   1. Lost. The engine is the rules; a bot is a player.
+4. **Honesty by an imagined game: `Game.Imagine`**
+   1. Won. The engine redeals what the seat cannot see; the bot gets only that.
+   2. One test proves it: the seat's view of both games is the same.
+5. **Honesty by promise: the bot gets the real game and looks away**
+   1. Lost. One careless read of a hand makes a cheating bot.
+6. **Judge moves by trying them on copies**
+   1. Won. Works for every card, old and new, with no card list.
+7. **Hand-written advice per card**
+   1. Lost. Context 6.
+8. **A neural network trained by self-play**
+   1. Lost. Training, model files and their upkeep are a project of their own.
+9. **Short playouts with a position score**
+   1. Won. Context 5: the game end is out of reach.
+10. **Full Monte Carlo tree search to the game end**
+   1. Lost. Context 4 and 5.
+11. **One score, one playout policy; levels differ in depth**
+   1. Won. Hard is standard with more worlds, a longer look and no mistakes.
+12. **Two separate bots**
+   1. Lost. Twice the code to keep right for every new card.
+13. **Thinking outside the room goroutine**
+   1. Won. Context 7; the answer comes back as a room request.
+14. **Thinking inside the room goroutine**
+   1. Lost. A 1.5 s search would freeze the table.
+15. **Faster `Clone` by hand-written copy**
+   1. Won. The search is copies; a test keeps it equal to the JSON copy.
+16. **Bots fill seats after a kick**
+   1. Lost. Owner: N-08 stays.
+17. **Bots vote on rollbacks and kicks**
+   1. Lost. Owner, 2026-11-16: only humans vote.
+
+## Decision
+
+Use options 1, 4, 6, 9, 11, 13 and 15.
+
+1. Levels
+   1. `standard` and `hard`, as strings in the protocol, saves and records.
+   2. `random` exists in `internal/bot` for tests and the arena only.
+   3. The server refuses any other level.
+2. Engine: `Game.Imagine(p, seed, known)`
+   1. Returns a copy of the game as seat `p` may imagine it.
+   2. Hidden from `p`: other hands, deck orders, any card `p`'s view hides.
+   3. Hidden cards of one kind are pooled, shuffled and dealt back.
+   4. Each zone keeps its size.
+   5. A card `p` looks at now (a deck look, a shown card) stays.
+   6. The copy's RNG is reseeded from `seed`: no real dice, no real draws.
+   7. `known` is what the seat remembers (Decision 19); those cards are dealt where it remembers them.
+   8. A remembered card that is not among the hidden ones there is skipped.
+   9. Empty `known`: every card `p` cannot see now is unknown.
+   10. Test: `ViewFor(p)` of the copy equals `ViewFor(p)` of the game.
+   11. Test: two seeds give different hidden cards.
+   12. The real game is never changed.
+3. Engine: `Game.Clone`
+   1. A hand-written deep copy replaces the JSON round trip.
+   2. Test: the copy's `Checksum` and `Save` equal the game's, on simulated games of every set.
+   3. Test: a new field of `Game` without a copy rule fails the build's tests.
+   4. Goal: under 0.3 ms on the game of Context 4.
+4. Package `internal/bot`
+   1. Imports the engine; never `internal/server`.
+   2. `Choose(ctx, Input) engine.Intent`.
+   3. `Input`: the seat, the level, a random source, a budget, `World(i)`, the seat's memory.
+   4. `World(i)` returns a new imagined game; the bot never holds the real one.
+   5. The answer is always one of `Allowed`, completed for discards and orders.
+   6. With one allowed intent it answers at once.
+   7. The bot's random source is its own; never the game's RNG.
+   8. The match record needs no bot data: it keeps intents (ADR 007).
+5. Candidates
+   1. Every intent of `Allowed(p)`.
+   2. A discard: up to 8 sets of `Count` cards, picked at random.
+   3. An order: the order now, plus up to 5 random orders.
+6. Playout policy: how every seat moves inside a playout
+   1. No copies; weights on the allowed intents, then a weighted random pick.
+   2. Weights look at kinds and public numbers only: coins, costs, HP, attack odds.
+   3. No card names in the policy.
+   4. It ends its turn; it never loops: each playout has a step cap.
+7. Score: one function, `Score(g, p)`, from seat `p`'s side
+   1. A win is the top value; a loss the bottom one.
+   2. Then souls, far above everything else.
+   3. Then coins, loot cards, items, HP, being alive.
+   4. The same sum for each opponent, taken away from the seat's own.
+   5. Standard: the opponents' average.
+   6. Hard: the leader counts most; a leader one soul from a win, most of all.
+   7. Weights are constants in one file; the arena tunes them.
+   8. A challenge: one team score (Decision 14).
+8. Standard
+   1. One imagined world.
+   2. For each candidate: copy, apply, settle, score.
+   3. Settle: the others pass, the policy answers the bot's own prompts.
+   4. It stops when the stack is empty or at 40 steps.
+   5. It picks the best score.
+   6. One move in ten it picks by weighted chance among the top three.
+   7. No time budget needed: under 50 ms.
+9. Hard
+   1. Many worlds, each a new `Imagine`.
+   2. For each candidate and world: copy, apply, play out, score.
+   3. The playout runs to the end of the current turn; cap 120 steps.
+   4. Every seat follows the policy, so the others may respond.
+   5. Candidates are halved round by round; the tries go to the best ones.
+   6. The average score picks the move; no mistakes on purpose.
+   7. It answers the stack the same way: "pass" is one more candidate.
+   8. Budget: 1.5 s or 3000 playouts, whichever ends first.
+   9. `ctx` ends it early; it then answers with the best so far.
+   10. The arena uses the playout count only, so its results repeat.
+10. Lobby and protocol
+   1. `Seat` gets `bot` (the level) and `bot_n` (its number, from 1).
+   2. `Seat.Name` of a bot is `Bot N`, in English, for records and logs.
+   3. The client shows a translated name with the level, and a robot icon.
+   4. New message `bot`: `{seat, level}`; an empty level takes the bot away.
+   5. Only the host sends it; only for a free seat or a bot's seat.
+   6. A joining player gets a free seat only; never a bot's.
+   7. The game starts when every seat is taken and every human is ready.
+   8. A table with no human closes.
+   9. The game list counts bot seats as taken.
+   10. `hello` tells whether the server allows bots; the app hides the buttons if not.
+   11. The protocol version goes up by one (ADR 006).
+11. Room
+   1. `roomSeat` gets the level; a bot seat has no client and no token.
+   2. A bot seat is never away: it does not pause the game.
+   3. Kick votes and rollback votes count clients, so bots never vote (owner).
+   4. A bot never asks for a rollback; its moves are rolled back like any.
+   5. A bot sends no presence and has the default dice.
+   6. Random seating shuffles bots with the humans.
+   7. "No player connected for 30 minutes" counts humans only (N-20).
+12. Bot driver: `internal/server/bots.go`
+   1. Runs after every broadcast, when the game is not over, paused or voting.
+   2. First the old rule: a seat that can only pass is passed at once (N-05).
+   3. For each bot seat the prompt waits for, one thinker starts.
+   4. The room makes one `Clone` and gives it to the thinker.
+   5. The thinker's `World(i)` is `Imagine` of that copy.
+   6. The answer returns as a room request with the room's step number.
+   7. The room applies it like a client's intent: record, rollback history, auto passes.
+   8. An answer for an older step is dropped.
+   9. Any applied step, rollback, pause or vote cancels the open thinkers.
+   10. An intent the engine refuses is logged; the forced answer is used (N-07).
+   11. The response timer stays the last net for a stuck bot.
+13. Pace (owner, 2026-11-16)
+   1. A pass or an answer to a prompt: 0.7 s after the prompt came.
+   2. An action in the bot's own turn: 1 to 2 s, at random.
+   3. Thinking time counts inside the pause.
+   4. Times scale with the room's `second`, so tests run fast.
+14. Bans, picks and start choices
+   1. A ban turn: the bot bans one random character from the pool.
+   2. A draft: the bot picks one of its offer at random.
+   3. Both levels; nothing tells yet which character is strong.
+   4. Start-of-game choices are prompts; `Choose` answers them.
+15. Challenges (owner, 2026-11-16)
+   1. A challenge table takes a bot in its second seat.
+   2. The score is the team's: lost is the bottom, won the top.
+   3. Then the final boss's HP, the players' souls, HP, loot and items, summed.
+   4. No opponents' part; no leader.
+   5. The arena plays each challenge at each difficulty.
+16. Saves and restarts
+   1. `savedSeat` gets the level and the number.
+   2. A loaded table seats its bots at once; humans come back as today.
+   3. A restart file keeps bot seats of tables and games (N-20).
+   4. After a restart nobody waits for a bot; open thinking starts over.
+   5. `record.Seat` gets the level.
+17. Server limits
+   1. Flag `-bots` on the dedicated server, on by default.
+   2. At most `GOMAXPROCS / 2` hard thinkers at once, at least 1; the rest wait.
+   3. A waiting thinker still answers before the response timer.
+   4. Load test: `cmd/server_load` gets tables with bots.
+18. Arena: how strength is checked
+   1. `cmd/bot_arena`: whole games between levels, seeded, seats rotated.
+   2. It prints wins by level, unfinished games, steps and time per move.
+   3. `make bots` runs it; `BOT_GAMES` sets the count.
+   4. Gate: 95% of games end with a winner within the step cap.
+   5. Gate: standard wins at least 70% of 2-player games against random.
+   6. Gate: hard wins at least 60% of 2-player games against standard.
+   7. Gate: one hard among three standard wins over 30%; chance is 25%.
+   8. Gate: no bot intent is refused, on every set, 2 to 4 players.
+   9. CI plays a few games for the last gate only; win rates are a local check.
+   10. A missed gate is tuned in the score and policy, never by a peek at hidden cards.
+19. Memory (owner, 2026-11-16)
+   1. The hard bot remembers cards it saw; standard does not.
+   2. `bot.Memory`: one per hard seat, empty at the game start.
+   3. It is fed only what the seat's client gets: `ViewFor` and `FilterEvents` of its seat.
+   4. So it cannot hold a card the seat never saw.
+   5. It keeps the known cards of each other hand.
+   6. It keeps the known cards on the top and the bottom of each deck.
+   7. Learned: a card the seat sees go into a hidden place.
+      1. A card it looked at or was shown.
+      2. A card taken from a public zone into a hand.
+      3. A card put on or under a deck in its sight.
+   8. Forgotten: a card seen leaving; a shuffled deck; any doubt.
+   9. When unsure, forget: a wrong memory is worse than none.
+   10. It gives `known` to `Imagine` (Decision 2.7).
+   11. An event that lacks what a rule needs gets the field in the engine, filtered like any other.
+   12. Not saved: after a save or a restart the memory starts empty.
+   13. The arena keeps a memory per hard seat the same way.
+
+## Consequences
+
+### Positive
+
+1. One player can play a full table.
+2. New cards work with bots without bot code.
+3. A cheating bot is a failed test, not a matter of care.
+4. `Clone` gets faster for rollback and checks too.
+5. The arena finds games that never end.
+
+### Negative and risks
+
+1. A bot cannot plan over several turns.
+   1. The score stands in for the future.
+2. With deck ratios a human does not know which cards the decks got (A-16).
+   1. `Imagine` deals the real hidden cards, so a bot guesses from the right pool.
+   2. It never knows where a card is; only that it is somewhere hidden.
+   3. A pool of every card the sets could deal is a later step.
+3. Policy weights are guesses until the arena tunes them.
+4. Hard thinking costs CPU on a public server.
+   1. The thinker limit and the `-bots` flag bound it.
+5. Soft rollback with one human: bot moves can be undone, the human's own cannot.
+   1. The human is the only voter and never the author of a bot's move.
+6. A hand-written `Clone` can miss a new field.
+   1. Decision 3.3 catches it.
+7. A random draft pick can give a bot a weak character.
+
+### Neutral
+
+1. LR-05 and LR-06 change: practice games use these bots through the app's server.
+2. Sub-step 11.4 moves to step 21.
+3. Bot moves look like any player's in records and replays.
+4. A later step may give bots a pick by character win rate.
+5. The standard bot has no memory; that is one more gap between the levels.

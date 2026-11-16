@@ -658,6 +658,22 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    8. No drain mode: games can last an hour, or never end.
    9. A game with no player connected for 30 minutes ends.
    10. A game ends 24 hours after it started, even if still played.
+21. N-21. Bots fill free seats in network games (owner, 2026-11-16).
+   1. Two levels: standard and hard.
+   2. The host puts a bot on any free seat in the lobby and picks its level.
+   3. A table has 0 to 3 bots and at least one human.
+   4. Honest: a bot sees only what a player in its seat sees.
+   5. Standard: scores each move, picks the best, sometimes errs.
+   6. Hard: tries moves on copies of the game with guessed hidden cards.
+   7. Hard answers the stack and plays against the leader.
+   8. Bots sit down only before the start; N-08 stays: a kicked seat is empty.
+   9. No offline mode: a solo game runs on the app's own server.
+   10. Bots never vote: not on a kick, not on a rollback.
+   11. Bots play challenges too.
+   12. A bot waits 0.7 to 2 seconds before a move, so the game feels alive.
+   13. Shown as "Bot 1 (hard)" with a robot icon; the name is translated.
+   14. The hard bot remembers cards it saw; the standard one does not.
+   15. Details: ADR 030; work: step 21.
 
 ## Learning
 
@@ -705,6 +721,9 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 6. LR-06. The bot is simple.
    1. Plays random legal moves.
    2. Used only for practice, never in network games.
+   3. Changed (owner, 2026-11-16): replaced by N-21.
+   4. Bots have two levels and play in network games.
+   5. Practice games (LR-05) use the N-21 bots.
 7. LR-07. Payloads with `expect` double as engine tests.
    1. Stored as files in the rules engine module.
    2. The test runner loads each file and checks `expect`.
