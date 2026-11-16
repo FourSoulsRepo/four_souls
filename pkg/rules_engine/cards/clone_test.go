@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"math/rand/v2"
-	"reflect"
 	"testing"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/enginetest"
 )
 
 // playSteps plays up to n random allowed steps on g, as simulate does,
@@ -79,7 +79,7 @@ func TestCloneSavesTheSame(t *testing.T) {
 				if err := sameGame(g, c); err != nil {
 					t.Fatalf("step %d: %v", step, err)
 				}
-				if err := noSharing(reflect.ValueOf(g).Elem(), reflect.ValueOf(c).Elem(), "Game"); err != nil {
+				if err := enginetest.NoSharing(g, c); err != nil {
 					t.Fatalf("step %d: %v", step, err)
 				}
 			}
@@ -159,59 +159,6 @@ func sameGame(g, c *engine.Game) error {
 	}
 	if sa != sb {
 		return fmt.Errorf("checksum %x, copy %x", sa, sb)
-	}
-	return nil
-}
-
-// cloneSkips are fields the copy leaves out or shares on purpose (see
-// Game.Clone): the card definitions, the last step's events and the
-// test dice.
-var cloneSkips = map[string]bool{"cards": true, "events": true, "forcedRolls": true}
-
-// noSharing walks a game and its copy side by side: no list, map or
-// pointer of the copy may be the game's, and a nil one stays nil.
-func noSharing(a, b reflect.Value, path string) error {
-	switch a.Kind() {
-	case reflect.Slice, reflect.Map, reflect.Pointer:
-		if a.IsNil() != b.IsNil() {
-			return fmt.Errorf("%s: nil %v, copy nil %v", path, a.IsNil(), b.IsNil())
-		}
-		if a.IsNil() {
-			return nil
-		}
-		if a.Kind() != reflect.Slice || a.Cap() > 0 {
-			if a.Pointer() == b.Pointer() {
-				return fmt.Errorf("%s: the copy shares it", path)
-			}
-		}
-		switch a.Kind() {
-		case reflect.Pointer:
-			return noSharing(a.Elem(), b.Elem(), path)
-		case reflect.Slice:
-			for i := range a.Len() {
-				if err := noSharing(a.Index(i), b.Index(i), fmt.Sprintf("%s[%d]", path, i)); err != nil {
-					return err
-				}
-			}
-		default: // a map holds only plain values
-		}
-	case reflect.Array:
-		for i := range a.Len() {
-			if err := noSharing(a.Index(i), b.Index(i), fmt.Sprintf("%s[%d]", path, i)); err != nil {
-				return err
-			}
-		}
-	case reflect.Struct:
-		for i := range a.NumField() {
-			f := a.Type().Field(i)
-			if cloneSkips[f.Name] {
-				continue
-			}
-			if err := noSharing(a.Field(i), b.Field(i), path+"."+f.Name); err != nil {
-				return err
-			}
-		}
-	default: // a plain value, or an Arg's value: plain too (argValue)
 	}
 	return nil
 }

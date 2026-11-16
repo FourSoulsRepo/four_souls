@@ -1,94 +1,18 @@
-package rulesengine
+package rulesengine_test
 
 import (
 	"reflect"
 	"slices"
 	"strings"
 	"testing"
+	"unsafe"
+
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/enginetest"
 )
 
-// cloneRules lists every field of Game and of each type inside it, in
-// order, with how Game.Clone copies it (ADR 030, Decision 3.3):
-//
-//	Name   a plain value, copied with its struct; it holds no list, map
-//	       or pointer
-//	Name*  Clone gives the copy its own: a line in clone.go
-//	Name!  shared or left out on purpose; Clone's comment says why
-//
-// A new field fails TestCloneCoversEveryField until it is here, and a
-// field with a *, until Clone copies it.
-var cloneRules = map[string]string{
-	"Game": "RNG Players* Objects* Decks* Discards* Shop* Monsters* Rooms* " +
-		"Bosses* Minions* Outside* BonusSouls* Queue* Attack* Purchase " +
-		"Chain Applied Choice* StartChoices* Throw* FirstRoll* Activating* " +
-		"FreeLoot PendingTriggers* Compost ExtraTurn Boosts* Shields* " +
-		"Lingering* Markers* RewardChanges* ManyDice* Stack* StackSeq Turn* " +
-		"Priority Waiting* MaxHand WinSouls Over Winners* Challenge* Sets* " +
-		"Banned* AskSeq asks! maxHP* cards! events! forcedRolls!",
-	"RNG": "State Inc",
-	"Player": "ID Character Cents Hand* InPlay* Damage Dead CopyNextLoot " +
-		"SkipTurns Activations LootPlayed TimesDamaged ExtraLootPlays Rolls " +
-		"LastRoll LastAttack KilledBy Counters*",
-	"Counter": "Name Count",
-	"Object": "ID Card Zone Role Controller Charged Damage Counters* Eternal " +
-		"CopyOf CopyThisTurn CopyTillYourTurn Gained GainedTill MoreGained* " +
-		"ATKSet Flipped LostEternal NoAbilities StartingItem Under* " +
-		"KilledBy KilledOn Chosen DoubleRewards ShareRewards* NoSpoils " +
-		"HitsThisTurn",
-	"Zone": "Kind Deck Slot Index",
-	"Gain": "Card Till",
-	"Slot": "Cards*",
-	"Action": "Kind Player Object Amount From Ask* Reroll Penalty Reward Purchase " +
-		"Applied*",
-	"Asking": "Ability Mode RollResult Effect Key Controller Source Targets* " +
-		"Answers* Order* EventPlayer EventAmount EventStack EventObject " +
-		"EventSource EventBy",
-	"AbilityRef":     "Card Index Lingering",
-	"Chosen":         "Kind Player Object StackID Spent",
-	"ReplacementRef": "Object Index",
-	"AttackState": "LastRoll On Started Target Revealed Deck Rolls StopAfter Helpers* " +
-		"Queue* Share*",
-	"PurchaseState": "On",
-	"Choice": "Purpose Player Rule Replacements* Objects* Previews* Deck Random " +
-		"Slots* Targets* Indexes* Abilities* Ask* Question* Subject Look* " +
-		"Owner To",
-	"ReplacementPreview": "Actions* Unused* Again",
-	"Msg":                "Key Args*",
-	"Key":                "name",
-	"Arg":                "Name Value!",
-	"DeckLook":           "Deck Count",
-	"Throw":              "StackID Reroll First",
-	"FirstRoll":          "Round Players* Rolls*",
-	"Activation":         "Player Source Ability Loot Mode Chosen* Window",
-	"PendingTrigger": "Ability Source Controller On EventPlayer EventAmount EventStack " +
-		"EventObject EventSource EventBy",
-	"Boost":        "Stat Player Object Amount Source",
-	"Shield":       "Target Amount Cap Source",
-	"Target":       "Object Player IsPlayer",
-	"Lingering":    "Ability Source Controller",
-	"Marker":       "Object Kind From To",
-	"RewardChange": "Object Set Kind Amount",
-	"ManyDice":     "Chooser Dice Values* StackID",
-	"StackItem": "ID Kind Controller Source Card Roll Amount Label* Target Attack " +
-		"Ability Mode Targets* RollFor RollResult EventPlayer EventAmount " +
-		"EventStack EventObject EventSource EventBy Reward Checked Text " +
-		"SourceCard TargetCard Sources* Final",
-	"StatSourceView": "Stat Source Card Amount Lasts When*",
-	"Turn": "Active Number Step LootPlays Attacks Purchases AttackRolls " +
-		"BonusLootUsed BonusAttacksUsed BonusPurchasesUsed MustAttack " +
-		"MustAttacks MustAttackDeck RandomAttackMade DeckAttacks ShopBought " +
-		"FreeShopItem EndDeclared DeathEnd NextHelpers* NextShare* " +
-		"MonsterDied RoomReplaced LateRooms* Entered",
-	"Priority": "Open Holder Passes Deferred",
-	"Prompt":   "Kind Player Count Options* Purpose Text* Look* Players*",
-	"ChallengeState": "ID Difficulty Timer Card Presents* Holidays Lost Reason* Starter " +
-		"TurnFrom* RoundFrom* RoomTurn",
-	"Present": "Kind Object Destroyed Flipped",
-	"hpKey":   "p id",
-}
-
 // TestCloneCoversEveryField walks the types of Game: each struct type
-// is in cloneRules with exactly its fields, a plain field holds no list,
+// is in enginetest.CloneRules with exactly its fields, a plain field holds no list,
 // map or pointer, and a marked one does.
 func TestCloneCoversEveryField(t *testing.T) {
 	seen := map[string]bool{}
@@ -111,9 +35,9 @@ func TestCloneCoversEveryField(t *testing.T) {
 			return
 		}
 		seen[rt.Name()] = true
-		rule, ok := cloneRules[rt.Name()]
+		rule, ok := enginetest.CloneRules[rt.Name()]
 		if !ok {
-			t.Errorf("type %s is not in cloneRules: copy it in Game.Clone and list its fields", rt.Name())
+			t.Errorf("type %s is not in enginetest.CloneRules: copy it in Game.Clone and list its fields", rt.Name())
 			return
 		}
 		listed := strings.Fields(rule)
@@ -126,7 +50,7 @@ func TestCloneCoversEveryField(t *testing.T) {
 			names[i] = strings.TrimRight(f, "*!")
 		}
 		if !slices.Equal(names, fields) {
-			t.Errorf("%s: fields %v, cloneRules lists %v: a new field needs a copy rule in Game.Clone and here", rt.Name(), fields, names)
+			t.Errorf("%s: fields %v, enginetest.CloneRules lists %v: a new field needs a copy rule in Game.Clone and here", rt.Name(), fields, names)
 			return
 		}
 		for i, f := range listed {
@@ -146,13 +70,13 @@ func TestCloneCoversEveryField(t *testing.T) {
 			}
 		}
 	}
-	walk(reflect.TypeFor[Game]())
+	walk(reflect.TypeFor[engine.Game]())
 	if t.Failed() {
 		return // a type left unwalked is no stale entry
 	}
-	for name := range cloneRules {
+	for name := range enginetest.CloneRules {
 		if !seen[name] {
-			t.Errorf("cloneRules lists %s, which Game no longer holds", name)
+			t.Errorf("enginetest.CloneRules lists %s, which Game no longer holds", name)
 		}
 	}
 }
@@ -174,4 +98,57 @@ func holdsRefs(rt reflect.Type) bool {
 	default:
 	}
 	return false
+}
+
+// TestCloneCopiesEveryField fills a game so that every slice, map and
+// pointer in it, at every depth, holds something, then checks the copy
+// shares none of them: a field marked * that Clone forgets fails here,
+// even if no simulated game ever fills it.
+func TestCloneCopiesEveryField(t *testing.T) {
+	var g engine.Game
+	fill(reflect.ValueOf(&g).Elem())
+	c, err := g.Clone()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := enginetest.NoSharing(&g, c); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// fill gives every slice one element, every map one entry and every
+// pointer a value, through all nested types; fields marked ! stay
+// empty.
+func fill(v reflect.Value) {
+	switch v.Kind() {
+	case reflect.Slice:
+		v.Set(reflect.MakeSlice(v.Type(), 1, 1))
+		fill(v.Index(0))
+	case reflect.Pointer:
+		v.Set(reflect.New(v.Type().Elem()))
+		fill(v.Elem())
+	case reflect.Map:
+		k := reflect.New(v.Type().Key()).Elem()
+		e := reflect.New(v.Type().Elem()).Elem()
+		fill(k)
+		fill(e)
+		v.Set(reflect.MakeMap(v.Type()))
+		v.SetMapIndex(k, e)
+	case reflect.Array:
+		for i := range v.Len() {
+			fill(v.Index(i))
+		}
+	case reflect.Struct:
+		for i := range v.NumField() {
+			if mark, _ := enginetest.CloneMark(v.Type(), v.Type().Field(i).Name); mark == "!" {
+				continue
+			}
+			f := v.Field(i)
+			if !f.CanSet() { // an unexported field, e.g. maxHP
+				f = reflect.NewAt(f.Type(), unsafe.Pointer(f.UnsafeAddr())).Elem() //nolint:gosec // test only: fills unexported state fields
+			}
+			fill(f)
+		}
+	default: // a plain value stays zero
+	}
 }

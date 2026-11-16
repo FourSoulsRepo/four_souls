@@ -15,7 +15,7 @@ import (
 // the test dice (forcedRolls).
 //
 // A new field of Game, or of a type inside it, needs a line here and in
-// cloneRules (clone_test.go); TestCloneCoversEveryField fails until both
+// CloneRules (enginetest/clone.go); TestCloneCoversEveryField fails until both
 // are there.
 func (g *Game) Clone() (*Game, error) {
 	c := *g

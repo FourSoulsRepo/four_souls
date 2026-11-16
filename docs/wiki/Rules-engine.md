@@ -39,10 +39,10 @@ Every card is an object with an ID. Moving a card to another zone gives it a new
 A new field of `Game`, or of any type inside it, must add:
 
 1. a copy line in `Game.Clone` when it holds a slice, map or pointer (`slices.Clone`, or the type's own `clone`); a plain value is copied with its struct;
-2. its name in `cloneRules` (`clone_test.go`), in field order: `Name` for a plain value, `Name*` for one Clone copies, `Name!` for one shared or left out on purpose;
-3. a new struct type inside the state: its own line in `cloneRules`.
+2. its name in `CloneRules` (`enginetest/clone.go`), in field order: `Name` for a plain value, `Name*` for one Clone copies, `Name!` for one shared or left out on purpose;
+3. a new struct type inside the state: its own line in `CloneRules`.
 
-`TestCloneCoversEveryField` fails until the list matches the types. `TestCloneSavesTheSame` (simulated games of every set and challenge) fails when the copy saves differently or shares memory with the game, and `TestCloneLeavesTheGame` plays 50 steps on a copy and checks the game is unchanged.
+`TestCloneCoversEveryField` fails until the list matches the types. `TestCloneCopiesEveryField` fills every slice, map and pointer of a game, at every depth, and fails when the copy shares one: a `*` field Clone forgets. Both game tests check sharing with `enginetest.NoSharing`, which skips the `!` fields. `TestCloneSavesTheSame` (simulated games of every set and challenge) fails when the copy saves differently or shares memory with the game, and `TestCloneLeavesTheGame` plays 50 steps on a copy and checks the game is unchanged.
 
 ## Where things happen
 
