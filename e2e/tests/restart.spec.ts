@@ -11,7 +11,7 @@ import { startGame } from './game';
 import { restartPorts } from './ports';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, throwButton, turnAction, untilAttackRoll } from './turn';
+import { activePage, Ask, asked, click, Intent, markGame, may, Purpose, throwButton, turnAction, until, untilAttackRoll, untilResynced } from './turn';
 import { lineRe, tr } from './locale';
 
 const root = join(import.meta.dirname, '..', '..');
@@ -212,14 +212,18 @@ async function rollbackOverRestart(browser: Browser, names: string[], edit?: () 
   await server.start();
   pages = await startGame(browser, names, { port: server.port, url: `${appURL(server.port)}&anim=off`, options: { rollback: 'god' }, bans });
   const active = await activePage(pages, click);
-  await expect(turnAction(active, 'Attack')).toBeEnabled();
+  await until(active, may(Intent.attack));
   await click(active, turnAction(active, 'Attack'));
   await untilAttackRoll(pages, click, active);
+  for (const page of pages) {
+    await markGame(page);
+  }
   await server.stop();
   edit?.();
   await server.start();
   for (const page of pages) {
-    await expect(page.getByRole('status', { name: tr('lost.reconnecting_label') })).toHaveCount(0, { timeout: 15000 });
+    await untilResynced(page);
+    await expect(page.getByRole('status', { name: tr('lost.reconnecting_label') })).toHaveCount(0);
   }
   await active.getByRole('button', { name: tr('history.title'), exact: true }).click();
   return active;
@@ -239,9 +243,11 @@ test('Godmode: a rollback reaches past a server restart (17.5)', async ({ browse
   await expect(throwButton(active)).toHaveCount(0);
   await expect(undo).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.attack_declared.you') }));
   // The target prompt is back, picked on the table (18.11).
+  await until(active, asked(Ask.choose, Purpose.attackTarget));
   await expect(active.locator('.prompt-title')).toHaveText(tr('choice.title.attack'));
   await shot(active, 'attack-pick-table');
   await undo.click();
+  await until(active, may(Intent.attack));
   await expect(turnAction(active, 'Attack')).toBeEnabled();
 });
 

@@ -13,7 +13,7 @@ import { cardName, tr } from './locale';
 import { saveAndContinue } from './saves';
 import { appURL, serverPort } from './server';
 import { shot } from './shot';
-import { activePage, click, settle, tablePicks, turnAction } from './turn';
+import { activePage, click, Purpose, turnAction, untilPick } from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 const monsters = ['fatty', 'pale_fatty'];
@@ -155,7 +155,7 @@ test("an attack's pick aims an arrow from the character; the other player sees i
     throw new Error('no other page');
   }
   await turnAction(active, 'Attack').click();
-  await settle(pages, click, async () => tablePicks(active).first().isVisible());
+  await untilPick(pages, click, active, Purpose.attackTarget);
   const monster = active.getByRole('group', { name: tr('board.monsters') }).locator('.card').first();
   await expect(monster).toHaveClass(/hl-pick/);
   const zone = (await monster.getAttribute('data-zone')) ?? '';

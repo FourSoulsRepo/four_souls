@@ -12,10 +12,14 @@ import {
   click,
   endTurn,
   gameOver,
+  holds,
+  Intent,
+  may,
   passButton,
   playLoot,
   seen,
   settle,
+  stackHolds,
   turnAction,
   turnNumber,
   untilAttackRoll,
@@ -44,7 +48,7 @@ test('a played loot card shows on the stack; nobody is offered skip all', async 
     throw new Error('no other page');
   }
   const loot = active.locator('.hand .card.hl-act').first();
-  test.skip(!(await loot.isVisible()), 'no playable loot card in this deal');
+  test.skip(!(await holds(active, may(Intent.playLoot))), 'no playable loot card in this deal');
   const name = await loot.getAttribute('aria-label');
   await playLoot(active, loot, click);
   // Some loot cards ask for a mode or a target before they go on the stack.
@@ -96,7 +100,7 @@ test('a player may wait for their turn; the end of the turn before asks them (N-
   // The turn before ends: waiting is over, and nothing more is offered.
   await endTurn(active);
   await expect(bar.getByRole('button', { name: any(trRe('actions.cancel_wait'), trRe('actions.wait')) })).toHaveCount(0);
-  if (await passButton(other).isEnabled()) {
+  if (await holds(other, may(Intent.pass))) {
     await expect(other.locator('.prompt-title')).toHaveText(any(trRe('banner.act'), trRe('banner.respond')));
     await shot(other, 'wait-turn-last-chance');
   }
@@ -237,7 +241,7 @@ test('every player sees whom the stack waits for (V-11)', async ({ browser }) =>
   await pass.click();
   // Unless everyone else was skipped and the item resolved.
   await expect
-    .poll(async () => (await stack.locator('.stack-row').count()) === 0 || (await waitLine(active, me, 'Passed')).includes(me))
+    .poll(async () => (await holds(active, stackHolds(0))) || (await waitLine(active, me, 'Passed')).includes(me))
     .toBe(true);
   await expectSameLines(pages, names, (await waitLine(active, me, 'Waiting for')) + (await waitLine(active, me, 'Passed')));
 });

@@ -10,7 +10,7 @@ import { tr } from './locale';
 import { gameID } from './saves';
 import { appURL, serverPort } from './server';
 import { shot } from './shot';
-import { seen, throwButton } from './turn';
+import { Intent, may, seen, throwButton, until } from './turn';
 
 const root = join(import.meta.dirname, '..', '..');
 
@@ -107,6 +107,7 @@ test('Eden picks her starting item on the start-of-game screen, then confirms (2
   await expect(wait).toHaveCount(0);
   // Then the first-player roll.
   const first = (await seen(eden)).you === 0 ? eden : other;
+  await until(first, may(Intent.throw));
   await expect(throwButton(first)).toBeVisible({ timeout: 20_000 });
 });
 
@@ -208,6 +209,7 @@ test('two Edens choose at the same time; the roll waits for both (20.22)', async
   await start(cyd).locator('.choice-card').nth(1).click();
   await start(cyd).getByRole('button', { name: tr('start.confirm') }).click();
   // Both chose: the roll starts with the first seat.
+  await until(cyd, may(Intent.throw));
   await expect(throwButton(cyd)).toBeVisible({ timeout: 20_000 });
   for (const page of pages) {
     await expect(page.getByRole('status', { name: tr('start.waiting_label') })).toHaveCount(0);
