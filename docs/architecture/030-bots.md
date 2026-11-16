@@ -196,6 +196,7 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       1. Every playout is scored by `settledScore`, as a standard settle, with the opponents weighted by strength (Decision 7.6).
       2. A move must beat doing nothing as in Decision 8.6, world by world.
       3. In the noise a gain counts at most four souls (`noiseClip`): a game won or lost in one world of fifty is part of the mean, but as noise it hid what every other world showed.
+      4. Known bias of a flat search (lead review, 2026-11-17): the end-of-turn candidate is scored at once, while every other candidate's playout includes the policy's continuation of the turn.
    7. It answers the stack the same way: "pass" is one more candidate.
    8. Budget: `Budget{Playouts, Time}`, whichever ends first.
       1. `Playouts` 0: no cap on playouts; `Time` 0: no time limit; both 0: 1.5 s. The server passes the time only.
