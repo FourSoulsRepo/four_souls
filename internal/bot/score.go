@@ -287,11 +287,16 @@ func cardValue(g *engine.Game, id engine.ObjectID, seen, flat bool) float64 {
 }
 
 // digValue is what a monster kill is worth beyond its rewards: the
-// chance that the card it lets in gives a soul (Decision 7.9). The
-// share is of soul cards (a card property: Soul) in the monster deck of
-// world w, all cards the seat cannot see, redealt by Imagine from the
-// real unseen ones.
+// chance that the card it lets in gives a soul (Decision 7.9).
 func digValue(w *engine.Game) float64 {
+	return wSoul * digShare * soulShare(w)
+}
+
+// soulShare is the share of soul cards (a card property: Soul) in the
+// monster deck of world w, all cards the seat cannot see, redealt by
+// Imagine from the real unseen ones; 0 for an empty deck. digValue and
+// the policy's judge of the deck's top both use it.
+func soulShare(w *engine.Game) float64 {
 	deck := w.Decks[engine.MonsterDeck]
 	if len(deck) == 0 {
 		return 0
@@ -302,5 +307,5 @@ func digValue(w *engine.Game) float64 {
 			souls++
 		}
 	}
-	return wSoul * digShare * float64(souls) / float64(len(deck))
+	return float64(souls) / float64(len(deck))
 }

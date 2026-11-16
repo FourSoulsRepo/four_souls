@@ -2,6 +2,7 @@ package bot
 
 import (
 	"context"
+	"math"
 	"math/rand/v2"
 	"slices"
 	"testing"
@@ -337,8 +338,9 @@ func TestStandardDigs(t *testing.T) {
 	}
 }
 
-// TestDigValue: the share of soul cards in the monster deck, times
-// wSoul and digShare; 0 when the deck holds no soul card.
+// TestDigValue: the share of soul cards in the monster deck (soulShare,
+// which the policy also gives the deck's top), times wSoul and
+// digShare; 0 when the deck holds no soul card.
 func TestDigValue(t *testing.T) {
 	g := table(t, engine.SituationSetup{Players: []engine.SituationPlayer{{Character: "isaac"}, {Character: "cain"}}})
 	deck := g.Decks[engine.MonsterDeck]
@@ -351,8 +353,11 @@ func TestDigValue(t *testing.T) {
 	if souls == 0 || souls == len(deck) {
 		t.Fatalf("%d soul cards of %d: the test needs both kinds", souls, len(deck))
 	}
-	want := wSoul * digShare * float64(souls) / float64(len(deck))
-	if got := digValue(g); got != want {
+	share := float64(souls) / float64(len(deck))
+	if got := soulShare(g); got != share {
+		t.Errorf("soul share %v, want %v", got, share)
+	}
+	if got, want := digValue(g), wSoul*digShare*share; math.Abs(got-want) > 1e-9 {
 		t.Errorf("dig %v, want %v", got, want)
 	}
 	var none []engine.ObjectID

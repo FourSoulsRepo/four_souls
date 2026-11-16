@@ -34,10 +34,10 @@ const (
 	// for each soul; wTargetMin keeps every target possible.
 	wTargetMin  = 0.05
 	wSoulFactor = 4.0
-	// The monster deck's top is judged as an average monster; about
-	// 40% of monster cards have a soul.
+	// The monster deck's top is judged as an average monster of every
+	// set (TestDeckMonsterMean keeps these near the cards' means); its
+	// souls are the world's share of soul cards there (soulShare).
 	deckHP, deckDC, deckATK = 3, 4, 1
-	deckSouls               = 0.4
 
 	// Other choices.
 	wDeckBuy     = 0.6 // the treasure deck's top, against 1 for a shop item
@@ -164,7 +164,7 @@ func attackTargetWeight(g *engine.Game, p engine.PlayerID, c *engine.Choice, o i
 		return targetWeight(attackOdds(g, p, m), float64(g.Def(m).Soul))
 	}
 	if c.Deck && o == len(c.Objects) {
-		return targetWeight(deckOdds(g, p), deckSouls)
+		return targetWeight(deckOdds(g, p), soulShare(g))
 	}
 	return wTargetMin // the random attack
 }

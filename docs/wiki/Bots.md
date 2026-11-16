@@ -43,7 +43,7 @@ The policy (`internal/bot/policy.go`, Decision 6) weighs each allowed intent and
 
 * Outside its own action phase a seat mostly passes, so the stack resolves.
 * In its own action phase: buy when it has the coins, then attack, play loot, use abilities (less after each use this turn), and end the turn when nothing else draws.
-* Attack odds: the chance to kill a monster before it kills the attacker, from the attacker's ATK and HP and the monster's HP, evasion and ATK. A roll of 1 counts as a miss, as abilities may raise the evasion during the fight. The monster deck's top is judged as an average monster (HP 3, evasion 4, ATK 1).
+* Attack odds: the chance to kill a monster before it kills the attacker, from the attacker's ATK and HP and the monster's HP, evasion and ATK. A roll of 1 counts as a miss, as abilities may raise the evasion during the fight. The monster deck's top is judged as an average monster (HP 3, evasion 4, ATK 1; `TestDeckMonsterMean` keeps them within 1 of the mean monster of every set), with the world's share of soul cards there as its souls (`soulShare`, which `digValue` uses too).
 * Attack target: weight from the odds, counted twice, and the target's souls.
 * A choice that cancels a play (a target, a mode, a copied ability) gets no weight, so a play is never taken back and tried again for ever.
 * A curse goes to another seat, the more souls the likelier.
