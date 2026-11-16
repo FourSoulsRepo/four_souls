@@ -30,13 +30,10 @@ func TestRunRepeats(t *testing.T) {
 	if err := run(context.Background(), tiny(out, cardsFlag...), io.Discard); err != nil {
 		t.Fatal(err)
 	}
-	first, err := os.ReadFile(out)
-	if err != nil {
-		t.Fatal(err)
-	}
-	f, err := bot.ParseValues(first)
-	if err != nil {
-		t.Fatal(err)
+	first := readTable(t, out)
+	f, perr := bot.ParseValues(first)
+	if perr != nil {
+		t.Fatal(perr)
 	}
 	got := map[string]string{}
 	for _, e := range f.Cards {
@@ -51,10 +48,7 @@ func TestRunRepeats(t *testing.T) {
 	if err := run(context.Background(), tiny(out, cardsFlag...), io.Discard); err != nil {
 		t.Fatal(err)
 	}
-	second, err := os.ReadFile(out)
-	if err != nil {
-		t.Fatal(err)
-	}
+	second := readTable(t, out)
 	if !bytes.Equal(first, second) {
 		t.Errorf("the same seed wrote another file:\n%s\n%s", first, second)
 	}
@@ -74,10 +68,7 @@ func TestRunRepeats(t *testing.T) {
 	if err := run(context.Background(), tiny(out, "-missing"), &log); err != nil {
 		t.Fatal(err)
 	}
-	third, err := os.ReadFile(out)
-	if err != nil {
-		t.Fatal(err)
-	}
+	third := readTable(t, out)
 	if !bytes.Equal(full, third) || !bytes.Contains(log.Bytes(), []byte("0 cards to measure")) {
 		t.Errorf("-missing on a full table: %s", log.String())
 	}
@@ -99,4 +90,14 @@ func TestAllCards(t *testing.T) {
 	if _, ok := kinds["the_d6"]; ok {
 		t.Error("a starting item is measured; it is in no deck")
 	}
+}
+
+// readTable is the table file at path.
+func readTable(t *testing.T, path string) []byte {
+	t.Helper()
+	data, err := os.ReadFile(filepath.Clean(path))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return data
 }

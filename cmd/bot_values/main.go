@@ -82,7 +82,19 @@ type config struct {
 	out      string
 	missing  bool
 	only     map[string]bool
-	progress io.Writer
+	progress *logger
+}
+
+// logger writes the run's log and keeps the first write error.
+type logger struct {
+	w   io.Writer
+	err error
+}
+
+func (l *logger) printf(format string, args ...any) {
+	if l.err == nil {
+		_, l.err = fmt.Fprintf(l.w, format, args...)
+	}
 }
 
 // run parses the flags, measures and writes the table.
@@ -112,7 +124,8 @@ func run(ctx context.Context, args []string, log io.Writer) error {
 			c.only[strings.TrimSpace(s)] = true
 		}
 	}
-	c.progress = log
+	lg := &logger{w: log}
+	c.progress = lg
 	old := bot.ValueFile{}
 	if c.missing || c.only != nil {
 		data, err := os.ReadFile(c.out)
@@ -125,15 +138,15 @@ func run(ctx context.Context, args []string, log io.Writer) error {
 	}
 	jobs := todo(allCards(), old, c)
 	start := time.Now()
-	fmt.Fprintf(log, "bot_values: %d cards to measure on %d cores\n", len(jobs), runtime.GOMAXPROCS(0))
+	lg.printf("bot_values: %d cards to measure on %d cores\n", len(jobs), runtime.GOMAXPROCS(0))
 	if len(jobs) == 0 {
-		return nil
+		return lg.err
 	}
 	pos, err := positions(ctx, c)
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(log, "bot_values: %d positions from %d games in %s\n", len(pos), 3*c.games, time.Since(start).Round(time.Second))
+	lg.printf("bot_values: %d positions from %d games in %s\n", len(pos), 3*c.games, time.Since(start).Round(time.Second))
 	got, err := measureAll(ctx, jobs, pos, c)
 	if err != nil {
 		return err
@@ -146,9 +159,9 @@ func run(ctx context.Context, args []string, log io.Writer) error {
 	if err := os.WriteFile(c.out, data, 0o644); err != nil { //nolint:gosec // a source file of the repo
 		return err
 	}
-	fmt.Fprintf(log, "bot_values: %d cards in %s; wrote %s\n", len(jobs), time.Since(start).Round(time.Second), c.out)
-	summary(log, got)
-	return nil
+	lg.printf("bot_values: %d cards in %s; wrote %s\n", len(jobs), time.Since(start).Round(time.Second), c.out)
+	summary(lg, got)
+	return lg.err
 }
 
 // card is one value to measure: a card as loot in hand or as an item.
@@ -183,14 +196,15 @@ func allCards() []card {
 			if d.Tap {
 				item = bot.KindActive
 			}
-			switch {
-			case d.Kind == engine.LootCard:
+			switch d.Kind {
+			case engine.LootCard:
 				add(card{ref: d.Ref, kind: bot.KindLoot, deck: engine.LootDeck})
 				if d.Trinket {
 					add(card{ref: d.Ref, kind: item, deck: engine.LootDeck})
 				}
-			case d.Kind == engine.TreasureCard:
+			case engine.TreasureCard:
 				add(card{ref: d.Ref, kind: item, deck: engine.TreasureDeck})
+			default: // other kinds have no value
 			}
 		}
 	}
@@ -324,7 +338,7 @@ func measureAll(ctx context.Context, jobs []card, pos []position, c config) ([]m
 				out[i].xs, out[i].uses, errs[i] = measure(jobs[i], pos, c)
 				mu.Lock()
 				done++
-				fmt.Fprintf(c.progress, "  %d/%d %s %s: %d samples, %d uses\n", done, len(jobs), jobs[i].kind, jobs[i].ref, len(out[i].xs), len(out[i].uses))
+				c.progress.printf("  %d/%d %s %s: %d samples, %d uses\n", done, len(jobs), jobs[i].kind, jobs[i].ref, len(out[i].xs), len(out[i].uses))
 				mu.Unlock()
 			}
 		})
@@ -523,7 +537,7 @@ func encode(f bot.ValueFile) ([]byte, error) {
 
 // summary prints, per kind, the mean value, the median standard error,
 // and the cards with too few samples.
-func summary(w io.Writer, got []measured) {
+func summary(w *logger, got []measured) {
 	for _, kind := range []string{bot.KindLoot, bot.KindActive, bot.KindPassive} {
 		var vals, ses []float64
 		none := 0
@@ -553,6 +567,6 @@ func summary(w io.Writer, got []measured) {
 		for _, v := range vals {
 			sum += v
 		}
-		fmt.Fprintf(w, "  %-7s %d cards, mean %.2f, median standard error %.2f, %d with no sample\n", kind, len(vals), sum/float64(len(vals)), med, none)
+		w.printf("  %-7s %d cards, mean %.2f, median standard error %.2f, %d with no sample\n", kind, len(vals), sum/float64(len(vals)), med, none)
 	}
 }

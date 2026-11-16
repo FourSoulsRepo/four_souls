@@ -35,14 +35,15 @@ func TestValuesFile(t *testing.T) {
 			if d.Tap {
 				item = kindActive
 			}
-			switch {
-			case d.Kind == engine.LootCard:
+			switch d.Kind {
+			case engine.LootCard:
 				kinds = append(kinds, kindLoot)
 				if d.Trinket {
 					kinds = append(kinds, item)
 				}
-			case d.Kind == engine.TreasureCard:
+			case engine.TreasureCard:
 				kinds = append(kinds, item)
+			default: // other kinds have no value
 			}
 			for _, k := range kinds {
 				v, ok := cardTable.cards[k][string(d.Ref)]
