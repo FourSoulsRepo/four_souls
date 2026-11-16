@@ -165,13 +165,27 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    2. `Seat.Name` of a bot is `Bot N`, in English, for records and logs.
    3. The client shows a translated name with the level, and a robot icon.
    4. New message `bot`: `{seat, level}`; an empty level takes the bot away.
+      1. A new level for a bot's seat keeps its number and name.
+      2. A new bot takes the smallest number no seat uses, as a number or as a name.
    5. Only the host sends it; only for a free seat or a bot's seat.
+      1. The host sits in seat 0, so a bot never does.
+      2. Not at a loaded save's table: its seats wait for its players (N-11).
+      3. Refusals are translated messages (`error.host_bots`, `error.bot_seat`, `error.bot_saved`, `error.bot_level`, `error.bots_off`).
    6. A joining player gets a free seat only; never a bot's.
    7. The game starts when every seat is taken and every human is ready.
+      1. A bot's seat is always ready.
    8. A table with no human closes.
    9. The game list counts bot seats as taken.
-   10. `hello` tells whether the server allows bots; the app hides the buttons if not.
-   11. The protocol version goes up by one (ADR 006).
+   10. `welcome` → `bots` lists the levels the server allows (Decision 17); the app hides the others.
+   11. The protocol version goes up by one (ADR 006): version 7.
+   12. A host who leaves a table with bots: the next human in seat order moves into seat 0 and hosts.
+      1. The game list names the new host; bots keep their seats.
+      2. With no human left the table closes (10.8).
+      3. So the room's host stays seat 0, as for saves and the end of a game (19.84).
+      4. A table without bots keeps seat 0 free for the next player, as before (Rule 6 of step 21).
+      5. Its first `bot` message moves the next human into seat 0 first.
+   13. A restart file of a lobby table keeps its bots (`savedSeat` → `bot`, `bot_n`).
+      1. A level the restarted server does not allow leaves its seat free.
 11. Room
    1. `roomSeat` gets the level; a bot seat has no client and no token.
    2. A bot seat is never away: it does not pause the game.
@@ -214,9 +228,15 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    3. A restart file keeps bot seats of tables and games (N-20).
    4. After a restart nobody waits for a bot; open thinking starts over.
    5. `record.Seat` gets the level.
-17. Server limits
-   1. Flag `-bots` on the dedicated server, on by default.
+17. Server limits (lead, 2026-11-16: the owner's server has 1 CPU and 1 GB)
+   1. Flag `-bots=off|standard|all` on the dedicated server, default `all`: the levels a host may seat.
+      1. ENV `FOUR_SOULS_BOTS`, config `bots`; any other value stops the start.
+      2. `welcome` → `bots` lists the allowed levels; the app hides the others.
+      3. A bot of another level is refused with a translated message (Decision 10.5).
+      4. The app's own server always allows every level.
    2. At most `GOMAXPROCS / 2` hard thinkers at once, at least 1; the rest wait.
+      1. Flag `-bot_think`: the hard budget per move, default 1.5 s (Decision 9.8); it comes with the limit in 21.10.
+      2. The app's own server always uses the default.
    3. A waiting thinker still answers before the response timer.
    4. Load test: `cmd/server_load` gets tables with bots.
 18. Arena: how strength is checked

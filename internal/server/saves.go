@@ -46,6 +46,10 @@ type savedSeat struct {
 	Token  string `json:"token"`
 	Kicked bool   `json:"kicked,omitempty"` // kept over a restart (N-20)
 	Dice   string `json:"dice,omitempty"`   // kept over a restart (N-20)
+	// Bot and BotN are a bot seat's level and number (ADR 030,
+	// Decision 16.1); a lobby table keeps them over a restart (21.7).
+	Bot  string `json:"bot,omitempty"`
+	BotN int    `json:"bot_n,omitempty"`
 }
 
 // save writes the game to the saves folder and stops the room: only

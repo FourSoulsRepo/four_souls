@@ -64,6 +64,16 @@ A spot names exactly one thing: a card every player can see (`object`), a slot o
 
 Any client of a dedicated server may create a game or load a saved one. A server started with `Config.HostOnly` lets only clients on its own computer do that (loopback address, `wsConn.Local`); everyone else gets `not_host` and only joins (N-17). Only the app's `Host` sets it, so friends of an app's host never open games on that app. `welcome.create` tells each client which case it is; the app shows **Create a game** only then.
 
+## Bots in the lobby
+
+ADR 030, Decision 10 (21.7). The host seats bots at a table with `bot` `{seat, level}`; an empty level takes the bot away. `Hub.bot` refuses, each with a translated message: a client at no table (`not_seated`), anyone but the host (`not_host`, `error.host_bots`), a loaded save's table (`error.bot_saved`), seat 0, a player's seat or no seat (`error.bot_seat`), and a level the server does not allow (`error.bot_level`; `error.bots_off` when it allows none); the last four are `bad_setup`. Taking away a bot that is not there does nothing.
+
+A bot seat (`tableSeat.bot`, `botN`) has no token and no client, and is always ready. It is named `Bot N` in English for records and logs, N being the smallest number no seat uses as a number or as a name; a new level keeps the number. `taken` counts it, so the game list, `/status` and a join see it as taken: a joining player gets a free seat only. `startIfReady` starts a table when every seat is taken and every human is ready. Until 21.8 a table with bots never starts: one guard there waits, as no room plays a bot's seat yet.
+
+The host is seat 0. When the host leaves a table with bots, `promoteHost` moves the next human in seat order into seat 0 and the game list names them; bots keep their seats. A table with no human left closes, bots and all. A table without bots keeps seat 0 free for the next player to join, as before bots; the first `bot` message there moves the next human into seat 0 first. A loaded save's table keeps its seats as before (N-11). A lobby table's restart file keeps its bots (`savedSeat.Bot`, `BotN`); a restarted server that no longer allows a level leaves that seat free.
+
+The levels a host may seat come from `Config.Bots`, the dedicated server's `-bots` flag: `off`, `standard` or `all` (the default); `Config.Check` refuses any other value. `welcome` → `bots` lists them, so the app shows only those. The app's own `Host` keeps `all`. The level names are `protocol.BotStandard` and `protocol.BotHard` (`protocol.BotLevels`); `internal/bot` names the same strings.
+
 ## Server name
 
 An operator may name the server (`Config.Name`, `-name`, N-18). `Config.Check` refuses a name that `protocol.CleanServerName` rejects: empty after trimming, over `protocol.MaxServerName` (40) characters, or with control characters. Every `welcome` carries it in `name`; the app shows it instead of the address. Each match record's header keeps it in `server` too. The app's own host has none.

@@ -24,6 +24,7 @@ services:
       FOUR_SOULS_PRESENCE: ${FOUR_SOULS_PRESENCE:-}
       FOUR_SOULS_EMPTY_MINUTES: ${FOUR_SOULS_EMPTY_MINUTES:-}
       FOUR_SOULS_GAME_HOURS: ${FOUR_SOULS_GAME_HOURS:-}
+      FOUR_SOULS_BOTS: ${FOUR_SOULS_BOTS:-}
     volumes:
       - data:/data
     # Only Caddy reaches it. To let players also join without HTTPS

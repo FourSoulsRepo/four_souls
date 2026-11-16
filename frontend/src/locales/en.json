@@ -1521,6 +1521,22 @@
     "text": "A game has 2 to 4 seats.",
     "note": "Error from the server, shown in the lobby or on the table. A new game asked for another number of seats."
   },
+  "error.bot_level": {
+    "text": "This server doesn't allow bots of this level.",
+    "note": "Error from the server, shown in the lobby or on the table. The host seats a bot of a level the server's operator turned off (ADR 030)."
+  },
+  "error.bot_saved": {
+    "text": "A saved game's seats wait for its players; bots can't sit there.",
+    "note": "Error from the server, shown in the lobby or on the table. The host tries to seat a bot at the table of a loaded saved game."
+  },
+  "error.bot_seat": {
+    "text": "A bot can sit only in a free seat or another bot's seat.",
+    "note": "Error from the server, shown in the lobby or on the table. The host tries to seat a bot in a player's seat, their own, or a seat that does not exist."
+  },
+  "error.bots_off": {
+    "text": "This server doesn't allow bots.",
+    "note": "Error from the server, shown in the lobby or on the table. The host tries to seat a bot; the server's operator turned bots off."
+  },
   "error.card_data": {
     "text": "Card data: {error}",
     "note": "Status line when the app could not load its card data. error: the message from the app, in English."
@@ -1536,6 +1552,10 @@
   "error.deck_ratios": {
     "text": "{error}",
     "note": "Host screen: why the deck ratios can't be checked; error: the rules engine's words, in English."
+  },
+  "error.host_bots": {
+    "text": "Only the host can seat bots.",
+    "note": "Error from the server, shown in the lobby or on the table. A player who is not the host tries to seat or remove a bot."
   },
   "error.host_ends": {
     "text": "Only the host ends the game.",

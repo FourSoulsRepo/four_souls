@@ -65,6 +65,25 @@ func TestParse(t *testing.T) {
 	if _, lerr := parse([]string{"-game_hours", "-1"}); lerr == nil {
 		t.Error("a negative limit accepted")
 	}
+	// Bots (ADR 030, Decision 17): every level by default; off, standard
+	// or all; nothing else.
+	if b, berr := parse(nil); berr != nil || b.Bots != "all" {
+		t.Fatalf("bots default %+v, %v", b, berr)
+	}
+	for _, mode := range []string{"off", "standard", "all"} {
+		if b, berr := parse([]string{"-bots", mode}); berr != nil || b.Bots != mode {
+			t.Errorf("-bots %s: %+v, %v", mode, b, berr)
+		}
+	}
+	if _, berr := parse([]string{"-bots", "hard"}); berr == nil {
+		t.Error("-bots hard accepted")
+	}
+	if werr := os.WriteFile(file, []byte(`{"bots": "off"}`), 0o600); werr != nil {
+		t.Fatal(werr)
+	}
+	if b, berr := parse([]string{"-config", file}); berr != nil || b.Bots != "off" {
+		t.Fatalf("bots off in the file: %+v, %v", b, berr)
+	}
 }
 
 // TestParseEnv: every flag has a FOUR_SOULS_ variable; ENV overrides the
@@ -99,6 +118,7 @@ func TestParseEnv(t *testing.T) {
 	t.Setenv("FOUR_SOULS_RETENTION", "")
 	t.Setenv("FOUR_SOULS_EMPTY_MINUTES", "45")
 	t.Setenv("FOUR_SOULS_GAME_HOURS", "0")
+	t.Setenv("FOUR_SOULS_BOTS", "standard")
 	cfg, err := parse(nil)
 	if err != nil {
 		t.Fatal(err)
@@ -106,7 +126,7 @@ func TestParseEnv(t *testing.T) {
 	want := cfg
 	want.Addr, want.Port, want.Records, want.Saves, want.Presence, want.Name = "127.0.0.1", 5001, "/data/records", "/data/saves", false, "Basement"
 	want.Retention = 7 // an empty variable is unset: the file's value stays
-	want.EmptyMinutes, want.GameHours = 45, 0
+	want.EmptyMinutes, want.GameHours, want.Bots = 45, 0, "standard"
 	if cfg != want {
 		t.Fatalf("env over the file: got %+v, want %+v", cfg, want)
 	}

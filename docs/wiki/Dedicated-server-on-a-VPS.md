@@ -67,10 +67,11 @@ Every option is a flag, an ENV variable, or a value in a JSON config file. ENV o
 | `-name` | `FOUR_SOULS_NAME` | none | the server's name; players see it instead of the address, and records keep it (up to 40 characters) |
 | `-empty_minutes` | `FOUR_SOULS_EMPTY_MINUTES` | 30 | end a game nobody is connected to for this many minutes; 0 never (N-20) |
 | `-game_hours` | `FOUR_SOULS_GAME_HOURS` | 24 | end a game this many hours after it started, even while played; 0 never (N-20) |
+| `-bots` | `FOUR_SOULS_BOTS` | `all` | bot levels a host may seat: `off`, `standard` (no hard bots: they think longer and cost CPU) or `all`; the app hides the others |
 | `-config` | `FOUR_SOULS_CONFIG` | none | a JSON file with the same settings |
 
 ```json
-{"port": 4774, "records": "/var/lib/four-souls/records", "retention": 30, "saves": "/var/lib/four-souls/saves", "presence": true, "name": "Basement", "empty_minutes": 30, "game_hours": 24}
+{"port": 4774, "records": "/var/lib/four-souls/records", "retention": 30, "saves": "/var/lib/four-souls/saves", "presence": true, "name": "Basement", "empty_minutes": 30, "game_hours": 24, "bots": "all"}
 ```
 
 `GET /healthz` answers `ok` while the server runs; the Docker setups use it as their healthcheck.

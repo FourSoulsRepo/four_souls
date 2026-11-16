@@ -119,17 +119,18 @@ Rules for this step (owner, 2026-11-16):
    2. One hard among three standard wins over 30%.
    3. A missed gate: tune, write the numbers into ADR 030, or stop and tell the owner.
 
-### [ ] 21.7 Bots in the lobby
+### [x] 21.7 Bots in the lobby
 
 1. Goal: the host seats bots at a table (ADR 030, Decision 10).
 2. Tasks:
-   1. `protocol`: `Seat.Bot`, `Seat.BotN`, message `bot`, bots flag in the hello answer, version + 1.
+   1. `protocol`: `Seat.Bot`, `Seat.BotN`, message `bot`, the allowed levels in the hello answer (`welcome` → `bots`), version + 1.
    2. Hub: add, change and remove a bot; host only; refusals with translated messages.
    3. Start rule: all seats taken, every human ready; a table with no human closes.
    4. The game list counts bot seats as taken.
    5. A host who leaves: the next human becomes the host, or the table closes.
    6. Restart file of a lobby table keeps its bots (N-20).
-   7. Dedicated server flag `-bots`; the app's own server always allows them.
+   7. Dedicated server flag `-bots=off|standard|all`, default `all`; the app's own server always allows every level (lead, 2026-11-16).
+      1. `-bot_think` moves to 21.10: nothing reads it before the bot driver and the thinker limit.
    8. A table with bots does not start yet: one guarded refusal, removed in 21.8.
    9. Tests in `hub_test.go` for each rule above.
    10. `docs/wiki/Server.md`: the flag; ADR 006 list of messages.

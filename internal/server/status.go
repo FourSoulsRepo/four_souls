@@ -16,7 +16,7 @@ func (h *Hub) serverStatus() protocol.ServerStatus {
 	st := protocol.ServerStatus{}
 	for _, t := range h.tables {
 		for _, s := range t.seats {
-			if s.token == "" {
+			if !s.taken() {
 				st.Open++
 				break
 			}

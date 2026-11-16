@@ -162,7 +162,7 @@ func (h *Hub) keepTables() {
 			Kind:     keptTable, N: t.n, Host: t.host, Password: t.password,
 		}
 		for _, s := range t.seats {
-			f.Seats = append(f.Seats, savedSeat{Name: s.name, Token: s.token})
+			f.Seats = append(f.Seats, savedSeat{Name: s.name, Token: s.token, Bot: s.bot, BotN: s.botN})
 		}
 		if err := writeRestart(h.restart, f); err != nil {
 			log.Printf("server: keep table %s: %v", t.id, err)
@@ -190,7 +190,15 @@ func (h *Hub) restoreTable(f *restartFile) {
 	t := &table{n: f.N, id: f.Game, host: f.Host, sets: f.Sets, opts: f.Options, password: f.Password, seats: make([]tableSeat, len(f.Seats))}
 	t.emptySince = f.Saved // the downtime counts (N-20)
 	for i, s := range f.Seats {
-		t.seats[i] = tableSeat{name: s.Name, token: s.Token}
+		switch {
+		case s.Bot == "":
+			t.seats[i] = tableSeat{name: s.Name, token: s.Token}
+		case slices.Contains(h.bots, s.Bot):
+			t.seats[i] = tableSeat{name: s.Name, bot: s.Bot, botN: s.BotN, ready: true}
+		default:
+			// The server allows that level no more (-bots): the seat is free.
+			log.Printf("server: table %s: a %s bot left; this server does not allow it", f.Game, s.Bot)
+		}
 	}
 	h.tables = append(h.tables, t)
 	if h.restart == "" {
