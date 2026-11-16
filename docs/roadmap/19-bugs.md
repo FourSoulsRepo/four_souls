@@ -34,7 +34,7 @@ This step never closes; new reports are appended.
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151 | 21 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176 | 14 |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178 | 15 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157      | 7     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141 | 15 |
@@ -57,11 +57,11 @@ This step never closes; new reports are appended.
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 
-Totals by system (168 items):
+Totals by system (169 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U, W | 38 |
+| Engine    | A, B, T, U, W | 39 |
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 43 |
 | Server    | H, N    | 4     |
@@ -5424,3 +5424,18 @@ Totals by system (168 items):
 4. Tasks:
    1. Replay the saved input; find the first differing step.
    2. Fix under the step 19 rules; 22.3 needs `make fuzz` green.
+
+### [ ] 19.178 No event when a deck is shuffled
+
+1. Goal: every shuffle of a deck has an event everyone sees.
+2. Report (owner, 2026-11-16, from the 22.2 review)
+   1. "A shuffle is seen at the table."
+   2. 22.2 listed a shuffle as silent on purpose; the owner disagrees.
+3. Cause (the code)
+   1. `ShuffleDeck` (`zones.go`) reorders the deck and emits nothing.
+   2. Every deck shuffle goes through it: setup, a refill, situations.
+   3. Cards: Peep (b2), The Rainmaker (r), `SearchGuppy` (cardkit).
+4. Tasks:
+   1. One event per shuffled deck from `ShuffleDeck`, naming the deck.
+   2. Remove "shuffle" from the 22.2 list (`event_check.go`).
+   3. Client: a history line only; no animation (a separate idea).
