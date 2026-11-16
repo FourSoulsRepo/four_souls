@@ -105,7 +105,7 @@ Found and fixed: an `activate` intent with an unknown object ID made the engine 
 
 ## Rollback
 
-`rollback.go` (ADR 020, 17.3). A game whose `Options.Rollback` is set keeps a base state (`Room.base`, the engine's `Save`) and the live steps since it (`Room.live`: step number, intent and checksum; no events). The base is the game's start, a loaded save, or the state a restart kept when the history did not survive it (`setBase`, below). A game without the mode keeps nothing.
+`rollback.go` (ADR 020, 17.3). A game whose `Options.Rollback` is set keeps a base state (`Room.base`, the engine's `Save`; at a nested question, the last clean state and the steps to replay, 19.177) and the live steps since it (`Room.live`: step number, intent and checksum; no events). The base is the game's start, a loaded save, or the state a restart kept when the history did not survive it (`setBase`, below). A game without the mode keeps nothing.
 
 A seated player sends `rollback` with a step number. In Godmode (`god`) any player may, the author too, for any live step, until the game is over; not while the game is paused. The room rebuilds the game with `engine.ReplayFrom(base, steps before the target)`; a checksum that differs refuses the rollback and the game goes on. The steps from the target on leave the live list. Refusals are error `rollback`.
 

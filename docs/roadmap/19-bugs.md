@@ -4460,7 +4460,7 @@ Totals by system (170 items):
 6. Owner notes (2026-11-16)
    1. Owner marks 19.142 solved.
 
-### [ ] 19.143 Fuzz: a nested question asks again after a load
+### [x] 19.143 Fuzz: a nested question asks again after a load
 
 1. Goal: a game loaded during a nested question goes on as before the save.
 2. Report (20.22 subagent, 2026-11-09)
@@ -4469,7 +4469,7 @@ Totals by system (170 items):
    3. Fails the same on `bfc74cd`, before any 20.22 change.
    4. Evidence: `.cache/fuzz-evidence/19.143/` (not in git).
    5. Input: `55bb281b0c9ed398`; states after step 71, played and loaded.
-3. Cause (the states; not fixed yet)
+3. Cause (the states)
    1. Gimpy's answer "Loot 1, then discard" runs a nested question.
    2. The game is saved while that nested question waits.
    3. `Asking.Key` finds a nested effect only while the game runs.
@@ -4477,10 +4477,13 @@ Totals by system (170 items):
    5. So the same answer asks Gimpy's first question again.
    6. Undo (ADR 020) and a server restart load such a state too.
 4. Tasks:
-   1. [ ] A key for a nested effect that survives a load.
-   2. [ ] Go test: save and load inside Gimpy's discard question.
-   3. [ ] The fuzz input as a corpus file once it passes.
+   1. [x] A nested effect that survives a load: fixed by save and replay instead (19.177).
+   2. [x] Go test: save and load inside Gimpy's discard question.
+   3. [x] The fuzz input as a corpus file once it passes.
 5. Seen again as 19.177 (22.3, 2026-11-16); findings there.
+6. Fix (2026-11-16): the 19.177 fix; details there.
+   1. Test: `TestGimpySaveAtDiscard` (fsp2); it looted again before.
+   2. Corpus: `cards/testdata/fuzz/FuzzSets/55bb281b0c9ed398`.
 
 ### [x] 19.144 Soul of Envy goes on the stack again for the player who gains it
 
@@ -5451,7 +5454,7 @@ Totals by system (170 items):
    7. Client: no line, no flight (`historyKinds`); the card turns on the table.
    8. Go tests: Spider Webs, Curse of Impulse, Hourglass see the event.
 
-### [ ] 19.177 Fuzz: a redo replay differs from the record
+### [x] 19.177 Fuzz: a redo replay differs from the record
 
 1. Goal: undo and redo replay a game exactly as it was played.
 2. Report (22.2 subagent, 2026-11-16)
@@ -5486,6 +5489,36 @@ Totals by system (170 items):
    2. It keeps the steps since then, too.
    3. A load replays those steps; every card works, closures too.
    4. Covers the host's save, the restart keep, and rollback bases.
+9. Owner note (2026-11-16): breaking old saves is fine for now.
+   1. A format change may refuse older saves.
+   2. Then raise `StateMeaning` or the save version; refuse them with a clear message.
+   3. Say so in `CHANGELOG.md` Unreleased.
+10. Fix (2026-11-16): save and replay (ADR 020, item 13)
+    1. A nested ask: made while another effect runs, not the ability's own effect.
+    2. `resolveAbility` marks the direct one (`Ctx.direct`); the rest are nested.
+    3. A clean state has no nested ask waiting (`Game.NestedAsk`).
+    4. `Save` at a clean state: the state, as before.
+    5. `Save` at a nested ask: the last clean state, plus `replay` (its intents).
+    6. `Load` applies them: the card's own code asks again, closures too.
+    7. In memory the game keeps a clean origin and the intents since (`save.go`).
+    8. No copy per step: about 1 µs more per step; the replay runs at the save.
+    9. The save replays to the end too and checks the result is the game.
+    10. `StateMeaning` 2 → 3: an older kept state may hold a nested ask.
+    11. Host saves already need the same engine version (`save_version`).
+    12. Engine stays 0.5.4: steps and checksums do not change; not released yet.
+11. Checked paths
+    1. The host's save and load (`saves.go`: `Save`, `Load`).
+    2. The restart keep (`restart.go`: `Save`, `Resume`).
+    3. Rollback bases (`rollback.go`: `setBase`, `replayKept`, `ReplayFrom`).
+    4. All three go through `Game.Save` and `Load`; `Resume`, `ReplayFrom` call `Load`.
+    5. `Clone` copies the origin and the intents.
+12. Tests
+    1. `TestGimpySaveAtDiscard` (fsp2): a discard, not a second loot; `Resume` too.
+    2. `TestPlanCSaveAtKill` (g2): it panicked before.
+    3. `TestNestedAskSaveRestartRollback` (server): Mom's Shovel, all three paths.
+    4. `loadCheck` in `playSets` and `TestSimulations`: save and load at every nested ask.
+    5. 100 sim games: 434 such saves over 30 cards, Berkano, Forget Me Now among them.
+    6. The input `55bb281b0c9ed398` is in the `FuzzSets` corpus.
 
 
 ### [x] 19.178 No event when a deck is shuffled

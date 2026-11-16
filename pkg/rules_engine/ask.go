@@ -37,6 +37,9 @@ type askEffect struct {
 	do        func(c *Ctx, answers []int)
 	// roll is the table of a roll that do makes (AskWithRoll).
 	roll *RollTable
+	// nested: made while another effect ran, not as the ability's own
+	// effect; Asking.Effect cannot find it, so a save replays (19.177).
+	nested bool
 }
 
 // Ask asks the controller questions in order while the ability resolves,
@@ -62,7 +65,8 @@ type Asking struct {
 	RollResult int        `json:"roll_result,omitempty"`
 	Effect     int        `json:"effect"` // index in the effect list
 	// Key finds the effect while the game runs, also when it is nested
-	// in another effect; Effect is the fallback after a Load.
+	// in another effect; Effect is the fallback after a Load. A nested
+	// one is never loaded this way: its save replays (19.177).
 	Key        int      `json:"key"`
 	Controller PlayerID `json:"controller"`
 	Source     ObjectID `json:"source"`
@@ -89,6 +93,7 @@ func (e askEffect) apply(c *Ctx) {
 	}
 	c.G.AskSeq++
 	a.Key = c.G.AskSeq
+	e.nested = !c.direct
 	if c.G.asks == nil {
 		c.G.asks = map[int]askEffect{}
 	}

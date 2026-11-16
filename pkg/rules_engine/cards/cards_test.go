@@ -103,7 +103,8 @@ func FuzzFocusedSets(f *testing.F) {
 }
 
 // playSets plays one fuzz game: every step is an allowed intent, the
-// state stays valid and the game replays exactly.
+// state stays valid and the game replays exactly. A save while a nested
+// ask waits loads to the same game (loadCheck, 19.177).
 func playSets(t *testing.T, s engine.Setup, choices []byte) {
 	t.Helper()
 	g, _, err := engine.NewGame(s)
@@ -111,6 +112,7 @@ func playSets(t *testing.T, s engine.Setup, choices []byte) {
 		t.Fatal(err)
 	}
 	var steps []engine.StepRecord
+	loads := newLoadCheck(s.Sets)
 	for i, c := range choices[:min(len(choices), 2000)] {
 		if g.Over {
 			break
@@ -139,6 +141,7 @@ func playSets(t *testing.T, s engine.Setup, choices []byte) {
 		if err := g.CheckEvents(snap, st.Events); err != nil {
 			t.Fatalf("step %d after %+v: %v", i, in, err)
 		}
+		loads.after(t, g, in, true)
 	}
 	if _, err := engine.Replay(s, steps); err != nil {
 		t.Fatalf("replay: %v", err)

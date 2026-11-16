@@ -359,6 +359,9 @@ type Game struct {
 	// see Asking.Key).
 	AskSeq int `json:"ask_seq,omitempty"`
 	asks   map[int]askEffect
+	// saved keeps the last clean state for a save at a nested ask
+	// (19.177; not saved).
+	saved tracking
 	// maxHP is the max HP at the last checkMaxHP (R-MECH-21; not saved).
 	maxHP map[hpKey]int
 
@@ -411,6 +414,8 @@ func (g *Game) Clone() (*Game, error) {
 	}
 	c.cards = g.cards // definitions are not part of the saved state
 	c.asks = maps.Clone(g.asks)
+	c.saved = g.saved
+	c.saved.since = slices.Clone(g.saved.since)
 	c.maxHP = maps.Clone(g.maxHP)
 	return &c, nil
 }

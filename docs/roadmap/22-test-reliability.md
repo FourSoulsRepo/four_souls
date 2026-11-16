@@ -48,7 +48,7 @@ Ideas: TS-07, TS-08, TS-09, TS-10, TS-11, TS-12.
    1. A test with a silent `DeckToBottom` fails the check.
    2. `make fuzz` runs the check; the gaps found are logged.
 
-### [ ] 22.3 Fix the event gaps from 22.2
+### [x] 22.3 Fix the event gaps from 22.2
 
 1. Goal: every gap logged by 22.2 is fixed, game-wide.
 2. Tasks:

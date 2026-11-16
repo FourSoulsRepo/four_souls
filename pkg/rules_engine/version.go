@@ -9,7 +9,10 @@ const Version = "0.5.4"
 // Resume cannot see that, and games kept over a server restart from
 // before the change then end instead of going on wrong.
 // 2: prompts, stack labels and reasons are messages, not English (16.4).
-const StateMeaning = 2
+// 3: a saved state holds no nested ask; a save made while one waits
+// keeps the last clean state and the steps to replay after it (19.177).
+// A state from before may hold one that loads as the wrong question.
+const StateMeaning = 3
 
 // throwVersion is the first engine version where every roll waits for
 // its roller's throw, the first-player roll too (15.43, ADR 014). Older

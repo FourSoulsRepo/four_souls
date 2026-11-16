@@ -41,6 +41,10 @@ Changes that need no event are on the `silentChanges` list, each with its reason
 
 When the check fails, the message lists each change no event names, then the step's event kinds. Find the code that made the change; give it an event (log a 19.N item first, as for any bug), or, if it is silent on purpose, add it to the list with its reason.
 
+## Saves at a nested question
+
+`playSets` (so `FuzzSets`, `FuzzFocusedSets`, `FuzzChallengeSets`) and `TestSimulations` also save and load the game whenever a nested question waits (`Game.NestedAsk`, 19.177): one asked inside another effect, such as Gimpy's "Loot 1, then discard" or Plan C's `DestroyThis`. The loaded twin must have the same whole-state checksum, then step with the same intents and stay the same until no nested question waits (`loadCheck`, `cards/load_check_test.go`). `TestSimulations` logs how many such saves it made and for how many cards; 100 games reach about 30 cards. The input that found 19.143 and 19.177 is in the `FuzzSets` corpus (`55bb281b0c9ed398`).
+
 ## Targets
 
 * `FuzzAllCards` — every card in the fuzz sets can show up.

@@ -9,6 +9,8 @@ Rules engine versions are in each release's notes.
 - The history says when a deck is shuffled.
 - A finished event card, such as a chest or Troll Bombs, flies to the monster discard instead of vanishing.
 - Rules engine 0.5.4: records from 0.5.3 and older no longer replay.
+- A game saved, undone or kept over a server restart during a card's second question, such as Gimpy's "loot 1, then discard", goes on with that question; before, the card asked its first question again, and some cards stopped the game.
+- A dedicated server updated to this version ends the games it kept over the restart; their players are told so.
 
 ## 0.4.3 - 2026-11-15
 

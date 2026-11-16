@@ -45,7 +45,8 @@ Every card is an object with an ID. Moving a card to another zone gives it a new
 | `triggers.go`, `statics.go` | triggered and static abilities |
 | `choice.go` | `Choose` prompts (targets, order of replacements and triggers, penalties) |
 | `allowed.go`, `aims.go`, `blocked.go`, `view.go` | allowed intents, their first targets, and why the rest are not; per-viewer hidden information |
-| `record.go`, `situation.go` | step records, replay, save/load; situation payloads |
+| `record.go`, `situation.go` | step records, replay, resume; situation payloads |
+| `save.go` | save and load, also while a nested question waits (19.177) |
 | `invariants.go` | state checks used by tests and fuzzing |
 
 Cards are Go values built from effect blocks; see [Effect blocks](Effect-blocks).
@@ -177,6 +178,14 @@ A rollback to before step k is `ReplayFrom(base, steps[:k], sets...)` (ADR 020, 
 `Barrier(Event)` (`barrier.go`) says whether an event stops a Soft rollback (ADR 020, item 4): dice, damage and death, hidden information seen, a turn's end, the game's start and end, and any private event but two: a card a player puts from their hand on the loot deck (private `moved_to_deck`, `privateNoBarrier`) shows no deck card, so a played card before it stays undoable (17.6); a kept or bottomed top card (`top_choice`, 19.90) follows its `looked_at`, which already is a barrier. Every event kind is sorted in `barrierKinds`; `TestBarrierKinds` pins the list and fails on a new kind until it is sorted.
 
 `Load` needs the same engine; a base saved by another engine goes through `Resume` first (ADR 019).
+
+### Saving while a nested question waits
+
+An `Ask` keeps its answers in the state (`Asking`), but its questions and its `do` are Go code. While the game runs, `Game.asks` finds that code by `Asking.Key`. After a load the map is empty, and `Asking.Effect` finds the ask again only when it is the ability's own effect, the one `resolveAbility` applied (`Ctx.direct`). An ask made while another effect runs is nested: inside an Ask's `do` (Gimpy's "Loot 1, then discard"), inside a wrapper (`DestroyThis` of Plan C, Mom's Shovel, Forget Me Now) or inside a card's own `EffectFunc` (Berkano). No saved state can hold it (19.143, 19.177).
+
+So `save.go` keeps such states out of saves (ADR 020, item 13). A state is clean when no nested ask waits (`clean()`, `NestedAsk()`). `Save` of a clean game writes the state as before. While a nested ask waits it writes the last clean state plus `replay`: the intents applied since then (`ReplayStep`; `apply` marks one that came from `Apply`, not `Step`, which only tests do). `Load` decodes the clean state and applies those intents, so the card's own code asks the nested question again, closures included. `ReplayFrom` and `Resume` go through `Load`, so a rollback base and a game kept over a restart work the same way.
+
+To write the last clean state without copying the state on every step, the game keeps in memory (`Game.saved`, not saved) an origin: a clean state's bytes, taken at the first `Apply`, at a load, or at a clean `Save`. `Apply` logs each intent after it and notes the last clean point. A save at a nested ask replays the log from the origin up to that point, then replays the rest and checks the result is the game itself (`Checksum`); a game changed outside `Apply` since its origin (a test's direct call) fails the save rather than saving a wrong state. A nested ask lasts a few steps (4 at most in 200 random games), so the replay is short once the origin has moved on. `StateMeaning` is 3: a state kept by an older server may hold a nested ask, which would load as the wrong question.
 
 ## Testing
 

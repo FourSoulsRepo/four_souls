@@ -77,6 +77,9 @@ type Ctx struct {
 	mode   int
 	roll   int
 	effect int
+	// direct: the effect applied is the ability's own effect number
+	// effect, not one inside it (19.177).
+	direct bool
 }
 
 // Chosen is one chosen target.
