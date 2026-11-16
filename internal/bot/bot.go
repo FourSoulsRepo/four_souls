@@ -27,10 +27,13 @@ const (
 	Random Level = "random"
 	// Policy plays by the cheap playout policy alone (Decision 6).
 	Policy Level = "policy"
+	// Standard tries each candidate on one imagined world and plays the
+	// best score, with one mistake in ten (Decision 8).
+	Standard Level = "standard"
 )
 
 // Levels lists every level Choose knows, in a fixed order.
-func Levels() []Level { return []Level{Random, Policy} }
+func Levels() []Level { return []Level{Random, Policy, Standard} }
 
 // ParseLevel returns the level named s.
 func ParseLevel(s string) (Level, error) {
@@ -90,6 +93,8 @@ func Choose(_ context.Context, in Input) (engine.Intent, error) {
 		return cs[in.Rand.IntN(len(cs))], nil
 	case Policy:
 		return policyPick(w, in.Seat, allowed, in.Rand), nil
+	case Standard:
+		return standardPick(w, in.Seat, allowed, in.Rand, mistakeOdds)
 	default:
 		return engine.Intent{}, fmt.Errorf("bot: unknown level %q", in.Level)
 	}

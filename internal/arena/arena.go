@@ -28,9 +28,12 @@ const (
 	// TurnCap ends a game with no winner after this many game turns
 	// (Turn.Number); it then counts as unfinished.
 	TurnCap = 150
-	// MaxTurnIntents and MaxGameIntents catch a loop: a game turn or a
-	// game with more applied intents ends the game as a guard hit, a
-	// failed gate.
+	// MaxTurnIntents and MaxGameIntents catch a loop: a game turn with
+	// more applied intents other than passes, or a game with more
+	// applied intents, ends the game as a guard hit, a failed gate. A
+	// turn counts no passes: in a 4-player game every stack item waits
+	// for four, so a long turn of real plays (a paid ability used 40
+	// times) passed 1000 intents with no loop.
 	MaxTurnIntents = 1000
 	MaxGameIntents = 30000
 )
@@ -203,9 +206,8 @@ func playGame(ctx context.Context, m Match, k int, r *Result) error {
 		if g.Turn.Number != turn {
 			turn, inTurn = g.Turn.Number, 0
 		}
-		inTurn++
 		if inTurn > m.TurnIntents {
-			guard = fmt.Sprintf("game %d: turn %d over %d intents", seed, turn, m.TurnIntents)
+			guard = fmt.Sprintf("game %d: turn %d over %d intents other than passes", seed, turn, m.TurnIntents)
 			break
 		}
 		if step >= m.GameIntents {
@@ -235,6 +237,8 @@ func playGame(ctx context.Context, m Match, k int, r *Result) error {
 		r.countDeaths(events)
 		if in.Kind == engine.IntentPass {
 			r.Passes++
+		} else {
+			inTurn++
 		}
 		kinds = append(kinds, in.Kind)
 	}

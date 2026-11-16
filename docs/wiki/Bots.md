@@ -32,7 +32,8 @@ Candidates (Decision 5): every allowed intent; a discard as up to 8 different se
 
 * `random`: one of the candidates at random. For tests and the arena.
 * `policy`: the playout policy alone. For tests and the arena.
-* `standard` and `hard` (the server's levels) come with steps 21.5 and 21.6.
+* `standard`: tries each candidate on one imagined world and plays the best score (below). The server's lower level.
+* `hard` (the server's upper level) comes with step 21.6.
 
 ### Playout policy
 
@@ -45,20 +46,38 @@ The policy (`internal/bot/policy.go`, Decision 6) weighs each allowed intent and
 * A choice that cancels a play (a target, a mode, a copied ability) gets no weight, so a play is never taken back and tried again for ever.
 * A curse goes to another seat, the more souls the likelier.
 
+### Score
+
+`Score(g, p)` (`internal/bot/score.go`, Decision 7) is a table from seat `p`'s side: a won game is the top value, a lost one the bottom. Else it is the seat's own sum less the opponents' average. A sum counts souls, cents, loot cards in hand, items, curses, HP left and being alive this turn. Every weight is a constant in that file. A soul (100) outweighs every other part of a table; HP (0.5 each) and being alive (3) weigh little, as both heal at the end of the turn; an item (12) is worth a little more than the 10¢ it costs; a loot card in hand (0.75) is worth less than a cent, so a card that gives 1¢ is played and one that does nothing now is kept.
+
+A settled copy is scored by `settledScore`: its `Score`, plus `digValue` for each monster the seat killed in the settle (its rewards went to the seat). A kill lets in the next card of the monster deck, which may give a soul: `digValue` is the soul weight times the share of soul cards (card property `Soul`) in the world's monster deck, times `digShare` (0.5). Without it a kill of a monster with no soul rarely beat ending the turn.
+
+### Standard
+
+The standard level (`internal/bot/standard.go`, Decision 8) asks for one world. For each candidate it copies the world (`fork`, the only place the bot copies a game), applies the candidate and settles the copy: every seat passes, the policy answers the other prompts, and the bot's own choices get the policy's top option. A settle runs to the end of what the candidate started: the stack empty with no attack or purchase going on, the end of the turn, or the game's end; at most 150 steps. So an attack runs until the monster dies, the attacker dies and pays its penalty, or the attack is cancelled. The settled copy is scored.
+
+A candidate whose settle threw a die is settled 6 times: on the world's own dice, then on copies whose dice are reseeded. Each settle's policy choices come from a seed of its own, and every candidate of a move meets the same seeds, so scores differ by the move, not by luck.
+
+An action must beat doing nothing (a pass, or an end of turn in the bot's own action phase): its gain over doing nothing, settle by settle, counts less a quarter coin (`wAct`) and less a share of its standard error: one on an empty stack; two on a stack, where the move is judged through the dice of every item below it. A move that gains nothing, or gains only by the luck of its dice, is not made; this also ends the long chains of paid abilities a seat could stack while it has coins. Options of a choice that take a play back are left out, as in the policy.
+
+Some tables no bot level unlocks, by the cards alone: The Harbingers (`r`) makes the active player attack it every turn and heals when it would die (four times, then it flips); with ATK 1 characters against its DC 4 or 5, every turn's attack goes there at a few percent and the game can reach the turn cap (×4 seed 15, 21.5). The card works as its text says.
+
+It plays the best score; on equal scores a pass or an end of turn first. One move in ten it picks by chance among the best three, weighted 3:2:1.
+
 ## Arena
 
 `cmd/bot_arena` plays whole seeded games with every set: bonus souls on, the room deck in odd seeds, deck ratios in every third. Each `-match` is one line-up of levels; game `k` plays seed `-seed`+k and rotates the line-up by `k` seats, so each level plays from each seat. Games run side by side on every core; the results do not depend on it.
 
 ```sh
-make bots                     # BOT_GAMES=50 per default line-up
+make bots                     # BOT_GAMES=50 per default line-up: standard against random, standard×2–4, policy×2–4
 go run ./cmd/bot_arena -games 20 -match policy,random -match policy,policy,policy
 go run ./cmd/bot_arena -games 20 -cap 400 -match policy,policy,policy,policy
 ```
 
-It prints, per line-up: games, games with a winner within the turn cap, wins by level against chance, median and max game turns, intents per turn, the share of passes, time per move, player deaths per monster killed; and for every game cut by the cap, its seed, turn, souls by seat and the kinds of its last 300 intents. It exits 1, in any line-up, when a bot intent is refused or a loop guard ends a game. The finish gate, 95% of games with a winner within the cap (Decision 18.4), is only for line-ups of the levels players meet (standard from 21.5, hard from 21.6) with no random seat: `finishGated` in `cmd/bot_arena`. Random and policy line-ups print their share for reference.
+It prints, per line-up: games, games with a winner within the turn cap, wins by level against chance, median and max game turns, intents per turn, the share of passes, time per move, player deaths per monster killed; and for every game cut by the cap, its seed, turn, souls by seat and the kinds of its last 300 intents. It exits 1, in any line-up, when a bot intent is refused or a loop guard ends a game. The finish gate, 95% of games with a winner within the cap (Decision 18.4), is only for line-ups of the levels players meet (standard from 21.5, hard from 21.6) with no random seat: `finishGated` in `cmd/bot_arena`. Random and policy line-ups print their share for reference. The win gate, standard winning 70% of 2-player games against random (Decision 18.5), is `winGates` there; hard against standard joins in 21.6.
 
 Each step the arena asks the waiting seat's bot, with `world.For` on the game for that seat. A refused intent is listed and the arena sends the forced answer: the first allowed intent.
 
-The cap, `arena.TurnCap`, is 150 game turns (`Turn.Number`). Two loop guards end a game as a failed gate, printed with its seed: one game turn over 1000 applied intents (`MaxTurnIntents`), a game over 30000 (`MaxGameIntents`). A turn is measured, not intents, because about 80% of intents are passes: every stack item waits for a pass from each seat, so a 4-player turn takes about 86 intents and a 2-player turn about 46.
+The cap, `arena.TurnCap`, is 150 game turns (`Turn.Number`). Two loop guards end a game as a failed gate, printed with its seed: one game turn over 1000 applied intents other than passes (`MaxTurnIntents`), a game over 30000 applied intents (`MaxGameIntents`). The turn guard counts no passes: a long turn of real plays in a 4-player game (a paid ability used 40 times, each a stack item four seats pass) passed 1000 intents with no loop (21.5). A turn is measured, not intents, because about 80% of intents are passes: every stack item waits for a pass from each seat, so a 4-player turn takes about 86 intents and a 2-player turn about 46.
 
 Tests: `TestNoRefusedIntent` (`internal/arena`) plays 30 whole policy games, every set, 2 to 4 players, and fails on any refused intent.

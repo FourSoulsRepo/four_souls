@@ -24,10 +24,14 @@ Rules for this step (owner, 2026-11-16):
 5. A number that differs from ADR 030 is changed in the ADR in the same commit.
 6. The game must stay the same for humans.
    1. A table without bots behaves as before; its tests stay unchanged.
-7. Gates before each commit: `make build vet test lint wasm`.
-   1. Frontend sub-steps also: `make frontend e2e`.
-   2. Bot strength sub-steps also: `make bots`, with its numbers in the commit message.
-   3. `make sims` and `make fuzz-sets FUZZTIME=30s`: once at the end of a batch that changed `pkg/rules_engine`, not per commit (owner, 2026-11-16).
+7. Gates (owner, 2026-11-16).
+   1. Before a sub-step commit: `go build ./...` in the touched modules and `go test` of the touched packages only.
+   2. At the end of each line, once: `make build vet test wasm` and Go lint of the four modules, plain and `embed`.
+   3. Line 1 end also: full `make bots`, time per move, B/op and allocs/op.
+   4. After the merge: all of the above plus `make sims` and `make fuzz-sets FUZZTIME=30s`.
+   5. A failure at an end run is fixed in its own commit, named by its sub-step.
+   6. Frontend sub-steps also: `make frontend e2e`.
+   7. Arena while working: `BOT_GAMES=20` on the needed line-up.
 8. UI sub-steps leave screenshots in `.cache/screenshots/21.N/`; never committed.
 9. Order: 21.15 runs right after 21.6, in line 1 (rule 2).
 
@@ -95,7 +99,7 @@ Rules for this step (owner, 2026-11-16):
    2. No loop guard hit, no refused intent.
    3. The 95% gate is checked on the standard level in 21.5 (lead, 2026-11-16); policy line-ups are a reference only.
 
-### [ ] 21.5 Score and standard level
+### [x] 21.5 Score and standard level
 
 1. Goal: the standard bot (ADR 030, Decisions 7 and 8).
 2. Tasks:
@@ -106,8 +110,10 @@ Rules for this step (owner, 2026-11-16):
    5. Benchmark: time per move.
 3. Done when:
    1. `make bots`: standard wins at least 70% of 2-player games against random.
-   2. Under 50 ms per move on average.
+   2. Under 100 ms per move on average (lead, 2026-11-16; was 50 ms).
    3. `make bots`: standard×2, ×3 and ×4 each finish 95% of games with a winner within 150 turns; the finish gate is switched on for standard.
+   4. Short runs, 20 games each (2026-11-16, machine shared with line 2): standard wins 18 of 20 against random (90%); finished ×2 100% (median 30 turns), ×3 100% (median 42), ×4 90% (median 61; seed 15 is a table The Harbingers locks, seed 9 a long turn of real plays, no loop); deaths a kill 1.20, 1.44, 2.16; 11–41 ms a move under load.
+   5. The full `make bots`, time per move, B/op and allocs/op run once at the end of line 1 (rule 7.3); the 95% gate is decided there.
 
 ### [ ] 21.6 Hard level
 
@@ -180,6 +186,8 @@ Rules for this step (owner, 2026-11-16):
    1. One limit on hard thinkers for the whole hub.
    2. `cmd/server_load`: tables with bots; report room stalls and move times.
    3. Wiki `Load-test.md`: how to run it with bots, and the numbers measured.
+   4. Engine: `checkMaxHP` takes 57% of a standard move (21.5 profile); cache it, or recompute only when an HP bonus changes.
+   5. Measure the longest bot turn in seconds with the server's pauses (Decision 13): 40 or more paid abilities at 1–2 s each keep humans waiting over a minute (21.5 arena).
 3. Done when:
    1. 20 tables of 1 human and 3 hard bots: no room stall over 100 ms; every bot answers before the response timer.
 

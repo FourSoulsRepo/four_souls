@@ -2,6 +2,7 @@ package bot
 
 import (
 	"math/rand/v2"
+	"slices"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
@@ -48,6 +49,19 @@ const (
 // and completes it (Decision 6).
 func policyPick(g *engine.Game, p engine.PlayerID, allowed []engine.Intent, rng *rand.Rand) engine.Intent {
 	ws := policyWeights(g, p, allowed)
+	return complete(g, p, allowed[weighted(ws, rng)], rng)
+}
+
+// policyBest is the allowed intent of seat p with the top policy
+// weight, ties drawn at random, completed.
+func policyBest(g *engine.Game, p engine.PlayerID, allowed []engine.Intent, rng *rand.Rand) engine.Intent {
+	ws := policyWeights(g, p, allowed)
+	top := slices.Max(ws)
+	for i, w := range ws {
+		if w < top {
+			ws[i] = 0
+		}
+	}
 	return complete(g, p, allowed[weighted(ws, rng)], rng)
 }
 

@@ -8,10 +8,10 @@
 // from game to game. Without -match it plays the default line-ups. It
 // prints wins by level, unfinished games and why, steps and time per
 // move, and exits 1 when a gate fails: a refused bot intent, a loop guard
-// (a game turn over 1000 intents, a game over 30000), in any line-up;
-// or fewer than 95% of games with a winner within the turn cap, in a
-// line-up of player-visible levels with no random seat (none yet: the
-// standard level brings it in 21.5).
+// (a game turn over 1000 intents other than passes, a game over 30000),
+// in any line-up; fewer than 95% of games with a winner within the turn
+// cap, in a line-up of player-visible levels with no random seat; or a
+// win gate: standard under 70% of 2-player games against random.
 package main
 
 import (
@@ -40,9 +40,33 @@ import (
 const minFinished = 0.95
 
 // finishGated are the levels whose line-ups must pass minFinished: the
-// levels players meet. Standard joins in 21.5, hard in 21.6; random and
-// policy line-ups print their share for reference only.
-var finishGated = map[bot.Level]bool{}
+// levels players meet. Hard joins in 21.6; random and policy line-ups
+// print their share for reference only.
+var finishGated = map[bot.Level]bool{bot.Standard: true}
+
+// winGate is a gate on a 2-player line-up of two levels (Decision
+// 18.5 – 18.6): Level must win at least Min of the games against
+// Against.
+type winGate struct {
+	Level, Against bot.Level
+	Min            float64
+}
+
+// winGates are the win gates; hard against standard joins in 21.6.
+var winGates = []winGate{{Level: bot.Standard, Against: bot.Random, Min: 0.70}}
+
+// winGateOf is the win gate of a line-up, if it has one.
+func winGateOf(levels []bot.Level) (winGate, bool) {
+	if len(levels) != 2 {
+		return winGate{}, false
+	}
+	for _, w := range winGates {
+		if levels[0] == w.Level && levels[1] == w.Against || levels[0] == w.Against && levels[1] == w.Level {
+			return w, true
+		}
+	}
+	return winGate{}, false
+}
 
 // gated: the line-up holds a finish-gated level and no random seat.
 func gated(levels []bot.Level) bool {
@@ -54,10 +78,13 @@ func gated(levels []bot.Level) bool {
 
 // defaultMatches are the line-ups played without -match.
 var defaultMatches = []string{
+	"standard,random",
+	"standard,standard",
+	"standard,standard,standard",
+	"standard,standard,standard,standard",
 	"policy,policy",
 	"policy,policy,policy",
 	"policy,policy,policy,policy",
-	"policy,random",
 }
 
 // errGate is a failed gate; the report says which.
@@ -180,6 +207,13 @@ func report(out *printer, r arena.Result, took time.Duration) bool {
 	if r.Games > 0 && gated(m.Levels) && r.FinishedShare() < minFinished {
 		out.printf("  FAIL: under %.0f%% of games with a winner (Decision 18.4)\n", 100*minFinished)
 		ok = false
+	}
+	if w, has := winGateOf(m.Levels); has && r.Games > 0 {
+		share := float64(r.Wins[w.Level]) / float64(r.Games)
+		if share < w.Min {
+			out.printf("  FAIL: %s wins %.0f%% against %s, under %.0f%% (Decision 18)\n", w.Level, 100*share, w.Against, 100*w.Min)
+			ok = false
+		}
 	}
 	if len(r.Refused) > 0 {
 		out.printf("  FAIL: %d refused bot intents (Decision 18.8)\n", len(r.Refused))

@@ -91,3 +91,36 @@ func TestGuards(t *testing.T) {
 		}
 	}
 }
+
+// TestStandardNoLoop replays the games where standard seats once used
+// the same items again and again in one turn, past the turn guard: a
+// move that gains nothing over doing nothing is not made (ADR 030,
+// Decision 8.6). Each game is played to its end or the cap.
+func TestStandardNoLoop(t *testing.T) {
+	if testing.Short() {
+		t.Skip("whole standard games")
+	}
+	s, r := bot.Standard, bot.Random
+	for _, m := range []Match{
+		{Levels: []bot.Level{r, s}, Seed: 10},
+		{Levels: []bot.Level{r, s}, Seed: 38},
+		{Levels: []bot.Level{s, s}, Seed: 10},
+		{Levels: []bot.Level{s, s, s}, Seed: 28},
+		{Levels: []bot.Level{s, s, s}, Seed: 41},
+	} {
+		m.Games = 1
+		t.Run(fmt.Sprintf("%s-seed%d", m.Name(), m.Seed), func(t *testing.T) {
+			t.Parallel()
+			res, err := Play(context.Background(), m)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, x := range res.Guards {
+				t.Error("loop guard:", x)
+			}
+			for _, x := range res.Refused {
+				t.Error("refused:", x)
+			}
+		})
+	}
+}

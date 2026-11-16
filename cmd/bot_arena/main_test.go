@@ -59,6 +59,30 @@ func TestReportGates(t *testing.T) {
 	}
 }
 
+// TestWinGate: standard against random fails under 70% of the games,
+// from either seat order; other line-ups have no win gate.
+func TestWinGate(t *testing.T) {
+	r := arena.Result{
+		Match: arena.Match{Levels: []bot.Level{bot.Random, bot.Standard}, Cap: 150},
+		Games: 10, Finished: 10, Wins: map[bot.Level]int{bot.Standard: 6, bot.Random: 4},
+		Seats: map[bot.Level]int{bot.Standard: 10, bot.Random: 10},
+	}
+	var out bytes.Buffer
+	if report(&printer{w: &out}, r, 0) || !strings.Contains(out.String(), "standard wins 60% against random") {
+		t.Errorf("60%% passed:\n%s", out.String())
+	}
+	r.Wins = map[bot.Level]int{bot.Standard: 7, bot.Random: 3}
+	if !report(&printer{w: &bytes.Buffer{}}, r, 0) {
+		t.Error("70% failed")
+	}
+	if _, ok := winGateOf([]bot.Level{bot.Policy, bot.Random}); ok {
+		t.Error("policy against random has a win gate")
+	}
+	if _, ok := winGateOf([]bot.Level{bot.Standard, bot.Random, bot.Random}); ok {
+		t.Error("a 3-player line-up has a win gate")
+	}
+}
+
 // TestRunBadLevel: an unknown level is an error before any game.
 func TestRunBadLevel(t *testing.T) {
 	err := run(context.Background(), []string{"-match", "policy,clever"}, &bytes.Buffer{})

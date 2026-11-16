@@ -136,19 +136,39 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    1. A win is the top value; a loss the bottom one.
    2. Then souls, far above everything else.
    3. Then coins, loot cards, items, HP, being alive.
+      1. HP and being alive heal at the end of the turn (R-TURN-13): they weigh little, 0.5 an HP and 3 alive, against 1 a cent and 100 a soul.
    4. The same sum for each opponent, taken away from the seat's own.
    5. Standard: the opponents' average.
    6. Hard: the leader counts most; a leader one soul from a win, most of all.
    7. Weights are constants in one file; the arena tunes them.
    8. A challenge: one team score (Decision 14).
+   9. Dig: a monster the seat kills in a settle or playout adds `wDig` to that copy's score.
+      1. A kill lets in the next card of the monster deck, which may give a soul.
+      2. `wDig` = soul weight × share of soul cards in the monster deck × 0.5 (`digShare`).
+      3. The share is of the card property "gives a soul" (`Soul` above 0), over the monster deck of the seat's world: every card there is unseen, redealt by `Imagine` from the real unseen cards; no card names.
+      4. Kills are counted from the settle's events: the seat got a monster's rewards. One function scores every settle and playout (`settledScore`); hard uses it too.
+      5. Without it a kill of a monster with no soul rarely beats ending the turn: its reward is a few cents, a death costs an item.
 8. Standard
    1. One imagined world.
    2. For each candidate: copy, apply, settle, score.
-   3. Settle: the others pass, the policy answers the bot's own prompts.
-   4. It stops when the stack is empty or at 40 steps.
-   5. It picks the best score.
-   6. One move in ten it picks by weighted chance among the top three.
-   7. No time budget needed: under 50 ms.
+   3. Settle: every seat passes; the policy answers the other prompts; the bot's own choices get the policy's top option.
+   4. It runs to the end of what the candidate started: the stack empty and no attack or purchase going on, the turn's end, or the game's end; cap 150 steps.
+      1. So an attack runs to its end: the monster dead, the attacker dead and its penalty paid, or the attack cancelled.
+      2. A cap of 40 (2026-11-16) cut off a fifth of 2-player fights and half of 4-player ones.
+   5. A candidate whose settle threw a die is settled 6 times and scored by the mean.
+      1. The first on the world's own dice, the others with the copy's RNG reseeded.
+      2. Each settle's policy choices come from a seed of its own.
+      3. Every candidate of a move gets the same seeds: scores differ by the move, not by luck.
+      4. A candidate with no die keeps one settle.
+   6. An action must beat doing nothing: a pass, or an end of turn in the bot's own action phase.
+      1. Its gain over doing nothing, settle by settle on the same seeds, counts less 0.25 (a quarter coin) and less a share of its standard error.
+      2. On an empty stack one standard error.
+      3. On a stack two: the move is judged through the dice of every item below it, which its own die shifts.
+      4. So a move that gains nothing, or gains only by luck of the dice, is not made; no repeat counter.
+   7. Options of a choice that take a play back are left out, as in the policy (Decision 6).
+   8. It picks the best score; on equal scores a pass or an end of turn.
+   9. One move in ten it picks by weighted chance among the top three, 3:2:1 by rank.
+   10. No time budget: under 100 ms per move on average (lead, 2026-11-16).
 9. Hard
    1. Many worlds, each a new `Imagine`.
    2. For each candidate and world: copy, apply, play out, score.
@@ -227,7 +247,8 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       1. The cap: 150 game turns (`Turn.Number`); a game past it is unfinished.
       2. For line-ups of the levels players meet (standard from 21.5, hard from 21.6) with no `random` seat, each player count on its own: standard×2, ×3 and ×4 each finish 95%.
       3. `random` and `policy` line-ups print their share for reference only.
-      4. Loop guards fail the gate in any line-up, printed with the seed: a game turn over 1000 applied intents; a game over 30000. So does a refused intent.
+      4. Loop guards fail the gate in any line-up, printed with the seed: a game turn over 1000 applied intents other than passes; a game over 30000 applied intents. So does a refused intent.
+         1. Passes do not count in a turn (lead, 2026-11-16): 4-player turns of real plays with combo cards passed 1000 intents, nearly all passes, with no loop.
       5. Per line-up the arena prints median and max game turns, intents per turn, the share of passes.
       6. Policy against policy, 50 games each (2026-11-16): 2 players median 42 turns, max 150, 46 intents a turn, 77% passes; 3 players median 50, max 138, 65, 83%; 4 players median 58, max 150, 86, 87%. Finished within the cap: 96%, 100%, 92%.
    5. Gate: standard wins at least 70% of 2-player games against random.
