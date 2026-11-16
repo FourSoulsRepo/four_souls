@@ -4486,6 +4486,8 @@ Totals by system (180 items):
 6. Fix (2026-11-16): the 19.177 fix; details there.
    1. Test: `TestGimpySaveAtDiscard` (fsp2); it looted again before.
    2. Corpus: `cards/testdata/fuzz/FuzzSets/55bb281b0c9ed398`.
+7. Owner notes (2026-11-17)
+   1. Owner marks 19.143 solved.
 
 ### [x] 19.144 Soul of Envy goes on the stack again for the player who gains it
 
@@ -5383,6 +5385,8 @@ Totals by system (180 items):
    5. Checked: `RerollItem`, `ActDiscardObject`, `DestroyPresent`, stack and hand discards.
    6. Go test: `TestChest` sees the `discarded` event.
    7. "event done" is off the 22.2 list.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.173 solved.
 
 ### [x] 19.174 No event when an empty deck takes back its discard
 
@@ -5406,6 +5410,8 @@ Totals by system (180 items):
    6. 22.2 check: a wide event (`wideEvents`), like `deck_bottom`.
    7. Client: no line, no flight (`historyKinds`); the board shows the counts.
    8. Go test: `TestCheckEventsDeckRefill`.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.174 solved.
 
 ### [x] 19.175 No event for the character's recharge before a recharge choice
 
@@ -5429,6 +5435,8 @@ Totals by system (180 items):
    4. Checked every `Charged = true`: `recharge`, `ChooseRecharge`, `Recharge`, `RechargeSelf`, setup.
    5. Only the recharge choice returned before its event.
    6. Go test: `TestCurseOfFatigueCharacterRechargeEvent`.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.175 solved.
 
 ### [x] 19.176 No event when a card deactivates a character or item
 
@@ -5455,6 +5463,8 @@ Totals by system (180 items):
    6. Also checked: The Chest's soul (`gained_soul`), `EntersDeactivated` (`entered_play`).
    7. Client: no line, no flight (`historyKinds`); the card turns on the table.
    8. Go tests: Spider Webs, Curse of Impulse, Hourglass see the event.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.176 solved.
 
 ### [x] 19.177 Fuzz: a redo replay differs from the record
 
@@ -5521,6 +5531,8 @@ Totals by system (180 items):
     4. `loadCheck` in `playSets` and `TestSimulations`: save and load at every nested ask.
     5. 100 sim games: 434 such saves over 30 cards, Berkano, Forget Me Now among them.
     6. The input `55bb281b0c9ed398` is in the `FuzzSets` corpus.
+13. Owner notes (2026-11-17)
+   1. Owner marks 19.177 solved.
 
 
 ### [x] 19.178 No event when a deck is shuffled
@@ -5549,6 +5561,8 @@ Totals by system (180 items):
    9. Playback: no animation; an idea for the owner.
    10. Go test: `TestCheckEventsDamageAndShuffle`; Vitest: the history lines.
    11. `make e2e`: 594 passed; 19.171 and 19.179 failed once, passed on rerun.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.178 solved.
 
 ### [ ] 19.179 e2e: the helper roll test never settles once, webkit
 
