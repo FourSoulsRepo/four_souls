@@ -18,6 +18,7 @@ func fullUpdate() Update {
 			{
 				Kind: "stack_resolved", Player: 1, Object: 3, Card: "a_dime", Text: "x <y>", Label: engine.Msg{}, Private: true,
 				SeenBy: []engine.PlayerID{0}, Prev: 4, Source: 5, StackID: 6, Dice: []int{1, 2}, By: 2, Item: &engine.StackItem{ID: 1},
+				Deck: &engine.DeckPlace{Deck: engine.MonsterDeck, Depth: 2},
 			},
 		},
 		View: engine.GameView{
