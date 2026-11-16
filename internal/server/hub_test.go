@@ -835,7 +835,7 @@ func TestBotsServerLevels(t *testing.T) {
 
 // TestBotsTableWaitsForHuman: a table of 1 player and 3 bots is full in
 // the game list and waits only for the player to be ready (21.7, Done
-// when). Until 21.8 it does not start even then.
+// when); then it starts (21.8).
 func TestBotsTableWaitsForHuman(t *testing.T) {
 	h := startHub(t)
 	ann, tb := openTable(t, h, 4)
@@ -854,26 +854,15 @@ func TestBotsTableWaitsForHuman(t *testing.T) {
 		t.Fatalf("games %+v: a table of 1 player and 3 bots is full", games.Games)
 	}
 	ann.say(protocol.TypeReady, protocol.Ready{Ready: true})
-	ann.next(protocol.TypeTable, &tb)
-	if !tb.Seats[0].Ready {
-		t.Fatalf("table %+v", tb.Seats)
-	}
-	// The guard of 21.7: no room plays bots yet, so nothing starts.
-	ann.say(protocol.TypeList, struct{}{})
-	ann.next(protocol.TypeGames, &games)
-	if len(games.Games) != 1 || games.Games[0].Started {
-		t.Fatalf("games %+v: a table with bots must not start before 21.8", games.Games)
-	}
-	select {
-	case msg := <-ann.conn.out:
-		e, err := protocol.Decode(msg)
-		if err != nil {
-			t.Fatal(err)
+	var u protocol.Update
+	ann.next(protocol.TypeUpdate, &u)
+	for i, s := range u.Seats {
+		if (s.Bot != "") != (i > 0) || (i > 0 && (s.BotN != i || s.Name != botName(i))) {
+			t.Errorf("seat %d: %+v", i, s)
 		}
-		if e.Type == protocol.TypeUpdate || e.Type == protocol.TypeSetup {
-			t.Fatalf("a table with bots started: %s", e.Type)
-		}
-	default:
+	}
+	if u.Pause != nil {
+		t.Errorf("bots paused the game: %+v", u.Pause)
 	}
 }
 

@@ -19,10 +19,14 @@ Rules for this step (owner, 2026-11-16):
 5. A number that differs from ADR 030 is changed in the ADR in the same commit.
 6. The game must stay the same for humans.
    1. A table without bots behaves as before; its tests stay unchanged.
-7. Gates before each commit: `make build vet test lint wasm`.
-   1. Frontend sub-steps also: `make frontend e2e`.
-   2. Bot strength sub-steps also: `make bots`, with its numbers in the commit message.
-   3. `make sims` and `make fuzz-sets FUZZTIME=30s`: once at the end of a batch that changed `pkg/rules_engine`, not per commit (owner, 2026-11-16).
+7. Gates (owner, 2026-11-16).
+   1. Before a sub-step commit: `go build ./...` in the touched modules and `go test` of the touched packages only.
+   2. At the end of each line, once: `make build vet test wasm` and Go lint of the four modules, plain and `embed`.
+   3. Line 1 end also: full `make bots`, time per move, B/op and allocs/op.
+   4. After the merge: all of the above plus `make sims` and `make fuzz-sets FUZZTIME=30s`.
+   5. A failure at an end run is fixed in its own commit, named by its sub-step.
+   6. Frontend sub-steps also: `make frontend e2e`.
+   7. Arena while working: `BOT_GAMES=20` on the needed line-up.
 8. UI sub-steps leave screenshots in `.cache/screenshots/21.N/`; never committed.
 9. Order: 21.15 runs right after 21.6, before 21.7.
 
@@ -137,7 +141,7 @@ Rules for this step (owner, 2026-11-16):
 3. Done when:
    1. A table of 1 human and 3 bots shows as full and waits only for the human.
 
-### [ ] 21.8 Bots in the room
+### [x] 21.8 Bots in the room
 
 1. Goal: bots play a running game (ADR 030, Decisions 11 – 14).
 2. Tasks:

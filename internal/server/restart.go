@@ -369,7 +369,7 @@ func (r *Room) forgetKept() {
 	}
 }
 
-// everyoneBack: every seat has its player again.
+// everyoneBack: every seat has its player again; bots never leave.
 func (r *Room) everyoneBack() bool {
-	return !slices.ContainsFunc(r.seats, func(s roomSeat) bool { return s.client == nil })
+	return !slices.ContainsFunc(r.seats, func(s roomSeat) bool { return s.client == nil && s.bot == "" })
 }

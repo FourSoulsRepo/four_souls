@@ -119,6 +119,14 @@ func appendSeats(b []byte, ss []Seat) []byte {
 			b = append(b, `,"dice":`...)
 			b = appendString(b, s.Dice)
 		}
+		if s.Bot != "" {
+			b = append(b, `,"bot":`...)
+			b = appendString(b, s.Bot)
+		}
+		if s.BotN != 0 {
+			b = append(b, `,"bot_n":`...)
+			b = strconv.AppendInt(b, int64(s.BotN), 10)
+		}
 		b = append(b, '}')
 	}
 	return append(b, ']')

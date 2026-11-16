@@ -160,6 +160,9 @@ type Hub struct {
 	presence bool
 	// bots are the bot levels a host may seat (ADR 030, Decision 17).
 	bots []string
+	// botThink is the hard bot's time budget per move (Decision 9.8);
+	// tests shorten it.
+	botThink time.Duration
 	// name is the server's name for the welcome (N-18).
 	name string
 	// restart is the folder for restart files (N-20); "" keeps nothing.
@@ -178,7 +181,7 @@ type Hub struct {
 
 // NewHub makes a lobby with the card sets the engine knows.
 func NewHub() *Hub {
-	return &Hub{in: make(chan hubRequest, 64), done: make(chan struct{}), sets: cards.Sets(), second: time.Second, presence: true, bots: protocol.BotLevels(), now: time.Now, limitTick: time.Minute}
+	return &Hub{in: make(chan hubRequest, 64), done: make(chan struct{}), sets: cards.Sets(), second: time.Second, presence: true, bots: protocol.BotLevels(), botThink: hardThink, now: time.Now, limitTick: time.Minute}
 }
 
 // Connect adds a connection; its first message must be hello.
@@ -498,12 +501,6 @@ func (h *Hub) startIfReady(t *table) {
 			return
 		}
 	}
-	// No room plays a bot's seat yet: a table with bots waits. Step 21.8
-	// removes this guard with the bot driver.
-	if t.hasBots() {
-		h.tableChanged(t)
-		return
-	}
 	h.start(t)
 }
 
@@ -596,7 +593,7 @@ func (t *table) hasBots() bool {
 func (h *Hub) start(t *table) {
 	seats := make([]roomSeat, len(t.seats))
 	for i, s := range t.seats {
-		seats[i] = roomSeat{name: s.name, token: s.token, client: s.client}
+		seats[i] = roomSeat{name: s.name, token: s.token, client: s.client, bot: s.bot, botN: s.botN}
 		if s.client != nil {
 			seats[i].dice = s.client.dice
 		}
@@ -612,7 +609,9 @@ func (h *Hub) start(t *table) {
 	room, err := NewRoom(setup, t.opts, seats)
 	if err != nil {
 		for _, s := range t.seats {
-			s.client.fail(0, protocol.ErrBadSetup, errBadMessage.Msg(engine.Str("error", err.Error())))
+			if s.client != nil { // a bot's seat has none
+				s.client.fail(0, protocol.ErrBadSetup, errBadMessage.Msg(engine.Str("error", err.Error())))
+			}
 		}
 		return
 	}
@@ -621,15 +620,17 @@ func (h *Hub) start(t *table) {
 	room.loaded, room.path, room.born = t.loaded, recordPath(h.records, t.id, seats, now), now
 	h.tables = slices.DeleteFunc(h.tables, func(x *table) bool { return x == t })
 	for _, s := range t.seats {
-		s.client.table = nil
-		s.client.room.Store(room)
+		if s.client != nil { // a bot's seat has none
+			s.client.table = nil
+			s.client.room.Store(room)
+		}
 	}
 	h.run(room, gameInfo(t.id, t.host, len(t.seats), len(t.seats), t.sets, t.opts))
 }
 
 // setUpRoom gives a new room the server's settings.
 func (h *Hub) setUpRoom(room *Room, n int, id, host string, sets []string) {
-	room.second, room.hub, room.saves = h.second, h, h.saves
+	room.second, room.hub, room.saves, room.botThink = h.second, h, h.saves, h.botThink
 	room.presenceOn = h.presence
 	room.recDir = h.records
 	room.recInfo = recordInfo{game: id, server: h.name, sets: sets, cards: h.cards}

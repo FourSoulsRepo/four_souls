@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	mrand "math/rand/v2"
 	"slices"
 	"strings"
 	"sync/atomic"
@@ -31,6 +32,11 @@ type roomSeat struct {
 	kicked  bool    // empty for good after a vote (N-08)
 	dice    string  // the dice look (V-19); kept while the player is away
 	sample  sampler // presence messages (15.35, 20.13)
+	// bot is the level of a bot's seat, "" for a player's; botN its
+	// number. A bot seat has no client and no token, and is never away
+	// (ADR 030, Decision 11).
+	bot  string
+	botN int
 }
 
 type request struct {
@@ -44,6 +50,8 @@ type request struct {
 	voteUp  int    // a Soft vote's time ran out (its number)
 	// presence: a seat's waiting presence may go (seat + 1, 20.13).
 	presence int
+	bot      *botAnswer // a bot's move (ADR 030, Decision 12.6)
+	botBan   int        // a bot's ban turn is due (its turn number)
 }
 
 // Room runs one game. Only its goroutine (Run) touches the game. It
@@ -118,6 +126,17 @@ type Room struct {
 	rbVote  *softVote
 	voteGen int
 	voteEnd *protocol.RollbackEnd
+
+	// Bots (ADR 030, Decisions 11 – 14): the open thinker of each seat,
+	// the last thinker's number, the bots' random source, what each
+	// seat remembers (empty until 21.15), the hard bot's time budget,
+	// and the longest time the driver held the room, in nanoseconds.
+	thinkers []*thinker
+	thinkN   int
+	botRand  *mrand.Rand
+	known    []engine.Known
+	botThink time.Duration
+	botWork  atomic.Int64
 }
 
 // NewRoom prepares a game for seated players; it starts in Run. The
@@ -126,7 +145,7 @@ func NewRoom(setup engine.Setup, opts protocol.Options, seats []roomSeat) (*Room
 	if setup.Players != len(seats) {
 		return nil, fmt.Errorf("server: %d seats for %d players", len(seats), setup.Players)
 	}
-	r := &Room{in: make(chan request, 64), done: make(chan struct{}), setup: setup, opts: opts, seats: seats, second: time.Second, now: time.Now, limitTick: time.Minute}
+	r := &Room{in: make(chan request, 64), done: make(chan struct{}), setup: setup, opts: opts, seats: seats, second: time.Second, now: time.Now, limitTick: time.Minute, botThink: hardThink}
 	for i, s := range seats {
 		r.tokens = append(r.tokens, s.token)
 		if s.client != nil {
@@ -156,6 +175,7 @@ func (r *Room) send(req request) {
 // ends; then it closes every connection.
 func (r *Room) Run(ctx context.Context) {
 	defer func() {
+		r.stopThinkers()
 		r.closeRecord(false)
 		close(r.done)
 		if r.stopped {
@@ -191,7 +211,11 @@ func (r *Room) Run(ctx context.Context) {
 		case req := <-r.in:
 			start := time.Now()
 			r.handle(req)
-			r.logStall("a request", start)
+			what := "a request"
+			if req.bot != nil || req.botBan > 0 {
+				what = "a bot's move"
+			}
+			r.logStall(what, start)
 		case <-tick.C:
 			start := time.Now()
 			r.checkLimits()
@@ -231,6 +255,12 @@ func (r *Room) handle(req request) {
 		return
 	case req.presence > 0:
 		r.flushPresence(req.presence - 1)
+		return
+	case req.bot != nil:
+		r.botMove(req.bot)
+		return
+	case req.botBan > 0:
+		r.botBan(req.botBan)
 		return
 	}
 	env, err := protocol.Decode(req.msg)
@@ -353,13 +383,19 @@ func (r *Room) broadcast(events []engine.Event) {
 	for _, c := range r.clients {
 		r.update(c, events, base)
 	}
+	// Bots hear what their seat's client would, then think (ADR 030,
+	// Decision 12.1).
+	if r.hasBots() {
+		r.remember(events, base)
+		r.drive()
+	}
 }
 
 // seatViews lists the seats' nicknames and connections.
 func (r *Room) seatViews() []protocol.Seat {
 	seats := make([]protocol.Seat, len(r.seats))
 	for i, s := range r.seats {
-		seats[i] = protocol.Seat{Seat: i, Name: s.name, Connected: s.client != nil, Kicked: s.kicked, Dice: s.dice}
+		seats[i] = protocol.Seat{Seat: i, Name: s.name, Connected: s.client != nil, Kicked: s.kicked, Dice: s.dice, Bot: s.bot, BotN: s.botN}
 	}
 	return seats
 }
