@@ -4416,6 +4416,10 @@
     "text": "{card} triggers",
     "note": "Stack line: a card's triggered ability."
   },
+  "stack.trigger_roll": {
+    "text": "{card}: roll result {n}",
+    "note": "Stack line: the effect of a card's roll, once rolled. n: the number it acts on."
+  },
   "stack.waiting": {
     "text": "Waiting for {players}",
     "note": "Stack panel, under the items. players: who may still respond, comma-separated; the viewer is You."
@@ -4646,6 +4650,14 @@
   "table.items_of": {
     "text": "{player}: items",
     "note": "Game table: screen-reader name of another player's items."
+  },
+  "table.kicked": {
+    "text": "Left for good",
+    "note": "Game table, by a player's name: the others voted to kick them; the seat stays empty."
+  },
+  "table.kicked_tip": {
+    "text": "Kicked by a vote: this seat plays no more",
+    "note": "Tooltip on Left for good by a player's name."
   },
   "table.loot_left": {
     "text": "Loot {n}",

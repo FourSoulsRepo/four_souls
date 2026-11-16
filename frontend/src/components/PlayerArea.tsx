@@ -32,6 +32,8 @@ interface Props {
   doing?: LinePart[] | null;
   // watched: a record plays (10.2); the bottom seat is not the viewer's.
   watched?: boolean;
+  // kicked: a vote emptied the seat for good (N-08, 19.187).
+  kicked?: boolean;
   // deckAttacks are the active player's attacks only on the monster
   // deck (19.183).
   deckAttacks?: number;
@@ -59,14 +61,14 @@ export function PlayerArea({ you, position, tools, watched, ...rest }: Props) {
 // up when the view sends it (19.5). Curses stand at the far left
 // (15.55). At the top it mirrors the own area, the hand hanging past the top edge; in
 // a side column everything stacks in a narrow column (F-09).
-function OpponentArea({ player, name, position, active, asked, winSouls, ui, doing, deckAttacks = 0, nextAttack }: Omit<Props, 'you' | 'tools'>) {
+function OpponentArea({ player, name, position, active, asked, winSouls, ui, doing, kicked, deckAttacks = 0, nextAttack }: Omit<Props, 'you' | 'tools'>) {
   const size: CardSize = position === 'left' || position === 'right' ? 'small' : 'table';
   const pick = ui.player(player.id);
   const spent = useSpent();
   const { character } = player;
   return (
     <section
-      className={`player player-${position} opponent${active ? ' active' : ''}${player.dead ? ' dead' : ''}${pick.highlight ? ` hl-${pick.highlight}` : ''}`}
+      className={`player player-${position} opponent${active ? ' active' : ''}${player.dead ? ' dead' : ''}${kicked ? ' kicked' : ''}${pick.highlight ? ` hl-${pick.highlight}` : ''}`}
       aria-label={name}
       data-zone={`player-${String(player.id)}`}
     >
@@ -90,6 +92,11 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
             </span>
             <PlayerCounters player={player} />
             {player.dead && <span className="player-dead">{t('table.dead')}</span>}
+            {kicked && (
+              <span className="player-dead player-kicked" title={t('table.kicked_tip')}>
+                {t('table.kicked')}
+              </span>
+            )}
           </span>
           {active && doing && <Activity parts={doing} />}
           {active && <Allowance player={player} deck={deckAttacks} />}

@@ -227,6 +227,7 @@ function Table({ game, you, replaying }: { game: Update; you: number; replaying:
               active={started && view.turn.active === p.id}
               asked={asked === p.id}
               doing={doing}
+              kicked={game.seats?.find((s) => s.seat === p.id)?.kicked ?? false}
               deckAttacks={view.turn.deck_attacks ?? 0}
               nextAttack={nextAttack}
               winSouls={view.win_souls ?? 0}

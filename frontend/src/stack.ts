@@ -119,7 +119,8 @@ export function stackParts(it: StackItem, view: GameView, n: Names, rolled?: str
     case StackKind.ability:
       return partsOf(t('stack.ability'), { card, player: who });
     case StackKind.trigger:
-      return partsOf(t('stack.trigger'), { card });
+      // A roll's result trigger names the number it acts on (19.186).
+      return it.roll_result ? partsOf(t('stack.trigger_roll', { n: it.roll_result }), { card }) : partsOf(t('stack.trigger'), { card });
     case StackKind.roll: {
       // A thrown roll names what will change it, and the result (15.94).
       const changes = rollChanges(it.sources, sourceName(n));

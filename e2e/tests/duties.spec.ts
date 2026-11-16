@@ -165,3 +165,36 @@ test('a running attack shows its helpers on the stack (19.188)', async ({ browse
     await expect(stack.locator('.stack-help')).toHaveText(help);
   }
 });
+
+test('a roll result on the stack shows its number (19.186)', async ({ browser }) => {
+  const { active, other, t } = await twoPages(browser, ['Wyn', 'Xia']);
+  const book = { card: 'book_of_sin', index: 0 };
+  const item = {
+    id: 901,
+    kind: 2,
+    controller: t.active,
+    source: 0,
+    card: 'book_of_sin',
+    roll_result: 4,
+    label: { key: 'event.roll_result' },
+    target: { player: 0 },
+    ability: book,
+    roll_for: { card: '', index: 0 },
+  };
+  await feed([active, other], { stack: [item] });
+  await shot(other, 'stack-roll-result');
+  for (const page of [active, other]) {
+    const stack = page.getByRole('complementary', { name: tr('stack.title') });
+    await expect(stack).toContainText(tr('stack.trigger_roll', { card: cardName('book_of_sin'), n: 4 }));
+  }
+});
+
+test('a kicked player shows as gone for good (19.187)', async ({ browser }) => {
+  const { active, other, t } = await twoPages(browser, ['Yul', 'Zed']);
+  await feed([active], { seats: { [String(t.other)]: { connected: false, kicked: true } } });
+  await shot(active, 'kicked-seat');
+  const seat = active.getByRole('region', { name: t.otherName, exact: true });
+  await expect(seat.locator('.player-kicked')).toHaveText(tr('table.kicked'));
+  await expect(seat).toHaveClass(/\bkicked\b/);
+  await expect(other.locator('.player-kicked')).toHaveCount(0);
+});

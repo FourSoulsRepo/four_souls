@@ -34,7 +34,6 @@ const unread: Record<string, string> = {
   'StackItem.event_by': 'the engine resolves the trigger with it',
   'StackItem.reward': 'its label says "reward roll"; the monster card shows the reward',
   'AbilityRef.lingering': 'the engine finds the ability by it; text gives the words',
-  'StackItem.roll_result': '19.186: the number a roll result acts on is not shown',
   // The engine's turn bookkeeping; what it leads to reaches the client
   // another way.
   'Turn.attack_rolls': 'the odds and stat sources count it ("first attack roll")',
@@ -48,7 +47,6 @@ const unread: Record<string, string> = {
   'Turn.room_replaced': 'the room replace comes as a prompt',
   'Turn.late_rooms': 'blocked says why such a room waits (R-TURN-18)',
   'Turn.entered': "the engine's own step state",
-  'Seat.kicked': '19.187: a kicked player is not shown as gone',
 };
 
 // viewFields lists every field reachable from Update in protocol.ts, as

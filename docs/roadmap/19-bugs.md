@@ -5670,7 +5670,7 @@ Totals by system (179 items):
    1. The same line adds "· Rewards shared with Bo".
    2. Fixed with 19.184; the same tests and use case.
 
-### [ ] 19.186 A roll result on the stack does not show its number
+### [x] 19.186 A roll result on the stack does not show its number
 
 1. Goal: a roll's effect on the stack shows the number it acts on.
 2. Report (22.4 check, 2026-11-16)
@@ -5680,8 +5680,13 @@ Totals by system (179 items):
    2. The stack line names the card only; a later roll may hide the die.
 4. Tasks:
    1. Fix in 22.5: draw it, or list it with a reason.
+5. Fix (22.5, 2026-11-16)
+   1. The stack row reads "Book of Sin: roll result 4" (`stack.trigger_roll`).
+   2. `stackParts` in `stack.ts`; the history keeps the card's own words.
+   3. Every card roll's result trigger is pushed in one place (`stack.go`).
+   4. Vitest: `a roll result on the stack`; e2e: `duties.spec.ts`; UC-14 2r.
 
-### [ ] 19.187 A kicked player is not shown as gone
+### [x] 19.187 A kicked player is not shown as gone
 
 1. Goal: every seat sees that a kicked player's seat is empty for good.
 2. Report (22.4 check, 2026-11-16)
@@ -5691,6 +5696,11 @@ Totals by system (179 items):
    2. In a game the client draws nothing from the seats' state.
 4. Tasks:
    1. Fix in 22.5: draw it, or list it with a reason.
+5. Fix (22.5, 2026-11-16)
+   1. The seat says "Left for good" and fades, as a dead player's.
+   2. Its tooltip: "Kicked by a vote: this seat plays no more".
+   3. `GameScreen` reads `Seat.kicked`; `PlayerArea` draws it.
+   4. e2e: `duties.spec.ts`; UC-07 2f.
 
 ### [x] 19.188 A running attack's helpers are not shown
 

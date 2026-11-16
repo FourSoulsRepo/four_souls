@@ -91,6 +91,9 @@
   * "Helped by Bo · Rewards shared with Bo", under the attack.
   * Gus, Sisters Vis, Ultra Greed and Sibling Rivalry add them.
   * Every player sees it.
+* **2r. A roll's result (19.186):** its row names the number it acts on.
+  * "Book of Sin: roll result 4".
+  * A later roll may hide the die; the row still says 4.
 
 ## Postconditions
 

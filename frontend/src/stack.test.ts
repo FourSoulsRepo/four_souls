@@ -299,3 +299,11 @@ describe('helpLine', () => {
     expect(plain).not.toHaveProperty('help');
   });
 });
+
+describe('a roll result on the stack', () => {
+  it('names the number it acts on (19.186)', () => {
+    const result = item({ kind: StackKind.trigger, card: 'book_of_sin', roll_result: 4 });
+    expect(stackLine(result, view, names)).toBe('BOOK_OF_SIN: roll result 4');
+    expect(stackLine(item({ kind: StackKind.trigger, card: 'book_of_sin' }), view, names)).toBe('BOOK_OF_SIN triggers');
+  });
+});

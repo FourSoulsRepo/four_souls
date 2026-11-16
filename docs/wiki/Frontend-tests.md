@@ -42,7 +42,7 @@ A read is the field's name in a property access (`c.copy`, `c?.copy`), an elemen
 
 The check goes by name, not by type. A common name such as `id`, `kind`, `card` or `amount` counts as read when any object's field of that name is read; `Seat.connected` passes on the lobby's reads alone. So a pass means "the name is read somewhere", not "this field is drawn". It catches a field whose name nothing reads, as most new fields are; a precise check would need the type checker over the whole app.
 
-The `unread` list has two kinds of entries. A field unread on purpose says why: the engine's own bookkeeping (`Turn.entered`), or data that reaches the player another way (`Turn.bonus_attacks_used`: the attacks left are on the player). A gap names its step 19 item (`19.180: …`) and stays until it is fixed. An entry whose field is gone or now read fails the test, so the list stays current.
+The `unread` list has two kinds of entries. A field unread on purpose says why: the engine's own bookkeeping (`Turn.entered`), or data that reaches the player another way (`Turn.bonus_attacks_used`: the attacks left are on the player). A gap names its step 19 item (`19.180: …`) and stays until it is fixed; 22.5 drew the eight 22.4 found (19.180 – 19.187), so only fields unread on purpose are left. An entry whose field is gone or now read fails the test, so the list stays current.
 
 Scope: the update message only. Lobby, setup and rollback request messages are not checked. A new field in a Go view type fails the Go test until `protocol.ts` has it, then the Vitest check until the app reads it or lists why not.
 

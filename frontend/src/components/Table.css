@@ -489,7 +489,10 @@
   border-radius: 0.5rem;
 }
 
-.player.dead {
+/* A kicked seat stays empty for good (N-08, 19.187): it fades as a
+   dead player does. */
+.player.dead,
+.player.kicked {
   opacity: 0.6;
 }
 

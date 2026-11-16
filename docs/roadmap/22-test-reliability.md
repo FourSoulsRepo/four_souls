@@ -75,7 +75,7 @@ Ideas: TS-07, TS-08, TS-09, TS-10, TS-11, TS-12.
    1. Removing the read of `copy` in `table.ts` fails the Vitest check.
    2. `make test frontend` runs both checks.
 
-### [ ] 22.5 Fix the unread fields from 22.4
+### [x] 22.5 Fix the unread fields from 22.4
 
 1. Goal: every field logged by 22.4 is drawn, or listed with a reason.
 2. Tasks:

@@ -53,6 +53,10 @@
   * The new connection's welcome frees the player's buttons.
   * The full view shows whether the move was played.
   * A move that was lost can be made again.
+* **2f. A kicked seat at the table (19.187):** every other seat sees it is gone.
+  * "Left for good" by the player's name.
+  * The seat fades, as a dead player's does.
+  * Its tooltip says a vote kicked them.
 
 ## Postconditions
 
