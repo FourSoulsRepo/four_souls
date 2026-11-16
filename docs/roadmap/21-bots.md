@@ -180,6 +180,9 @@ Rules for this step (owner, 2026-11-16):
    1. One limit on hard thinkers for the whole hub.
    2. `cmd/server_load`: tables with bots; report room stalls and move times.
    3. Wiki `Load-test.md`: how to run it with bots, and the numbers measured.
+   4. Room latency (lead, 2026-11-16): 182 ms was measured under the load of two lines.
+      1. Measure again on a quiet machine, and separately with `GOMAXPROCS=1`.
+      2. Numbers taken under load never go into the wiki.
 3. Done when:
    1. 20 tables of 1 human and 3 hard bots: no room stall over 100 ms; every bot answers before the response timer.
 
@@ -187,13 +190,15 @@ Rules for this step (owner, 2026-11-16):
 
 1. Goal: the host adds bots in the app (ADR 030, Decision 10).
 2. Tasks:
-   1. `TableScreen`: on a free seat, the host sees "Add bot" with the two levels.
-   2. On a bot seat: its name, level, robot icon; the host changes the level or removes it.
-   3. Other players see the bot and its level, no buttons.
-   4. Buttons hidden when the server does not allow bots.
-   5. Every string in every locale; `make i18n`.
-   6. Unit tests in `lobby.test.ts`; e2e: host a table, add 3 bots, start alone.
-   7. Works without the private images.
+   1. First, before any new work: `make frontend` and `make i18n` on the frontend edits of 21.7 (`protocol.ts`, `protocol.test.ts`, locales).
+   2. `TableScreen`: on a free seat, the host sees "Add bot" with the two levels.
+   3. On a bot seat: its name, level, robot icon; the host changes the level or removes it.
+   4. Other players see the bot and its level, no buttons.
+   5. Buttons hidden when the server does not allow bots.
+   6. Every string in every locale; `make i18n`.
+   7. Unit tests in `lobby.test.ts`; e2e: host a table, add 3 bots, start alone.
+   8. Works without the private images.
+   9. The lobby never shows a bot as away or disconnected: `Seat.Connected` is false for a bot.
 3. Done when:
    1. Use case "Play with bots" passes as an e2e test.
 
@@ -202,7 +207,7 @@ Rules for this step (owner, 2026-11-16):
 1. Goal: everyone sees which seats are bots (N-21).
 2. Tasks:
    1. Seat name: translated "Bot N (level)" with the robot icon, everywhere a seat name shows: table, history, stack, pause and vote windows, game end.
-   2. A bot seat never shows "away".
+   2. A bot seat never shows "away" or disconnected: `Seat.Connected` is false for a bot.
    3. e2e: one human and three bots play a whole game; reuse the helpers of `games.spec.ts`.
    4. `make e2e-games` gets a variant with bots.
    5. Check the pace by eye on screenshots or a recording; note it in the commit.

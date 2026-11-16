@@ -279,3 +279,35 @@ func TestBotsRecord(t *testing.T) {
 		t.Fatalf("the record does not replay: %v", err)
 	}
 }
+
+// TestBotSeatRecordToken: a bot's seat has the empty token; a record
+// request with an empty, a missing or an invalid token gets nothing
+// from a game with bots, even once it is over (RP-05, 21.7).
+func TestBotSeatRecordToken(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "g1"+record.Ext)
+	if err := os.WriteFile(path, []byte("rec"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	h := startHub(t)
+	room := &Room{tokens: []string{"tok", ""}, path: path}
+	room.over.Store(true)
+	done := make(chan struct{})
+	h.send(hubRequest{run: func(h *Hub) {
+		h.games = append(h.games, started{info: protocol.GameInfo{ID: "g1", Started: true}, room: room})
+		close(done)
+	}})
+	<-done
+	srv := httptest.NewServer(http.HandlerFunc(h.downloadRecord))
+	defer srv.Close()
+	for _, q := range []string{"game=g1&token=", "game=g1", "game=g1&token=%20", "game=g1&token=not-a-token"} {
+		resp, err := http.Get(srv.URL + "/record?" + q) //nolint:noctx // test
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = resp.Body.Close() //nolint:errcheck // test
+		if resp.StatusCode != http.StatusForbidden {
+			t.Errorf("%s: %d, want forbidden", q, resp.StatusCode)
+		}
+	}
+}

@@ -345,7 +345,12 @@ func (h *Hub) hello(c *Client, env protocol.Envelope) {
 	h.tellLost(c)
 }
 
+// tableSeat is the lobby seat a token holds. A free seat and a bot's
+// seat have the empty token, which holds none.
 func (h *Hub) tableSeat(token string) (*table, int) {
+	if token == "" {
+		return nil, -1
+	}
 	for _, t := range h.tables {
 		for i, s := range t.seats {
 			if s.token == token {

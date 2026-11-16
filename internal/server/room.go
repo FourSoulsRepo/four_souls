@@ -158,11 +158,17 @@ func NewRoom(setup engine.Setup, opts protocol.Options, seats []roomSeat) (*Room
 }
 
 // hasToken reports whether a seat belongs to the token. Safe from any
-// goroutine: tokens never change.
-func (r *Room) hasToken(token string) bool { return slices.Contains(r.tokens, token) }
+// goroutine: tokens never change. A bot's seat has the empty token, so
+// the empty token belongs to no seat: no token ever gets a bot's seat.
+func (r *Room) hasToken(token string) bool { return r.seatOf(token) >= 0 }
 
-// seatOf is the seat a token belongs to, or -1.
-func (r *Room) seatOf(token string) int { return slices.Index(r.tokens, token) }
+// seatOf is the seat a token belongs to, or -1; never a bot's.
+func (r *Room) seatOf(token string) int {
+	if token == "" {
+		return -1
+	}
+	return slices.Index(r.tokens, token)
+}
 
 // send passes a request to the room unless it has stopped.
 func (r *Room) send(req request) {
@@ -304,7 +310,7 @@ func (r *Room) handle(req request) {
 
 // attach gives a returning player their seat back (N-08).
 func (r *Room) attach(c *Client, token, dice string) {
-	i := slices.Index(r.tokens, token)
+	i := r.seatOf(token)
 	if i < 0 || r.seats[i].kicked {
 		c.fail(0, protocol.ErrNotSeated, errNoSeat.Msg())
 		c.conn.Close()

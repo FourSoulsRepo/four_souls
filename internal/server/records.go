@@ -5,7 +5,6 @@ import (
 	"mime"
 	"net/http"
 	"path/filepath"
-	"slices"
 	"time"
 
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
@@ -114,7 +113,7 @@ func (h *Hub) downloadRecord(w http.ResponseWriter, req *http.Request) {
 	switch {
 	case room == nil:
 		http.Error(w, "no such game", http.StatusNotFound)
-	case !slices.Contains(room.tokens, token) || token == "":
+	case !room.hasToken(token):
 		http.Error(w, "only the game's players get its record", http.StatusForbidden)
 	case !room.over.Load():
 		http.Error(w, "the record is ready when the game is over (RP-05)", http.StatusConflict)

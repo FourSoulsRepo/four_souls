@@ -975,3 +975,84 @@ func TestBotsKeptOverRestart(t *testing.T) {
 		t.Fatalf("seats on a server of standard bots only: %+v", last.Seats)
 	}
 }
+
+// helloNoSeat says hello with token and checks the client gets no seat:
+// the welcome names none and the game list follows, no table or game.
+func helloNoSeat(t *testing.T, h *Hub, token, where string) {
+	t.Helper()
+	p, w := arrive(t, h, "Eve", token)
+	if w.Seat != -1 || w.Token == "" || w.Token == token {
+		t.Fatalf("%s: hello with token %q got seat %d, token %q", where, token, w.Seat, w.Token)
+	}
+	msg := <-p.conn.out
+	if e, err := protocol.Decode(msg); err != nil || e.Type != protocol.TypeGames {
+		t.Fatalf("%s: hello with token %q: then %s, want the game list", where, token, msg)
+	}
+	p.c.Leave()
+}
+
+// TestBotSeatsHoldNoToken: a bot's seat has the empty token. No hello,
+// attach or seat lookup with an empty, missing or invalid token gets a
+// bot's seat: at a lobby table, in a game, and after a server restart
+// (ADR 030, Decision 11.1; 21.7).
+func TestBotSeatsHoldNoToken(t *testing.T) {
+	r := botRoom(t, protocol.Options{}, "", protocol.BotStandard)
+	for _, token := range []string{"", " ", "not-a-token"} {
+		if r.hasToken(token) || r.seatOf(token) != -1 {
+			t.Errorf("room: token %q holds seat %d", token, r.seatOf(token))
+		}
+	}
+	eve := &Client{conn: newMemConn(), seat: -1}
+	r.attach(eve, "", "")
+	if eve.seat != -1 || r.seats[1].client != nil {
+		t.Fatalf("attach with the empty token took seat %d", eve.seat)
+	}
+
+	dir := t.TempDir()
+	h, stop := botHub(t, dir, time.Millisecond)
+	cy, _ := arrive(t, h, "Cy", "")
+	cy.say(protocol.TypeCreate, protocol.Create{Seats: 3})
+	cy.next(protocol.TypeTable, nil)
+	cy.seatBot(1, protocol.BotHard)
+	invalid := strings.Repeat("0", 31) + "g"
+	check := func(where string) {
+		t.Helper()
+		for _, token := range []string{"", invalid} {
+			helloNoSeat(t, h, token, where)
+			if info := askSeat(t, h, token); info.Live {
+				t.Errorf("%s: /seat with token %q: %+v", where, token, info)
+			}
+		}
+	}
+	check("a lobby table")
+	ann, w := arrive(t, h, "Ann", "")
+	ann.say(protocol.TypeCreate, protocol.Create{Seats: 2})
+	ann.next(protocol.TypeTable, nil)
+	ann.seatBot(1, protocol.BotStandard)
+	ann.say(protocol.TypeReady, protocol.Ready{Ready: true})
+	ann.next(protocol.TypeUpdate, nil)
+	check("a game and a lobby table")
+
+	stop()
+	h, _ = botHub(t, dir, time.Millisecond)
+	check("after a restart")
+	back, bw := arrive(t, h, "Ann", w.Token)
+	if bw.Seat != 0 {
+		t.Fatalf("Ann's own token after the restart: seat %d", bw.Seat)
+	}
+	back.next(protocol.TypeUpdate, nil)
+}
+
+// askSeat runs the hub's seat lookup for token, as /seat does.
+func askSeat(t *testing.T, h *Hub, token string) protocol.SeatInfo {
+	t.Helper()
+	reply := make(chan protocol.SeatInfo, 1)
+	h.send(hubRequest{run: func(h *Hub) { reply <- h.seatInfo(token) }})
+	select {
+	case info := <-reply:
+		return info
+	case <-time.After(5 * time.Second):
+		t.Fatal("the hub did not answer")
+		return protocol.SeatInfo{}
+	}
+}
