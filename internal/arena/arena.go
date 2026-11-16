@@ -97,12 +97,53 @@ type Result struct {
 	// monsters, to judge the bots' fights.
 	PlayerDeaths int
 	MonsterKills int
+	// Levels counts each level's own play, to compare levels in the
+	// same games.
+	Levels map[bot.Level]LevelCount
 	// Refused lists every bot intent the engine refused (Decision 18.8).
 	Refused []string
 	// Stalls describes each game that ended at the cap.
 	Stalls []Stall
 	// Guards lists each game a loop guard ended, with its seed.
 	Guards []string
+}
+
+// LevelCount is one level's play over a match: its seats' moves and
+// turns. Divided by Result.Seats it is a seat's share a game.
+type LevelCount struct {
+	Moves int
+	Think time.Duration
+	// Turns are the turns one of its seats was the active player;
+	// NoAttack those of them with no attack.
+	Turns, NoAttack int
+	// LootPlays and Purchases are its seats' loot plays (on any turn)
+	// and purchases.
+	LootPlays, Purchases int
+}
+
+// count adds one bot move of level l, intent in, thought for d.
+func (r *Result) count(l bot.Level, in engine.Intent, d time.Duration) {
+	c := r.Levels[l]
+	c.Moves++
+	c.Think += d
+	if in.Kind == engine.IntentPlayLoot {
+		c.LootPlays++
+	}
+	if in.Kind == engine.IntentPurchase {
+		c.Purchases++
+	}
+	r.Levels[l] = c
+}
+
+// countTurn adds one finished turn of a seat of level l; attacked: the
+// seat declared an attack in it.
+func (r *Result) countTurn(l bot.Level, attacked bool) {
+	c := r.Levels[l]
+	c.Turns++
+	if !attacked {
+		c.NoAttack++
+	}
+	r.Levels[l] = c
 }
 
 // Stall is a game with no winner within the cap: where it stood.
@@ -149,7 +190,7 @@ func Play(ctx context.Context, m Match) (Result, error) {
 	for range min(runtime.GOMAXPROCS(0), max(m.Games, 1)) {
 		wg.Go(func() {
 			for k := range next {
-				games[k] = Result{Wins: map[bot.Level]int{}, Seats: map[bot.Level]int{}}
+				games[k] = Result{Wins: map[bot.Level]int{}, Seats: map[bot.Level]int{}, Levels: map[bot.Level]LevelCount{}}
 				errs[k] = playGame(ctx, m, k, &games[k])
 			}
 		})
@@ -162,7 +203,7 @@ func Play(ctx context.Context, m Match) (Result, error) {
 	}
 	close(next)
 	wg.Wait()
-	r := Result{Match: m, Wins: map[bot.Level]int{}, Seats: map[bot.Level]int{}}
+	r := Result{Match: m, Wins: map[bot.Level]int{}, Seats: map[bot.Level]int{}, Levels: map[bot.Level]LevelCount{}}
 	for k, g := range games {
 		if errs[k] != nil {
 			return r, errs[k]
@@ -187,6 +228,16 @@ func (r *Result) add(g Result) {
 	r.Turns = append(r.Turns, g.Turns...)
 	r.PlayerDeaths += g.PlayerDeaths
 	r.MonsterKills += g.MonsterKills
+	for l, c := range g.Levels {
+		a := r.Levels[l]
+		a.Moves += c.Moves
+		a.Think += c.Think
+		a.Turns += c.Turns
+		a.NoAttack += c.NoAttack
+		a.LootPlays += c.LootPlays
+		a.Purchases += c.Purchases
+		r.Levels[l] = a
+	}
 	r.Moves += g.Moves
 	r.Think += g.Think
 	r.Refused = append(r.Refused, g.Refused...)
@@ -221,6 +272,7 @@ func playGame(ctx context.Context, m Match, k int, r *Result) error {
 	worldSeeds := rand.New(rand.NewPCG(seed, 0)) //nolint:gosec // imagined deals, not security
 	var kinds []engine.IntentKind
 	step, turn, inTurn := 0, g.Turn.Number, 0
+	attacked := false // the active player attacked this turn
 	guard := ""
 	for ; !g.Over && g.Turn.Number <= m.Cap; step++ {
 		if g.Turn.Number != turn {
@@ -251,8 +303,10 @@ func playGame(ctx context.Context, m Match, k int, r *Result) error {
 			Seat: p, Level: levels[p], Rand: rngs[p], World: bot.World(worlds),
 			Budget: bot.Budget{Playouts: m.Playouts},
 		})
-		r.Think += time.Since(start)
+		took := time.Since(start)
+		r.Think += took
 		r.Moves++
+		active, number := g.Turn.Active, g.Turn.Number
 		var events []engine.Event
 		if err == nil {
 			events, err = g.Apply(in)
@@ -266,12 +320,23 @@ func playGame(ctx context.Context, m Match, k int, r *Result) error {
 		}
 		observe(g, mems, events)
 		r.countDeaths(events)
+		r.count(levels[p], in, took)
+		attacked = attacked || in.Kind == engine.IntentAttack && p == active
+		if g.Turn.Number != number {
+			if number > 0 { // turn 0: the start-of-game choices
+				r.countTurn(levels[active], attacked)
+			}
+			attacked = false
+		}
 		if in.Kind == engine.IntentPass {
 			r.Passes++
 		} else {
 			inTurn++
 		}
 		kinds = append(kinds, in.Kind)
+	}
+	if g.Over {
+		r.countTurn(levels[g.Turn.Active], attacked)
 	}
 	r.Games++
 	r.Steps += step

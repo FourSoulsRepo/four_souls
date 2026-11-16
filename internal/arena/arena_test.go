@@ -38,7 +38,7 @@ func TestNoRefusedIntent(t *testing.T) {
 }
 
 // TestRandomLevel: random seats play whole games too, and the result
-// counts every seat and game.
+// counts every seat and game, and each level's moves and turns.
 func TestRandomLevel(t *testing.T) {
 	m := Match{Levels: []bot.Level{bot.Random, bot.Policy}, Games: 2, Seed: 1, Cap: 4}
 	r, err := Play(context.Background(), m)
@@ -59,6 +59,21 @@ func TestRandomLevel(t *testing.T) {
 	}
 	if r.Passes == 0 || r.Passes > r.Steps {
 		t.Errorf("%d passes of %d intents", r.Passes, r.Steps)
+	}
+	moves, turns := 0, 0
+	for l, c := range r.Levels {
+		moves += c.Moves
+		turns += c.Turns
+		if c.NoAttack > c.Turns || c.LootPlays > c.Moves || c.Purchases > c.Moves {
+			t.Errorf("%s: %+v", l, c)
+		}
+	}
+	if moves != r.Moves {
+		t.Errorf("levels made %d moves of %d", moves, r.Moves)
+	}
+	// A game cut by the cap ends after turn 4; each turn counts once.
+	if turns != 8 {
+		t.Errorf("levels had %d turns, want 8 (turns %v)", turns, r.Turns)
 	}
 	if m.Name() != "random-policy" {
 		t.Errorf("name %q", m.Name())

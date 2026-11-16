@@ -234,6 +234,13 @@ func report(out *printer, r arena.Result, took time.Duration) bool {
 		out.printf("  %d player deaths, %d monsters killed (%.2f deaths a kill)\n",
 			r.PlayerDeaths, r.MonsterKills, float64(r.PlayerDeaths)/float64(max(r.MonsterKills, 1)))
 	}
+	for _, l := range slices.Sorted(maps.Keys(r.Levels)) {
+		c, seats := r.Levels[l], max(r.Seats[l], 1)
+		out.printf("  %-8s %s a move; %.0f%% of its turns with no attack; a seat's game: %.1f loot plays, %.1f purchases\n",
+			l, (c.Think / time.Duration(max(c.Moves, 1))).Round(time.Microsecond),
+			100*float64(c.NoAttack)/float64(max(c.Turns, 1)),
+			float64(c.LootPlays)/float64(seats), float64(c.Purchases)/float64(seats))
+	}
 	for _, s := range r.Stalls {
 		out.printf("  stall: seed %d, turn %d, souls %v, last steps %s\n", s.Seed, s.Turns, s.Souls, kinds(s.Last))
 	}

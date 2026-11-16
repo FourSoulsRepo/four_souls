@@ -277,7 +277,7 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       3. `random` and `policy` line-ups print their share for reference only.
       4. Loop guards fail the gate in any line-up, printed with the seed: a game turn over 1000 applied intents other than passes; a game over 30000 applied intents. So does a refused intent.
          1. Passes do not count in a turn (lead, 2026-11-16): 4-player turns of real plays with combo cards passed 1000 intents, nearly all passes, with no loop.
-      5. Per line-up the arena prints median and max game turns, intents per turn, the share of passes.
+      5. Per line-up the arena prints median and max game turns, intents per turn, the share of passes; per level, its time per move, the share of its turns with no attack, its loot plays and purchases per seat and game (lead, 2026-11-17: to compare levels in the same games).
       6. Policy against policy, 50 games each (2026-11-16): 2 players median 42 turns, max 150, 46 intents a turn, 77% passes; 3 players median 50, max 138, 65, 83%; 4 players median 58, max 150, 86, 87%. Finished within the cap: 96%, 100%, 92%.
    5. Gate: standard wins at least 70% of 2-player games against random.
    6. Gate: hard wins at least 60% of 2-player games against standard.
