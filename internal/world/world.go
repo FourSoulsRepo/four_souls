@@ -21,7 +21,7 @@ type Func func(i int) (*engine.Game, error)
 
 // For copies g now and returns the worlds of seat p: world i is the copy
 // imagined by p with the seed mixed from seed and i, and the cards p
-// remembers in known (empty until the memory, step 21.15).
+// remembers in known (a hard seat's Memory.Known; empty for others).
 //
 // The copy is made at once, so g may go on changing after For returns:
 // the room makes the copy on its own goroutine and hands the worlds to

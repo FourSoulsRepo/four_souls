@@ -83,6 +83,12 @@ const (
 	// EvMinionArrived: Card came from the monster deck into a new minion
 	// slot (R-CHAL-09).
 	EvMinionArrived EventKind = "minion_arrived"
+	// EvDeckOrder: the cards of a deck changed places out of sight: it
+	// was shuffled (a search, a discard shuffled in), its top cards put
+	// back in an order, or a card moved within it. Text is "<deck>
+	// deck"; public, no card. Who remembers where its cards lie forgets
+	// them (ADR 030, Decision 19.8).
+	EvDeckOrder EventKind = "deck_order"
 )
 
 // Event is one thing that happened, in order. Hidden cards (e.g. a looted
@@ -123,4 +129,14 @@ type Event struct {
 	Item *StackItem `json:"item,omitempty"`
 	// Sources are what changed a resolved roll, for the history (15.94).
 	Sources []StatSourceView `json:"sources,omitempty"`
+	// Deck places a deck card a look shows: its deck and its depth, 0
+	// the top. A seat's memory reads it (ADR 030, Decision 19.11); it is
+	// hidden with Card from those who do not see the card.
+	Deck *DeckPlace `json:"deck,omitempty"`
+}
+
+// DeckPlace is where a card lies in a deck: Depth cards above it.
+type DeckPlace struct {
+	Deck  DeckKind `json:"deck"`
+	Depth int      `json:"depth"`
 }

@@ -124,3 +124,19 @@ func TestStandardNoLoop(t *testing.T) {
 		})
 	}
 }
+
+// TestMemories: each hard seat gets a memory of its own seat, the
+// other levels none; NoMemory gives none (Decision 19.13).
+func TestMemories(t *testing.T) {
+	mems := memories([]bot.Level{bot.Standard, bot.Hard, bot.Policy, bot.Hard}, false)
+	for i, want := range []bool{false, true, false, true} {
+		if got := mems[i] != nil; got != want {
+			t.Errorf("seat %d: memory %v, want %v", i, got, want)
+		}
+	}
+	for i, m := range memories([]bot.Level{bot.Hard, bot.Hard}, true) {
+		if m != nil {
+			t.Errorf("seat %d has a memory with NoMemory", i)
+		}
+	}
+}

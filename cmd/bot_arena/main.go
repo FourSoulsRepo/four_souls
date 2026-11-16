@@ -13,7 +13,8 @@
 // cap, in a line-up of player-visible levels with no random seat; or a
 // win gate: standard under 70% of 2-player games against random, hard
 // under 60% of 2-player games against standard, one hard among three
-// standard not over 30%. Hard thinks -playouts playouts a move.
+// standard not over 30%. Hard thinks -playouts playouts a move, with a
+// memory of the cards it saw unless -memory=false.
 package main
 
 import (
@@ -144,6 +145,7 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 	seed := fs.Uint64("seed", 1, "seed of each line-up's first game")
 	turnCap := fs.Int("cap", arena.TurnCap, "game turns after which a game counts as unfinished")
 	playouts := fs.Int("playouts", arena.DefaultPlayouts, "the hard level's playouts a move")
+	memory := fs.Bool("memory", true, "give each hard seat a memory of the cards it saw (Decision 19)")
 	var matches matchFlags
 	fs.Var(&matches, "match", "a line-up of levels, one per seat, comma-separated (repeat it)")
 	if err := fs.Parse(args); err != nil {
@@ -162,7 +164,7 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 			}
 			levels = append(levels, l)
 		}
-		ms = append(ms, arena.Match{Levels: levels, Games: *games, Seed: *seed, Cap: *turnCap, Playouts: *playouts})
+		ms = append(ms, arena.Match{Levels: levels, Games: *games, Seed: *seed, Cap: *turnCap, Playouts: *playouts, NoMemory: !*memory})
 	}
 	failed := false
 	pr := &printer{w: out}
@@ -207,7 +209,11 @@ func report(out *printer, r arena.Result, took time.Duration) bool {
 	out.printf("%s: %d games, %d with a winner (%.1f%%) within %d turns, in %s\n",
 		m.Name(), r.Games, r.Finished, 100*r.FinishedShare(), m.Cap, took.Round(time.Millisecond))
 	if slices.Contains(m.Levels, bot.Hard) {
-		out.printf("  hard: %d playouts a move\n", m.Playouts)
+		mem := "a memory"
+		if m.NoMemory {
+			mem = "no memory"
+		}
+		out.printf("  hard: %d playouts a move, %s\n", m.Playouts, mem)
 	}
 	for _, l := range slices.Sorted(maps.Keys(r.Seats)) {
 		chance := float64(r.Seats[l]) / float64(len(m.Levels))

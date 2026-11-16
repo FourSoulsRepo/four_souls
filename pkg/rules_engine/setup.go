@@ -101,7 +101,7 @@ func NewGame(s Setup) (*Game, []Event, error) {
 		}
 	}
 	for d := range deckCount {
-		g.ShuffleDeck(d) // R-SETUP-01
+		g.shuffleDeck(d) // R-SETUP-01
 	}
 	if err := g.fillSlots(); err != nil {
 		return nil, nil, err

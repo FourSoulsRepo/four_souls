@@ -262,7 +262,7 @@ Rules for this step (owner, 2026-11-16):
 3. Done when:
    1. **Owner** plays a game against three hard bots and approves the merge.
 
-### [ ] 21.15 Memory of the hard bot
+### [x] 21.15 Memory of the hard bot
 
 1. Goal: the hard bot remembers cards it saw (ADR 030, Decision 19).
 2. Tasks:
@@ -278,6 +278,10 @@ Rules for this step (owner, 2026-11-16):
 3. Done when:
    1. Test 6 finds no wrong memory in 100 games.
    2. `make bots`: hard with memory is not weaker than hard without; both numbers in the commit message.
+   3. Test 6 (`TestMemoryIsTrue`): 100 games of every set and challenge, 49 449 steps, every seat checked at every step; 30 622 remembered cards out of sight checked, none wrong.
+   4. The ways a seat sees a card, what it forgets, and the engine fields: ADR 030, Decision 19.14 – 19.17.
+   5. Short run, 20 games, 2 players, 150 playouts a move, seeds 1–20 (2026-11-16): hard with memory wins 18 of 20 against standard (90%); without memory (21.6, same seeds) 14 of 20. All 20 finished (median 18 turns, max 70); no refused intent, no loop guard; 1.16 deaths a kill; 0.48 s a hard move under load.
+   6. The full `make bots` runs once at the end of line 1 (rule 7.3).
 
 ### [ ] 21.16 Card values
 

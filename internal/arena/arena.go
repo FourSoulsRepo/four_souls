@@ -58,6 +58,9 @@ type Match struct {
 	// Playouts is the hard level's playouts a move; 0 is
 	// DefaultPlayouts.
 	Playouts int
+	// NoMemory plays the hard seats without a memory (Decision 19), to
+	// measure what it is worth; else each hard seat has one.
+	NoMemory bool
 }
 
 // Name is the line-up, e.g. "policy-policy".
@@ -197,7 +200,7 @@ func playGame(ctx context.Context, m Match, k int, r *Result) error {
 		Seed: seed, Players: n, Sets: cards.Sets(), BonusSouls: true,
 		Rooms: seed%2 == 1, DeckRatios: seed%3 == 0,
 	}
-	g, _, err := engine.NewGame(s)
+	g, setup, err := engine.NewGame(s)
 	if err != nil {
 		return fmt.Errorf("arena: game %d: %w", seed, err)
 	}
@@ -208,6 +211,8 @@ func playGame(ctx context.Context, m Match, k int, r *Result) error {
 		r.Seats[levels[i]]++
 		rngs[i] = rand.New(rand.NewPCG(seed, uint64(i)+1)) //nolint:gosec // bot moves, not security
 	}
+	mems := memories(levels, m.NoMemory)
+	observe(g, mems, setup)
 	worldSeeds := rand.New(rand.NewPCG(seed, 0)) //nolint:gosec // imagined deals, not security
 	var kinds []engine.IntentKind
 	step, turn, inTurn := 0, g.Turn.Number, 0
@@ -225,7 +230,11 @@ func playGame(ctx context.Context, m Match, k int, r *Result) error {
 			break
 		}
 		p := g.Prompt().Who()[0]
-		worlds, err := world.For(g, p, engine.Known{}, worldSeeds.Uint64())
+		var known engine.Known
+		if mems[p] != nil {
+			known = mems[p].Known()
+		}
+		worlds, err := world.For(g, p, known, worldSeeds.Uint64())
 		if err != nil {
 			return fmt.Errorf("arena: game %d step %d: %w", seed, step, err)
 		}
@@ -247,6 +256,7 @@ func playGame(ctx context.Context, m Match, k int, r *Result) error {
 				return fmt.Errorf("arena: game %d step %d: the forced answer %+v: %w", seed, step, in, err)
 			}
 		}
+		observe(g, mems, events)
 		r.countDeaths(events)
 		if in.Kind == engine.IntentPass {
 			r.Passes++
@@ -277,6 +287,35 @@ func playGame(ctx context.Context, m Match, k int, r *Result) error {
 	}
 	r.Stalls = append(r.Stalls, st)
 	return nil
+}
+
+// memories are the seats' memories: one for each hard seat, unless
+// none is wanted (Decision 19.13).
+func memories(levels []bot.Level, none bool) []*world.Memory {
+	out := make([]*world.Memory, len(levels))
+	for i, l := range levels {
+		if l == bot.Hard && !none {
+			out[i] = world.NewMemory(engine.PlayerID(i))
+		}
+	}
+	return out
+}
+
+// observe feeds each memory the step as its seat's client gets it: the
+// seat's view and the events filtered for it (Decision 19.3).
+func observe(g *engine.Game, mems []*world.Memory, events []engine.Event) {
+	var base engine.ViewBase
+	built := false
+	for i, mem := range mems {
+		if mem == nil {
+			continue
+		}
+		if !built {
+			base, built = g.ViewBase(), true
+		}
+		v := engine.Viewer{Kind: engine.ViewPlayer, Player: engine.PlayerID(i)}
+		mem.Observe(g.ViewFor(base, v), engine.FilterEvents(events, v))
+	}
 }
 
 // countDeaths counts the players and monsters that died in events.

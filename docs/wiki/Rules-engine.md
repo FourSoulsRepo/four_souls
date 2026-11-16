@@ -60,7 +60,7 @@ A new place that hides a card from a seat (a new face-down zone, a new peek) als
 
 `Known` holds the cards of each hand by seat, and of each deck's top (top first) and bottom (bottom up); `""` is a place not remembered. Its zero value remembers nothing.
 
-What stays as it is, because `p` sees it or may know it: everything in play, slots and covered cards, discards, below the top too (open by R-ZONE-07; the view sends only the top, but every card went there in sight), bonus souls, cards outside the game, the revealed monster of a deck attack, deck and hand sizes, `p`'s own hand. Events are not part of the state; what they showed is the memory's work (`Known`, step 21.15).
+What stays as it is, because `p` sees it or may know it: everything in play, slots and covered cards, discards, below the top too (open by R-ZONE-07; the view sends only the top, but every card went there in sight), bonus souls, cards outside the game, the revealed monster of a deck attack, deck and hand sizes, `p`'s own hand. Events are not part of the state; what they showed is the memory's work (`Known`, `world.Memory`, step 21.15). For it a `looked_at` of a deck card names the card's deck and depth (`Event.Deck`, hidden with the card), and a deck whose cards change places out of sight tells `deck_order`: `ShuffleDeck`, a refill from the discard, `SetDeckTop`, `DeckToBottom`. Setup shuffles (`shuffleDeck`) and moves told by their own event (`top_choice`, `deck_bottom`: `deckToBottom`) stay silent. A new such move needs `emitDeckOrder` (see [Bots](Bots), Memory).
 
 A new move into `ZoneOutside` or an `Under` list from a hand or a deck, face down, needs a line in `hiddenFrom`: today only a challenge's presents do that.
 

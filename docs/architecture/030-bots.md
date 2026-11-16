@@ -301,8 +301,28 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    9. When unsure, forget: a wrong memory is worse than none.
    10. It gives `known` to `Imagine` (Decision 2.7).
    11. An event that lacks what a rule needs gets the field in the engine, filtered like any other.
-   12. Not saved: after a save or a restart the memory starts empty.
-   13. The arena keeps a memory per hard seat the same way.
+   12. Not saved: after a save or a restart the memory starts empty; after a rollback too (`Reset`).
+   13. The arena keeps a memory per hard seat the same way; `-memory=false` plays hard without it.
+   14. The ways a seat sees a card that then hides (21.15):
+      1. A look (`looked_at`, the looker's only): at deck cards, with their place, or at another hand's cards (`By`).
+      2. Its own top choice (`top_choice`): the card stays on top or goes to the bottom.
+      3. A deck top shown to all (`card_revealed`, "<deck> deck").
+      4. The treasure peek its view shows (`treasure_top`).
+      5. A hand its view shows: a revealed hand, every hand in a co-op challenge.
+      6. A card taken from a discard into a hand (`looted`, "from the discard"), in sight of all.
+      7. A hand card it gave or got (`gave_card`; the giver is in `SeenBy`).
+      8. A card put on, into or under a deck in sight (`moved_to_deck` with its card); its own hand card put on the loot deck.
+      9. A remembered top card drawn by a loot draw (`looted`, then `loot_done` of as many): it is in the drawer's hand.
+      10. Not memory: cards in play, in slots and in discards stay in sight (Decision 2.15).
+   15. What it forgets (19.8 – 19.9):
+      1. A hand: all of it when a card leaves unseen (`gave_card` or `moved_to_deck` with no card); every remembered copy of a card that leaves in sight; all of it when the hand size does not add up with the step's events.
+      2. A deck: all of it on `deck_order` or `deck_bottom`; on a card taken from it unseen (`looted` with no `loot_done`); when a look or a draw shows another card than remembered; when the deck size does not add up.
+      3. It keeps one place per card of each deck: a loot draw, a mill, a card put on top, under the top cards or on the bottom moves the places. Other draws (slots, gains, attacks on the deck) are not followed: the size is off and the deck is forgotten.
+   16. Engine fields for it (19.11):
+      1. `Event.Deck` on `looked_at` of a deck card: the deck and the depth from the top. `FilterEvents` hides it with the card.
+      2. Event `deck_order` ("<deck> deck"), public, no card, no barrier: `ShuffleDeck`, a refill of an empty deck from its discard, `SetDeckTop` and `DeckToBottom`; these moved deck cards with no event. Setup shuffles tell nothing: no one remembers yet. The client's history skips it.
+   17. API, for the arena and the room goroutine: `world.NewMemory(seat)`; `Observe(view, events)` after every step, in order, with the seat's `ViewFor` and `FilterEvents`; `Known()` for `world.For`; `Reset()`. One goroutine at a time.
+   18. Test (21.15): 100 simulated games of every set and challenge, 500 steps each, every seat checked against the real game at every step: no wrong memory.
 20. Card values (owner, 2026-11-16; sub-step 21.16)
    1. A flat value for every loot card (0.75) and item (12) misprices cards: a bomb or a cancel is worth more than 1¢.
    2. Cards are added often, so values are measured, never written by hand.

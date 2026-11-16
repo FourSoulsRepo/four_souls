@@ -19,6 +19,7 @@ damaged
 deactivated
 death_pending
 deck_bottom
+deck_order
 destroyed
 dice_rolled
 died

@@ -19,10 +19,24 @@ func (g *Game) AddToDeck(d DeckKind, cards ...CardRef) {
 	}
 }
 
-// ShuffleDeck puts a deck in random order.
+// ShuffleDeck puts a deck in random order, in sight of everyone
+// (deck_order).
 func (g *Game) ShuffleDeck(d DeckKind) {
+	g.shuffleDeck(d)
+	g.emitDeckOrder(d)
+}
+
+// shuffleDeck puts a deck in random order with no event: for setup,
+// before anyone remembers a card.
+func (g *Game) shuffleDeck(d DeckKind) {
 	deck := g.Decks[d]
 	g.RNG.Shuffle(len(deck), func(i, j int) { deck[i], deck[j] = deck[j], deck[i] })
+}
+
+// emitDeckOrder tells that deck d's cards changed places out of sight
+// (ADR 030, Decision 19.8).
+func (g *Game) emitDeckOrder(d DeckKind) {
+	g.emit(Event{Kind: EvDeckOrder, Player: NoPlayer, Text: d.String() + " deck"})
 }
 
 // drawTop removes the top card of a deck and returns its object.
@@ -104,6 +118,7 @@ func (g *Game) SetDeckTop(d DeckKind, order []ObjectID) {
 		rest = append(rest, order[i])
 	}
 	g.Decks[d] = rest
+	g.emitDeckOrder(d)
 }
 
 // MillTop puts the top card of a deck into its discard.
@@ -161,8 +176,22 @@ func (g *Game) LookAt(p PlayerID, ids ...ObjectID) {
 		if o.Zone.Kind == ZoneHand {
 			by = int(o.Controller) + 1
 		}
-		g.emit(Event{Kind: EvLookedAt, Player: p, Object: id, Card: o.Card, Private: true, By: by})
+		g.emit(Event{Kind: EvLookedAt, Player: p, Object: id, Card: o.Card, Private: true, By: by, Deck: g.deckPlace(id)})
 	}
+}
+
+// deckPlace is where a deck card lies, or nil for a card in no deck.
+func (g *Game) deckPlace(id ObjectID) *DeckPlace {
+	z := g.Object(id).Zone
+	if z.Kind != ZoneDeck {
+		return nil
+	}
+	deck := g.Decks[z.Deck]
+	i := slices.Index(deck, id)
+	if i < 0 {
+		return nil
+	}
+	return &DeckPlace{Deck: z.Deck, Depth: len(deck) - 1 - i}
 }
 
 // turnOrderFrom lists every player in turn order, starting with p.
@@ -176,8 +205,15 @@ func (g *Game) turnOrderFrom(p PlayerID) []PlayerID {
 }
 
 // DeckToBottom moves a card that is in a deck to its bottom; it stays the
-// same object.
+// same object. Everyone sees a card move within the deck (deck_order).
 func (g *Game) DeckToBottom(d DeckKind, id ObjectID) {
+	g.deckToBottom(d, id)
+	g.emitDeckOrder(d)
+}
+
+// deckToBottom is DeckToBottom for callers that tell the move by an
+// event of their own (top_choice, deck_bottom).
+func (g *Game) deckToBottom(d DeckKind, id ObjectID) {
 	g.Decks[d] = append([]ObjectID{id}, remove(g.Decks[d], id)...)
 }
 
@@ -187,7 +223,7 @@ func (g *Game) DeckToBottom(d DeckKind, id ObjectID) {
 func (g *Game) KeepOrBottom(p PlayerID, d DeckKind, id ObjectID, bottom bool) {
 	where := " deck top"
 	if bottom {
-		g.DeckToBottom(d, id)
+		g.deckToBottom(d, id)
 		where = " deck bottom"
 	}
 	g.emit(Event{Kind: EvTopChoice, Player: p, Object: id, Card: g.Object(id).Card, Text: d.String() + where, Private: true})
@@ -253,7 +289,7 @@ func (g *Game) ToBottomRandom(d DeckKind, ids []ObjectID) {
 		if g.Object(id).Zone.Kind == ZoneInPlay {
 			g.SlotToDeckBottom(id)
 		} else {
-			g.DeckToBottom(d, id)
+			g.deckToBottom(d, id)
 			n++
 		}
 	}

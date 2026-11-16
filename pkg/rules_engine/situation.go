@@ -202,7 +202,7 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 		}
 	}
 	for d := range deckCount {
-		g.ShuffleDeck(d)
+		g.shuffleDeck(d)
 	}
 	for i, ref := range s.Setup.Monsters {
 		if err := need(ref); err != nil {

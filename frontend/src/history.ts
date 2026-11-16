@@ -87,6 +87,7 @@ export const historyKinds: Record<string, string> = {
   deactivated: 'The causing card resolves as a line; the table shows the cards.',
   death_pending: 'A stack item; it resolves as a line.',
   deck_bottom: 'The board shows the cards go under the deck; the look has its line.',
+  deck_order: 'A shuffle or a reorder out of sight; the deck looks the same.',
   destroyed: told,
   dice_rolled: told,
   died: told,

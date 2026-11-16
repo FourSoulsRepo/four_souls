@@ -7,7 +7,7 @@ Bots fill free seats of a network game (ADR 030, step 21). This page is for deve
 | Package | What it does |
 |---|---|
 | `internal/bot` | Picks a seat's move: `Choose(ctx, Input)`. Imports the engine and the standard library only. |
-| `internal/world` | Turns the real game into a seat's worlds: `world.For(g, seat, known, seed)`. |
+| `internal/world` | Turns the real game into a seat's worlds: `world.For(g, seat, known, seed)`; a hard seat's memory, `world.Memory`. |
 | `internal/arena` | Plays whole games between levels and counts them. |
 | `cmd/bot_arena` | Prints the arena's results; `make bots` runs it. |
 
@@ -15,7 +15,7 @@ Bots fill free seats of a network game (ADR 030, step 21). This page is for deve
 
 `bot.Input` holds the seat, the level, the bot's own random source, a budget and `World`. It holds no game. `World(i)` returns a new game as the seat may imagine it: `Game.Imagine` redeals every card the seat cannot see (see "Imagined game" in [Rules engine](Rules-engine)). So a bot cannot read another hand or a deck order, even by mistake.
 
-`world.For` is the one place that makes worlds. It copies the game once (`Game.Clone`), at once, and returns a function: world `i` is that copy imagined by the seat with the seed `world.Seed(seed, i)` and the cards the seat remembers (`known`; empty until the memory of step 21.15, `world.Memory`, which lives in `internal/world` because it names cards). The arena and the server's bot driver (step 21.8) both call it, so a bot gets the same thing in both. The copy is made on the caller's goroutine; the game may change after `For` returns. One world function is for one goroutine at a time.
+`world.For` is the one place that makes worlds. It copies the game once (`Game.Clone`), at once, and returns a function: world `i` is that copy imagined by the seat with the seed `world.Seed(seed, i)` and the cards the seat remembers (`known`: a hard seat's `world.Memory`, below, which lives in `internal/world` because it names cards; empty for the other levels). The arena and the server's bot driver (step 21.8) both call it, so a bot gets the same thing in both. The copy is made on the caller's goroutine; the game may change after `For` returns. One world function is for one goroutine at a time.
 
 `internal/world` sits outside `internal/bot` on purpose: it touches the real game, the bot never does. Two checks hold this:
 
@@ -72,6 +72,25 @@ Hard's score (Decision 7.6) weighs the opponents by strength, not as an average:
 
 `Budget{Playouts, Time}`: whichever ends first. `Playouts` 0 means no playout cap, `Time` 0 no time limit; both 0 think 1.5 s. With a time budget the first world measures a playout and the rounds share out what the time leaves. The search checks `ctx` before each playout, yields the core after each (`runtime.Gosched`) and, when stopped, plays the best so far. A playout takes about 4 ms on one core, most of it the engine's `checkMaxHP`; a move of 150 playouts about 0.4 s and 150 MB of garbage.
 
+## Memory
+
+The hard level remembers cards it saw go out of sight (ADR 030, Decision 19); standard does not. `world.Memory` (`internal/world/memory.go`) is one seat's memory. It is fed only what the seat's client gets, so it cannot hold a card the seat never saw:
+
+```go
+m := world.NewMemory(seat)                 // empty, at the game's start
+m.Observe(g.ViewFor(base, viewer), engine.FilterEvents(events, viewer)) // after every step, in order
+worlds, _ := world.For(g, seat, m.Known(), seed)                         // the remembered cards go into Imagine
+m.Reset()                                  // after a load or a rollback
+```
+
+`Observe` must see every step, in order; its first call only takes the view. `Known` returns a copy. A memory is for one goroutine at a time and is not saved.
+
+It remembers the cards of other hands and one place per card of each deck, bottom up. It learns from a look (`looked_at`; a deck card's look names its deck and depth, `Event.Deck`), its own top choice, a deck top shown to all, its treasure peek, a hand its view shows, a card taken from a discard into a hand, a card it gave or got, a card put on, into or under a deck in sight, and a remembered top card that a loot draw (`looted`, then `loot_done`) takes into a hand. The full list is in Decision 19.14.
+
+When unsure, it forgets (Decision 19.15): a whole hand when a card leaves it unseen or its size does not add up with the step's events; every remembered copy of a card that leaves in sight; a whole deck on `deck_order` (a shuffle, a refill from the discard, a reorder, a card moved within it), on `deck_bottom`, on a card taken from it unseen, on a look or draw that shows another card than remembered, or when its size does not add up. Draws it does not follow (slots, gains, attacks on the deck) leave the size off, so the deck is forgotten.
+
+A new engine move of a deck card out of sight that keeps the deck's size needs a `deck_order` event (`emitDeckOrder`), or the memory goes wrong. `TestMemoryIsTrue` (`internal/world`) catches it: 100 simulated games of every set and challenge, every seat's memory checked against the real game at every step. `TestMemoryNamesOnlyShownCards` checks that a memory names only cards its seat's views and events showed.
+
 ## Arena
 
 `cmd/bot_arena` plays whole seeded games with every set: bonus souls on, the room deck in odd seeds, deck ratios in every third. Each `-match` is one line-up of levels; game `k` plays seed `-seed`+k and rotates the line-up by `k` seats, so each level plays from each seat. Games run side by side on every core; the results do not depend on it.
@@ -85,7 +104,7 @@ go run ./cmd/bot_arena -games 20 -cap 400 -match policy,policy,policy,policy
 
 It prints, per line-up: games, games with a winner within the turn cap, wins by level against chance, median and max game turns, intents per turn, the share of passes, time per move, player deaths per monster killed; and for every game cut by the cap, its seed, turn, souls by seat and the kinds of its last 300 intents. It exits 1, in any line-up, when a bot intent is refused or a loop guard ends a game. The finish gate, 95% of games with a winner within the cap (Decision 18.4), is only for line-ups of the levels players meet (standard from 21.5, hard from 21.6) with no random seat: `finishGated` in `cmd/bot_arena`. Random and policy line-ups print their share for reference. The win gates are `winGates` there: standard wins 70% of 2-player games against random, hard 60% of 2-player games against standard, and one hard among three standard wins over 30% (Decision 18.5 – 18.7). Hard thinks `-playouts` playouts a move (`arena.DefaultPlayouts`, 150), never a time, so the results repeat.
 
-Each step the arena asks the waiting seat's bot, with `world.For` on the game for that seat. A refused intent is listed and the arena sends the forced answer: the first allowed intent.
+Each step the arena asks the waiting seat's bot, with `world.For` on the game for that seat. Each hard seat keeps a memory, fed after every step with its view and filtered events; `-memory=false` (`Match.NoMemory`) plays hard without it. A refused intent is listed and the arena sends the forced answer: the first allowed intent.
 
 The cap, `arena.TurnCap`, is 150 game turns (`Turn.Number`). Two loop guards end a game as a failed gate, printed with its seed: one game turn over 1000 applied intents other than passes (`MaxTurnIntents`), a game over 30000 applied intents (`MaxGameIntents`). The turn guard counts no passes: a long turn of real plays in a 4-player game (a paid ability used 40 times, each a stack item four seats pass) passed 1000 intents with no loop (21.5). A turn is measured, not intents, because about 80% of intents are passes: every stack item waits for a pass from each seat, so a 4-player turn takes about 86 intents and a 2-player turn about 46.
 
