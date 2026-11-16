@@ -4480,6 +4480,7 @@ Totals by system (169 items):
    1. [ ] A key for a nested effect that survives a load.
    2. [ ] Go test: save and load inside Gimpy's discard question.
    3. [ ] The fuzz input as a corpus file once it passes.
+5. Seen again as 19.177 (22.3, 2026-11-16); findings there.
 
 ### [x] 19.144 Soul of Envy goes on the stack again for the player who gains it
 
@@ -5457,6 +5458,25 @@ Totals by system (169 items):
 4. Tasks:
    1. Replay the saved input; find the first differing step.
    2. Fix under the step 19 rules; 22.3 needs `make fuzz` green.
+5. Cause (22.3, 2026-11-16): the same bug as 19.143.
+   1. Same input, `55bb281b0c9ed398`; the same step 70.
+   2. Saved at step 70: Gimpy's nested discard question waits.
+   3. After the load, the answer goes to Gimpy's first question again.
+   4. It loots again instead of the discard.
+6. Findings (22.3, 2026-11-16)
+   1. A load-and-step check over 400 random games hit 16 cards.
+   2. Gimpy, Holy Bony, Scolex, Pills, Rag Mega, Holy Mom's Eye, Boss Rush, more.
+   3. A nested ask in a wrapper (Plan C's `DestroyThis`) panics after a load.
+   4. Tried: run the parent again on a copy of the game, take its Nth ask.
+   5. It fails: the parent sees the state after it ran (Plan C is gone).
+   6. Boss Rush then answered another question with no error.
+   7. A copy of the state before each parent runs costs ~0.25 ms per effect.
+7. Owner decision needed (22.3 stopped here)
+   1. Fix 19.143 with one design; 19.177 closes with it.
+   2. Option: a structural path through wrappers; closures still unsolved.
+   3. Option: keep the state before a parent runs; slower steps.
+   4. Option: a save while a nested ask waits keeps the last clean state and the steps since.
+
 
 ### [ ] 19.178 No event when a deck is shuffled
 
