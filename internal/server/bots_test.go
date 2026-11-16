@@ -44,7 +44,15 @@ func botRoom(t *testing.T, opts protocol.Options, seats ...string) *Room {
 	r.recInfo.game = "g1"
 	t.Cleanup(r.stopThinkers)
 	r.play(characters(setsOf(codes))[:len(seats)])
+	wake(t, r)
 	return r
+}
+
+// wake starts the thinkers the room noted, as Run does after each
+// request.
+func wake(t *testing.T, r *Room) {
+	t.Helper()
+	r.startThinkers(t.Context())
 }
 
 // serveBots runs the room until done says so: it hands the room each
@@ -53,7 +61,7 @@ func botRoom(t *testing.T, opts protocol.Options, seats ...string) *Room {
 func serveBots(t *testing.T, r *Room, done func() bool) {
 	t.Helper()
 	deadline := time.Now().Add(10 * time.Second)
-	for !done() {
+	for wake(t, r); !done(); wake(t, r) {
 		if time.Now().After(deadline) {
 			t.Fatal("the room did not get there in time")
 		}
@@ -154,6 +162,7 @@ func TestBotsWaitWhilePausedVotingOver(t *testing.T) {
 	noBotMove(t, r, "while paused")
 	back := &Client{conn: newMemConn()}
 	r.attach(back, "a", "")
+	wake(t, r)
 	if r.paused() || r.thinkers[1] == nil {
 		t.Fatal("the bot does not think again after the pause")
 	}
@@ -171,6 +180,7 @@ func TestBotsWaitWhilePausedVotingOver(t *testing.T) {
 	}
 	noBotMove(t, r, "during a rollback vote")
 	r.endVote(protocol.VoteCancelled)
+	wake(t, r)
 	if r.thinkers[1] == nil {
 		t.Fatal("the bot does not think again after the vote")
 	}
@@ -202,6 +212,7 @@ func TestBotsRollbackThinksAgain(t *testing.T) {
 	if err := r.rollBackTo(0, botStep()); err != nil {
 		t.Fatal(err)
 	}
+	wake(t, r)
 	if !closed(old.done) {
 		t.Fatal("the rollback did not drop the open thinker")
 	}
@@ -323,6 +334,7 @@ func TestBotsPace(t *testing.T) {
 	r.second = 40 * time.Millisecond
 	r.stopThinkers()
 	r.drive() // think again at the new pace
+	wake(t, r)
 	for range 8 {
 		serveBots(t, r, thinking(r, 1))
 		th := r.thinkers[1]

@@ -14,7 +14,8 @@ import (
 )
 
 // The bot driver (ADR 030, Decisions 11 – 14): after every broadcast it
-// starts one thinker for each bot seat the game waits for. A thinker
+// notes each bot seat the game waits for, and Run starts one thinker
+// for it under the room's context once the request is handled. A thinker
 // runs bot.Choose on its own goroutine, on worlds the room copied for
 // it; its answer comes back as a room request with the step it was
 // for. Any newer step, a pause, a vote or the game end drops it.
@@ -100,8 +101,11 @@ func (r *Room) remember(_ []engine.Event, _ engine.ViewBase) {
 	}
 }
 
-// drive starts or drops the thinkers after a broadcast (Decision 12).
+// drive drops the thinkers a broadcast made stale and notes the bot
+// seats that must think now (Decision 12). Run starts their thinkers
+// (startThinkers) with its context, once the request is handled.
 func (r *Room) drive() {
+	r.due = r.due[:0]
 	if r.game == nil || !r.hasBots() {
 		return
 	}
@@ -117,21 +121,42 @@ func (r *Room) drive() {
 		r.stopThinkers()
 		return
 	}
-	who := r.game.Prompt().Who()
-	for i, s := range r.seats {
-		if s.bot == "" {
-			continue
-		}
-		p := engine.PlayerID(i)
-		wanted := slices.Contains(who, p) && len(r.game.Allowed(p)) > 0
+	for i := range r.seats {
+		wanted := r.wantsMove(i)
 		if t := r.thinkers[i]; t != nil && (!wanted || t.step != r.step) {
 			t.cancel()
 			r.thinkers[i] = nil
 		}
 		if wanted && r.thinkers[i] == nil {
-			r.think(i)
+			r.due = append(r.due, i)
 		}
 	}
+}
+
+// wantsMove reports whether the game waits for bot seat i now.
+func (r *Room) wantsMove(i int) bool {
+	g := r.game
+	if g == nil || g.Over || r.paused() || r.rbVote != nil || r.seats[i].bot == "" {
+		return false
+	}
+	p := engine.PlayerID(i)
+	return slices.Contains(g.Prompt().Who(), p) && len(g.Allowed(p)) > 0
+}
+
+// startThinkers starts a thinker for each seat drive noted, under the
+// room's context: the room's end ends them all.
+func (r *Room) startThinkers(ctx context.Context) {
+	if len(r.due) == 0 {
+		return
+	}
+	start := time.Now()
+	defer r.noteBotWork(start)
+	for _, i := range r.due {
+		if r.thinkers[i] == nil && r.wantsMove(i) {
+			r.think(ctx, i)
+		}
+	}
+	r.due = r.due[:0]
 }
 
 // stopThinkers cancels every open thinker.
@@ -146,18 +171,16 @@ func (r *Room) stopThinkers() {
 
 // think starts a thinker for bot seat i. The room copies the game here,
 // on its own goroutine (world.For); the thinker gets only the worlds.
-// Its context is its own: the room's steps end it, and the room's end
-// stops every thinker (stopThinkers).
-//
-//nolint:contextcheck // see above: no caller's context bounds a thinker
-func (r *Room) think(i int) {
+// Its context comes from the room's: the room's steps cancel it alone,
+// and the room's end stops every thinker.
+func (r *Room) think(ctx context.Context, i int) {
 	s := r.seats[i]
 	p := engine.PlayerID(i)
 	rng := r.botRng()
 	seed, own := rng.Uint64(), r.game.PromptFor(p).Kind == engine.PromptPriority && r.game.Turn.Active == p
 	answerPace, actionPace := r.botSecond(botAnswerPace), r.botSecond(botActionPace+rng.Float64())
 	worlds, err := world.For(r.game, p, r.known[i], seed)
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(ctx)
 	r.thinkN++
 	t := &thinker{id: r.thinkN, step: r.step, done: ctx.Done(), cancel: cancel}
 	r.thinkers[i] = t

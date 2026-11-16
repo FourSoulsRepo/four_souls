@@ -132,6 +132,7 @@ type Room struct {
 	// seat remembers (empty until 21.15), the hard bot's time budget,
 	// and the longest time the driver held the room, in nanoseconds.
 	thinkers []*thinker
+	due      []int // bot seats to think, for Run to start (startThinkers)
 	thinkN   int
 	botRand  *mrand.Rand
 	known    []engine.Known
@@ -204,6 +205,7 @@ func (r *Room) Run(ctx context.Context) {
 	tick := time.NewTicker(r.limitTick)
 	defer tick.Stop()
 	for !r.stopped {
+		r.startThinkers(ctx)
 		select {
 		case <-ctx.Done():
 			r.keep()
