@@ -30,6 +30,8 @@ interface Props {
   tools?: ReactNode;
   // doing is what this active player does now, for the others (15.30).
   doing?: LinePart[] | null;
+  // watched: a record plays (10.2); the bottom seat is not the viewer's.
+  watched?: boolean;
 }
 
 // useSpent tells if a character or item is used up until it recharges.
@@ -42,8 +44,8 @@ function useSpent(): (c: CardView) => boolean {
 
 // PlayerArea is one player's place at the table: name and counters,
 // character and cards in play, and the hand for the viewer (V-02).
-export function PlayerArea({ you, position, tools, ...rest }: Props) {
-  return you ? <OwnArea tools={tools} {...rest} /> : <OpponentArea position={position} {...rest} />;
+export function PlayerArea({ you, position, tools, watched, ...rest }: Props) {
+  return you ? <OwnArea tools={tools} watched={watched} {...rest} /> : <OpponentArea position={position} {...rest} />;
 }
 
 // OpponentArea is another player's place (15.18): a small name with
@@ -171,8 +173,8 @@ function OwnCents({ cents }: { cents: number }) {
 // (15.55), the souls and the character centered with its live health
 // and attack, items to its right, and the hand fanned below, partly
 // off screen (F-05, F-06, H-02, H-03, H-15, H-18).
-function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Props, 'you' | 'position'>) {
-  const label = t('table.own_name', { player: name });
+function OwnArea({ player, name, active, asked, winSouls, ui, tools, watched }: Omit<Props, 'you' | 'position'>) {
+  const label = watched ? name : t('table.own_name', { player: name });
   const pick = ui.player(player.id);
   const hand = player.hand ?? [];
   const spent = useSpent();

@@ -15,9 +15,8 @@
    3. Under it: the winners or "Unfinished", and the step count.
 3. The player presses **Watch** on a row.
    1. The app opens the record without the rules engine (ADR 031).
-   2. It shows the players, the result, the turns and steps.
-   3. The table player comes in 10.2.
-4. The player presses **Back to records**.
+   2. It plays the record on the table (UC-45).
+4. The player presses **Back to records** on the replay bar.
 5. The player presses **Export** on a row.
    1. A save dialog asks where.
    2. The app copies the file; the status line names the copy.
@@ -40,4 +39,4 @@
 ## Postconditions
 
 * The list shows the folder as it is now.
-* A watched record is open in the app for the player (10.2).
+* A watched record is open in the app for the player (UC-45).

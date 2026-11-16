@@ -17,6 +17,7 @@ import {
   getSettings,
   getVersions,
   checkSeat,
+  recordStep,
   saveSettings,
   serverStatus,
   startHosting,
@@ -26,6 +27,7 @@ import {
   type Icons,
   type LanServer,
   type MatInfo,
+  type RecordSummary,
   type Rejoin,
   type Settings,
 } from './bridge';
@@ -43,6 +45,7 @@ import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
 import { bonusSlot, chargedIn, createPlayback, effectsFor, hpOf, playedEnds, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
 import { empty } from './presence';
+import { animates, autoplayPause, clampStep, replayUpdate, type Replaying, type ReplaySpeed } from './replay';
 import { loadSounds, playSound, setSoundVolume } from './sounds';
 import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
@@ -360,6 +363,19 @@ interface AppState extends Session {
   // pick picks one of the player's draft offers (GS-01, 14.11).
   pick: (card: string) => void;
   leaveTable: () => Promise<void>;
+  // replay is the record watched on the table (10.2, ADR 031); null in
+  // a game. Nobody sits at it: the table shows seat 0 at the bottom.
+  replay: Replaying | null;
+  // watch puts an opened record on the table, at its first step.
+  watch: (summary: RecordSummary) => Promise<void>;
+  // replayTo shows step index: one step forward plays its effects,
+  // any other move shows its view at once (ADR 031, 4). It pauses.
+  replayTo: (index: number) => Promise<void>;
+  // replayPlay starts or stops the autoplay (ADR 031, 4.1, 4.6).
+  replayPlay: (on: boolean) => void;
+  replaySpeed: (speed: ReplaySpeed) => void;
+  // leaveReplay goes back to the records list.
+  leaveReplay: () => void;
   // quit closes the connection, stops hosting, and goes to the menu,
   // or to another screen: the join screen, one level up from its games.
   quit: (to?: Screen) => Promise<void>;
@@ -375,6 +391,12 @@ const noSeat: Rejoin = { address: '', token: '', game: '', via: '' };
 // back to a running game after a restart, from the welcome.
 export function seatOf(s: Pick<Session, 'lobby'>): number {
   return s.lobby.table?.you ?? Math.max(s.lobby.welcome?.seat ?? 0, 0);
+}
+
+// viewerOf is the seat the game's words and effects are told for: none
+// (-1) while a record plays, so they name every player (10.2).
+export function viewerOf(s: Pick<Session, 'lobby'> & { replay: Replaying | null }): number {
+  return s.replay ? -1 : seatOf(s);
 }
 
 // messageOf turns a rejected call into a message for the player. Wails
@@ -458,14 +480,14 @@ export const useApp = create<AppState>()((set, get) => {
       // A server restart that cut the history gets a row (item 10.6).
       const kept = u.rollback_cut ? restartCut(s.history, u.rollback_cut, u.view.turn.number) : s.history;
       const history = u.rollback
-        ? rolledBack(kept, u.rollback, u.step, u.view.turn.number, seatOf(s), names(u))
+        ? rolledBack(kept, u.rollback, u.step, u.view.turn.number, viewerOf(s), names(u))
         : u.rollback_end
-          ? voteEnded(kept, u.rollback_end, u.view.turn.number, seatOf(s), names(u))
+          ? voteEnded(kept, u.rollback_end, u.view.turn.number, viewerOf(s), names(u))
           : kept;
       const entries = entriesFor(
         u.events ?? [],
         s.game?.view.turn.number ?? u.view.turn.number,
-        seatOf(s),
+        viewerOf(s),
         names(u),
         (history.at(-1)?.key ?? 0) + 1,
         u.view,
@@ -476,9 +498,9 @@ export const useApp = create<AppState>()((set, get) => {
       // undid (17.7).
       const r = u.rollback;
       const moves = u.rollback_mode
-        ? [...s.moves.filter((m) => !r || m.from < r.to), moveOf(u.events ?? [], entries, first, u.step, seatOf(s), names(u))]
+        ? [...s.moves.filter((m) => !r || m.from < r.to), moveOf(u.events ?? [], entries, first, u.step, viewerOf(s), names(u))]
         : [];
-      const looked = lookedAt(u.events ?? [], seatOf(s), shownByChoice(s.game, seatOf(s)));
+      const looked = lookedAt(u.events ?? [], viewerOf(s), shownByChoice(s.game, viewerOf(s)));
       // A rollback jumps to the restored table: no animation, and what
       // the undone steps left on screen goes (item 8.5).
       const jump = u.rollback
@@ -566,14 +588,15 @@ export const useApp = create<AppState>()((set, get) => {
         roll: (stack) => get().game?.view.stack?.find((it) => it.id === stack)?.roll,
         hpAfter: (e) => hpOf(u.view, e),
         charged: (p) => chargedIn(u.view, p),
-        you: seatOf(get()),
+        you: viewerOf(get()),
         looking: (deck) => {
           const w = get().game?.view.waiting;
-          return w?.look !== undefined && deckKinds[w.look.deck ?? 0] === deck && w.player === seatOf(get());
+          return w?.look !== undefined && deckKinds[w.look.deck ?? 0] === deck && w.player === viewerOf(get());
         },
       });
     },
     speed: () => get().settings.animation,
+    rate: () => get().replay?.speed ?? 1,
     shown: () => get().game,
   });
   // keepSeat keeps the table's seat token in the settings, so the app
@@ -651,6 +674,73 @@ export const useApp = create<AppState>()((set, get) => {
     clearPresence();
     diedAt.clear();
     set({ history: [], moves: [], lastRoll: null, looking: [], placed: [], big: null, left: [], lifted: [], charged: [], cost: null });
+  };
+
+  // A replay's moves (10.2): moved counts the jumps, so a late step
+  // answer of an older move is dropped; played counts the autoplay
+  // runs, so a paused one stops.
+  let moved = 0;
+  let played = 0;
+  // fetchStep reads one step of the watched record; null when it failed
+  // (the error says why) or a newer jump came meanwhile.
+  const fetchStep = async (index: number, jump: number): Promise<Update | null> => {
+    const r = get().replay;
+    if (!r) {
+      return null;
+    }
+    try {
+      const step = await recordStep(index);
+      return jump === moved && get().replay ? replayUpdate(step, r.summary) : null;
+    } catch (e) {
+      set({ error: messageOf(e) });
+      return null;
+    }
+  };
+  // showAt shows a step's view at once, with no effects (ADR 031, 4.3):
+  // what earlier steps left on screen goes, and the history keeps only
+  // the rows up to it.
+  const showAt = (u: Update) => {
+    playback.cancel();
+    get().playing?.done();
+    diedAt.clear();
+    set((s) => ({
+      game: u,
+      jumped: true,
+      behind: false,
+      history: s.history.filter((e) => (e.step ?? 0) <= u.step),
+      placed: [],
+      left: [],
+      lifted: [],
+      charged: [],
+      big: null,
+      looking: [],
+      lastRoll: null,
+      zoom: null,
+      error: '',
+    }));
+  };
+  // autoplay plays step after step until the end or a pause: each
+  // step's effects, then a short pause (ADR 031, 4.6).
+  const autoplay = async () => {
+    const run = ++played;
+    const on = () => run === played && get().replay?.playing === true;
+    while (on()) {
+      const r = get().replay;
+      if (!r || r.at >= r.summary.steps - 1) {
+        set((s) => (s.replay ? { replay: { ...s.replay, playing: false } } : {}));
+        return;
+      }
+      const at = r.at + 1;
+      set({ replay: { ...r, at } });
+      const u = await fetchStep(at, moved);
+      if (!u || !on()) {
+        return;
+      }
+      playback.push(u);
+      await playback.idle();
+      const wait = autoplayPause(u.events?.length ?? 0, get().replay?.speed ?? 1);
+      await new Promise((resolve) => setTimeout(resolve, wait));
+    }
   };
 
   // open connects to address and says hello; the server answers with
@@ -1167,6 +1257,61 @@ export const useApp = create<AppState>()((set, get) => {
     },
     pick: (card) => {
       send('pick', { card });
+    },
+    replay: null,
+    watch: async (summary) => {
+      played++;
+      playback.cancel();
+      stopPlayback();
+      set({ replay: { summary, at: 0, speed: 1, playing: false }, game: null, jumped: false, screen: 'game', error: '', zoom: null });
+      const u = await fetchStep(0, ++moved);
+      if (u) {
+        showAt(u);
+      }
+    },
+    replayTo: async (index) => {
+      const r = get().replay;
+      if (!r) {
+        return;
+      }
+      played++;
+      const at = clampStep(index, r.summary.steps);
+      const animate = animates(r.at, at);
+      set({ replay: { ...r, at, playing: false } });
+      // A step forward plays on after what still plays; a jump stops it.
+      const u = await fetchStep(at, animate ? moved : ++moved);
+      if (!u) {
+        return;
+      }
+      if (animate) {
+        playback.push(u);
+      } else {
+        showAt(u);
+      }
+    },
+    replayPlay: (on) => {
+      const r = get().replay;
+      if (!r) {
+        return;
+      }
+      played++;
+      set({ replay: { ...r, playing: on } });
+      if (on) {
+        void autoplay();
+      }
+    },
+    replaySpeed: (speed) => {
+      const r = get().replay;
+      if (r) {
+        set({ replay: { ...r, speed } });
+      }
+    },
+    leaveReplay: () => {
+      played++;
+      moved++;
+      playback.cancel();
+      stopPlayback();
+      set({ replay: null, game: null, jumped: false, screen: 'records', error: '', zoom: null });
     },
     leaveTable: async () => {
       if (get().hosting) {

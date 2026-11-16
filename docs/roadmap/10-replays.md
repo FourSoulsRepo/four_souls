@@ -27,7 +27,7 @@ Rules for this step (owner, 2026-11-16):
 3. Done when:
    1. Use case: manage records.
 
-### [ ] 10.2 Replay player
+### [x] 10.2 Replay player
 
 1. Goal: play a record on the table (RP-11).
 2. Tasks:

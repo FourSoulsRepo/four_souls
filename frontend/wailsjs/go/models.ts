@@ -503,6 +503,24 @@ export namespace records {
 	        this.name = source["name"];
 	    }
 	}
+	export class Step {
+	    index: number;
+	    n: number;
+	    events: unknown;
+	    view: unknown;
+	
+	    static createFrom(source: any = {}) {
+	        return new Step(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.index = source["index"];
+	        this.n = source["n"];
+	        this.events = source["events"];
+	        this.view = source["view"];
+	    }
+	}
 	export class Turn {
 	    number: number;
 	    active: number;

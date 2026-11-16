@@ -1,0 +1,71 @@
+/* The replay bar (10.2, ADR 031, 4): the record's controls, bottom
+   left of the table, where no seat sits with 2 to 4 players. */
+
+.replay-bar {
+  position: fixed;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  z-index: var(--z-replay);
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  width: 20rem;
+  padding: 0.5rem 0.625rem;
+  border: 0.125rem solid rgb(255 255 255 / 12%);
+  border-radius: 0.5rem;
+  color: #f2f2f2;
+  background: rgb(0 0 0 / 70%);
+}
+
+.replay-row {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.replay-bar button {
+  min-width: 2rem;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.replay-leave {
+  align-self: flex-start;
+}
+
+.replay-speeds {
+  display: flex;
+  gap: 0.125rem;
+  margin-left: auto;
+}
+
+.replay-speeds button {
+  min-width: 0;
+  padding: 0.125rem 0.375rem;
+  opacity: 0.6;
+}
+
+.replay-speeds button[aria-pressed='true'] {
+  opacity: 1;
+  outline: 0.125rem solid #f7de8f;
+}
+
+.replay-slider {
+  width: 100%;
+}
+
+.replay-where {
+  flex: 1;
+  font-size: 0.875rem;
+}
+
+.replay-bar select {
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.replay-error {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #ff9a8a;
+}

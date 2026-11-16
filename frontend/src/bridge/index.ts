@@ -4,7 +4,7 @@
 import { noHostSetup, type HostSetup } from '../hostSetup';
 import type { CardInfo, Kind } from '../cards';
 import type { Speed } from '../playback';
-import type { Difficulty } from '../protocol';
+import type { Difficulty, GameEvent, GameView } from '../protocol';
 import { CardSets as wailsCardSets, Challenges as wailsChallenges, DeckRatios as wailsDeckRatios } from '../../wailsjs/go/setup/Setup';
 import { CheckSeat as wailsCheckSeat, FindGames as wailsFindGames, ServerStatus as wailsServerStatus } from '../../wailsjs/go/join/Join';
 import {
@@ -14,6 +14,7 @@ import {
   Open as wailsOpenRecord,
   PickFile as wailsPickRecord,
   SaveRecord as wailsSaveRecord,
+  Step as wailsRecordStep,
 } from '../../wailsjs/go/records/Records';
 import {
   Backs as wailsBacks,
@@ -376,6 +377,21 @@ function recordWhy(why: string): RecordWhy {
 // openRecord opens a record for watching; Go keeps it for its steps.
 export function openRecord(path: string): Promise<RecordSummary> {
   return wailsOpenRecord(path);
+}
+
+// RecordStep is one live step of the open record (ADR 031, 3.3): the
+// events it played and the judge view after it.
+export interface RecordStep {
+  index: number; // in the live steps, from 0
+  n: number; // the record's own step number
+  events: GameEvent[] | null;
+  view: GameView;
+}
+
+// recordStep gives live step index of the record openRecord opened.
+export async function recordStep(index: number): Promise<RecordStep> {
+  const s = await wailsRecordStep(index);
+  return { index: s.index, n: s.n, events: s.events as GameEvent[] | null, view: s.view as GameView };
 }
 
 // deleteRecord deletes a record file; the screen asks first.

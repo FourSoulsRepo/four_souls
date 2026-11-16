@@ -25,3 +25,7 @@ export function PickFile() {
 export function SaveRecord(arg1) {
   return window['go']['records']['Records']['SaveRecord'](arg1);
 }
+
+export function Step(arg1) {
+  return window['go']['records']['Records']['Step'](arg1);
+}

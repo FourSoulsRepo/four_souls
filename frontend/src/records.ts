@@ -1,5 +1,5 @@
 // The Records screen's words (M-01, ADR 031).
-import type { RecordEntry, RecordSummary, RecordWhy } from './bridge';
+import type { RecordEntry, RecordWhy } from './bridge';
 import { language, t } from './i18n';
 
 // whyText says why a record can't be watched; '' when it can.
@@ -53,16 +53,4 @@ export function entryLine(e: RecordEntry): string {
     return whyText(e.why);
   }
   return `${resultText(e.finished, e.winners)} · ${t('records.steps', { n: e.steps })}`;
-}
-
-// summaryLines describe an opened record before the player shows it.
-// Its turns count up to the last one; turn 0 is the first-player roll.
-export function summaryLines(s: RecordSummary): string[] {
-  const names = new Map(s.seats.map((seat) => [seat.seat, seat.name]));
-  const winners = (s.end?.winners ?? []).map((w) => names.get(w) ?? '?');
-  return [
-    t('records.players', { players: s.seats.map((seat) => seat.name).join(', ') }),
-    resultText(s.end?.finished ?? false, winners),
-    `${t('records.turns', { n: s.turns.at(-1)?.number ?? 0 })} · ${t('records.steps', { n: s.steps })}`,
-  ];
 }

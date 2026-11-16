@@ -11,6 +11,7 @@ The desktop client is React + TypeScript in `frontend/` (ADR 002), with three li
 | `src/protocol.ts` | Message and engine view types, mirroring `internal/protocol` and the engine; `wsURLs` (what a typed address tries, ADR 017), `recordURL`, `errorText`. |
 | `src/lobby.ts` | Pure: how server messages change the session (screen, lobby, error). |
 | `src/playback.ts` | Pure: event → effect mapping, speed, and the update queue. |
+| `src/replay.ts` | Pure: the replay player's parts: a record's step as an update, moves, turns, the autoplay's pause ([Replay](#replay)). |
 | `src/animations.ts` | Animation claims: which effect brought or showed a card, and clashes ([Animations](Animations)). |
 | `src/table.ts` | Pure: where each player sits. |
 | `src/cards.ts` | Pure: card kinds, text icons. |
@@ -44,7 +45,7 @@ Go bindings are one package per domain under `bindings/` (ADR 030); `main.go` bu
 | `setup` | `Setup` | `CardSets`, `Challenges`, `DeckRatios` |
 | `join` | `Join` | `FindGames`, `CheckSeat`, `ServerStatus` |
 | `host` | `Host` | `Start`, `Stop`, `Info` |
-| `records` | `Records` | `SaveRecord`, `List`, `Open`, `Delete`, `Export`, `PickFile` |
+| `records` | `Records` | `SaveRecord`, `List`, `Open`, `Step`, `Delete`, `Export`, `PickFile` |
 | `updater` | `Updater` | `Check`, `Download`, `ApplyAndQuit`, `OpenReleases` |
 
 Wails generates each struct's calls into `frontend/wailsjs/go/<package>/<Struct>.js` (e.g. `wailsjs/go/assets/Assets`) and its types into `export namespace <package>` in `models.ts`. Only `src/bridge/index.ts` imports them; its exports keep their own names, so screens never see the Go packages. At run time the calls go through `window.go.<package>.<Struct>.<Method>`, and `src/fakeBridge.ts` fakes exactly those paths (`?fake`), e.g. `window.go.join.Join.FindGames`. A new binding package checks `models.ts` first: a name already used there (`settings`, `update`, …) would merge two namespaces.
@@ -240,9 +241,21 @@ The Records screen (10.1, M-01, UC-44) is `RecordsScreen.tsx`; its words are pur
 
 * `Records.List` (Go, `bindings/records`) reads each `.fsrec` file there with `record.ReadBrief`: the header, the end and each step's number, not its intent, events or view, so a long list stays fast. Each entry has its path, file name, start, players, finished, winners, live step count and `why`: `''` when it can be watched, `before_replays` (format 1, ADR 031 1.5), `newer` (a newer app, 1.6) or `unreadable`. Newest first.
 * A row shows its start and players (or its file name when the header can't be read), then how it ended and its length, or why it can't be watched. Watch shows only when `why` is `''`; Export and Delete always.
-* Watch calls `Records.Open`: `internal/replay` reads the live steps without the engine, and the binding keeps the record for the player's `Step` calls (10.2). It returns a summary: seats, sets, card text, step count, where each turn starts (the view's `turn.number` changes) and the end. For now the screen shows that summary; the table player comes in 10.2. Errors are messages (`error.record_*`, ADR 021).
+* Watch calls `Records.Open`: `internal/replay` reads the live steps without the engine, and the binding keeps the record for the player's `Step` calls. It returns a summary: seats, sets, card text, step count, where each turn starts (the view's `turn.number` changes) and the end. The screen hands it to `store.watch`, which puts the record on the table ([Replay](#replay)). Errors are messages (`error.record_*`, ADR 021).
 * Delete asks in the row first (Delete or Keep); Go deletes only `.fsrec` files. Export asks where (`SaveFileDialog`) and copies the file. Open a file calls `Records.PickFile`, a file dialog for a record anywhere, then `Open`.
-* The fake bridge keeps four records in `window.fakeRecords` (one unfinished, one won, one made before replays, one from a newer app); `fakePick` is the file Open a file picks, and `fakeExported` the last export. The e2e test is `records.spec.ts`.
+* The fake bridge keeps four records in `window.fakeRecords` (one unfinished, one won, one made before replays, one from a newer app); `fakePick` is the file Open a file picks, and `fakeExported` the last export. Its `Step` builds the fake records' steps (`fakeReplay.ts`): a turn every ten steps, a cent for the active player at each turn's fourth step, and the winner's banner on a finished record's last step. `window.fakeFiles` maps a path to a whole record (`summary` and `steps`), which `Open` and `Step` then serve: `replay.spec.ts` reads a real record of the e2e server from disk and plays it. The e2e tests are `records.spec.ts` and `replay.spec.ts`.
+
+## Replay
+
+A record plays on the game table (10.2, ADR 031, UC-45). Nothing runs the rules engine: each step of the record carries the judge view after it.
+
+* `Records.Step(i)` (Go) gives live step `i` of the open record, from 0: its index, its own step number `n`, its events and its view, both as the server wrote them (raw JSON). One call per step; a jump costs one call.
+* `store.watch(summary)` sets `store.replay` (summary, the step shown `at`, the speed, playing) and shows step 0. `replayUpdate` makes each step an update for playback: events, view, the header's seats; no intents, no aims, no deadline, no rollback (ADR 031, 3.5).
+* A step forward (`replayTo(at + 1)`) is pushed to playback, which plays its effects as live, then shows its view. Any other move (back, a turn, the slider) shows the step's view at once (`showAt`): `playback.cancel()` stops the update playing now (its effects left are skipped, its view is not shown), what effects left on screen goes, `jumped` turns off the table's own animations, and the history keeps only the rows up to that step. A forward jump leaves a gap in the history.
+* Autoplay (`replayPlay`) plays step after step: it waits for `playback.idle()`, then `autoplayPause`: 0.8 s after a step with events, 0.2 s after one without, at 1×. Any manual move, Pause, or leaving stops it; it stops itself at the last step.
+* The speed (0.5×, 1×, 2×, 4×) divides the effects' times through playback's `rate`, on top of the player's animation setting, and the pauses. With animations off, steps show without effects.
+* Nobody sits at a replay. The table draws seat 0 at the bottom, as the own area, without "(you)"; every hand shows, since the judge view holds them all. The words and effects are told for no seat (`viewerOf` is -1): banners, the stack, the throw, the history and the turn banner name every player, and no own-turn sound plays. Nothing acts: the table gets no interaction (`noInteract`), and the turn actions, End turn, Pass, the drop layer, presence, the game menu and the end-of-game dialog are not drawn.
+* `ReplayBar` is the controls, bottom left (layer `replay`, [Layers](Layers)): step back, play or pause, step forward, the speeds, "Step i / n · Turn t", a list of the turns (`turnAt`), the slider, and Back to records; Esc also leaves (`leaveReplay`).
 
 ## Interface scale
 

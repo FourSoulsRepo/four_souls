@@ -13,3 +13,5 @@ export function Open(arg1:string):Promise<records.Summary>;
 export function PickFile():Promise<string>;
 
 export function SaveRecord(arg1:string):Promise<string>;
+
+export function Step(arg1:number):Promise<records.Step>;

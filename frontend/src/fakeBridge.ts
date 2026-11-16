@@ -5,6 +5,7 @@
 import b2 from '../../pkg/card_db/data/b2.json?raw';
 import requiem from '../../pkg/card_db/data/r.json?raw';
 import challenge from '../../pkg/card_db/data/challenge.json?raw';
+import { fakeStep, type FakeRecording } from './fakeReplay';
 import { protocolVersion } from './protocol';
 
 interface Part {
@@ -319,7 +320,16 @@ const w = window as unknown as {
   fakeExported?: string;
   // fakePick is the file the Open a file dialog picks; unset cancels.
   fakePick?: string;
+  // fakeFiles are whole records by path, as Go's Open and Step give
+  // them: a test reads a real record from disk and plays it (10.2).
+  fakeFiles?: Partial<Record<string, FakeFile>>;
 };
+
+// FakeFile is a record as Open and Step give it.
+interface FakeFile {
+  summary: unknown;
+  steps: unknown[];
+}
 
 // FakeRecord is a records.Entry as Go lists it.
 interface FakeRecord {
@@ -352,7 +362,11 @@ function goError(key: string): Error {
   return new Error(JSON.stringify({ key }));
 }
 
-// fakeSummary is what Open gives for a record: two turns per ten steps.
+// opened is the record Open opened, for Step (10.2).
+let opened: FakeRecording | FakeFile | null = null;
+
+// fakeSummary is what Open gives for a record: a turn every ten steps,
+// as its steps have them (fakeReplay.ts).
 function fakeSummary(path: string): Promise<unknown> {
   const e = w.fakeRecords.find((r) => r.path === path) ?? (path === w.fakePick ? fakeRecord('picked', '2026-11-14T10:00:00Z', ['Dee', 'Eve'], { path, finished: true, winners: ['Eve'], steps: 40 }) : undefined);
   if (!e) {
@@ -364,6 +378,7 @@ function fakeSummary(path: string): Promise<unknown> {
   const seats = e.players.map((name, seat) => ({ seat, name }));
   const turns = Array.from({ length: Math.ceil(e.steps / 10) }, (_, i) => ({ number: i + 1, active: i % seats.length, step: i * 10 }));
   const winners = e.winners.map((n) => e.players.indexOf(n));
+  opened = { players: seats.length, steps: e.steps, winners };
   return Promise.resolve({
     path,
     game: e.name,
@@ -478,7 +493,15 @@ w.go = {
     Records: {
       SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
       List: () => Promise.resolve(w.fakeRecords.map((r) => ({ ...r }))),
-      Open: (path: string) => fakeSummary(path),
+      Open: (path: string) => {
+        const file = Object.entries(w.fakeFiles ?? {}).find(([p]) => p === path)?.[1];
+        opened = file ?? null;
+        return file ? Promise.resolve(file.summary) : fakeSummary(path);
+      },
+      Step: (index: number) => {
+        const s = opened && 'summary' in opened ? opened.steps.at(index) : opened ? fakeStep(opened, index) : undefined;
+        return s ? Promise.resolve(s) : Promise.reject(new Error(`records: no such step: ${String(index)}`));
+      },
       Delete: (path: string) => {
         if (!path.endsWith('.fsrec')) {
           return Promise.reject(goError('error.record_not_a_record'));

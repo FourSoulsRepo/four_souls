@@ -706,6 +706,9 @@ interface Deps {
   run: (e: Effect, scale: number) => Promise<void>;
   effects: (u: Update) => Effect[];
   speed: () => Speed;
+  // rate divides the effects' times: a replay's speed (ADR 031, 4.5);
+  // none plays them at their own pace.
+  rate?: () => number;
   // shown is the update on screen now, if any.
   shown: () => Update | null;
 }
@@ -714,6 +717,9 @@ interface Deps {
 export interface Playback {
   push: (u: Update) => void;
   clear: () => void;
+  // cancel drops the queue and the update playing now: its effects
+  // left are skipped and its view is not shown (a replay's jump).
+  cancel: () => void;
   // idle resolves when everything queued is shown.
   idle: () => Promise<void>;
   // pending is how many updates wait to be shown.
@@ -727,6 +733,8 @@ export function createPlayback(deps: Deps): Playback {
   let busy = false;
   // waiters are idle() calls waiting for the queue to empty.
   let waiters: (() => void)[] = [];
+  // epoch counts cancels; an update of an older epoch stops playing.
+  let epoch = 0;
 
   function settle(): void {
     if (!busy && queue.length === 0) {
@@ -754,25 +762,32 @@ export function createPlayback(deps: Deps): Playback {
     void drain();
   }
 
-  async function playEffects(u: Update): Promise<void> {
+  async function playEffects(u: Update, from: number): Promise<void> {
+    const rate = deps.rate?.() ?? 1;
     for (const { effect, scale } of catchUp(deps.effects(u), deps.speed(), queue.length)) {
-      await deps.run(effect, scale);
+      if (from !== epoch) {
+        return;
+      }
+      await deps.run(effect, scale / rate);
     }
   }
 
   async function play(): Promise<void> {
     for (let u = queue.shift(); u; u = queue.shift()) {
+      const from = epoch;
       deps.begin();
       // The first update has no table to play on yet: it is drawn
       // first, then its effects play on it. Only a game start brings
       // events then: who goes first without a roll (Cain, 15.43).
       if (deps.shown() === null) {
         deps.show(u);
-        await playEffects(u);
+        await playEffects(u, from);
         continue;
       }
-      await playEffects(u);
-      deps.show(u);
+      await playEffects(u, from);
+      if (from === epoch) {
+        deps.show(u);
+      }
     }
   }
 
@@ -785,6 +800,10 @@ export function createPlayback(deps: Deps): Playback {
     },
     clear: () => {
       queue = [];
+    },
+    cancel: () => {
+      queue = [];
+      epoch++;
     },
     pending: () => queue.length,
     idle: () =>

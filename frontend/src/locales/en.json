@@ -3436,10 +3436,6 @@
     "text": "Back",
     "note": "Records screen: button back to the main menu."
   },
-  "records.close": {
-    "text": "Back to records",
-    "note": "Records screen, an opened record: button back to the list."
-  },
   "records.delete": {
     "text": "Delete",
     "note": "Records screen: button that deletes a match record, after a question."
@@ -3500,14 +3496,6 @@
     "text": "Open a file",
     "note": "Records screen: button that opens a match record file from anywhere on the computer."
   },
-  "records.player_soon": {
-    "text": "Playing records on the table comes in a later version.",
-    "note": "Records screen, an opened record: the replay player is still to come."
-  },
-  "records.players": {
-    "text": "Players: {players}",
-    "note": "Records screen, an opened record: who played. players: 'Ann, Bo'."
-  },
   "records.steps": {
     "text": {
       "one": "{n} step",
@@ -3518,13 +3506,6 @@
   "records.title": {
     "text": "{date} · {players}",
     "note": "Records screen: one saved match. date: when it started, e.g. 'Nov 16, 2026, 12:00 PM'. players: 'Ann, Bo'."
-  },
-  "records.turns": {
-    "text": {
-      "one": "{n} turn",
-      "other": "{n} turns"
-    },
-    "note": "Records screen: how many turns a saved match has. n: the count."
   },
   "records.unfinished": {
     "text": "Unfinished",
@@ -3865,6 +3846,58 @@
   "refuse.wait_stack": {
     "text": "Wait for the stack to resolve",
     "note": "Why Attack, Buy or End turn can't be used: something waits on the stack."
+  },
+  "replay.back": {
+    "text": "Step back",
+    "note": "Replay bar: button that shows the step before, at once."
+  },
+  "replay.forward": {
+    "text": "Step forward",
+    "note": "Replay bar: button that plays the next step with its effects."
+  },
+  "replay.label": {
+    "text": "Replay",
+    "note": "Replay bar: screen-reader name of the bar that plays a match record."
+  },
+  "replay.leave": {
+    "text": "Back to records",
+    "note": "Replay bar: button that stops the replay and goes back to the records list."
+  },
+  "replay.pause": {
+    "text": "Pause",
+    "note": "Replay bar: button that stops playing the record step by step."
+  },
+  "replay.play": {
+    "text": "Play",
+    "note": "Replay bar: button that plays the record step by step."
+  },
+  "replay.slider": {
+    "text": "Step",
+    "note": "Replay bar: screen-reader name of the slider over all steps of the record."
+  },
+  "replay.speed": {
+    "text": "Speed",
+    "note": "Replay bar: screen-reader name of the speed buttons."
+  },
+  "replay.speed_n": {
+    "text": "{n}×",
+    "note": "Replay bar: a playback speed button. n: the speed, e.g. 0.5 or 2."
+  },
+  "replay.turn": {
+    "text": "Turn {n}",
+    "note": "Replay bar: a turn in the list of turns to jump to. n: the turn number."
+  },
+  "replay.turn_pick": {
+    "text": "Jump to a turn",
+    "note": "Replay bar: screen-reader name of the list of turns to jump to."
+  },
+  "replay.turn_zero": {
+    "text": "Before turn 1",
+    "note": "Replay bar: the steps before the first turn, in the list of turns: who goes first."
+  },
+  "replay.where": {
+    "text": "Step {i} / {n} · Turn {turn}",
+    "note": "Replay bar: where the replay is. i: the step shown; n: all steps; turn: its turn number."
   },
   "rollback.ask.other": {
     "text": "{player} asks to undo a move",

@@ -1,18 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
-import { deleteRecord, exportRecord, listRecords, openRecord, pickRecordFile, type RecordEntry, type RecordSummary } from '../bridge';
+import { deleteRecord, exportRecord, listRecords, openRecord, pickRecordFile, type RecordEntry } from '../bridge';
 import { t } from '../i18n';
 import { useEscape } from '../keys';
-import { dateText, entryLine, recordTitle, summaryLines } from '../records';
+import { entryLine, recordTitle } from '../records';
 import { messageOf, useApp } from '../store';
 import './screens.css';
 
 // RecordsScreen manages saved matches (M-01, UC-44): the records
-// folder's list, Watch, Export, Delete, and Open a file. Watch opens
-// the record and sums it up; the table player comes in 10.2.
+// folder's list, Watch, Export, Delete, and Open a file. Watch puts the
+// record on the table (10.2, UC-45).
 export function RecordsScreen() {
   const show = useApp((s) => s.show);
+  const watchRecord = useApp((s) => s.watch);
   const [records, setRecords] = useState<RecordEntry[] | null>(null);
-  const [opened, setOpened] = useState<RecordSummary | null>(null);
   const [asking, setAsking] = useState('');
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
@@ -31,11 +31,7 @@ export function RecordsScreen() {
   }, [load]);
 
   useEscape(() => {
-    if (opened) {
-      setOpened(null);
-    } else {
-      show('menu');
-    }
+    show('menu');
   });
 
   // run does one action at a time and shows its error in the status.
@@ -53,14 +49,14 @@ export function RecordsScreen() {
 
   const watch = (path: string) =>
     run(async () => {
-      setOpened(await openRecord(path));
+      await watchRecord(await openRecord(path));
     });
 
   const openFile = () =>
     run(async () => {
       const path = await pickRecordFile();
       if (path) {
-        setOpened(await openRecord(path));
+        await watchRecord(await openRecord(path));
       }
     });
 
@@ -79,34 +75,6 @@ export function RecordsScreen() {
       await load();
       setStatus(t('records.deleted'));
     });
-
-  if (opened) {
-    return (
-      <div className="screen">
-        <h1>{t('records.heading')}</h1>
-        <section className="panel" aria-label={dateText(opened.started)}>
-          <h2>{dateText(opened.started)}</h2>
-          {summaryLines(opened).map((line) => (
-            <p key={line} className="records-line">
-              {line}
-            </p>
-          ))}
-          <p className="muted records-line">{t('records.player_soon')}</p>
-        </section>
-        <p className="status" role="status">
-          {status}
-        </p>
-        <button
-          type="button"
-          onClick={() => {
-            setOpened(null);
-          }}
-        >
-          {t('records.close')}
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="screen">

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { RecordEntry, RecordSummary } from './bridge';
-import { dateText, entryLine, recordTitle, resultText, summaryLines, whyText } from './records';
+import type { RecordEntry } from './bridge';
+import { dateText, entryLine, recordTitle, resultText, whyText } from './records';
 
 const entry: RecordEntry = {
   path: '/r/g1.fsrec',
@@ -37,31 +37,5 @@ describe('records', () => {
     expect(resultText(false, [])).toBe('Unfinished');
     expect(entryLine(entry)).toBe('Won by Bo · 840 steps');
     expect(entryLine({ ...entry, finished: false, steps: 1 })).toBe('Unfinished · 1 step');
-  });
-
-  it('sums up an opened record', () => {
-    const s: RecordSummary = {
-      path: '/r/g1.fsrec',
-      game: 'g1',
-      server: '',
-      started: entry.started,
-      seats: [
-        { seat: 0, name: 'Ann' },
-        { seat: 1, name: 'Bo' },
-      ],
-      sets: ['b2'],
-      challenge: '',
-      difficulty: '',
-      cards: [],
-      steps: 30,
-      turns: [
-        { number: 0, active: 0, step: 0 },
-        { number: 1, active: 1, step: 2 },
-        { number: 2, active: 0, step: 20 },
-      ],
-      end: { ended: entry.started, finished: true, winners: [1] },
-    };
-    expect(summaryLines(s)).toEqual(['Players: Ann, Bo', 'Won by Bo', '2 turns · 30 steps']);
-    expect(summaryLines({ ...s, end: undefined, turns: [] })[1]).toBe('Unfinished');
   });
 });

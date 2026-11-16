@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { CardInfo } from './cards';
 import { catchUp, chargedIn, createPlayback, effectsFor, hpOf, playedEnds, scaleFor, shopSlot, slotZone, weightOf, type Death, type Effect } from './playback';
 import type { GameEvent, GameView, Update } from './protocol';
@@ -775,5 +775,62 @@ describe('createPlayback', () => {
     playback.clear();
     await playback.idle();
     expect(shown.length).toBeLessThan(3);
+  });
+
+  it('cancel also stops the update playing now: no more effects, no view (10.2)', async () => {
+    const shown: number[] = [];
+    const played: Effect[] = [];
+    let end: () => void = () => undefined;
+    let current: Update | null = null;
+    const playback = createPlayback({
+      begin: () => undefined,
+      show: (u) => {
+        current = u;
+        shown.push(u.step);
+      },
+      run: (e) => {
+        played.push(e);
+        return new Promise((resolve) => {
+          end = resolve;
+        });
+      },
+      effects: (u) => effectsFor(u.events ?? [], ctx),
+      speed: () => 'normal',
+      shown: () => current,
+    });
+    playback.push({ ...update(1), events: [] });
+    playback.push({ ...update(2), events: [{ kind: 'dice_rolled', player: 0, amount: 1 }, { kind: 'dice_rolled', player: 0, amount: 2 }] });
+    playback.push(update(3));
+    await vi.waitFor(() => {
+      expect(played).toHaveLength(1);
+    });
+    playback.cancel();
+    end();
+    await playback.idle();
+    expect(shown).toEqual([1]);
+    expect(played).toHaveLength(1);
+  });
+
+  it("divides the effects' times by the rate: a replay's speed (10.2)", async () => {
+    const scales: number[] = [];
+    let current: Update | null = null;
+    const playback = createPlayback({
+      begin: () => undefined,
+      show: (u) => {
+        current = u;
+      },
+      run: (_, scale) => {
+        scales.push(scale);
+        return Promise.resolve();
+      },
+      effects: (u) => effectsFor(u.events ?? [], ctx),
+      speed: () => 'normal',
+      rate: () => 4,
+      shown: () => current,
+    });
+    playback.push({ ...update(0), events: [] });
+    playback.push(update(1));
+    await playback.idle();
+    expect(scales).toEqual([0.25]);
   });
 });

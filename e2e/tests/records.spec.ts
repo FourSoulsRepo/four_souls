@@ -57,15 +57,14 @@ test('the menu opens the list; records that cannot play say why', async ({ page 
   await expect(page.getByRole('button', { name: tr('menu.records'), exact: true })).toBeVisible();
 });
 
-test('Watch opens a record and sums it up; Back returns to the list', async ({ page }) => {
+test('Watch puts a record on the table; Back to records returns to the list', async ({ page }) => {
   await openRecords(page);
   await row(page, 'Ann, Bo, Cy').getByRole('button', { name: trRe('records.watch_label') }).click();
-  await expect(page.getByText(tr('records.players', { players: 'Ann, Bo, Cy' }))).toBeVisible();
-  await expect(page.getByText(tr('records.won', { players: 'Bo' }))).toBeVisible();
-  await expect(page.getByText(`${tr('records.turns', { n: 84 })} · ${tr('records.steps', { n: 840 })}`)).toBeVisible();
+  const bar = page.getByRole('region', { name: tr('replay.label') });
+  await expect(bar.getByRole('status')).toHaveText(tr('replay.where', { i: 1, n: 840, turn: 1 }));
   await shot(page, 'records-opened');
 
-  await page.getByRole('button', { name: tr('records.close') }).click();
+  await bar.getByRole('button', { name: tr('replay.leave') }).click();
   await expect(page.getByRole('list', { name: tr('records.list_label') })).toBeVisible();
   // Esc goes back too: from the list to the menu.
   await page.keyboard.press('Escape');
@@ -109,8 +108,8 @@ test('Open a file opens a record from anywhere; a cancel stays', async ({ page }
     (window as unknown as FakeWindow).fakePick = '/elsewhere/match.fsrec';
   });
   await open.click();
-  await expect(page.getByText(tr('records.players', { players: 'Dee, Eve' }))).toBeVisible();
-  await expect(page.getByText(tr('records.won', { players: 'Eve' }))).toBeVisible();
+  await expect(page.getByRole('region', { name: tr('replay.label') }).getByRole('status')).toHaveText(tr('replay.where', { i: 1, n: 40, turn: 1 }));
+  await expect(page.getByRole('region', { name: 'Dee', exact: true })).toBeVisible();
 });
 
 test('an empty records folder says so', async ({ page }) => {

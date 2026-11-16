@@ -25,6 +25,8 @@ interface Props {
   prompt?: string | undefined;
   // answer: Pass answers the banner's prompt, so it glows (15.28).
   answer: boolean;
+  // watched: a record plays (10.2); nobody passes, so no Pass button.
+  watched?: boolean;
 }
 
 // StackPanel is the stack inside the board (15.21, F-03): newest on
@@ -34,7 +36,7 @@ interface Props {
 // turn (19.74). Rows fade in and out and
 // slide (15.51). An empty stack says so (S-09). Pass glows when it
 // answers the prompt.
-export function StackPanel({ view, you, names, pass, disabled, prompt, answer }: Props) {
+export function StackPanel({ view, you, names, pass, disabled, prompt, answer, watched }: Props) {
   const act = useApp((s) => s.act);
   const rows = stackRows(view, names);
   const empty = rows.length === 0;
@@ -51,15 +53,17 @@ export function StackPanel({ view, you, names, pass, disabled, prompt, answer }:
       <header>
         <h2>{t('stack.title')}</h2>
         <LastRollDie names={names} />
-        <button
-          type="button"
-          className={`stack-pass${lit && answer ? ' answer' : ''}`}
-          title={t('stack.pass_tip')}
-          disabled={!lit}
-          onClick={press}
-        >
-          {t('stack.pass')}
-        </button>
+        {!watched && (
+          <button
+            type="button"
+            className={`stack-pass${lit && answer ? ' answer' : ''}`}
+            title={t('stack.pass_tip')}
+            disabled={!lit}
+            onClick={press}
+          >
+            {t('stack.pass')}
+          </button>
+        )}
       </header>
       {view.first_roll ? (
         <FirstRollList roll={view.first_roll} names={names} />
