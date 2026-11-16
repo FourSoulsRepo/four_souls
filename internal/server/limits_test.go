@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
 	"sync"
 	"testing"
 	"time"
@@ -194,4 +196,74 @@ func TestHostEndsGame(t *testing.T) {
 	if n.Kind != protocol.NoticeEnded {
 		t.Errorf("notice %+v, want ended", n)
 	}
+}
+
+// roomsLeft counts the hub's started games, finished ones too.
+func roomsLeft(h *Hub) (int, *Room) {
+	reply := make(chan *Room, 1)
+	n := make(chan int, 1)
+	h.send(hubRequest{run: func(h *Hub) {
+		n <- len(h.games)
+		if len(h.games) > 0 {
+			reply <- h.games[0].room
+		} else {
+			reply <- nil
+		}
+	}})
+	return <-n, <-reply
+}
+
+// TestFinishedGameCloses: a finished game leaves the lobby at once; its
+// room stays while a player is connected, then closes. The record link
+// then answers 404 (19.166).
+func TestFinishedGameCloses(t *testing.T) {
+	h, _ := startLimitHub(t)
+	players, tokens := seatedTwo(t, h)
+	_, room := roomsLeft(h)
+	room.over.Store(true)
+	if n := gamesLeft(t, h); n != 0 {
+		t.Errorf("%d games listed; want the finished game hidden", n)
+	}
+	players[0].c.Leave()
+	time.Sleep(50 * time.Millisecond) // checks run with Bo still connected
+	if n, _ := roomsLeft(h); n != 1 {
+		t.Fatal("the room closed while Bo is on its end screen")
+	}
+	players[1].c.Leave()
+	for range 200 {
+		if n, _ := roomsLeft(h); n == 0 {
+			break
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	if n, _ := roomsLeft(h); n != 0 {
+		t.Fatal("the finished room never closed")
+	}
+	srv := httptest.NewServer(http.HandlerFunc(h.downloadRecord))
+	defer srv.Close()
+	resp, err := http.Get(srv.URL + "/record?game=" + room.recInfo.game + "&token=" + tokens[0]) //nolint:noctx // test
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = resp.Body.Close() //nolint:errcheck // test
+	if resp.StatusCode != http.StatusNotFound {
+		t.Errorf("record after the close: %d, want 404", resp.StatusCode)
+	}
+}
+
+// TestFinishedGameAtLimitCloses: a player who stays on the end screen
+// does not keep the room past the game limit (19.166).
+func TestFinishedGameAtLimitCloses(t *testing.T) {
+	h, clock := startLimitHub(t)
+	seatedTwo(t, h)
+	_, room := roomsLeft(h)
+	room.over.Store(true)
+	clock.Add(25 * time.Hour)
+	for range 200 {
+		if n, _ := roomsLeft(h); n == 0 {
+			return
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+	t.Fatal("the finished room outlived the game limit")
 }

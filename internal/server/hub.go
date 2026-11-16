@@ -615,7 +615,9 @@ func (h *Hub) list() protocol.Games {
 		out.Games = append(out.Games, info)
 	}
 	for _, g := range h.games {
-		out.Games = append(out.Games, g.info)
+		if !g.room.over.Load() { // a finished game is not joinable (19.166)
+			out.Games = append(out.Games, g.info)
+		}
 	}
 	out.Saves = listSaves(h.saves)
 	return out

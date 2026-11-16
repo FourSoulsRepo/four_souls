@@ -40,7 +40,7 @@ This step never closes; new reports are appended.
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141 | 15 |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
-| H  | Lobby and rejoin                         | Server     | 19.32, 19.148                                          | 2     |
+| H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166                                  | 3     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165 | 40 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.158, 19.159, 19.161, 19.162 | 26 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
@@ -56,14 +56,14 @@ This step never closes; new reports are appended.
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 
-Totals by system (156 items):
+Totals by system (157 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B, T, U | 33 |
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 42 |
-| Server    | H, N    | 3     |
+| Server    | H, N    | 4     |
 | e2e       | I, J    | 66    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
@@ -5127,3 +5127,43 @@ Totals by system (156 items):
    3. If so: ban 0-attack monsters there, with the reason (14.10).
    4. Search every set for them; ban only those needed.
    5. Check: the spec, both browsers, 5 workers, 10 repeats.
+
+### [ ] 19.166 Dedicated server: a finished game never closes
+
+1. Goal: a finished game leaves the lobby and its room closes.
+2. Report (owner, 2026-11-16)
+   1. Server `online.foursoulsru.org`.
+   2. Challenge games stay in the lobby after they finish.
+   3. Seen: `g1`, Trick or Treat, hard, listed as started.
+3. Cause
+   1. `checkLimits` returns at once for a finished game.
+   2. It kept the room for the record download (8.25).
+   3. No other path stops a finished room; End is refused then.
+   4. `Hub.list` lists every started game, finished ones too.
+   5. So it stays listed and in memory until a restart.
+   6. Every finished game is hit, not only challenges.
+   7. The LAN list already hid finished games (`lanGames`).
+4. Decision (owner, 2026-11-16)
+   1. Close the room; keep the record file on disk.
+   2. The `/record` link stops working once the room closes.
+   3. How to get records from a server: decided later.
+5. Tasks:
+   1. The lobby list leaves out finished games.
+   2. The lobby hears of it when a game finishes.
+   3. A finished room closes once no seat is connected.
+   4. It also closes at the game limit, with no notice.
+   5. Docs: wiki Server, UC-07, bug log.
+6. Done when:
+   1. Go test: a finished game is not listed; its room closes.
+   2. Go test: `/record` answers 404 after that.
+   3. `make lint test` pass.
+7. Result (2026-11-16)
+   1. `Hub.list` skips a finished game; `lanGames` relies on it.
+   2. `Room.after` tells the hub once, at the end; the lobby drops it.
+   3. `checkLimits` stops a finished room with no seat connected.
+   4. It also stops one past the game limit; no notice.
+   5. The record file stays; `/record` then answers 404.
+   6. Go tests: `TestFinishedGameCloses`, `TestFinishedGameAtLimitCloses`.
+   7. Go test: `TestFinishedGameLeavesLobby` (a lost challenge).
+   8. Wiki `Server.md` and UC-07 updated.
+   9. No screen change, so no screenshots.

@@ -30,7 +30,7 @@ Players see the lobby as the Games list. Each row is one table or game:
 4. Play starts with the first-player roll; the first update carries only `first_player` and `game_started` of the setup events, for Cain (`startEvents`, 15.43). Each intent is applied for the client's own seat; then `after` runs automatic passes, restarts the response timer, sends every client its update and records the steps.
 5. Disconnects pause the game; a vote can kick; a token brings a player back. A finished game never takes a token back: the hello goes to the lobby, so the player can start a new game (19.32).
 6. The host may save: the game stops and can be loaded again from the lobby.
-7. At the end the record is closed and its players may download it.
+7. At the end the record is closed and its players may download it. A finished game leaves the game list at once; the lobby hears it. Its room stays while a player is still connected (the end screen offers the download), then closes on the next limit check; it also closes at the game limit. The record stays on disk, but `/record` then answers 404 (19.166).
 8. A dedicated server that stops keeps every table and game in `<saves>/restart/`; the next start brings them back (`restart.go`, ADR 019). A game from another engine must load and save back to the same bytes (`engine.Resume`); else it ends and its players hear why when they return.
 9. Idle limits end a game nobody is connected to, or one past its longest time (`limits.go`, 8.25). Each room checks once a minute on the hub's clock; tests pass a fake one.
 10. The host may end the game at any moment before it is over (`end`, 19.84). `Room.end` refuses any other seat with `not_host`, then stops the room like an idle limit (`endWith`): connected players get the `game_ended` notice, the others when they come back, and the record ends unfinished. On a dedicated server this is the only way to stop a game at once; leaving only pauses it.
@@ -87,7 +87,7 @@ Step 8.12 checked every message the server sends for hidden cards. Hidden means:
 | `error` | code, message, rule | Engine refusals name only cards in play; an activation checks the zone before it names the card. |
 | `/seat` | whether a token holds a live seat, its game and host (15.99) | Only the token's holder knows the token; any other token is "not live". |
 | `/status` | how many tables have a free seat (15.100) | A number only; any lobby client sees the games themselves. |
-| `/record` | the match record (all hidden info) | Only to the game's players, only after the game is over (RP-05); `TestDownloadRecord`. |
+| `/record` | the match record (all hidden info) | Only to the game's players, only after the game is over (RP-05), and only until its room closes (19.166); `TestDownloadRecord`. |
 
 Rules that keep it so:
 

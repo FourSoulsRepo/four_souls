@@ -31,8 +31,10 @@
   * The welcome names the seat, so the app knows which player it is.
 * **2e. A kicked seat rolls:** the server throws its die at once (15.60).
 * **3c. The game is over:** the token takes the player to the lobby, not back (19.32).
-  * The player keeps the token; the record download still works.
+  * The player keeps the token.
+  * The record download works while a player is still in the game (19.166).
   * A new game with that token is the one a later hello comes back to.
+  * Once no player is connected, the finished game closes; its record stays on disk.
 * **1c. The app reconnects by itself (N-20):** at once, then after 1, 2, 4, 8, then every 10 seconds.
   * A small "Reconnecting…" badge shows; the table stays in view.
   * The "Connection lost" dialog replaces it after 30 seconds.

@@ -235,15 +235,9 @@ func lanGames(hub *Hub, port int) func() (lan.Answer, bool) {
 	return func() (lan.Answer, bool) {
 		reply := make(chan []lan.Game, 1)
 		hub.send(hubRequest{run: func(h *Hub) {
-			over := map[string]bool{}
-			for _, g := range h.games {
-				over[g.info.ID] = g.room.over.Load()
-			}
 			var out []lan.Game
-			for _, g := range h.list().Games {
-				if !over[g.ID] {
-					out = append(out, lan.Game{ID: g.ID, Host: g.Host, Seats: g.Seats, Taken: g.Taken, Locked: g.Locked, Started: g.Started})
-				}
+			for _, g := range h.list().Games { // a finished game is not listed
+				out = append(out, lan.Game{ID: g.ID, Host: g.Host, Seats: g.Seats, Taken: g.Taken, Locked: g.Locked, Started: g.Started})
 			}
 			reply <- out
 		}})
