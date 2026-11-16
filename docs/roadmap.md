@@ -366,3 +366,4 @@ Not scheduled; revisit after the MVP.
    3. Delayed view for viewers (SP-01).
    4. The plain draft pick screen moved to 14.11.
 14. Magic Marker: every card lists the numbers it may change (CD-13).
+15. Shuffle animation on the table (V-55); needs 22.3's event.

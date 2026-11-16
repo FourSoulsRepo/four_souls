@@ -308,6 +308,13 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. Keep only numbers and rules; copy no code or assets.
    3. Reverse-engineering tools and output live in `FourSoulsRepo/tools`.
    4. Findings: ADR 027; tasks: step 20.
+55. V-55. A shuffle shows on the table (owner, 2026-11-16).
+   1. At a real table everyone sees a deck shuffled.
+   2. The engine sends a shuffle event since 22.3.
+   3. The deck plays a short shuffle animation.
+   4. A refilled deck (discard back into the deck) shows it too.
+   5. Follows ADR 012: an `anim:` tag and a row in `Animations.md`.
+   6. A sound may come with it (ADR 022 loudness).
 
 ## Rules
 

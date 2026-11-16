@@ -140,3 +140,18 @@ Ideas: TS-07, TS-08, TS-09, TS-10, TS-11, TS-12.
 3. Done when:
    1. `make e2e-games` passes with the limits.
    2. A test page with a growing list over the limit fails the check.
+
+### [ ] 22.10 The event check covers players and whole games
+
+1. Goal: a player's state change with no event fails too (owner, 2026-11-16).
+2. Tasks:
+   1. Snapshot each player's damage, cents and soul count before a step.
+   2. A changed player must be named in an event (`Player` field).
+   3. 19.2 was this kind: a player's HP set with no `healed`.
+   4. Run the check in `TestSimulations` (`make sims`) too.
+   5. Fix the object 0 hole: an unset `Object` must not name object 0.
+   6. Log each gap found as a 19.N item; fix them here, game-wide.
+   7. Wiki: `docs/wiki/Fuzzing.md`.
+3. Done when:
+   1. A silent change of a player's cents fails the check.
+   2. `make fuzz` and `make sims` pass with the check.
