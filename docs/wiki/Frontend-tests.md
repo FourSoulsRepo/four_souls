@@ -82,7 +82,7 @@ The fake bridge also reads the real card text from `pkg/card_db/data` (no images
 
 `e2e/tests/turn.ts` plays prompts through the UI like a careful player: it answers choices with the first option (picking on the table when it can), picks what to attack, what to buy and a deck attack's slot on the table, where no dialog asks (`tablePicks`, 18.11; a board card before a player), clicks the first glowing target when its own card aims with no dialog (15.34, 19.10), discards the first cards, passes when only responding, and attacks when a card forces it before the turn can end. `settle(pages, press, done)` runs it until `done()` holds; `click` and `tap` choose mouse or touch. It never makes a move on a page whose state changed after `done()` began, so a dialog the test waits for is not answered before `done()` sees it (19.7). A `done()` that waits for the active page must also accept a new turn: a card may end the turn (19.8). When a game stalls, its error lists each page's prompt, buttons and dialog.
 
-A test waits for the exact state it needs, not for a sign of it (18.10). After an Attack click, `untilAttackRoll(pages, press, attacker)` runs `settle` until the store shows the attacker's throw prompt for the attack roll, that roll on the stack not yet thrown, the attack aimed at its target, and the Throw button. Waiting for any Throw button stopped too early when a card rolled first: Bob's Brain rolls when the attack is declared, before the target is picked (19.85). A trigger of the target, such as Pride's, resolves before the first roll goes on the stack (R-ATK-25, 19.151); `settle` answers its prompts on the way, so the wait still holds at the first roll. The check does not need the roll on top. A test that reads the latest move at that throw (Undo) bans Pride: its discard is then the latest move. A new kind of wait gets its own named helper in `turn.ts` the same way. `untilStackWaits(pages)` waits until every page shows a stack item waiting for a response (V-11); a resolving card's question does not count, as its prompt line reads differently for the asked player (19.126).
+A test waits for the exact state it needs, not for a sign of it (18.10). After an Attack click, `untilAttackRoll(pages, press, attacker)` runs `settle` until the store shows the attacker's throw prompt for the attack roll, that roll on the stack not yet thrown, the attack aimed at its target, and the throw allowed. Waiting for any Throw button stopped too early when a card rolled first: Bob's Brain rolls when the attack is declared, before the target is picked (19.85). A trigger of the target, such as Pride's, resolves before the first roll goes on the stack (R-ATK-25, 19.151); `settle` answers its prompts on the way, so the wait still holds at the first roll. The check does not need the roll on top. A test that reads the latest move at that throw (Undo) bans Pride: its discard is then the latest move. A new kind of wait gets its own named helper in `turn.ts` the same way. `untilStackWaits(pages)` waits until every page shows a stack item waiting for a response (V-11); a resolving card's question does not count, as its prompt line reads differently for the asked player (19.126).
 
 Text that comes from `en.json` is found with `tr(key)` from `e2e/tests/locale.ts`, not the English words, so the tests also pass with `LOCALE=qps` ([Client](Client#languages)). `tr('history.loot.other', { player: 'Bo', card: 'A Penny!' })` is the whole line. `trRe(key, values)` is a pattern: a value left out matches any text, and a plural line with no `n` matches any of its forms. `lineRe` makes a pattern of a line built of lines (`tr('stack.attack', { line: tr('stack.damage', { n: 2 }) })`), `whole` anchors one, and `anyOf` joins several. Text the server sends is a message too, so `tr(key)` finds it: a refusal is `tr('refuse.loot_your_turn')`, a roll label `tr('event.attack_roll')`. A fake update a test sends gives server text as messages, `{ key: 'ask.yes' }`. Player names stay as given. Card names come from `cardName(ref)`: card_db's name in the tests' language (`b2.json`, as the fake bridge), else English, so `make screenshots LOCALE=ru` passes with Russian names (16.7). A ref is the card's id, `id@N` for a later version. With a language file for `LOCALE`, `tr` reads it too, as the app does. `trIn(lang, key)` gives a line in another language, for a page switched to it (`languages.spec.ts`). Before a UI change is done, `make e2e` passes and so do `make screenshots LOCALE=qps` and `LOCALE=ru`.
 
@@ -91,6 +91,32 @@ The rules website has its own spec, `site.spec.ts`: it opens the page `make site
 Match dialogs and buttons by exact name where a question could contain the same word (`{ name: 'Discard', exact: true }`).
 
 Network play runs against the real Go server: `e2e/playwright.config.ts` starts `cmd/server` next to Vite, one per browser project (Chromium on port 4799, WebKit on 4797; `e2e/tests/ports.ts`), so the two runs never see each other's games. Tests reach theirs with `serverPort()` and `appURL()` (`e2e/tests/server.ts`). The fake `Host` binding (`window.go.host.Host`) points at it (`?server=PORT`), so one page "hosts" and others join it by address. Use separate browser contexts for separate players: each has its own `localStorage`, like a separate app.
+
+### Named waits (22.8)
+
+A wait that stands for game state reads the store, never a button, a text or a class (TS-08). Whose turn it is, what the stack holds, which prompt waits, whether an attack roll waits for its throw: each is in the page's store (`window.fourSouls.store`), and a button or a glow only follows it. Waiting for "a Throw button shows" stopped at the wrong roll (19.85); waiting for "a target glows" or "a dialog shows" missed a card that asked one more question (19.10, 19.18, 19.21, 19.58). The rule: wait for the state through the store, then assert the DOM. A check of what the screen shows (the thing under test) stays a DOM check.
+
+`seen(page)` reads one snapshot: the step, whose turn, the prompt (kind, purpose, text key), the intents the page may send now, the stack (kind, controller, attack roll, thrown), the attack's target, and `ready` (the latest state, nothing sent for this step, no rollback vote open). A `Check` is a condition on it; `holds(page, check)` tests it now, `until(page, check)` polls until it holds and answers nothing, and `settle(pages, press, () => holds(page, check))` answers prompts on the way. The engine's enums are mirrored at the top of `turn.ts` (`Intent`, `Ask`, `Purpose`, `Item`), in Go's order.
+
+| Name | Kind | Holds when |
+|---|---|---|
+| `may(Intent.x)` | check | the page is ready and the engine allows that intent: `attack`, `purchase`, `pass`, `endTurn`, `throw`, `playLoot` |
+| `asked(Ask.x, purpose?)` | check | the game waits for the page's own player on a prompt of that kind (and purpose) |
+| `question(key)` | check | the page's player is asked a choice whose question has that text key (`ask.one_on_top`) |
+| `stackHolds(n)` | check | the stack holds n items |
+| `turnFree` | check | the stack is empty and the page's player may end the turn |
+| `attackRoll` | check | the attacker's attack roll waits for its throw (above) |
+| `stackWaits` | check | the stack holds an item and waits for a response (V-11) |
+| `canEndTurn(page)` | holds | `may(Intent.endTurn)` |
+| `untilPick(pages, press, page, purpose)` | settle | the page's player is asked to pick: an attack's target, what to buy, a room |
+| `untilAttackRoll(pages, press, attacker)` | settle | `attackRoll` on the attacker's page |
+| `untilStackWaits(pages)` | poll | `stackWaits` on every page |
+| `untilResynced(page)` | poll | the page reconnected and shows the server's answer (19.103) |
+| `activePage(pages, press)` | settle | a page may end the turn; then its End turn button is enabled |
+
+`endTurn(page)` reads from the store whether the button glows (nothing allowed but ending the turn or passing), and waits for the button to show the same before it presses it; a glowing button ends the turn at once, any other asks first (V-46).
+
+A spec may add its own small store check next to these, for state only it needs: a challenge's counters, a flipped card in play, a boost for the next roll. A new kind of wait used by more than one spec goes into `turn.ts`.
 
 ## Whole random games
 

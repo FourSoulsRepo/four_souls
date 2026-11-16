@@ -127,7 +127,7 @@ Ideas: TS-07, TS-08, TS-09, TS-10, TS-11, TS-12.
    1. Two runs of one test log the same seed and the same deal.
    2. `make e2e` passes, both browsers.
 
-### [ ] 22.8 e2e: named waits on the store
+### [x] 22.8 e2e: named waits on the store
 
 1. Goal: waits check the exact state, not a sign of it (TS-08).
 2. Tasks:
