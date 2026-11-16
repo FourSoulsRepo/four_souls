@@ -42,7 +42,7 @@ This step never closes; new reports are appended.
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166                                  | 3     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165 | 40 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.158, 19.159, 19.161, 19.162, 19.168, 19.169, 19.170 | 29 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.158, 19.159, 19.161, 19.162, 19.168, 19.169, 19.170, 19.171 | 30 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63, 19.129                                          | 2     |
@@ -56,7 +56,7 @@ This step never closes; new reports are appended.
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 
-Totals by system (161 items):
+Totals by system (162 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -64,7 +64,7 @@ Totals by system (161 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 43 |
 | Server    | H, N    | 4     |
-| e2e       | I, J    | 69    |
+| e2e       | I, J    | 70    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
@@ -5004,6 +5004,10 @@ Totals by system (161 items):
    3. All three: the "Hal, Ivy" saved games of 3.2, not line 482.
    4. Evidence: `.cache/e2e-evidence/21.3-full1/`, `21.3-rerun1/`.
    5. The change under test (21.3) only moved Go bindings.
+6. Seen again (10.7 `make e2e` run 1, 2026-11-16)
+   1. WebKit, line 482, the same hover mark.
+   2. Rerun alone, webkit: passed.
+   3. Evidence: `.cache/e2e-evidence/10.7/run1/` (not in git).
 
 ### [ ] 19.160 e2e: Ambush! as a Krampus minion ends the minions test
 
@@ -5030,6 +5034,11 @@ Totals by system (161 items):
    5. `21.3-full1/test-results/` holds stale files from 2026-11-15.
    6. Their `window.go.host` errors come from the 21.2 fake bridge run.
    7. The change under test (21.3) only moved Go bindings.
+6. Seen again (10.7 `make e2e` run 2, 2026-11-16)
+   1. Chromium; "Error: the game ended" at line 287.
+   2. A new symptom: not a timeout in `settle`.
+   3. Rerun alone, 3 repeats: 3 of 3 passed.
+   4. Evidence: `.cache/e2e-evidence/10.7/run2/` (not in git).
 
 ### [ ] 19.161 e2e: two-click bomb test stalls after the attack, chromium
 
@@ -5204,6 +5213,9 @@ Totals by system (161 items):
    1. Read the error context and the match record; find the stuck wait.
    2. Fix the test or the bug it shows (14.10).
    3. Check: the spec, both browsers, 5 workers, 10 repeats.
+5. Same test as 19.160; fix it there.
+   1. Run 1 of 10.3: Blue Baby with Forever Alone, as 19.97 bans elsewhere.
+   2. Evidence: `.cache/e2e-evidence/10.3/run1/` (not in git).
 
 ### [ ] 19.169 e2e: a discard after the move breaks the Soft ask test
 
@@ -5232,6 +5244,20 @@ Totals by system (161 items):
 3. Cause: not found yet.
    1. Maybe as 19.77: a short fly ends before the check sees it.
    2. The change under test (10.3) touches replays only.
+4. Tasks:
+   1. Find the cause in the evidence; fix the test or the app.
+   2. Check: the spec, both browsers, 5 workers, 10 repeats.
+
+### [ ] 19.171 e2e: the Hanged Man dialog misses its card once, webkit
+
+1. Goal: `choice.spec.ts:408` passes in full runs.
+2. Report (10.7 `make e2e` run 2, 2026-11-16)
+   1. WebKit; line 441.
+   2. The dialog's `.choice-subject .card` was not found.
+   3. Rerun alone, 3 repeats: 3 of 3 passed.
+   4. Evidence: `.cache/e2e-evidence/10.7/run2/` (not in git).
+3. Cause: not found yet.
+   1. The change under test (10.7) restyles the replay bar only.
 4. Tasks:
    1. Find the cause in the evidence; fix the test or the app.
    2. Check: the spec, both browsers, 5 workers, 10 repeats.
