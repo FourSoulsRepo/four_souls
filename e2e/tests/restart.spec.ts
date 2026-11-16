@@ -36,7 +36,7 @@ class RestartServer {
   }
 
   async start(): Promise<void> {
-    const args = ['-addr', '127.0.0.1', '-port', String(this.port), '-records', join(this.dir, 'records'), '-saves', join(this.dir, 'saves')];
+    const args = ['-test_seeds', '-addr', '127.0.0.1', '-port', String(this.port), '-records', join(this.dir, 'records'), '-saves', join(this.dir, 'saves')];
     this.proc = spawn(this.bin, args, { cwd: root, stdio: 'ignore' });
     for (let i = 0; i < 100; i++) {
       if (await listening(this.port)) {

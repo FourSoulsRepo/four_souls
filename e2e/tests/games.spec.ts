@@ -6,7 +6,8 @@
 // error or warning on any page. Each test logs how long its game took.
 //
 // Slow, so opt-in: FULL_GAMES=1, or `make e2e-games`.
-// GAME_SEED repeats the moves' choices; the server's deal stays random.
+// GAME_SEED repeats the deal and the moves' choices; without it the deal
+// is random too (seed 0, ADR 032).
 // GAME_TURNS caps a game (default 300 turns).
 // GAME_SPEED sets the pages' animation speed (default fast, 19.137).
 import { copyFileSync, mkdirSync, readdirSync, statSync } from 'node:fs';
@@ -565,6 +566,8 @@ test.describe('whole random games', () => {
         animations: true,
         setup: game.setup,
         bans,
+        // Random deals find surprises here (ADR 032, 3.).
+        seed: process.env.GAME_SEED ? seed : 0,
         open: (page) => {
           // A click that never lands fails fast: the next round looks
           // again, and the stall check sees a game that stops moving.

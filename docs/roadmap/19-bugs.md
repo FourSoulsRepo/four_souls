@@ -48,7 +48,7 @@ This step never closes; new reports are appended.
 | L  | Not a bug: the app follows a ruling      | None       | 19.63, 19.129                                          | 2     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 | N  | A missing control: no way to do it       | Server     | 19.84                                                  | 1     |
-| O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86                                           | 2     |
+| O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86, 19.190                                   | 3     |
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 | R  | Vitest setup: a test sees stale files    | Vitest     | 19.124                                                 | 1     |
 | S  | Sound: media players never released      | Client     | 19.135                                                 | 1     |
@@ -57,13 +57,13 @@ This step never closes; new reports are appended.
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 
-Totals by system (180 items):
+Totals by system (181 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B, T, U, W | 40 |
 | Card data | C       | 2     |
-| Client    | D–G, O, P, S, V | 51 |
+| Client    | D–G, O, P, S, V | 52 |
 | Server    | H, N    | 4     |
 | e2e       | I, J    | 73    |
 | Release   | K       | 4     |
@@ -5777,3 +5777,24 @@ Totals by system (180 items):
 4. Tasks:
    1. Find what blocked the WebKit pages for about 25 s.
    2. Check: `table.spec.ts`, webkit, 5 workers, 10 repeats.
+
+### [ ] 19.190 A presence message is sent on a socket still connecting
+
+1. Goal: the client never sends on a socket that is not open.
+2. Report (22.7 `make e2e`, 2026-11-17)
+   1. Vite logged an unhandled `InvalidStateError` once; no test failed.
+   2. "Failed to execute 'send' on 'WebSocket': Still in CONNECTING state."
+   3. Stack: `send` (`net.ts:78`) from `sendPresence` (`store.ts:1020`).
+   4. It ran beside the `pause.spec.ts` reconnect tests, Chromium.
+   5. Evidence: `.cache/e2e-evidence/22.7/run1/e2e1.log` (not in git).
+   6. The next run: once in WebKit, "The object is in an invalid state."
+   7. Same stack, from `Presence.tsx:49`; `run2/e2e2.log`.
+3. Cause: found in the code, not yet proven by a test.
+   1. `connect` sets `socket` to the new socket before it opens.
+   2. `send` then calls `socket.send` while it still connects.
+   3. Presence is sent on pointer moves, so a reconnect can meet one.
+   4. The error is thrown into the caller; the message is lost.
+4. Tasks:
+   1. A test: `send` while connecting throws nothing.
+   2. Decide: drop presence then, or queue lobby messages.
+   3. Check every `send` caller for the same race.

@@ -111,7 +111,7 @@ Ideas: TS-07, TS-08, TS-09, TS-10, TS-11, TS-12.
    1. `make e2e` passes, both browsers.
    2. `make screenshots` still shows the animation shots.
 
-### [ ] 22.7 e2e: a fixed deal per test
+### [x] 22.7 e2e: a fixed deal per test
 
 1. Goal: each e2e test sees the same deal every run (TS-11, ADR 032).
 2. Tasks:
