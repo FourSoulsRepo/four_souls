@@ -2,7 +2,7 @@ package rulesengine
 
 // Version is the rules engine version.
 // Bump it with every change to rules behavior; see docs/roadmap/08-first-release.md.
-const Version = "0.5.3"
+const Version = "0.5.4"
 
 // StateMeaning numbers what the saved state's fields mean (N-20). Raise
 // it when a field keeps its JSON name and type but means something new:
@@ -43,3 +43,9 @@ const horsemanVersion = "0.5.1"
 // such choices are open at the same time (20.22). Older records' checksums
 // differ: they cannot replay.
 const startVersion = "0.5.2"
+
+// eventVersion is the first engine version where every state change has
+// its event (22.3): a done event card's discard, a deck refill, a
+// recharge before its choice, a card's deactivation, and every shuffle.
+// Older records' checksums differ: they cannot replay.
+const eventVersion = "0.5.4"

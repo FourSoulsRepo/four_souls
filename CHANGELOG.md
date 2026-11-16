@@ -6,6 +6,10 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- The history says when a deck is shuffled.
+- A finished event card, such as a chest or Troll Bombs, flies to the monster discard instead of vanishing.
+- Rules engine 0.5.4: records from 0.5.3 and older no longer replay.
+
 ## 0.4.3 - 2026-11-15
 
 - An Update button in the main menu: it checks for a new version, downloads it with a progress bar, and installs it on restart. You keep your system and edition (with card images or for-poor). This is the last version you download by hand.
