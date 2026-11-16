@@ -22,6 +22,15 @@ export interface Replaying {
   // bar: the replay bar shows; false while the viewer hides it (ADR
   // 031, 4.9). True at each Watch; it never pauses the autoplay.
   bar: boolean;
+  // seat is the player at the bottom of the table (ADR 031, 4.10): 0
+  // at each Watch. Only the layout follows it; the words name everyone.
+  seat: number;
+}
+
+// seatName is the name of the seat the replay is seen from; its number
+// when the header has no such seat.
+export function seatName(summary: Pick<RecordSummary, 'seats'>, seat: number): string {
+  return summary.seats.find((s) => s.seat === seat)?.name ?? String(seat);
 }
 
 // replayUpdate is a step as playback takes it (ADR 031, 3.4, 3.5): its

@@ -9,7 +9,7 @@ import { AimLayer, AttackAim } from '../components/Aim';
 import { Board } from '../components/Board';
 import { ChoiceBack } from '../components/ChoiceBack';
 import { ChoiceDialog, DiscardDialog, LookDialog, ModeDialog, OrderDialog } from '../components/ChoiceDialog';
-import { interact, noInteract } from '../components/Interact';
+import { interact, noInteract, type Interact } from '../components/Interact';
 import { PlayerArea } from '../components/PlayerArea';
 import { PresenceLayer, PresenceSender } from '../components/Presence';
 import { HistoryPanel, TurnBadge } from '../components/InfoPanels';
@@ -36,12 +36,12 @@ import './screens.css';
 const noActions: Actions = { buttons: [], turn: {}, cards: new Map(), blocked: new Map(), choice: null, discard: null, order: null, throw: null };
 
 // GameScreen is the game table (7.5), drawn from the update on screen.
-// A record plays on it too (10.2): seat 0 sits at the bottom, nothing
-// acts, and the replay bar steps through the record.
+// A record plays on it too (10.2): the seat it is seen from sits at the
+// bottom (4.10), nothing acts, and the replay bar steps through it.
 export function GameScreen() {
   const game = useApp((s) => s.game);
   const replaying = useApp((s) => s.replay !== null);
-  const you = useApp((s) => (s.replay ? 0 : seatOf(s)));
+  const you = useApp((s) => (s.replay ? s.replay.seat : seatOf(s)));
   const quit = useApp((s) => s.quit);
   const leaveReplay = useApp((s) => s.leaveReplay);
   const setup = useApp((s) => s.lobby.setup);
@@ -69,6 +69,23 @@ export function GameScreen() {
     );
   }
   return <Table game={game} you={you} replaying={replaying} />;
+}
+
+// seatPicks is a replay's table (ADR 031, 4.10): nothing acts, but a
+// click on another player's character card shows the table from there.
+function seatPicks(bottom: number, pick: (seat: number) => Promise<void>, name: (seat: number) => string): Interact {
+  return {
+    ...noInteract,
+    character: (player) =>
+      player === bottom
+        ? {}
+        : {
+            hint: t('replay.seat_pick', { player: name(player) }),
+            onClick: () => {
+              void pick(player);
+            },
+          },
+  };
 }
 
 // Table draws the update. you is the seat at the bottom; replaying: a
@@ -133,7 +150,12 @@ function Table({ game, you, replaying }: { game: Update; you: number; replaying:
     const p = game.view.players.find((pl) => pl.id === you);
     return new Set([p?.character.id, ...(p?.in_play ?? []).map((c) => c.id), ...(p?.hand ?? []).map((c) => c.id)]);
   }, [game, you]);
-  const ui = canAct ? interact(actions, act, select, aiming, setAiming, explain, (id) => mine.has(id)) : noInteract;
+  const replaySeat = useApp((s) => s.replaySeat);
+  const ui = canAct
+    ? interact(actions, act, select, aiming, setAiming, explain, (id) => mine.has(id))
+    : replaying
+      ? seatPicks(you, replaySeat, name)
+      : noInteract;
   // A new state ends an aim: its targets may be gone (15.25). Before
   // paint, so a placed card's aim below replaces it without a blink.
   useLayoutEffect(() => {

@@ -3879,6 +3879,14 @@
     "text": "Play",
     "note": "Replay bar: button that plays the record step by step."
   },
+  "replay.seat": {
+    "text": "Seen from {player}",
+    "note": "Replay bar: whose seat the table is seen from; that player sits at the bottom. player: a player's name."
+  },
+  "replay.seat_pick": {
+    "text": "Watch from {player}'s seat",
+    "note": "Replay: tooltip of a player's character card; a click turns the table so that player sits at the bottom. player: a player's name."
+  },
   "replay.show": {
     "text": "Show the controls",
     "note": "Replay: the small button left on screen while the replay bar is hidden; it shows the bar again."

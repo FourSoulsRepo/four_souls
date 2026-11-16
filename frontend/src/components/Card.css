@@ -568,9 +568,11 @@
   filter: brightness(0.55) saturate(0.6);
 }
 
-/* Highlights (7.7): yellow for "you may act", blue for "pick this". */
+/* Highlights (7.7): yellow for "you may act", blue for "pick this".
+   A card with a click of its own, e.g. a replay's character (4.10), too. */
 .card.hl-act,
-.card.hl-pick {
+.card.hl-pick,
+.card[role='button'] {
   cursor: pointer;
 }
 

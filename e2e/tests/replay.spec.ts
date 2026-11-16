@@ -183,6 +183,50 @@ test('Show hands hides every hand as backs and shows them again (10.3)', async (
   await expect(bo.getByRole('group', { name: tr('table.revealed_hand', { n: 3 }) })).toBeVisible();
 });
 
+test("a click on a character card shows the table from that seat; autoplay goes on (10.8)", async ({ page }) => {
+  await watch(page, 'Ann, Bo, Cy');
+  const seat = bar(page).getByText(trRe('replay.seat'));
+  const region = (player: string) => page.getByRole('region', { name: player, exact: true });
+  // ownHand is the hand group of the area at the bottom.
+  const ownHand = (player: string) => region(player).getByRole('group', { name: tr('table.your_hand') });
+  // Seat 0 at first: Ann sits at the bottom.
+  await expect(seat).toHaveText(tr('replay.seat', { player: 'Ann' }));
+  await expect(ownHand('Ann')).toBeVisible();
+  await expect(ownHand('Bo')).toHaveCount(0);
+  // Every hand shows; only the bottom one is a fan of its own.
+  await expect(region('Bo').getByRole('group', { name: tr('table.revealed_hand', { n: 3 }) })).toBeVisible();
+  await shot(page, 'replay-seat-ann');
+
+  await bar(page).getByRole('button', { name: tr('replay.speed_n', { n: 4 }) }).click();
+  await bar(page).getByRole('button', { name: tr('replay.play') }).click();
+  await expect(where(page)).not.toHaveText(tr('replay.where', { i: 1, n: 840, turn: 1 }));
+  // Bo's character card says what a click does, and still zooms.
+  const cain = region('Bo').getByRole('button', { name: cardName('cain'), exact: true });
+  await expect(cain).toHaveAttribute('title', tr('replay.seat_pick', { player: 'Bo' }));
+  await cain.hover();
+  await expect(page.getByTestId('card-zoom')).toBeVisible();
+  await cain.click();
+  await expect(seat).toHaveText(tr('replay.seat', { player: 'Bo' }));
+  await expect(ownHand('Bo')).toBeVisible();
+  await expect(ownHand('Ann')).toHaveCount(0);
+  await expect(region('Ann').getByRole('group', { name: tr('table.revealed_hand', { n: 2 }) })).toBeVisible();
+  // The bottom seat's own card has no click; nobody is "you".
+  await expect(region('Bo').getByRole('img', { name: cardName('cain'), exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: tr('table.own_name', { player: 'Bo' }) })).toHaveCount(0);
+  // Autoplay goes on meanwhile.
+  await expect(bar(page).getByRole('button', { name: tr('replay.pause') })).toBeVisible();
+  const at = (await where(page).textContent()) ?? '';
+  await expect(where(page)).not.toHaveText(at);
+  await bar(page).getByRole('button', { name: tr('replay.pause') }).click();
+  await shot(page, 'replay-seat-bo');
+
+  // The next Watch starts at seat 0 again.
+  await page.keyboard.press('Escape');
+  await watch(page, 'Ann, Bo, Cy');
+  await expect(seat).toHaveText(tr('replay.seat', { player: 'Ann' }));
+  await expect(ownHand('Ann')).toBeVisible();
+});
+
 // futureCard is a card of a set this app does not know; only the
 // record's header has its text (RP-10).
 const futureCard = { ref: 'zz_future_card', name: 'Future Penny', type: 'Loot Card', effects: ['Gain 9¢. Then loot 1.'] };

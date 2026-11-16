@@ -364,7 +364,7 @@ interface AppState extends Session {
   pick: (card: string) => void;
   leaveTable: () => Promise<void>;
   // replay is the record watched on the table (10.2, ADR 031); null in
-  // a game. Nobody sits at it: the table shows seat 0 at the bottom.
+  // a game. Nobody sits at it: the table shows replay.seat at the bottom.
   replay: Replaying | null;
   // watch puts an opened record on the table, at its first step.
   watch: (summary: RecordSummary) => Promise<void>;
@@ -380,6 +380,9 @@ interface AppState extends Session {
   // replayBar shows or hides the replay bar (ADR 031, 4.9); a small
   // button brings it back. It never pauses the autoplay.
   replayBar: (show: boolean) => void;
+  // replaySeat shows the table from that player's seat (ADR 031, 4.10):
+  // the step on screen is drawn again at once; autoplay goes on.
+  replaySeat: (seat: number) => Promise<void>;
   // leaveReplay goes back to the records list.
   leaveReplay: () => void;
   // quit closes the connection, stops hosting, and goes to the menu,
@@ -747,7 +750,10 @@ export const useApp = create<AppState>()((set, get) => {
       if (!u || !on()) {
         return;
       }
-      playback.push(u);
+      // A seat change may have drawn this step already (4.10).
+      if (get().game?.step !== u.step) {
+        playback.push(u);
+      }
       await playback.idle();
       const wait = autoplayPause(u.events?.length ?? 0, get().replay?.speed ?? 1);
       await new Promise((resolve) => setTimeout(resolve, wait));
@@ -1276,7 +1282,7 @@ export const useApp = create<AppState>()((set, get) => {
       stopPlayback();
       // Cards the app lacks draw from the record's text (RP-10).
       const cards = withRecordCards(withoutRecordCards(get().cards), summary.cards);
-      set({ replay: { summary, at: 0, speed: 1, playing: false, hands: true, bar: true }, cards, game: null, jumped: false, screen: 'game', error: '', zoom: null });
+      set({ replay: { summary, at: 0, speed: 1, playing: false, hands: true, bar: true, seat: 0 }, cards, game: null, jumped: false, screen: 'game', error: '', zoom: null });
       const u = await fetchStep(0, ++moved);
       if (u) {
         showAt(u);
@@ -1335,6 +1341,19 @@ export const useApp = create<AppState>()((set, get) => {
       const r = get().replay;
       if (r) {
         set({ replay: { ...r, bar: show } });
+      }
+    },
+    replaySeat: async (seat) => {
+      const r = get().replay;
+      if (!r || r.seat === seat) {
+        return;
+      }
+      set({ replay: { ...r, seat } });
+      // No new jump: an autoplay waiting for its step goes on. The step
+      // shown is drawn again with no effects; an effect in flight is cut.
+      const u = await fetchStep(r.at, moved);
+      if (u && get().replay?.at === r.at) {
+        showAt(u);
       }
     },
     leaveReplay: () => {

@@ -96,7 +96,7 @@ Rules for this step (owner, 2026-11-16):
    2. Screenshots: the bar shown and hidden.
    3. UC-45 and the Client wiki describe it.
 
-### [ ] 10.8 Watch from a player's seat
+### [x] 10.8 Watch from a player's seat
 
 1. Goal: the viewer picks whose seat the table is seen from (owner, 2026-11-16).
 2. Tasks:

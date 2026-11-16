@@ -532,6 +532,31 @@ describe('replay (10.2, ADR 031)', () => {
     }
   });
 
+  it('turns the table to a seat at once; autoplay goes on; Watch starts at seat 0 (4.10)', async () => {
+    vi.useFakeTimers();
+    try {
+      await useApp.getState().watch(summary);
+      expect(useApp.getState().replay?.seat).toBe(0);
+      await useApp.getState().replaySeat(1);
+      expect(useApp.getState()).toMatchObject({ jumped: true, replay: { seat: 1, at: 0, playing: false } });
+      expect(useApp.getState().game?.step).toBe(1);
+      useApp.getState().replayPlay(true);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(useApp.getState().game?.step).toBe(2);
+      await useApp.getState().replaySeat(0);
+      expect(useApp.getState().replay).toMatchObject({ seat: 0, playing: true });
+      expect(useApp.getState().game?.step).toBe(2);
+      await vi.advanceTimersByTimeAsync(4000);
+      expect(useApp.getState().replay).toMatchObject({ at: 5, playing: false });
+      expect(useApp.getState().game?.step).toBe(6);
+      await useApp.getState().replaySeat(1);
+      await useApp.getState().watch(summary);
+      expect(useApp.getState().replay?.seat).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('leaving goes back to the records list', async () => {
     await useApp.getState().watch(summary);
     useApp.getState().leaveReplay();

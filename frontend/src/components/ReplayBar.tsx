@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { t } from '../i18n';
 import { useEscape } from '../keys';
-import { replaySpeeds, sliderFill, turnAt } from '../replay';
+import { replaySpeeds, seatName, sliderFill, turnAt } from '../replay';
 import { useApp } from '../store';
 import './Replay.css';
 
@@ -55,7 +55,8 @@ const showIcon = (
 // the game's parchment buttons on a dark panel (10.7, ADR 031, 4.8).
 // The viewer can hide it; a small button in the same corner brings it
 // back, and the autoplay goes on meanwhile (4.9). Esc goes back to the
-// records, shown or hidden.
+// records, shown or hidden. It names the seat the table is seen from
+// (4.10).
 export function ReplayBar() {
   const replay = useApp((s) => s.replay);
   const turn = useApp((s) => s.game?.view.turn.number ?? 0);
@@ -70,7 +71,7 @@ export function ReplayBar() {
   if (!replay) {
     return null;
   }
-  const { at, speed, playing, hands, summary, bar } = replay;
+  const { at, speed, playing, hands, summary, bar, seat } = replay;
   if (!bar) {
     return (
       <section className="panel replay-bar replay-hidden" role="region" aria-label={t('replay.label')}>
@@ -207,6 +208,7 @@ export function ReplayBar() {
           {t('replay.hands')}
         </button>
       </div>
+      <p className="replay-seat">{t('replay.seat', { player: seatName(summary, seat) })}</p>
       <div className="replay-row">
         <button type="button" className="replay-leave" onClick={leave}>
           {t('replay.leave')}

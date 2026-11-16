@@ -3,7 +3,7 @@ import type { RecordStep } from './bridge';
 import type { GameView } from './protocol';
 import type { CardInfo } from './cards';
 import type { GameEvent, PlayerView, Update } from './protocol';
-import { animates, autoplayPause, clampStep, hideHands, replayUpdate, sliderFill, turnAt, withoutRecordCards, withRecordCards } from './replay';
+import { animates, autoplayPause, clampStep, hideHands, replayUpdate, seatName, sliderFill, turnAt, withoutRecordCards, withRecordCards } from './replay';
 
 const turns = [
   { number: 0, active: 0, step: 0 },
@@ -55,6 +55,13 @@ describe('replay', () => {
     expect(sliderFill(4, 5)).toBe(100);
     expect(sliderFill(9, 5)).toBe(100);
     expect(sliderFill(0, 1)).toBe(100);
+  });
+
+  it('names the seat the table is seen from (4.10)', () => {
+    const seats = { seats: [{ seat: 0, name: 'Ann' }, { seat: 1, name: 'Bo' }, { seat: 2, name: 'Cy' }] };
+    expect(seatName(seats, 0)).toBe('Ann');
+    expect(seatName(seats, 2)).toBe('Cy');
+    expect(seatName(seats, 5)).toBe('5');
   });
 
   it('pauses 0.8 s after events and 0.2 s after none at 1×, divided by the speed', () => {

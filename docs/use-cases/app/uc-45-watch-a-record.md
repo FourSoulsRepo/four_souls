@@ -52,6 +52,18 @@
     4. The player presses **Show the controls**: the bar is back.
     5. The bar shows step and turn as they are now.
     6. The next **Watch** shows the bar again.
+13. The player clicks another player's character card (10.8).
+    1. Seen from seat 0 at first; the bar says "Seen from Ann".
+    2. The card's tooltip says "Watch from Bo's seat"; hover still zooms it.
+    3. The table turns at once: Bo sits at the bottom.
+    4. The others sit as in a live game seen from Bo's seat.
+    5. The step shown is drawn again with no effects.
+    6. An effect in flight may be cut, as on a jump.
+    7. Autoplay goes on; the bar says "Seen from Bo".
+    8. The words still name every player; nobody is "you".
+    9. Hands still follow **Show hands**: all or none.
+    10. With hands shown, Bo's hand fans out as an own hand.
+    11. The next **Watch** starts at seat 0 again.
 
 ## Alternative scenarios and errors
 

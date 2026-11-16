@@ -80,6 +80,8 @@ interface Props {
   // label names a face-down card instead of its deck, e.g. a challenge
   // present by its kind (14.25).
   label?: string;
+  // hint says what a click on the card does; it shows as its title.
+  hint?: string;
   onClick?: () => void;
 }
 
@@ -106,6 +108,7 @@ export function Card({
   why,
   cost,
   label,
+  hint,
   onClick,
 }: Props) {
   const scale = useApp(viewScale);
@@ -206,6 +209,7 @@ export function Card({
       style={flip.turn ? { animationDuration: `${String((FLIP_MS * scale) / 2)}ms` } : undefined}
       role={onClick ? 'button' : 'img'}
       aria-label={card.name}
+      title={hint}
       onClick={click}
       {...zoomHandlers}
       onPointerEnter={(e) => {
