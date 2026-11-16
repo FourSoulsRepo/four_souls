@@ -33,7 +33,7 @@ Candidates (Decision 5): every allowed intent; a discard as up to 8 different se
 * `random`: one of the candidates at random. For tests and the arena.
 * `policy`: the playout policy alone. For tests and the arena.
 * `standard`: tries each candidate on one imagined world and plays the best score (below). The server's lower level.
-* `hard` (the server's upper level) comes with step 21.6.
+* `hard`: plays each candidate out on many imagined worlds to the end of the turn and plays the best average (below). The server's upper level.
 
 ### Playout policy
 
@@ -48,7 +48,7 @@ The policy (`internal/bot/policy.go`, Decision 6) weighs each allowed intent and
 
 ### Score
 
-`Score(g, p)` (`internal/bot/score.go`, Decision 7) is a table from seat `p`'s side: a won game is the top value, a lost one the bottom. Else it is the seat's own sum less the opponents' average. A sum counts souls, cents, loot cards in hand, items, curses, HP left and being alive this turn. Every weight is a constant in that file. A soul (100) outweighs every other part of a table; HP (0.5 each) and being alive (3) weigh little, as both heal at the end of the turn; an item (12) is worth a little more than the 10¢ it costs; a loot card in hand (0.75) is worth less than a cent, so a card that gives 1¢ is played and one that does nothing now is kept.
+`Score(g, p)` (`internal/bot/score.go`, Decision 7) is a table from seat `p`'s side: a won game is the top value, a lost one the bottom. Else it is the seat's own sum less the opponents' average. A sum counts souls, cents, loot cards in hand, items, curses, HP left and being alive this turn; a card's base value comes from `cardValue`. Every weight is a constant in that file. A soul (100) outweighs every other part of a table; HP (0.5 each) and being alive (3) weigh little, as both heal at the end of the turn; an item (12) is worth a little more than the 10¢ it costs; a loot card in hand (0.75) is worth less than a cent, so a card that gives 1¢ is played and one that does nothing now is kept.
 
 A settled copy is scored by `settledScore`: its `Score`, plus `digValue` for each monster the seat killed in the settle (its rewards went to the seat). A kill lets in the next card of the monster deck, which may give a soul: `digValue` is the soul weight times the share of soul cards (card property `Soul`) in the world's monster deck, times `digShare` (0.5). Without it a kill of a monster with no soul rarely beat ending the turn.
 
@@ -64,17 +64,26 @@ Some tables no bot level unlocks, by the cards alone: The Harbingers (`r`) makes
 
 It plays the best score; on equal scores a pass or an end of turn first. One move in ten it picks by chance among the best three, weighted 3:2:1.
 
+### Hard
+
+The hard level (`internal/bot/hard.go`, Decision 9) lists the candidates as standard does, doing nothing first. Rounds of playouts halve them: each round gives every candidate still in an even share of the budget, world by world. A world is `World(i)`, a new imagined deal; every candidate still in plays on it with the same policy seed, then it is dropped, so one world and one copy live at a time. A playout copies the world (`fork`), applies the candidate and plays on to the end of the turn, at most 120 steps; every seat moves by the policy, so the others may respond, and the bot's own choices get the policy's top option. Each playout is scored by `settledScore`, the function standard settles use. After a round the better half of the moves stays, by `judge`; doing nothing stays to the last round, against the one move left, and a move must beat it as in standard. In that noise a gain counts at most four souls (`noiseClip`), so one world where the game ends does not hide the rest. There are no mistakes on purpose.
+
+Hard's score (Decision 7.6) weighs the opponents by strength, not as an average: each opponent's weight is `exp(sum / 100)` over its full sum, so one soul ahead counts e times as much; equal opponents count as their average. Its answers have a holding value: the loot cards and abilities `Allowed` shows it on another seat's turn (on its own turn, the abilities of its cards but rooms'). Each answer still held at the end of a playout (in hand; in play and charged, or recharging as its turn starts) counts its base value (`cardValue`, the one function that values a loot card in hand and an item in play) times 1 + `wHold` × (1 + `wHoldLead` × lead): an item answer 2.4 to 7.2 more than a spent one, more as one opponent pulls away. So it keeps Godhead when a weak seat kills a monster with no soul, and spends it when the strong seat kills one with a soul.
+
+`Budget{Playouts, Time}`: whichever ends first. `Playouts` 0 means no playout cap, `Time` 0 no time limit; both 0 think 1.5 s. With a time budget the first world measures a playout and the rounds share out what the time leaves. The search checks `ctx` before each playout, yields the core after each (`runtime.Gosched`) and, when stopped, plays the best so far. A playout takes about 4 ms on one core, most of it the engine's `checkMaxHP`; a move of 150 playouts about 0.4 s and 150 MB of garbage.
+
 ## Arena
 
 `cmd/bot_arena` plays whole seeded games with every set: bonus souls on, the room deck in odd seeds, deck ratios in every third. Each `-match` is one line-up of levels; game `k` plays seed `-seed`+k and rotates the line-up by `k` seats, so each level plays from each seat. Games run side by side on every core; the results do not depend on it.
 
 ```sh
-make bots                     # BOT_GAMES=50 per default line-up: standard against random, standard×2–4, policy×2–4
+make bots                     # BOT_GAMES=50 per default line-up: standard against random, hard against standard, one hard among three standard, standard×2–4, policy×2–4
+go run ./cmd/bot_arena -games 20 -playouts 500 -match hard,standard
 go run ./cmd/bot_arena -games 20 -match policy,random -match policy,policy,policy
 go run ./cmd/bot_arena -games 20 -cap 400 -match policy,policy,policy,policy
 ```
 
-It prints, per line-up: games, games with a winner within the turn cap, wins by level against chance, median and max game turns, intents per turn, the share of passes, time per move, player deaths per monster killed; and for every game cut by the cap, its seed, turn, souls by seat and the kinds of its last 300 intents. It exits 1, in any line-up, when a bot intent is refused or a loop guard ends a game. The finish gate, 95% of games with a winner within the cap (Decision 18.4), is only for line-ups of the levels players meet (standard from 21.5, hard from 21.6) with no random seat: `finishGated` in `cmd/bot_arena`. Random and policy line-ups print their share for reference. The win gate, standard winning 70% of 2-player games against random (Decision 18.5), is `winGates` there; hard against standard joins in 21.6.
+It prints, per line-up: games, games with a winner within the turn cap, wins by level against chance, median and max game turns, intents per turn, the share of passes, time per move, player deaths per monster killed; and for every game cut by the cap, its seed, turn, souls by seat and the kinds of its last 300 intents. It exits 1, in any line-up, when a bot intent is refused or a loop guard ends a game. The finish gate, 95% of games with a winner within the cap (Decision 18.4), is only for line-ups of the levels players meet (standard from 21.5, hard from 21.6) with no random seat: `finishGated` in `cmd/bot_arena`. Random and policy line-ups print their share for reference. The win gates are `winGates` there: standard wins 70% of 2-player games against random, hard 60% of 2-player games against standard, and one hard among three standard wins over 30% (Decision 18.5 – 18.7). Hard thinks `-playouts` playouts a move (`arena.DefaultPlayouts`, 150), never a time, so the results repeat.
 
 Each step the arena asks the waiting seat's bot, with `world.For` on the game for that seat. A refused intent is listed and the arena sends the forced answer: the first allowed intent.
 

@@ -36,6 +36,10 @@ const (
 	// times) passed 1000 intents with no loop.
 	MaxTurnIntents = 1000
 	MaxGameIntents = 30000
+	// DefaultPlayouts is the hard level's playouts a move: what a weak
+	// server gives in its think time (Decision 18). The arena counts
+	// playouts, never time, so its results repeat (Decision 9.10).
+	DefaultPlayouts = 150
 )
 
 // Match is a series of games between one line-up of levels.
@@ -51,6 +55,9 @@ type Match struct {
 	// TurnIntents and GameIntents are the loop guards; 0 is
 	// MaxTurnIntents and MaxGameIntents.
 	TurnIntents, GameIntents int
+	// Playouts is the hard level's playouts a move; 0 is
+	// DefaultPlayouts.
+	Playouts int
 }
 
 // Name is the line-up, e.g. "policy-policy".
@@ -120,6 +127,9 @@ func Play(ctx context.Context, m Match) (Result, error) {
 	}
 	if m.GameIntents == 0 {
 		m.GameIntents = MaxGameIntents
+	}
+	if m.Playouts == 0 {
+		m.Playouts = DefaultPlayouts
 	}
 	if n := len(m.Levels); n < 2 || n > 4 {
 		return Result{}, fmt.Errorf("arena: %d seats; a game is for 2 to 4", n)
@@ -220,7 +230,10 @@ func playGame(ctx context.Context, m Match, k int, r *Result) error {
 			return fmt.Errorf("arena: game %d step %d: %w", seed, step, err)
 		}
 		start := time.Now()
-		in, err := bot.Choose(ctx, bot.Input{Seat: p, Level: levels[p], Rand: rngs[p], World: bot.World(worlds)})
+		in, err := bot.Choose(ctx, bot.Input{
+			Seat: p, Level: levels[p], Rand: rngs[p], World: bot.World(worlds),
+			Budget: bot.Budget{Playouts: m.Playouts},
+		})
 		r.Think += time.Since(start)
 		r.Moves++
 		var events []engine.Event

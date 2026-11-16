@@ -11,7 +11,9 @@
 // (a game turn over 1000 intents other than passes, a game over 30000),
 // in any line-up; fewer than 95% of games with a winner within the turn
 // cap, in a line-up of player-visible levels with no random seat; or a
-// win gate: standard under 70% of 2-player games against random.
+// win gate: standard under 70% of 2-player games against random, hard
+// under 60% of 2-player games against standard, one hard among three
+// standard not over 30%. Hard thinks -playouts playouts a move.
 package main
 
 import (
@@ -40,32 +42,52 @@ import (
 const minFinished = 0.95
 
 // finishGated are the levels whose line-ups must pass minFinished: the
-// levels players meet. Hard joins in 21.6; random and policy line-ups
-// print their share for reference only.
-var finishGated = map[bot.Level]bool{bot.Standard: true}
+// levels players meet. Random and policy line-ups print their share for
+// reference only.
+var finishGated = map[bot.Level]bool{bot.Standard: true, bot.Hard: true}
 
-// winGate is a gate on a 2-player line-up of two levels (Decision
-// 18.5 – 18.6): Level must win at least Min of the games against
-// Against.
+// winGate is a gate on a line-up of Seats seats, one of Level and the
+// rest of Against (Decision 18.5 – 18.7): Level must win at least Min
+// of the games, or more than Min when Over.
 type winGate struct {
 	Level, Against bot.Level
+	Seats          int
 	Min            float64
+	Over           bool
 }
 
-// winGates are the win gates; hard against standard joins in 21.6.
-var winGates = []winGate{{Level: bot.Standard, Against: bot.Random, Min: 0.70}}
+// winGates are the win gates.
+var winGates = []winGate{
+	{Level: bot.Standard, Against: bot.Random, Seats: 2, Min: 0.70},
+	{Level: bot.Hard, Against: bot.Standard, Seats: 2, Min: 0.60},
+	{Level: bot.Hard, Against: bot.Standard, Seats: 4, Min: 0.30, Over: true},
+}
 
 // winGateOf is the win gate of a line-up, if it has one.
 func winGateOf(levels []bot.Level) (winGate, bool) {
-	if len(levels) != 2 {
-		return winGate{}, false
-	}
 	for _, w := range winGates {
-		if levels[0] == w.Level && levels[1] == w.Against || levels[0] == w.Against && levels[1] == w.Level {
+		if len(levels) != w.Seats {
+			continue
+		}
+		mine, theirs := 0, 0
+		for _, l := range levels {
+			switch l {
+			case w.Level:
+				mine++
+			case w.Against:
+				theirs++
+			}
+		}
+		if mine == 1 && theirs == w.Seats-1 {
 			return w, true
 		}
 	}
 	return winGate{}, false
+}
+
+// fails: a share of won games misses the gate.
+func (w winGate) fails(share float64) bool {
+	return share < w.Min || w.Over && share <= w.Min
 }
 
 // gated: the line-up holds a finish-gated level and no random seat.
@@ -79,6 +101,8 @@ func gated(levels []bot.Level) bool {
 // defaultMatches are the line-ups played without -match.
 var defaultMatches = []string{
 	"standard,random",
+	"hard,standard",
+	"hard,standard,standard,standard",
 	"standard,standard",
 	"standard,standard,standard",
 	"standard,standard,standard,standard",
@@ -119,6 +143,7 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 	games := fs.Int("games", 50, "games per line-up")
 	seed := fs.Uint64("seed", 1, "seed of each line-up's first game")
 	turnCap := fs.Int("cap", arena.TurnCap, "game turns after which a game counts as unfinished")
+	playouts := fs.Int("playouts", arena.DefaultPlayouts, "the hard level's playouts a move")
 	var matches matchFlags
 	fs.Var(&matches, "match", "a line-up of levels, one per seat, comma-separated (repeat it)")
 	if err := fs.Parse(args); err != nil {
@@ -137,7 +162,7 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 			}
 			levels = append(levels, l)
 		}
-		ms = append(ms, arena.Match{Levels: levels, Games: *games, Seed: *seed, Cap: *turnCap})
+		ms = append(ms, arena.Match{Levels: levels, Games: *games, Seed: *seed, Cap: *turnCap, Playouts: *playouts})
 	}
 	failed := false
 	pr := &printer{w: out}
@@ -181,6 +206,9 @@ func report(out *printer, r arena.Result, took time.Duration) bool {
 	m := r.Match
 	out.printf("%s: %d games, %d with a winner (%.1f%%) within %d turns, in %s\n",
 		m.Name(), r.Games, r.Finished, 100*r.FinishedShare(), m.Cap, took.Round(time.Millisecond))
+	if slices.Contains(m.Levels, bot.Hard) {
+		out.printf("  hard: %d playouts a move\n", m.Playouts)
+	}
 	for _, l := range slices.Sorted(maps.Keys(r.Seats)) {
 		chance := float64(r.Seats[l]) / float64(len(m.Levels))
 		out.printf("  %-8s wins %d of %d games (%.1f by chance)\n", l, r.Wins[l], r.Games, chance)
@@ -210,7 +238,7 @@ func report(out *printer, r arena.Result, took time.Duration) bool {
 	}
 	if w, has := winGateOf(m.Levels); has && r.Games > 0 {
 		share := float64(r.Wins[w.Level]) / float64(r.Games)
-		if share < w.Min {
+		if w.fails(share) {
 			out.printf("  FAIL: %s wins %.0f%% against %s, under %.0f%% (Decision 18)\n", w.Level, 100*share, w.Against, 100*w.Min)
 			ok = false
 		}

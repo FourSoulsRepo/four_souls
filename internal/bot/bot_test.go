@@ -23,14 +23,22 @@ func newGame(t *testing.T, seed uint64, players int) *engine.Game {
 	return g
 }
 
-// input is seat p's input on g, with its own random source.
+// testPlayouts is the hard level's budget in tests of whole games: a
+// few playouts a move, so they run fast and repeat.
+const testPlayouts = 12
+
+// input is seat p's input on g, with its own random source; a hard
+// seat gets testPlayouts.
 func input(t *testing.T, g *engine.Game, p engine.PlayerID, level Level, seed uint64) Input {
 	t.Helper()
 	w, err := world.For(g, p, engine.Known{}, seed)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return Input{Seat: p, Level: level, Rand: rand.New(rand.NewPCG(seed, 1)), World: World(w)} //nolint:gosec // test moves
+	return Input{
+		Seat: p, Level: level, Rand: rand.New(rand.NewPCG(seed, 1)), World: World(w), //nolint:gosec // test moves
+		Budget: Budget{Playouts: testPlayouts},
+	}
 }
 
 // TestChooseAllowed plays a few hundred steps with each level: every

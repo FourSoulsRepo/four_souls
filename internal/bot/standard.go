@@ -71,7 +71,7 @@ func standardPick(w *engine.Game, p engine.PlayerID, allowed []engine.Intent, rn
 	if len(w.Stack) > 0 {
 		noise = noiseStack
 	}
-	scores := judge(cs, tries, noise)
+	scores := judge(cs, tries, noise, 0)
 	order := make([]int, len(cs))
 	for i := range order {
 		order[i] = i
@@ -102,8 +102,10 @@ func standardPick(w *engine.Game, p engine.PlayerID, allowed []engine.Intent, rn
 // after the sort), a move must beat it (Decision 8.6): the move's gain
 // over doing nothing, draw by draw on the same seeds, counts less wAct
 // and less noise times its standard error. So a move whose gain is
-// noise is not made.
-func judge(cs []engine.Intent, tries [][]float64, noise float64) []float64 {
+// noise is not made. clip, when not 0, bounds each gain in the
+// standard error to ±clip (the mean keeps it whole): a game won or lost
+// in one draw of many then does not hide what the others show.
+func judge(cs []engine.Intent, tries [][]float64, noise, clip float64) []float64 {
 	scores := make([]float64, len(cs))
 	for i, t := range tries {
 		scores[i] = mean(t)
@@ -121,7 +123,13 @@ func judge(cs []engine.Intent, tries [][]float64, noise float64) []float64 {
 		for d, s := range tries[i] {
 			gain = append(gain, s-nothing[min(d, len(nothing)-1)])
 		}
-		scores[i] = scores[0] + mean(gain) - wAct - noise*stdErr(gain)
+		m := mean(gain)
+		if clip > 0 {
+			for d, x := range gain {
+				gain[d] = min(max(x, -clip), clip)
+			}
+		}
+		scores[i] = scores[0] + m - wAct - noise*stdErr(gain)
 	}
 	return scores
 }
@@ -203,7 +211,7 @@ func try(w *engine.Game, p engine.PlayerID, in engine.Intent, draws []uint64, di
 		o.see(ev, p)
 		src.Seed(seed, settleStream)
 		settle(g, p, prng, &o)
-		out = append(out, settledScore(g, p, o, dig))
+		out = append(out, settledScore(g, p, o, scoring{dig: dig}))
 		if !o.rolled {
 			break
 		}
@@ -275,10 +283,11 @@ func (o *outcome) see(ev []engine.Event, p engine.PlayerID) {
 }
 
 // settledScore is the score of a settled copy from seat p's side: the
-// table's Score, plus dig for each monster p killed in the settle
-// (Decision 7.9). Every level scores a settle or a playout by it.
-func settledScore(g *engine.Game, p engine.PlayerID, o outcome, dig float64) float64 {
-	return Score(g, p) + dig*float64(o.kills)
+// table's score as the level scores it (scoreAs), plus sc.dig for each
+// monster p killed in the settle (Decision 7.9). Every level scores a
+// settle or a playout by it.
+func settledScore(g *engine.Game, p engine.PlayerID, o outcome, sc scoring) float64 {
+	return scoreAs(g, p, sc) + sc.dig*float64(o.kills)
 }
 
 // quiet: a priority prompt on an empty stack, no attack or purchase

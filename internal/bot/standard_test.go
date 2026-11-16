@@ -274,7 +274,7 @@ func TestJudge(t *testing.T) {
 		{"a coin on average, by luck", []float64{40, -30, 20, 14}, false},
 		{"one draw only", []float64{12}, true},
 	} {
-		s := judge(cs, [][]float64{nothing, c.move}, noiseOpen)
+		s := judge(cs, [][]float64{nothing, c.move}, noiseOpen, 0)
 		if got := s[1] > s[0]; got != c.wins {
 			t.Errorf("%s: move %v, nothing %v; move wins %v, want %v", c.name, s[1], s[0], got, c.wins)
 		}
@@ -282,14 +282,24 @@ func TestJudge(t *testing.T) {
 	// Two coins on average, one standard error of 0.9: enough on an
 	// empty stack, not on a stack.
 	gain := [][]float64{nothing, {13, 0, 24, 11}}
-	if s := judge(cs, gain, noiseOpen); s[1] <= s[0] {
+	if s := judge(cs, gain, noiseOpen, 0); s[1] <= s[0] {
 		t.Errorf("empty stack: %v", s)
 	}
-	if s := judge(cs, gain, noiseStack); s[1] > s[0] {
+	if s := judge(cs, gain, noiseStack, 0); s[1] > s[0] {
 		t.Errorf("on a stack: %v", s)
 	}
+	// On a stack, a coin in every draw but one, where the move wins the
+	// game: the win hides the coins' sure gain, unless the noise is
+	// clipped.
+	won := [][]float64{{10, 0, 20, 10, 10, 0, 20, 10}, {11, 1, 21, 11, 11, 1, 21, scoreWin}}
+	if s := judge(cs, won, noiseStack, 0); s[1] > s[0] {
+		t.Errorf("a win in one draw, unclipped: %v", s)
+	}
+	if s := judge(cs, won, noiseStack, noiseClip); s[1] <= s[0] {
+		t.Errorf("a win in one draw, clipped: %v", s)
+	}
 	choose := []engine.Intent{{Kind: engine.IntentChoose, Choice: 0}, {Kind: engine.IntentChoose, Choice: 1}}
-	if s := judge(choose, [][]float64{{1, 3}, {2.5}}, noiseStack); s[0] != 2 || s[1] != 2.5 {
+	if s := judge(choose, [][]float64{{1, 3}, {2.5}}, noiseStack, 0); s[0] != 2 || s[1] != 2.5 {
 		t.Errorf("choices: %v, want the means", s)
 	}
 }

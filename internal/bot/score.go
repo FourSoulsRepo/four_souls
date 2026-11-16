@@ -1,6 +1,9 @@
 package bot
 
 import (
+	"math"
+	"slices"
+
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
@@ -42,12 +45,53 @@ const (
 	// which its own die shifts, so its gain there is mostly noise.
 	noiseOpen  = 1.0
 	noiseStack = 2.0
+	// noiseClip: in the hard level's noise a gain counts at most four
+	// souls, the most a table holds before a win. A game won or lost
+	// in one world of fifty is a real part of the mean, but as noise it
+	// would hide what every other world shows (Decision 9.6).
+	noiseClip = 4 * wSoul
+
+	// The hard level's part (Decision 7.6). wStrength is the strength
+	// one opponent's weight grows by e: an opponent one soul ahead of
+	// another counts e times as much. No threshold: the weights move
+	// smoothly with every part of each seat's sum.
+	wStrength = wSoul
+	// wHold is how much more an answer still held is worth than its
+	// base value (cardValue): a card or charge the seat may play on
+	// another seat's turn. Spent now, it is gone against a later
+	// threat. With one opponent clearly the strongest the share grows
+	// up to 1 + wHoldLead times: the threat to keep it for is near. An
+	// item answer (12) is so worth 2.4 to 7.2 more while it is ready.
+	wHold     = 0.2
+	wHoldLead = 2.0
 )
+
+// scoring is what a level adds to the shared score (Decision 7): the
+// dig value of its world, and for hard the opponents weighted by
+// strength with the holding value of its answers (Decision 7.6).
+// The zero scoring is Score.
+type scoring struct {
+	// dig is digValue of the world: what a kill adds (Decision 7.9).
+	dig float64
+	// lead: the opponents count by strength, not as an average.
+	lead bool
+	// answers are the seat's cards and charges that can answer on
+	// another seat's turn (answers); each one still held counts its
+	// base value times 1 + holdShare. Only with lead.
+	answers []engine.ObjectID
+}
 
 // Score is the table g from seat p's side (Decision 7): a win is the
 // top value and a loss the bottom one; else p's own sum less the
 // opponents' average (Decision 7.5).
 func Score(g *engine.Game, p engine.PlayerID) float64 {
+	return scoreAs(g, p, scoring{})
+}
+
+// scoreAs is Score as a level scores: with sc.lead the opponents count
+// by strength and p's answers still held add their holding value
+// (Decision 7.6).
+func scoreAs(g *engine.Game, p engine.PlayerID, sc scoring) float64 {
 	if g.Over {
 		for _, w := range g.Winners {
 			if w == p {
@@ -55,6 +99,9 @@ func Score(g *engine.Game, p engine.PlayerID) float64 {
 			}
 		}
 		return -scoreWin
+	}
+	if sc.lead {
+		return leadScore(g, p, sc.answers)
 	}
 	others, n := 0.0, 0
 	for i := range g.Players {
@@ -71,24 +118,143 @@ func Score(g *engine.Game, p engine.PlayerID) float64 {
 	return own - others/float64(n)
 }
 
+// leadScore is the hard level's table (Decision 7.6): p's own sum and
+// the holding value of its answers still held, less the opponents'
+// sums weighted by strength. Each opponent's weight is exp(sum /
+// wStrength), shared out over the opponents: equal opponents count as
+// their average, one far ahead counts nearly alone.
+func leadScore(g *engine.Game, p engine.PlayerID, answers []engine.ObjectID) float64 {
+	var buf [4]float64
+	sides := buf[:0]
+	for i := range g.Players {
+		sides = append(sides, side(g, engine.PlayerID(i)))
+	}
+	own := sides[p] + holdShare(lead(sides, p))*held(g, p, answers)
+	if len(sides) == 1 {
+		return own
+	}
+	top := slices.Max(sides)
+	others, weights := 0.0, 0.0
+	for q, s := range sides {
+		if engine.PlayerID(q) != p {
+			w := math.Exp((s - top) / wStrength)
+			others += w * s
+			weights += w
+		}
+	}
+	return own - others/weights
+}
+
+// lead is how clearly one opponent of p is the strongest seat: 0 when
+// none is ahead of the rest, towards 1 as one pulls away. It is the
+// strongest opponent's share of the strength weights of every seat,
+// p's own too, past an even share.
+func lead(sides []float64, p engine.PlayerID) float64 {
+	n := len(sides)
+	if n < 2 {
+		return 0
+	}
+	top := slices.Max(sides)
+	sum, best := 0.0, 0.0
+	for q, s := range sides {
+		w := math.Exp((s - top) / wStrength)
+		sum += w
+		if engine.PlayerID(q) != p {
+			best = max(best, w)
+		}
+	}
+	even := 1 / float64(n)
+	return min(max((best/sum-even)/(1-even), 0), 1)
+}
+
+// holdShare is the multiplier of an answer held, past its base value,
+// at this lead: an answer counts cardValue × (1 + holdShare).
+func holdShare(lead float64) float64 {
+	return wHold * (1 + wHoldLead*lead)
+}
+
+// held is the base value (cardValue) of the answers p still holds on
+// table g: a card still in its hand; a card it still controls in play
+// whose ability is ready: no ↷, or charged, or recharging now as p's
+// turn starts (R-TURN-02). The character has no base value, so its ↷
+// adds nothing.
+func held(g *engine.Game, p engine.PlayerID, answers []engine.ObjectID) float64 {
+	v := 0.0
+	recharge := g.Turn.Active == p && g.Turn.Step == engine.StepRecharge
+	for _, id := range answers {
+		o := g.Object(id)
+		switch {
+		case slices.Contains(g.Players[p].Hand, id):
+			v += cardValue(g, id)
+		case o.Zone.Kind == engine.ZoneInPlay && o.Controller == p && (o.Charged || recharge || !g.HasTap(id)):
+			v += cardValue(g, id)
+		}
+	}
+	return v
+}
+
+// answers lists seat p's cards and charges that can answer: what it may
+// play or use on another seat's turn (Decision 7.6), from allowed, its
+// Allowed on world w. On another seat's turn that is every loot card
+// and card it may play or use now. On its own turn the abilities of
+// cards it controls: they work on any seat's turn, but a room's only on
+// the active player's (R-CARD-36), and a loot card needs a loot play,
+// which another seat's turn does not give (R-CARD-08).
+func answers(w *engine.Game, p engine.PlayerID, allowed []engine.Intent) []engine.ObjectID {
+	other := w.Turn.Active != p
+	var out []engine.ObjectID
+	for _, in := range allowed {
+		if len(in.Objects) == 0 || slices.Contains(out, in.Objects[0]) {
+			continue
+		}
+		id := in.Objects[0]
+		switch in.Kind { //nolint:exhaustive // only plays and uses answer
+		case engine.IntentActivate:
+			if other || w.Object(id).Role != engine.RoleRoom {
+				out = append(out, id)
+			}
+		case engine.IntentPlayLoot:
+			if other {
+				out = append(out, id)
+			}
+		}
+	}
+	return out
+}
+
 // side is one seat's sum: souls, coins, loot cards, items, curses, HP
 // and being alive (Decision 7.2 – 7.3).
 func side(g *engine.Game, p engine.PlayerID) float64 {
 	pl := &g.Players[p]
-	s := wSoul*float64(g.SoulValue(p)) + wCent*float64(pl.Cents) + wLoot*float64(len(pl.Hand)) +
-		wHP*float64(g.PlayerHP(p))
+	s := wSoul*float64(g.SoulValue(p)) + wCent*float64(pl.Cents) + wHP*float64(g.PlayerHP(p))
 	if !pl.Dead {
 		s += wAlive
 	}
+	for _, id := range pl.Hand {
+		s += cardValue(g, id)
+	}
 	for _, id := range pl.InPlay {
-		switch g.Object(id).Role { //nolint:exhaustive // souls count by SoulValue; the rest is nothing
-		case engine.RoleItem:
-			s += wItem
-		case engine.RoleCurse:
-			s += wCurse
-		}
+		s += cardValue(g, id)
 	}
 	return s
+}
+
+// cardValue is the base value of one card of a seat: a loot card in
+// its hand, an item or a curse it has in play (Decision 7.3). It is the
+// one place a card's worth is set; the hard level's holding value
+// multiplies it (Decision 7.6).
+func cardValue(g *engine.Game, id engine.ObjectID) float64 {
+	o := g.Object(id)
+	if o.Zone.Kind == engine.ZoneHand {
+		return wLoot
+	}
+	switch o.Role { //nolint:exhaustive // souls count by SoulValue; the rest is nothing
+	case engine.RoleItem:
+		return wItem
+	case engine.RoleCurse:
+		return wCurse
+	}
+	return 0
 }
 
 // digValue is what a monster kill is worth beyond its rewards: the

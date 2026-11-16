@@ -30,10 +30,14 @@ const (
 	// Standard tries each candidate on one imagined world and plays the
 	// best score, with one mistake in ten (Decision 8).
 	Standard Level = "standard"
+	// Hard plays each candidate out on many imagined worlds to the end
+	// of the turn, halving the candidates round by round, with the
+	// opponents weighted by strength; no mistakes (Decision 9).
+	Hard Level = "hard"
 )
 
 // Levels lists every level Choose knows, in a fixed order.
-func Levels() []Level { return []Level{Random, Policy, Standard} }
+func Levels() []Level { return []Level{Random, Policy, Standard, Hard} }
 
 // ParseLevel returns the level named s.
 func ParseLevel(s string) (Level, error) {
@@ -49,8 +53,11 @@ func ParseLevel(s string) (Level, error) {
 // give equal games. internal/world builds it from the real game.
 type World func(i int) (*engine.Game, error)
 
-// Budget bounds a search: whichever ends first (Decision 9.8). The
-// levels so far do not search and ignore it.
+// Budget bounds the hard level's search: whichever ends first
+// (Decision 9.8). Playouts 0 sets no cap on playouts, Time 0 no time
+// limit; with both 0 it thinks for 1.5 s. A playout count alone
+// repeats: the arena uses it (Decision 9.10). The other levels ignore
+// the budget.
 type Budget struct {
 	Playouts int
 	Time     time.Duration
@@ -72,7 +79,9 @@ type Input struct {
 // discard or an order (Decision 4.5). With one allowed intent it
 // answers at once (Decision 4.6). An error means no world or nothing
 // allowed; the caller then uses its forced answer (Decision 12.10).
-func Choose(_ context.Context, in Input) (engine.Intent, error) {
+// ctx ends the hard level's search early; it then plays the best so far
+// (Decision 9.9).
+func Choose(ctx context.Context, in Input) (engine.Intent, error) {
 	if in.World == nil || in.Rand == nil {
 		return engine.Intent{}, errors.New("bot: input has no world or no random source")
 	}
@@ -95,6 +104,8 @@ func Choose(_ context.Context, in Input) (engine.Intent, error) {
 		return policyPick(w, in.Seat, allowed, in.Rand), nil
 	case Standard:
 		return standardPick(w, in.Seat, allowed, in.Rand, mistakeOdds)
+	case Hard:
+		return hardPick(ctx, in, w, allowed)
 	default:
 		return engine.Intent{}, fmt.Errorf("bot: unknown level %q", in.Level)
 	}

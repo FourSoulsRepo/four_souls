@@ -83,6 +83,38 @@ func TestWinGate(t *testing.T) {
 	}
 }
 
+// TestHardGates: hard wins at least 60% of 2-player games against
+// standard, and over 30% as one hard among three standard, from any
+// seat order; two hard seats among standard have no win gate.
+func TestHardGates(t *testing.T) {
+	for _, c := range []struct {
+		levels []bot.Level
+		wins   int
+		pass   bool
+	}{
+		{[]bot.Level{bot.Standard, bot.Hard}, 5, false},
+		{[]bot.Level{bot.Hard, bot.Standard}, 6, true},
+		{[]bot.Level{bot.Standard, bot.Hard, bot.Standard, bot.Standard}, 3, false},
+		{[]bot.Level{bot.Standard, bot.Standard, bot.Standard, bot.Hard}, 4, true},
+	} {
+		r := arena.Result{
+			Match: arena.Match{Levels: c.levels, Cap: 150, Playouts: 150},
+			Games: 10, Finished: 10, Wins: map[bot.Level]int{bot.Hard: c.wins, bot.Standard: 10 - c.wins},
+			Seats: map[bot.Level]int{bot.Hard: 10, bot.Standard: 10 * (len(c.levels) - 1)},
+		}
+		var out bytes.Buffer
+		if got := report(&printer{w: &out}, r, 0); got != c.pass {
+			t.Errorf("%v, hard wins %d of 10: passed %v, want %v:\n%s", c.levels, c.wins, got, c.pass, out.String())
+		}
+		if !strings.Contains(out.String(), "hard: 150 playouts a move") {
+			t.Errorf("%v: no playouts line:\n%s", c.levels, out.String())
+		}
+	}
+	if _, ok := winGateOf([]bot.Level{bot.Hard, bot.Hard, bot.Standard, bot.Standard}); ok {
+		t.Error("two hard seats have a win gate")
+	}
+}
+
 // TestRunBadLevel: an unknown level is an error before any game.
 func TestRunBadLevel(t *testing.T) {
 	err := run(context.Background(), []string{"-match", "policy,clever"}, &bytes.Buffer{})

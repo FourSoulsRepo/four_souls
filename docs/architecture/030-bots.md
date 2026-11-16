@@ -140,6 +140,18 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    4. The same sum for each opponent, taken away from the seat's own.
    5. Standard: the opponents' average.
    6. Hard: the leader counts most; a leader one soul from a win, most of all.
+      1. The leader is the opponent with the best full sum: souls, then items, coins, loot, HP (owner via lead, 2026-11-16); not souls alone.
+      2. Each opponent's weight is `exp(sum / 100)`, shared out over the opponents: one soul ahead counts e times as much (`wStrength`).
+      3. No leader threshold: the weights move smoothly with every part of each sum; equal opponents count as their average, as standard's.
+      4. A card or charge that can answer has a holding value: spent now, it is gone against a later threat.
+      5. "Can answer": what `Allowed` shows the seat on another seat's turn: a loot card or a card's ability (`answers`). No card names.
+         1. On its own turn: the abilities of cards it controls; a room's work on the active player's turn only (R-CARD-36), and a loot card needs a loot play another seat's turn does not give (R-CARD-08).
+      6. It is a multiplier on the card's base value, not a term of its own (lead, 2026-11-16): each answer the seat still holds (in hand; in play and charged, or recharging as its turn starts) counts `cardValue` × (1 + `wHold` × (1 + `wHoldLead` × lead)), with 0.2 and 2.
+         1. `cardValue` is the one function that gives a loot card in hand and an item in play their base value (0.75 and 12); 21.16 makes it a value per card.
+         2. So a held item answer is worth 2.4 to 7.2 more than a spent one; a character has no base value, so its ↷ adds nothing.
+      7. Lead: the strongest opponent's share of the weights of every seat, past an even share; 0 with no one ahead, towards 1 as one pulls away.
+      8. So the multiplier is never 0 and is up to three times higher with one opponent clearly the strongest.
+      9. Test (21.6): 3 seats; hard holds Godhead, which can turn a killing roll into a miss. The weak seat (0 souls, no items) kills a monster with no soul while the strong seat (3 souls, items) moves later: hard passes. The strong seat kills a soul monster: hard answers. It does so with one turn of playouts and the holding value; no plan over several turns.
    7. Weights are constants in one file; the arena tunes them.
    8. A challenge: one team score (Decision 14).
    9. Dig: a monster the seat kills in a settle or playout adds `wDig` to that copy's score.
@@ -175,10 +187,23 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    3. The playout runs to the end of the current turn; cap 120 steps.
    4. Every seat follows the policy, so the others may respond.
    5. Candidates are halved round by round; the tries go to the best ones.
+      1. Each round gives every candidate still in an even share of the budget, world by world: every candidate meets the same worlds, with the same policy seeds.
+      2. Doing nothing (a pass, or an end of turn) is the baseline and stays to the last round, against the one move left.
+      3. One world at a time is kept: it is dropped once every candidate still in played on it.
    6. The average score picks the move; no mistakes on purpose.
+      1. Every playout is scored by `settledScore`, as a standard settle, with the opponents weighted by strength (Decision 7.6).
+      2. A move must beat doing nothing as in Decision 8.6, world by world.
+      3. In the noise a gain counts at most four souls (`noiseClip`): a game won or lost in one world of fifty is part of the mean, but as noise it hid what every other world showed.
    7. It answers the stack the same way: "pass" is one more candidate.
-   8. Budget: 1.5 s or 3000 playouts, whichever ends first.
+   8. Budget: `Budget{Playouts, Time}`, whichever ends first.
+      1. `Playouts` 0: no cap on playouts; `Time` 0: no time limit; both 0: 1.5 s. The server passes the time only.
+      2. With a time budget the first world measures a playout; the rounds share out the playouts that time leaves.
+      3. Measured (21.6, i7-8750H, one core, `BenchmarkPlayout`, `BenchmarkHardMove`): a playout 2.2 – 5.3 ms by load, 3.9 ms on a quiet machine, about 260 a second; a move of 150 playouts with its worlds 0.34 – 0.40 s, 375 – 440 playouts a second (playouts on the stack end sooner).
+      4. So 1.5 s gives about 400 – 650 playouts on this core, perhaps half that on a weak server core; "3000 playouts" was wrong. Half of a playout is the engine's `checkMaxHP` (21.10).
+      5. A move of 150 playouts allocates 142 – 153 MB in 2.4 – 2.6 million allocations, all garbage when it returns: each playout copies its world (about 240 KB) and the engine allocates as it plays (a playout 0.8 – 1.3 MB). A standard move: 4.9 MB, 79 000 allocations.
    9. `ctx` ends it early; it then answers with the best so far.
+      1. It checks `ctx` before each playout and yields the core after each (`runtime.Gosched`): one core holds many tables.
+      2. Tests: a cancelled `ctx` answers an allowed intent within 50 ms; with `GOMAXPROCS=1` another goroutine gets the core at least every 20 ms while hard thinks.
    10. The arena uses the playout count only, so its results repeat.
 10. Lobby and protocol
    1. `Seat` gets `bot` (the level) and `bot_n` (its number, from 1).
@@ -253,6 +278,8 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       6. Policy against policy, 50 games each (2026-11-16): 2 players median 42 turns, max 150, 46 intents a turn, 77% passes; 3 players median 50, max 138, 65, 83%; 4 players median 58, max 150, 86, 87%. Finished within the cap: 96%, 100%, 92%.
    5. Gate: standard wins at least 70% of 2-player games against random.
    6. Gate: hard wins at least 60% of 2-player games against standard.
+      1. Hard's strength is measured at the playouts a weak server gives: `-playouts`, 150 by default; never by time.
+      2. Hard against standard is also reported at 50 and 500 playouts a move; the gate must hold at 150. The sweep runs with the tuning after 21.16 (owner, 2026-11-16).
    7. Gate: one hard among three standard wins over 30%; chance is 25%.
    8. Gate: no bot intent is refused, on every set, 2 to 4 players.
    9. CI plays a few games for the last gate only; win rates are a local check.

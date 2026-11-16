@@ -115,7 +115,7 @@ Rules for this step (owner, 2026-11-16):
    4. Short runs, 20 games each (2026-11-16, machine shared with line 2): standard wins 18 of 20 against random (90%); finished ×2 100% (median 30 turns), ×3 100% (median 42), ×4 90% (median 61; seed 15 is a table The Harbingers locks, seed 9 a long turn of real plays, no loop); deaths a kill 1.20, 1.44, 2.16; 11–41 ms a move under load.
    5. The full `make bots`, time per move, B/op and allocs/op run once at the end of line 1 (rule 7.3); the 95% gate is decided there.
 
-### [ ] 21.6 Hard level
+### [x] 21.6 Hard level
 
 1. Goal: the hard bot (ADR 030, Decision 9).
 2. Tasks:
@@ -125,10 +125,18 @@ Rules for this step (owner, 2026-11-16):
    4. Unit tests on built situations: it answers a stack item that would win the game for another seat, when it can; it hits the leader rather than the last seat, all else equal.
    5. Test: a cancelled `ctx` returns an allowed intent within 50 ms.
    6. Race test: `go test -race ./internal/bot`.
+   7. Built situation (owner via lead): 3 seats; hard holds one answer that can cancel a monster kill. The weak seat (0 souls, no items) attacks a monster with no soul while the strong seat (3 souls, items) moves later: hard passes. Same table, the strong seat attacks a monster with a soul: hard answers. If the score cannot do it without a plan over several turns, no planner: report what fails.
+   8. Test: with `GOMAXPROCS=1` another goroutine gets the core at least every 20 ms while hard thinks.
+   9. Measure playouts per second, B/op and allocs/op of a hard move; write them into ADR 030 Decision 9.8.
+   10. Arena: one short run of 20 games at one table size, to show hard neither crashes nor hangs (owner, 2026-11-16). The sweep at 50, 150 and 500 playouts a move and one hard among three standard wait for the tuning after 21.16.
 3. Done when:
    1. `make bots`: hard wins at least 60% of 2-player games against standard.
    2. One hard among three standard wins over 30%.
    3. A missed gate: tune, write the numbers into ADR 030, or stop and tell the owner.
+   4. Short run, 20 games, 2 players, 150 playouts a move (2026-11-16): hard wins 14 of 20 against standard (70%); all 20 finished (median 25 turns, max 58); no refused intent, no loop guard; 1.36 deaths a kill; 0.31 s a hard move under load.
+   5. One hard among three standard: not run yet (owner, 2026-11-16: tuning after 21.16).
+   6. The built situations pass on 8 worlds each at 150 playouts: the win answered, the weak seat's kill passed, the strong seat's soul answered (3 souls and 2), the leader hit.
+   7. The full `make bots`, time per move, B/op and allocs/op run once at the end of line 1 (rule 7.3); the gates are decided there.
 
 ### [ ] 21.7 Bots in the lobby
 
