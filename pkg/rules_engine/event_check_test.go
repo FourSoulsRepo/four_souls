@@ -1,6 +1,7 @@
 package rulesengine
 
 import (
+	"slices"
 	"strings"
 	"testing"
 )
@@ -76,5 +77,36 @@ func TestSilentChangesHaveReasons(t *testing.T) {
 		if s.Bug != "" && !strings.HasPrefix(s.Bug, "19.") {
 			t.Errorf("silent change %q: bug %q is no 19.N item", s.Name, s.Bug)
 		}
+	}
+}
+
+// 19.174: an empty deck that takes back its discard has one
+// moved_to_deck that counts the cards; without it the check fails.
+func TestCheckEventsDeckRefill(t *testing.T) {
+	g := eventCheckGame(t)
+	ids := slices.Clone(g.Decks[LootDeck])
+	g.Decks[LootDeck] = nil
+	for _, id := range ids {
+		g.discard(id, LootDeck)
+	}
+	snap := g.TakeSnapshot()
+	g.drawTop(LootDeck)
+	events := g.takeEvents()
+	i := slices.IndexFunc(events, func(e Event) bool { return e.Kind == EvMovedToDeck })
+	if i < 0 || events[i].Amount != len(ids) || events[i].Text != "loot deck" || events[i].Object != 0 {
+		t.Fatalf("want one moved_to_deck of %d cards, no object; events %+v", len(ids), events)
+	}
+	if err := g.CheckEvents(snap, events); err != nil {
+		t.Fatalf("a refill: %v", err)
+	}
+	ids = slices.Clone(g.Decks[LootDeck])
+	g.Decks[LootDeck] = nil
+	for _, id := range ids {
+		g.discard(id, LootDeck)
+	}
+	snap = g.TakeSnapshot()
+	g.drawTop(LootDeck)
+	if err := g.CheckEvents(snap, nil); err == nil || !strings.Contains(err.Error(), "loot discard -> loot deck") {
+		t.Fatalf("a silent refill passed the check: %v", err)
 	}
 }

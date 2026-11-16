@@ -45,11 +45,18 @@ func (g *Game) drawTop(d DeckKind) (id ObjectID, ok bool) {
 }
 
 // refillDeck shuffles the discard pile into the empty deck (R-ZONE-05).
+// One moved_to_deck with no object tells it: Amount cards, Text
+// "<deck> deck". It names no card, so no deck card's object shows
+// (19.174).
 func (g *Game) refillDeck(d DeckKind) {
+	n := len(g.Discards[d])
 	for _, id := range g.Discards[d] {
 		g.Decks[d] = append(g.Decks[d], g.move(id, DeckZone(d), NoPlayer))
 	}
 	g.Discards[d] = nil
+	if n > 0 {
+		g.emit(Event{Kind: EvMovedToDeck, Player: NoPlayer, Amount: n, Text: d.String() + " deck"})
+	}
 	g.ShuffleDeck(d)
 }
 

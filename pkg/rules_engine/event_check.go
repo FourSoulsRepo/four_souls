@@ -287,6 +287,13 @@ var wideEvents = []WideEvent{
 		},
 	},
 	{
+		EvMovedToDeck, "an empty deck takes back its shuffled discard; the event counts the cards (R-ZONE-05, 19.174)",
+		func(_ *Game, c Change, e Event) bool {
+			return e.Object == 0 && c.What == "move" && c.From.Kind == ZoneDiscard &&
+				c.To == DeckZone(c.From.Deck) && e.Text == c.To.Deck.String()+" deck"
+		},
+	},
+	{
 		EvTurnEnded, "every object heals at the end of the turn (R-TURN-13)",
 		func(_ *Game, c Change, _ Event) bool { return c.What == "damage" && c.After == 0 },
 	},
@@ -336,14 +343,6 @@ var silentChanges = []SilentChange{
 		Match: func(_ *Game, c Change, _ []Event) bool {
 			return c.What == "zone" && c.From.Kind == c.To.Kind && c.From.Slot == MinionSlot &&
 				c.To.Slot == MinionSlot && c.To.Index < c.From.Index
-		},
-	},
-	{
-		Name:   "deck refill",
-		Reason: "an empty deck takes back its shuffled discard (R-ZONE-05) with no event",
-		Bug:    "19.174",
-		Match: func(_ *Game, c Change, _ []Event) bool {
-			return c.What == "move" && c.From.Kind == ZoneDiscard && c.To == DeckZone(c.From.Deck)
 		},
 	},
 	{

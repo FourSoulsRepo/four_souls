@@ -5373,7 +5373,7 @@ Totals by system (169 items):
    6. Go test: `TestChest` sees the `discarded` event.
    7. "event done" is off the 22.2 list.
 
-### [ ] 19.174 No event when an empty deck takes back its discard
+### [x] 19.174 No event when an empty deck takes back its discard
 
 1. Goal: a deck refilled from its discard has an event.
 2. Report (22.2 fuzz check, 2026-11-16)
@@ -5386,6 +5386,15 @@ Totals by system (169 items):
 4. Tasks:
    1. Fix it in 22.3, game-wide.
    2. Remove "deck refill" from the 22.2 list (`event_check.go`).
+5. Fix (22.3, 2026-11-16)
+   1. `refillDeck` emits one `moved_to_deck`: no player, no object.
+   2. `Amount` is the card count; `Text` is "<deck> deck".
+   3. No object: the shuffled deck's object IDs stay unknown.
+   4. Every deck refill goes through `refillDeck`: `drawTop`, `RevealUntilMonster`.
+   5. Its callers: loot, treasure, monster and room draws, slot refills.
+   6. 22.2 check: a wide event (`wideEvents`), like `deck_bottom`.
+   7. Client: no line, no flight (`historyKinds`); the board shows the counts.
+   8. Go test: `TestCheckEventsDeckRefill`.
 
 ### [ ] 19.175 No event for the character's recharge before a recharge choice
 
