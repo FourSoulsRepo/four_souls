@@ -23,6 +23,9 @@ func (g *Game) AddToDeck(d DeckKind, cards ...CardRef) {
 func (g *Game) ShuffleDeck(d DeckKind) {
 	deck := g.Decks[d]
 	g.RNG.Shuffle(len(deck), func(i, j int) { deck[i], deck[j] = deck[j], deck[i] })
+	if g.changes != nil {
+		g.changes.shuffled[d] = true
+	}
 }
 
 // drawTop removes the top card of a deck and returns its object.

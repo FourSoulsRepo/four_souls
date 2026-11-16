@@ -366,6 +366,9 @@ type Game struct {
 	events []Event
 	// forcedRolls lets tests decide dice results; never set in games.
 	forcedRolls []int
+	// changes logs each move and shuffle since TakeSnapshot, for
+	// CheckEvents; nil (off) in games.
+	changes *changeLog
 }
 
 // newObject adds a card as a new object and returns its ID.
@@ -387,9 +390,13 @@ func (g *Game) Object(id ObjectID) *Object {
 // The old object is gone; callers update the zone lists.
 func (g *Game) move(id ObjectID, to Zone, controller PlayerID) ObjectID {
 	old := g.Object(id)
-	card := old.Card
+	card, from := old.Card, old.Zone
 	old.Zone = Zone{Kind: ZoneGone}
-	return g.newObject(card, to, controller)
+	nid := g.newObject(card, to, controller)
+	if g.changes != nil { // TakeSnapshot turns the log on (22.2)
+		g.changes.moves = append(g.changes.moves, moveLeg{from: id, to: nid, fromZone: from, toZone: to, at: len(g.events)})
+	}
+	return nid
 }
 
 // Clone returns a deep copy of the game.

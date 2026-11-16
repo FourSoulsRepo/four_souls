@@ -127,12 +127,16 @@ func playSets(t *testing.T, s engine.Setup, choices []byte) {
 		if in.Kind == engine.IntentDiscard {
 			in.Objects = in.Objects[:p.Count]
 		}
+		snap := g.TakeSnapshot()
 		st, err := g.Step(in)
 		if err != nil {
 			t.Fatalf("step %d: allowed %+v refused: %v", i, in, err)
 		}
 		steps = append(steps, st)
 		if err := g.CheckInvariants(); err != nil {
+			t.Fatalf("step %d after %+v: %v", i, in, err)
+		}
+		if err := g.CheckEvents(snap, st.Events); err != nil {
 			t.Fatalf("step %d after %+v: %v", i, in, err)
 		}
 	}

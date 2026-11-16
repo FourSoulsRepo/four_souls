@@ -9,6 +9,7 @@ An input is a seed, a player count and a list of bytes. The game is set up from 
 * the intent the engine offered is accepted (`Step` does not refuse it);
 * `CheckInvariants()` passes: every object is in exactly one place matching its zone, no negative cents or damage, slot tops are in play, and the game is waiting on someone;
 * no player's view contains another player's hand cards (A-07);
+* every object whose zone, damage or charge changed is named by one of the step's events (`CheckEvents`, 22.2; see below);
 * the engine does not panic, and the run loop settles (the `maxRunSteps` guard turns an endless loop into a panic).
 
 At the end the recorded steps are replayed from the same setup and every checksum must match (A-08).
@@ -16,6 +17,30 @@ At the end the recorded steps are replayed from the same setup and every checksu
 Then the game is rolled back to before one step (picked from the seed) and the undone steps are played again, both with `ReplayFrom` from the state after setup. The redo must end in the same bytes as the game (ADR 020, item 7). `FuzzSets` does the same.
 
 A game is capped at `maxFuzzSteps` (2000) steps. Every step hashes the whole state, so longer inputs only slow the fuzzer down.
+
+## Every change has an event
+
+`FuzzAllCards`, `FuzzFocused` and every `playSets` target (`FuzzSets`, `FuzzFocusedSets`, `FuzzChallengeSets`) take a snapshot before each step (`Game.TakeSnapshot`) and call `Game.CheckEvents` with the step's events after it. The code is in `pkg/rules_engine/event_check.go`. A change the client is never told about can't be drawn; this check finds it before a play test does (TS-09).
+
+What it compares:
+
+* each object's zone, damage and charge;
+* every move: a move makes a new object (R-ZONE-01), and the snapshot turns on a log of moves in `Game.move`, so a card that moves twice in one step is checked twice;
+* the order of every deck: the cards off the longest run kept in order count as moved, so a card put on the bottom with `DeckToBottom` is caught;
+* shuffles: `ShuffleDeck` logs the deck, and its new order is one "shuffle" change.
+
+An event names an object by its `Object`, `Prev`, `Source` or stack item source. A move is named when an event names the new object, or the old object at or after the move; an event before the move does not count. A hidden move (a deck card, a hand card) still needs its event: a private event names the object too.
+
+Some events name many objects at once (`wideEvents`): `recharged` and `deactivated` with no object name every thing their player controls, `deck_bottom` names the cards that went into its deck, and `turn_ended` names every heal to 0 (R-TURN-13).
+
+Changes that need no event are on the `silentChanges` list, each with its reason. A gap the check found that is not fixed yet is on the list too, with its 19.N item in `Bug`; 22.3 fixes those and removes them. Silent on purpose:
+
+* a slot card covered by the card that enters the slot on top; its `entered_play` names the slot (R-ZONE-10);
+* minion slots renumbered after one is removed; no card moves (R-CHAL-11);
+* a shuffle: the deck shows no card and no count change;
+* damage removed by a lower max HP: not healing, and the HP left stays the same (R-MECH-21).
+
+When the check fails, the message lists each change no event names, then the step's event kinds. Find the code that made the change; give it an event (log a 19.N item first, as for any bug), or, if it is silent on purpose, add it to the list with its reason.
 
 ## Targets
 

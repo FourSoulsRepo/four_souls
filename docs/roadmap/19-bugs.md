@@ -34,7 +34,7 @@ This step never closes; new reports are appended.
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151 | 21 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106 | 10 |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176 | 14 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157      | 7     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141 | 15 |
@@ -56,11 +56,11 @@ This step never closes; new reports are appended.
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 
-Totals by system (163 items):
+Totals by system (167 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U | 33 |
+| Engine    | A, B, T, U | 37 |
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 43 |
 | Server    | H, N    | 4     |
@@ -5347,3 +5347,66 @@ Totals by system (163 items):
    1. Read the match record; find why the player was no target.
    2. Fix the test (14.10) or the bug it shows.
    3. Check: the spec, both browsers, 5 workers, 10 repeats.
+
+### [ ] 19.173 No event when a done event card goes to discard
+
+1. Goal: an event card's move from its slot to discard has an event.
+2. Report (22.2 fuzz check, 2026-11-16)
+   1. `make fuzz`: "moved from …: in play slot 1.0 -> monster discard".
+   2. Seen: Ambush, Chest, Gold Chest, Troll Bombs, Holy Chest.
+   3. In minion slots too: Secret Room, Pitfall, TNT Barrel.
+3. Cause (the code)
+   1. `finishEvent` (`monsters.go`) calls `discard` once the ability is done.
+   2. `discard` emits no event; `finishEvent` adds none.
+   3. Same kind of gap as 19.73 (`ActDiscardObject`).
+   4. The client sees the card in the discard on the next view only.
+4. Tasks:
+   1. Fix it in 22.3, game-wide.
+   2. Remove "event done" from the 22.2 list (`event_check.go`).
+
+### [ ] 19.174 No event when an empty deck takes back its discard
+
+1. Goal: a deck refilled from its discard has an event.
+2. Report (22.2 fuzz check, 2026-11-16)
+   1. `make fuzz`: "moved from …: monster discard -> monster deck".
+   2. Every card of the discard pile, in one step.
+3. Cause (the code)
+   1. `refillDeck` (`zones.go`) moves each discard card into the deck (R-ZONE-05).
+   2. It emits no event; nor do `drawTop` and `RevealUntilMonster`, which call it.
+   3. Any deck: loot, treasure, monster, room.
+4. Tasks:
+   1. Fix it in 22.3, game-wide.
+   2. Remove "deck refill" from the 22.2 list (`event_check.go`).
+
+### [ ] 19.175 No event for the character's recharge before a recharge choice
+
+1. Goal: the character's recharge has an event when a choice follows.
+2. Report (22.2 fuzz check, 2026-11-16)
+   1. `make fuzz`: "the_zealot charge in in play: 0 -> 1".
+   2. Events: `turn_started` only; the recharge choice is open.
+3. Cause (the code)
+   1. `recharge` (`turn.go`) charges the character first.
+   2. With a recharge limit and 2+ spent items, it asks which item.
+   3. It returns before its `recharged` event.
+   4. The answer's `recharged` comes in a later step.
+   5. Cards: Curse of Fatigue (g2), Heavy is the Head (r).
+4. Tasks:
+   1. Fix it in 22.3, game-wide.
+   2. Remove the entry from the 22.2 list (`event_check.go`).
+
+### [ ] 19.176 No event when a card deactivates a character or item
+
+1. Goal: a deactivation by a card effect has an event.
+2. Report (22.2 fuzz check, 2026-11-16)
+   1. `make fuzz`: "the_capricious charge in in play: 1 -> 0".
+   2. Events: `passed_priority stack_resolved` (Curse of Impulse).
+3. Cause (the code)
+   1. Cards set `Charged = false` themselves; nothing emits an event.
+   2. Spider Webs (r): the active player's character.
+   3. Curse of Impulse (fsp2): the character and every ↷ item.
+   4. Hourglass (fsp2, `deactivateAnItem`): one item.
+   5. The engine has no shared deactivate helper with an event.
+   6. Its own deactivation (death penalty) emits `deactivated`.
+4. Tasks:
+   1. Fix it in 22.3, game-wide: one engine helper with the event.
+   2. Remove "deactivated by a card" from the 22.2 list (`event_check.go`).
