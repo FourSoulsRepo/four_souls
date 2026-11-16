@@ -43,8 +43,9 @@ var errRefused = errors.New("bot: candidate refused")
 
 // standardPick is the standard level's move for seat p on world w: the
 // best score; one move in mistakes (0: never) by chance among the best
-// mistakeTop.
-func standardPick(w *engine.Game, p engine.PlayerID, allowed []engine.Intent, rng *rand.Rand, mistakes int) (engine.Intent, error) {
+// mistakeTop. flat values every loot card and item alike (the flat
+// level, Decision 20).
+func standardPick(w *engine.Game, p engine.PlayerID, allowed []engine.Intent, rng *rand.Rand, mistakes int, flat bool) (engine.Intent, error) {
 	cs := candidates(w, p, keepPlays(w, p, allowed), rng)
 	// A pass or an end of turn first: on equal scores, doing nothing
 	// beats a move that changes nothing.
@@ -53,10 +54,10 @@ func standardPick(w *engine.Game, p engine.PlayerID, allowed []engine.Intent, rn
 	for i := range draws {
 		draws[i] = rng.Uint64()
 	}
-	dig := digValue(w)
+	sc := scoring{dig: digValue(w), flat: flat}
 	tries := make([][]float64, len(cs))
 	for i, in := range cs {
-		t, err := try(w, p, in, draws, dig)
+		t, err := try(w, p, in, draws, sc)
 		switch {
 		case errors.Is(err, errRefused):
 			// Every candidate is allowed; a refused one is a bug, never
@@ -190,8 +191,9 @@ func quietRank(in engine.Intent) int {
 // seeded from draws[d]; draw 0 keeps the world's dice, the others
 // reseed the copy's dice from draws[d]. A settle that rolled no dice is
 // the only draw. Every candidate meets the same draws, so their scores
-// differ by the move, not by luck.
-func try(w *engine.Game, p engine.PlayerID, in engine.Intent, draws []uint64, dig float64) ([]float64, error) {
+// differ by the move, not by luck. Each settle is scored by
+// settledScore with sc.
+func try(w *engine.Game, p engine.PlayerID, in engine.Intent, draws []uint64, sc scoring) ([]float64, error) {
 	var src rand.PCG
 	prng := rand.New(&src) //nolint:gosec // a playout's choices, not security
 	out := make([]float64, 0, len(draws))
@@ -211,7 +213,7 @@ func try(w *engine.Game, p engine.PlayerID, in engine.Intent, draws []uint64, di
 		o.see(ev, p)
 		src.Seed(seed, settleStream)
 		settle(g, p, prng, &o)
-		out = append(out, settledScore(g, p, o, scoring{dig: dig}))
+		out = append(out, settledScore(g, p, o, sc))
 		if !o.rolled {
 			break
 		}

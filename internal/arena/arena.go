@@ -61,6 +61,11 @@ type Match struct {
 	// NoMemory plays the hard seats without a memory (Decision 19), to
 	// measure what it is worth; else each hard seat has one.
 	NoMemory bool
+	// Watch, when set, sees the real game of game k before each bot
+	// move, at step. It runs on that game's goroutine, games side by
+	// side, and must copy what it keeps: make bot-values keeps positions
+	// of arena games (Decision 20.3).
+	Watch func(k, step int, g *engine.Game)
 }
 
 // Name is the line-up, e.g. "policy-policy".
@@ -228,6 +233,9 @@ func playGame(ctx context.Context, m Match, k int, r *Result) error {
 		if step >= m.GameIntents {
 			guard = fmt.Sprintf("game %d: over %d intents, turn %d", seed, m.GameIntents, turn)
 			break
+		}
+		if m.Watch != nil {
+			m.Watch(k, step, g)
 		}
 		p := g.Prompt().Who()[0]
 		var known engine.Known

@@ -283,7 +283,7 @@ Rules for this step (owner, 2026-11-16):
    5. Short run, 20 games, 2 players, 150 playouts a move, seeds 1–20 (2026-11-16): hard with memory wins 18 of 20 against standard (90%); without memory (21.6, same seeds) 14 of 20. All 20 finished (median 18 turns, max 70); no refused intent, no loop guard; 1.16 deaths a kill; 0.48 s a hard move under load.
    6. The full `make bots` runs once at the end of line 1 (rule 7.3).
 
-### [ ] 21.16 Card values
+### [x] 21.16 Card values
 
 1. Goal: each loot card and item has a measured value in the score (ADR 030, Decision 20).
 2. Tasks:
@@ -306,3 +306,7 @@ Rules for this step (owner, 2026-11-16):
    1. A full run takes at most 30 minutes on all cores of the work machine; else fewer samples a card, and the error says so.
    2. 200 games of 2 players: standard with the table wins at least 55% against standard without it.
    3. Time per move does not grow.
+   4. Helper: no test path put a card into a running game's hand; `enginetest.PlaceFromDeck` (one helper, quiet, `CheckInvariants` after); depguard `no-enginetest` keeps it out of `internal/server` and `internal/bot`.
+   5. Full run (2026-11-17, 12 cores, i7-8750H, machine shared): 7 min 55 s; 36 flat games to 60 turns give 1934 positions in 4 min 55 s; 329 cards, 32 samples each (3 loot cards fewer, `magic_marker` none: falls back to the loot mean).
+   6. Error: median standard error loot 0.79 (max 5.7), active items 4.4 (max 6.4), passive items 3.8 (max 6.7); kind means loot 5.09, active 4.43, passive 7.31.
+   7. Short run, 20 games of 2 players: standard with the table wins 11 of 20 (55%) against flat; 100% finished, median 30 turns; 12.7 ms a move for both levels together. The 200-game gate and time per move: at the tuning after 21.16.

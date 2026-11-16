@@ -109,6 +109,16 @@ linters:
               desc: internal/world turns the real game into worlds; the bot gets only the World it returns
             - pkg: github.com/FourSoulsRepo/rules_engine/cards
               desc: no card sets and no card names in bot code (rule 5.24)
+        # enginetest moves cards by hand, past the rules: for tests and
+        # tools only (ADR 030, Decision 20.5).
+        no-enginetest:
+          files:
+            - "**/internal/server/**"
+            - "**/internal/bot/**"
+            - "!$test"
+          deny:
+            - pkg: github.com/FourSoulsRepo/rules_engine/enginetest
+              desc: enginetest places cards past the rules; never in the server or a bot
   exclusions:
     generated: strict
     paths:

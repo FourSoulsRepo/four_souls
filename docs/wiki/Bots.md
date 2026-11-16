@@ -10,6 +10,7 @@ Bots fill free seats of a network game (ADR 030, step 21). This page is for deve
 | `internal/world` | Turns the real game into a seat's worlds: `world.For(g, seat, known, seed)`; a hard seat's memory, `world.Memory`. |
 | `internal/arena` | Plays whole games between levels and counts them. |
 | `cmd/bot_arena` | Prints the arena's results; `make bots` runs it. |
+| `cmd/bot_values` | Measures each card's value for the score into `internal/bot/values.json`; `make bot-values` runs it. |
 
 ### A bot never holds the real game
 
@@ -24,7 +25,7 @@ Bots fill free seats of a network game (ADR 030, step 21). This page is for deve
 
 ## Choose
 
-`Choose` asks `World(0)` for `Allowed(seat)`. One allowed intent is the answer at once (a discard or an order gets its cards first). Else the level picks. The answer is always one of `Allowed`, a discard cut to the asked count and an order of the same cards. An error (no world, nothing allowed, an unknown level) is not a move: the caller sends its forced answer (N-07).
+`Choose` asks `World(0)` for `Allowed(seat)`. One allowed intent is the answer at once (a discard or an order gets its cards first); but a discard of part of the hand goes to standard and hard, which weigh its sets as any move, so a forced discard drops a cheap card. Else the level picks. The answer is always one of `Allowed`, a discard cut to the asked count and an order of the same cards. An error (no world, nothing allowed, an unknown level) is not a move: the caller sends its forced answer (N-07).
 
 Candidates (Decision 5): every allowed intent; a discard as up to 8 different sets of the asked count, picked at random; an order as the order now and up to 5 random orders.
 
@@ -34,6 +35,7 @@ Candidates (Decision 5): every allowed intent; a discard as up to 8 different se
 * `policy`: the playout policy alone. For tests and the arena.
 * `standard`: tries each candidate on one imagined world and plays the best score (below). The server's lower level.
 * `hard`: plays each candidate out on many imagined worlds to the end of the turn and plays the best average (below). The server's upper level.
+* `flat`: standard with every loot card and item worth alike, as before the card values (below). For the arena and `make bot-values`.
 
 ### Playout policy
 
@@ -48,7 +50,7 @@ The policy (`internal/bot/policy.go`, Decision 6) weighs each allowed intent and
 
 ### Score
 
-`Score(g, p)` (`internal/bot/score.go`, Decision 7) is a table from seat `p`'s side: a won game is the top value, a lost one the bottom. Else it is the seat's own sum less the opponents' average. A sum counts souls, cents, loot cards in hand, items, curses, HP left and being alive this turn; a card's base value comes from `cardValue`. Every weight is a constant in that file. A soul (100) outweighs every other part of a table; HP (0.5 each) and being alive (3) weigh little, as both heal at the end of the turn; an item (12) is worth a little more than the 10¢ it costs; a loot card in hand (0.75) is worth less than a cent, so a card that gives 1¢ is played and one that does nothing now is kept.
+`Score(g, p)` (`internal/bot/score.go`, Decision 7) is a table from seat `p`'s side: a won game is the top value, a lost one the bottom. Else it is the seat's own sum less the opponents' average. A sum counts souls, cents, loot cards in hand, items, curses, HP left and being alive this turn; a card's base value comes from `cardValue`, which reads the measured card values (below). Every weight is a constant in that file. A soul (100) outweighs every other part of a table; HP (0.5 each) and being alive (3) weigh little, as both heal at the end of the turn; the flat values, which the `flat` level and the measure keep, are an item 12, a little more than the 10¢ it costs, and a loot card in hand 0.75, less than a cent, so a card that gives 1¢ is played and one that does nothing now is kept.
 
 A settled copy is scored by `settledScore`: its `Score`, plus `digValue` for each monster the seat killed in the settle (its rewards went to the seat). A kill lets in the next card of the monster deck, which may give a soul: `digValue` is the soul weight times the share of soul cards (card property `Soul`) in the world's monster deck, times `digShare` (0.5). Without it a kill of a monster with no soul rarely beat ending the turn.
 
@@ -71,6 +73,21 @@ The hard level (`internal/bot/hard.go`, Decision 9) lists the candidates as stan
 Hard's score (Decision 7.6) weighs the opponents by strength, not as an average: each opponent's weight is `exp(sum / 100)` over its full sum, so one soul ahead counts e times as much; equal opponents count as their average. Its answers have a holding value: the loot cards and abilities `Allowed` shows it on another seat's turn (on its own turn, the abilities of its cards but rooms'). Each answer still held at the end of a playout (in hand; in play and charged, or recharging as its turn starts) counts its base value (`cardValue`, the one function that values a loot card in hand and an item in play) times 1 + `wHold` × (1 + `wHoldLead` × lead): an item answer 2.4 to 7.2 more than a spent one, more as one opponent pulls away. So it keeps Godhead when a weak seat kills a monster with no soul, and spends it when the strong seat kills one with a soul.
 
 `Budget{Playouts, Time}`: whichever ends first. `Playouts` 0 means no playout cap, `Time` 0 no time limit; both 0 think 1.5 s. With a time budget the first world measures a playout and the rounds share out what the time leaves. The search checks `ctx` before each playout, yields the core after each (`runtime.Gosched`) and, when stopped, plays the best so far. A playout takes about 4 ms on one core, most of it the engine's `checkMaxHP`; a move of 150 playouts about 0.4 s and 150 MB of garbage.
+
+## Card values
+
+A flat value misprices cards: a bomb or a cancel is worth more than a penny. So each loot card and item has a measured value (ADR 030, Decision 20), in `internal/bot/values.json`: card → value, samples, standard error. It is generated by `make bot-values` (`cmd/bot_values`), never written by hand, and embedded in the bot.
+
+The tool plays arena games of the `flat` level (2, 3 and 4 players), keeps positions of them, and measures each card on up to 32 positions where its card lies in its deck. It puts the card into a copy with `enginetest.PlaceFromDeck` (a quiet move from the deck, `CheckInvariants` after; the server and the bot never import `enginetest`, a depguard rule):
+
+* a loot card into the hand of the seat to move: where the seat may play it, stack positions too, its best play and doing nothing are settled as standard settles a candidate, on the same draws; the value is the mean of max(0, play − nothing). Nothing keeps the card at 0.75, so the value is what playing adds over holding it;
+* an item into the seat's play area: the copy with it and the copy without are played out by the policy to the end of the seat's next turn on the same seeds; the value is the difference.
+
+Both score with the flat values: one pass, no iterations. The same seed gives the same file; `BOT_VALUES=-missing` measures only the cards the table lacks, `BOT_VALUES='-cards a,b'` only those.
+
+`cardValue` reads the table: each card's value shrunk to its kind's mean by its samples, `(n × value + 8 × mean) / (n + 8)`. The kinds are loot, active item (a ↷ ability) and passive item; a card the table lacks (a starting item, a challenge's card) gets its kind's mean. Only the seat's own hand and cards in play count by card: a card in another seat's hand counts its kind's mean, as the bot cannot tell a remembered card from one its world dealt. The bot reads a card's identity in one function, `tableKey`, to look it up; `TestBotRules` allows it there alone. The hard level's holding value multiplies this base value.
+
+**After cards are added: `make bot-values` (or `BOT_VALUES=-missing`), then `make bots`.** `TestValuesFile` fails while a card a deck holds is missing from the table.
 
 ## Memory
 
@@ -96,13 +113,13 @@ A new engine move of a deck card out of sight that keeps the deck's size needs a
 `cmd/bot_arena` plays whole seeded games with every set: bonus souls on, the room deck in odd seeds, deck ratios in every third. Each `-match` is one line-up of levels; game `k` plays seed `-seed`+k and rotates the line-up by `k` seats, so each level plays from each seat. Games run side by side on every core; the results do not depend on it.
 
 ```sh
-make bots                     # BOT_GAMES=50 per default line-up: standard against random, hard against standard, one hard among three standard, standard×2–4, policy×2–4
+make bots                     # BOT_GAMES=50 per default line-up: standard against random, standard against flat, hard against standard, one hard among three standard, standard×2–4, policy×2–4
 go run ./cmd/bot_arena -games 20 -playouts 500 -match hard,standard
 go run ./cmd/bot_arena -games 20 -match policy,random -match policy,policy,policy
 go run ./cmd/bot_arena -games 20 -cap 400 -match policy,policy,policy,policy
 ```
 
-It prints, per line-up: games, games with a winner within the turn cap, wins by level against chance, median and max game turns, intents per turn, the share of passes, time per move, player deaths per monster killed; and for every game cut by the cap, its seed, turn, souls by seat and the kinds of its last 300 intents. It exits 1, in any line-up, when a bot intent is refused or a loop guard ends a game. The finish gate, 95% of games with a winner within the cap (Decision 18.4), is only for line-ups of the levels players meet (standard from 21.5, hard from 21.6) with no random seat: `finishGated` in `cmd/bot_arena`. Random and policy line-ups print their share for reference. The win gates are `winGates` there: standard wins 70% of 2-player games against random, hard 60% of 2-player games against standard, and one hard among three standard wins over 30% (Decision 18.5 – 18.7). Hard thinks `-playouts` playouts a move (`arena.DefaultPlayouts`, 150), never a time, so the results repeat.
+It prints, per line-up: games, games with a winner within the turn cap, wins by level against chance, median and max game turns, intents per turn, the share of passes, time per move, player deaths per monster killed; and for every game cut by the cap, its seed, turn, souls by seat and the kinds of its last 300 intents. It exits 1, in any line-up, when a bot intent is refused or a loop guard ends a game. The finish gate, 95% of games with a winner within the cap (Decision 18.4), is only for line-ups of the levels players meet (standard from 21.5, hard from 21.6) with no random seat: `finishGated` in `cmd/bot_arena`. Random and policy line-ups print their share for reference. The win gates are `winGates` there: standard wins 70% of 2-player games against random, 55% of 2-player games against flat (Decision 20.11), hard 60% of 2-player games against standard, and one hard among three standard wins over 30% (Decision 18.5 – 18.7). Hard thinks `-playouts` playouts a move (`arena.DefaultPlayouts`, 150), never a time, so the results repeat.
 
 Each step the arena asks the waiting seat's bot, with `world.For` on the game for that seat. Each hard seat keeps a memory, fed after every step with its view and filtered events; `-memory=false` (`Match.NoMemory`) plays hard without it. A refused intent is listed and the arena sends the forced answer: the first allowed intent.
 

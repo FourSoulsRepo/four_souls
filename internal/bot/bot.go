@@ -34,10 +34,15 @@ const (
 	// of the turn, halving the candidates round by round, with the
 	// opponents weighted by strength; no mistakes (Decision 9).
 	Hard Level = "hard"
+	// Flat is standard with every loot card and item worth alike, as
+	// before the measured card values (Decision 20): the arena measures
+	// the table against it, and make bot-values plays its positions
+	// with it. For the arena and tools only, as Random and Policy.
+	Flat Level = "flat"
 )
 
 // Levels lists every level Choose knows, in a fixed order.
-func Levels() []Level { return []Level{Random, Policy, Standard, Hard} }
+func Levels() []Level { return []Level{Random, Policy, Standard, Hard, Flat} }
 
 // ParseLevel returns the level named s.
 func ParseLevel(s string) (Level, error) {
@@ -77,8 +82,11 @@ type Input struct {
 
 // Choose returns the seat's move: one of Allowed, completed for a
 // discard or an order (Decision 4.5). With one allowed intent it
-// answers at once (Decision 4.6). An error means no world or nothing
-// allowed; the caller then uses its forced answer (Decision 12.10).
+// answers at once (Decision 4.6), unless it is a discard of some of the
+// hand: then the levels that score weigh the sets as any move, so a
+// forced discard drops a cheap card (Decision 20). An error means no
+// world or nothing allowed; the caller then uses its forced answer
+// (Decision 12.10).
 // ctx ends the hard level's search early; it then plays the best so far
 // (Decision 9.9).
 func Choose(ctx context.Context, in Input) (engine.Intent, error) {
@@ -93,7 +101,7 @@ func Choose(ctx context.Context, in Input) (engine.Intent, error) {
 	if len(allowed) == 0 {
 		return engine.Intent{}, fmt.Errorf("bot: seat %d has nothing to do", in.Seat)
 	}
-	if len(allowed) == 1 {
+	if len(allowed) == 1 && (!partDiscard(w, in.Seat, allowed[0]) || in.Level == Random || in.Level == Policy) {
 		return complete(w, in.Seat, allowed[0], in.Rand), nil
 	}
 	switch in.Level {
@@ -102,11 +110,17 @@ func Choose(ctx context.Context, in Input) (engine.Intent, error) {
 		return cs[in.Rand.IntN(len(cs))], nil
 	case Policy:
 		return policyPick(w, in.Seat, allowed, in.Rand), nil
-	case Standard:
-		return standardPick(w, in.Seat, allowed, in.Rand, mistakeOdds)
+	case Standard, Flat:
+		return standardPick(w, in.Seat, allowed, in.Rand, mistakeOdds, in.Level == Flat)
 	case Hard:
 		return hardPick(ctx, in, w, allowed)
 	default:
 		return engine.Intent{}, fmt.Errorf("bot: unknown level %q", in.Level)
 	}
+}
+
+// partDiscard: in is a discard of seat p on world w that keeps some of
+// the cards, so which ones is a choice.
+func partDiscard(w *engine.Game, p engine.PlayerID, in engine.Intent) bool {
+	return in.Kind == engine.IntentDiscard && w.PromptFor(p).Count < len(in.Objects)
 }

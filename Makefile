@@ -25,6 +25,10 @@ SETS ?=
 # Games per line-up of make bots (ADR 030, Decision 18.3).
 BOT_GAMES ?= 50
 
+# Flags of make bot-values, e.g. BOT_VALUES=-missing after a new set
+# (ADR 030, Decision 20.7).
+BOT_VALUES ?=
+
 # How many Playwright workers e2e and screenshots run at once (19.38).
 E2E_WORKERS ?= 5
 
@@ -36,14 +40,14 @@ LOCALE ?=
 AREA ?=
 
 .DEFAULT_GOAL := help
-.PHONY: help doctor update-deps test vet build wasm site lint i18n frontend e2e e2e-games screenshots internal server-archives fuzz fuzz-engine fuzz-focused fuzz-sets fuzz-new fuzz-challenge sims bots
+.PHONY: help doctor update-deps test vet build wasm site lint i18n frontend e2e e2e-games screenshots internal server-archives fuzz fuzz-engine fuzz-focused fuzz-sets fuzz-new fuzz-challenge sims bots bot-values
 
 help: ## Show this help
 	@echo "Usage: make <target> [VAR=value]"
 	@echo
 	@awk 'BEGIN {FS = ":.*## "} /^[a-z0-9-]+:.*## / {printf "  %-14s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 	@echo
-	@echo "Variables: TAGS, GOLANGCI, PLATFORM, VERSION, FUZZTIME=$(FUZZTIME), MINIMIZE=$(MINIMIZE), FOCUS=$(FOCUS), SIMS=$(SIMS), SETS=$(SETS), BOT_GAMES=$(BOT_GAMES), E2E_WORKERS=$(E2E_WORKERS), LOCALE=$(LOCALE), AREA=$(AREA), PROFILE=$(PROFILE)"
+	@echo "Variables: TAGS, GOLANGCI, PLATFORM, VERSION, FUZZTIME=$(FUZZTIME), MINIMIZE=$(MINIMIZE), FOCUS=$(FOCUS), SIMS=$(SIMS), SETS=$(SETS), BOT_GAMES=$(BOT_GAMES), BOT_VALUES=$(BOT_VALUES), E2E_WORKERS=$(E2E_WORKERS), LOCALE=$(LOCALE), AREA=$(AREA), PROFILE=$(PROFILE)"
 
 # Tools and versions: scripts/versions.env, go.mod, e2e/package.json.
 doctor: ## Check the tools make needs, with versions (PROFILE=translator)
@@ -174,3 +178,10 @@ sims: ## Play SIMS whole random games with the real sets, then the challenges
 # of games end with a winner within the turn cap, or a loop guard. Local.
 bots: ## Play whole games between bot levels and print wins (BOT_GAMES)
 	@go run ./cmd/bot_arena -games $(BOT_GAMES)
+
+# The bots' card values (ADR 030, Decision 20): measures every loot card
+# and item on positions of arena games and writes internal/bot/values.json.
+# After cards are added: make bot-values (or BOT_VALUES=-missing), then
+# make bots. Local; a full run takes about half an hour.
+bot-values: ## Measure the bots' card values into internal/bot/values.json (BOT_VALUES)
+	@go run ./cmd/bot_values $(BOT_VALUES)

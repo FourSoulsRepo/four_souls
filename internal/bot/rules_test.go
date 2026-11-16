@@ -25,6 +25,11 @@ const enginePath = "github.com/FourSoulsRepo/rules_engine"
 // 030, Decision 4.4); the search of step 21.5 copies in fork.
 var cloneFuncs = map[string]bool{"fork": true}
 
+// keyFuncs are the functions that may read a card's identity (Card),
+// and only to look it up in the measured table of card values, which is
+// generated data (ADR 030, Decision 20.9): tableKey.
+var keyFuncs = map[string]bool{"tableKey": true}
+
 // banned are engine names the bot's code never uses: card identities
 // and names (rule 5.24, ADR 030 Decision 6.3), and ways to make a game
 // other than Input.World.
@@ -46,8 +51,10 @@ var banned = map[string]string{
 // Decision 4; step 21 rules 3 and 4):
 //   - it imports the standard library and the engine only: never
 //     internal/server, internal/world or a card set;
-//   - it names no card: no CardRef, no card field, no string that is a
-//     card's ref, and strings only in constants and error messages;
+//   - it names no card: no CardRef, no card field (Card only in
+//     keyFuncs, to look a card up in the generated table of values), no
+//     string that is a card's ref, and strings only in constants and
+//     error messages;
 //   - it makes no game: Clone only in cloneFuncs, no NewGame, Load or
 //     Imagine; no package variable holds a game;
 //   - Input holds no game, only World.
@@ -148,7 +155,7 @@ func checkNames(errorf reporter, fset *token.FileSet, f *ast.File, refs map[stri
 					errorf("%s: Clone in %s; only %v copy a game, and only a world", fset.Position(x.Pos()), fn, cloneFuncs)
 				}
 			case *ast.SelectorExpr:
-				if why, ok := banned[x.Sel.Name]; ok {
+				if why, ok := banned[x.Sel.Name]; ok && (x.Sel.Name != "Card" || !keyFuncs[fn]) {
 					errorf("%s: uses %s: %s", fset.Position(x.Pos()), x.Sel.Name, why)
 				}
 			case *ast.BasicLit:
@@ -238,6 +245,9 @@ var real *engine.Game
 func peek(g *engine.Game) bool {
 	c, _ := g.Clone()
 	return c.Objects[0].Card == engine.CardRef("isaac") || g.Def(0).Ref == "x"
+}
+func tableKey(g *engine.Game) string {
+	return string(g.Def(0).Ref) + string(g.Objects[0].Card)
 }`
 	fset := token.NewFileSet()
 	f, err := parser.ParseFile(fset, "bad.go", src, 0)
@@ -263,5 +273,16 @@ func peek(g *engine.Game) bool {
 		if !strings.Contains(all, want) {
 			t.Errorf("no %q among:\n%s", want, all)
 		}
+	}
+	// In tableKey (line 12) Card is allowed, Ref is not.
+	ref, card := false, false
+	for _, line := range got {
+		if strings.HasPrefix(line, "bad.go:12:") {
+			ref = ref || strings.Contains(line, "uses Ref:")
+			card = card || strings.Contains(line, "uses Card:")
+		}
+	}
+	if !ref || card {
+		t.Errorf("tableKey: Ref caught %v, Card caught %v; want true, false:\n%s", ref, card, all)
 	}
 }

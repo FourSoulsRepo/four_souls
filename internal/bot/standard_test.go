@@ -41,7 +41,7 @@ func bestKnowing(t *testing.T, g *engine.Game, p engine.PlayerID, known engine.K
 	if err != nil {
 		t.Fatal(err)
 	}
-	in, err := standardPick(w, p, w.Allowed(p), rand.New(rand.NewPCG(seed, 9)), 0) //nolint:gosec // test moves
+	in, err := standardPick(w, p, w.Allowed(p), rand.New(rand.NewPCG(seed, 9)), 0, false) //nolint:gosec // test moves
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -368,5 +368,60 @@ func TestDigValue(t *testing.T) {
 	g.Decks[engine.MonsterDeck] = nil
 	if got := digValue(g); got != 0 {
 		t.Errorf("empty deck: dig %v, want 0", got)
+	}
+}
+
+// TestStandardDiscardsCheap: at the end of its turn the seat holds 11
+// loot cards and must discard one (R-TURN-11). By the card values five
+// are cheap and six dear: it drops a cheap one, on every world, both by
+// standardPick and through Choose, which gives a discard of part of the
+// hand to the level (Decision 20). The values are a table of the test's
+// own, so the test does not hang on the measured file.
+func TestStandardDiscardsCheap(t *testing.T) {
+	defer func(v *values) { cardTable = v }(cardTable)
+	cardTable = newValues(ValueFile{Cards: []ValueEntry{
+		{Key: "a_penny", Kind: KindLoot, Value: 0.1, N: 1000},
+		{Key: "a_nickel", Kind: KindLoot, Value: 20, N: 1000},
+	}})
+	cheap := []engine.CardRef{"a_penny", "a_penny", "a_penny", "a_penny", "a_penny"}
+	dear := []engine.CardRef{"a_nickel", "a_nickel", "a_nickel", "a_nickel", "a_nickel", "a_nickel"}
+	g := table(t, engine.SituationSetup{
+		Players: []engine.SituationPlayer{{Character: "isaac", Hand: append(cheap, dear...)}, {Character: "cain"}},
+	})
+	if _, err := g.Apply(engine.Intent{Player: 0, Kind: engine.IntentEndTurn}); err != nil {
+		t.Fatal(err)
+	}
+	for range 50 {
+		pr := g.Prompt()
+		if pr.Kind == engine.PromptDiscard {
+			break
+		}
+		if _, err := g.Apply(engine.Intent{Player: pr.Who()[0], Kind: engine.IntentPass}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if pr := g.Prompt(); pr.Kind != engine.PromptDiscard || pr.Player != 0 || pr.Count != 1 {
+		t.Fatalf("prompt %+v, want seat 0 to discard 1", pr)
+	}
+	check := func(how string, seed uint64, in engine.Intent) {
+		t.Helper()
+		if in.Kind != engine.IntentDiscard || len(in.Objects) != 1 {
+			t.Fatalf("%s seed %d: %+v, want a discard of one card", how, seed, in)
+		}
+		if c := g.Object(in.Objects[0]).Card; c != "a_penny" {
+			t.Errorf("%s seed %d: dropped %s, want a cheap card", how, seed, c)
+		}
+	}
+	for _, seed := range seeds {
+		check("standardPick", seed, best(t, g, 0, seed))
+		wf, err := world.For(g, 0, engine.Known{}, seed)
+		if err != nil {
+			t.Fatal(err)
+		}
+		in, err := Choose(context.Background(), Input{Seat: 0, Level: Standard, Rand: rand.New(rand.NewPCG(seed, 10)), World: World(wf)}) //nolint:gosec // test moves
+		if err != nil {
+			t.Fatal(err)
+		}
+		check("Choose", seed, in)
 	}
 }

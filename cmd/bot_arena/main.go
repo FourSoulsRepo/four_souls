@@ -11,10 +11,12 @@
 // (a game turn over 1000 intents other than passes, a game over 30000),
 // in any line-up; fewer than 95% of games with a winner within the turn
 // cap, in a line-up of player-visible levels with no random seat; or a
-// win gate: standard under 70% of 2-player games against random, hard
-// under 60% of 2-player games against standard, one hard among three
-// standard not over 30%. Hard thinks -playouts playouts a move, with a
-// memory of the cards it saw unless -memory=false.
+// win gate: standard under 70% of 2-player games against random,
+// standard under 55% of 2-player games against flat (standard with
+// every card worth alike), hard under 60% of 2-player games against
+// standard, one hard among three standard not over 30%. Hard thinks
+// -playouts playouts a move, with a memory of the cards it saw unless
+// -memory=false.
 package main
 
 import (
@@ -62,6 +64,7 @@ var winGates = []winGate{
 	{Level: bot.Standard, Against: bot.Random, Seats: 2, Min: 0.70},
 	{Level: bot.Hard, Against: bot.Standard, Seats: 2, Min: 0.60},
 	{Level: bot.Hard, Against: bot.Standard, Seats: 4, Min: 0.30, Over: true},
+	{Level: bot.Standard, Against: bot.Flat, Seats: 2, Min: 0.55},
 }
 
 // winGateOf is the win gate of a line-up, if it has one.
@@ -102,6 +105,7 @@ func gated(levels []bot.Level) bool {
 // defaultMatches are the line-ups played without -match.
 var defaultMatches = []string{
 	"standard,random",
+	"standard,flat",
 	"hard,standard",
 	"hard,standard,standard,standard",
 	"standard,standard",

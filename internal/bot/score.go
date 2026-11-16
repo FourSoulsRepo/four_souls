@@ -79,6 +79,10 @@ type scoring struct {
 	// another seat's turn (answers); each one still held counts its
 	// base value times 1 + holdShare. Only with lead.
 	answers []engine.ObjectID
+	// flat values every loot card and item alike (wLoot, wItem), not by
+	// the measured table (Decision 20): the flat level, and the
+	// measurement of the table itself (Decision 20.6).
+	flat bool
 }
 
 // Score is the table g from seat p's side (Decision 7): a win is the
@@ -101,17 +105,17 @@ func scoreAs(g *engine.Game, p engine.PlayerID, sc scoring) float64 {
 		return -scoreWin
 	}
 	if sc.lead {
-		return leadScore(g, p, sc.answers)
+		return leadScore(g, p, sc)
 	}
 	others, n := 0.0, 0
 	for i := range g.Players {
 		q := engine.PlayerID(i)
 		if q != p {
-			others += side(g, q)
+			others += side(g, q, p, sc.flat)
 			n++
 		}
 	}
-	own := side(g, p)
+	own := side(g, p, p, sc.flat)
 	if n == 0 {
 		return own
 	}
@@ -123,13 +127,13 @@ func scoreAs(g *engine.Game, p engine.PlayerID, sc scoring) float64 {
 // sums weighted by strength. Each opponent's weight is exp(sum /
 // wStrength), shared out over the opponents: equal opponents count as
 // their average, one far ahead counts nearly alone.
-func leadScore(g *engine.Game, p engine.PlayerID, answers []engine.ObjectID) float64 {
+func leadScore(g *engine.Game, p engine.PlayerID, sc scoring) float64 {
 	var buf [4]float64
 	sides := buf[:0]
 	for i := range g.Players {
-		sides = append(sides, side(g, engine.PlayerID(i)))
+		sides = append(sides, side(g, engine.PlayerID(i), p, sc.flat))
 	}
-	own := sides[p] + holdShare(lead(sides, p))*held(g, p, answers)
+	own := sides[p] + holdShare(lead(sides, p))*held(g, p, sc.answers, sc.flat)
 	if len(sides) == 1 {
 		return own
 	}
@@ -177,17 +181,18 @@ func holdShare(lead float64) float64 {
 // table g: a card still in its hand; a card it still controls in play
 // whose ability is ready: no ↷, or charged, or recharging now as p's
 // turn starts (R-TURN-02). The character has no base value, so its ↷
-// adds nothing.
-func held(g *engine.Game, p engine.PlayerID, answers []engine.ObjectID) float64 {
+// adds nothing; nor does a card measured below 0 (Decision 20.8.3): a
+// held answer is never a loss.
+func held(g *engine.Game, p engine.PlayerID, answers []engine.ObjectID, flat bool) float64 {
 	v := 0.0
 	recharge := g.Turn.Active == p && g.Turn.Step == engine.StepRecharge
 	for _, id := range answers {
 		o := g.Object(id)
 		switch {
 		case slices.Contains(g.Players[p].Hand, id):
-			v += cardValue(g, id)
+			v += max(cardValue(g, id, true, flat), 0)
 		case o.Zone.Kind == engine.ZoneInPlay && o.Controller == p && (o.Charged || recharge || !g.HasTap(id)):
-			v += cardValue(g, id)
+			v += max(cardValue(g, id, true, flat), 0)
 		}
 	}
 	return v
@@ -223,18 +228,19 @@ func answers(w *engine.Game, p engine.PlayerID, allowed []engine.Intent) []engin
 }
 
 // side is one seat's sum: souls, coins, loot cards, items, curses, HP
-// and being alive (Decision 7.2 – 7.3).
-func side(g *engine.Game, p engine.PlayerID) float64 {
+// and being alive (Decision 7.2 – 7.3), as seat by sees it: the cards
+// of another seat's hand count their kind's mean (Decision 20.8.2).
+func side(g *engine.Game, p, by engine.PlayerID, flat bool) float64 {
 	pl := &g.Players[p]
 	s := wSoul*float64(g.SoulValue(p)) + wCent*float64(pl.Cents) + wHP*float64(g.PlayerHP(p))
 	if !pl.Dead {
 		s += wAlive
 	}
 	for _, id := range pl.Hand {
-		s += cardValue(g, id)
+		s += cardValue(g, id, p == by, flat)
 	}
 	for _, id := range pl.InPlay {
-		s += cardValue(g, id)
+		s += cardValue(g, id, true, flat)
 	}
 	return s
 }
@@ -243,14 +249,29 @@ func side(g *engine.Game, p engine.PlayerID) float64 {
 // its hand, an item or a curse it has in play (Decision 7.3). It is the
 // one place a card's worth is set; the hard level's holding value
 // multiplies it (Decision 7.6).
-func cardValue(g *engine.Game, id engine.ObjectID) float64 {
+//
+// A loot card and an item are worth their measured value (values.go,
+// Decision 20.8); with flat, wLoot and wItem. seen: the scoring seat
+// knows the card; a card in another seat's hand is not seen. In an
+// imagined world it is a guess, which the bot cannot tell from a card
+// the seat remembers, so it counts its kind's mean (Decision 20.8.2).
+func cardValue(g *engine.Game, id engine.ObjectID, seen, flat bool) float64 {
 	o := g.Object(id)
 	if o.Zone.Kind == engine.ZoneHand {
-		return wLoot
+		switch {
+		case flat:
+			return wLoot
+		case !seen:
+			return cardTable.mean(kindLoot)
+		}
+		return cardTable.value(g, id, kindLoot)
 	}
 	switch o.Role { //nolint:exhaustive // souls count by SoulValue; the rest is nothing
 	case engine.RoleItem:
-		return wItem
+		if flat {
+			return wItem
+		}
+		return cardTable.value(g, id, itemKind(g, id))
 	case engine.RoleCurse:
 		return wCurse
 	}

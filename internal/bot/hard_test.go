@@ -218,8 +218,8 @@ func TestHardHitsLeader(t *testing.T) {
 
 // TestHoldValue: an answer still held is worth a share more than its
 // base value with even opponents, and a larger share when one opponent
-// is clearly the strongest (Decision 7.6). The answers are what Allowed shows on another seat's
-// turn: Godhead and the character's ↷.
+// is clearly the strongest (Decision 7.6). The answers are what Allowed
+// shows on another seat's turn: Godhead and the character's ↷.
 func TestHoldValue(t *testing.T) {
 	per := func(strong int) float64 {
 		g := attackTable(t, []engine.SituationPlayer{weakSeat, strongSeat(strong), hardSeat}, 0, "horf")
@@ -229,16 +229,17 @@ func TestHoldValue(t *testing.T) {
 		if len(ans) != 2 || !godhead {
 			t.Fatalf("answers %v, want Godhead and the character", ans)
 		}
-		with := scoreAs(g, 2, scoring{lead: true, answers: ans})
-		without := scoreAs(g, 2, scoring{lead: true})
-		// Godhead's base value is an item's; the character has none.
+		with := scoreAs(g, 2, scoring{lead: true, answers: ans, flat: true})
+		without := scoreAs(g, 2, scoring{lead: true, flat: true})
+		// With the flat values Godhead's base value is an item's; the
+		// character has none. The measured base is the table's.
 		return (with - without) / wItem
 	}
 	even, ahead := per(0), per(3)
 	if even < wHold || ahead <= even+wHold {
 		t.Errorf("an item answer held is worth %v of its base with even opponents and %v with one 3 souls ahead", even, ahead)
 	}
-	if got := held(&engine.Game{}, 0, nil); got != 0 {
+	if got := held(&engine.Game{}, 0, nil, false); got != 0 {
 		t.Errorf("no answers: %v held", got)
 	}
 }
@@ -257,7 +258,7 @@ func TestLeadWeights(t *testing.T) {
 			s = append(s, "monstro")
 		}
 		g = table(t, engine.SituationSetup{Players: []engine.SituationPlayer{{Character: "cain"}, {Character: "isaac", Souls: s}, {Character: "isaac"}}})
-		sides := []float64{side(g, 0), side(g, 1), side(g, 2)}
+		sides := []float64{side(g, 0, 0, false), side(g, 1, 0, false), side(g, 2, 0, false)}
 		l := lead(sides, 0)
 		if souls > 0 && l <= prev || l < 0 || l > 1 {
 			t.Errorf("%d souls ahead: lead %v after %v", souls, l, prev)

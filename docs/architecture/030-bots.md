@@ -81,6 +81,7 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
 1. Levels
    1. `standard` and `hard`, as strings in the protocol, saves and records.
    2. `random` exists in `internal/bot` for tests and the arena only.
+      1. So do `policy` (Decision 6) and `flat`: standard with every loot card and item worth alike, as before the card values (Decision 20).
    3. The server refuses any other level.
 2. Engine: `Game.Imagine(p, seed, known)`
    1. Returns a copy of the game as seat `p` may imagine it.
@@ -119,6 +120,7 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    4. `World(i)` returns a new imagined game; the bot never holds the real one.
    5. The answer is always one of `Allowed`, completed for discards and orders.
    6. With one allowed intent it answers at once.
+      1. But a discard of part of the hand: standard and hard weigh its sets as any move, so a forced discard drops a cheap card (21.16).
    7. The bot's random source is its own; never the game's RNG.
    8. The match record needs no bot data: it keeps intents (ADR 007).
    9. `internal/world` makes `World` for the arena and the server alike: one `Clone` at once, then `Imagine` per world.
@@ -331,21 +333,35 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    4. Paired measurement on common seeds, in `settledScore` units, as in Decision 8.6.
       1. Loot: in positions where the card can be played, stack positions included, so answers are not zero: mean of max(0, play − nothing).
       2. The positive part assumes a card is played only when it helps.
-      3. Item: a clone with the item and one without it; a policy playout to the end of the seat's next turn; the difference.
-      4. The item is added, never removed: no destroy is needed.
+      3. "Nothing" keeps the card in hand at the flat 0.75: the value is what playing adds over holding it. So a card worth 5¢ now is worth 4.25 held, and the bot plays it; a card whose play never helps is worth 0, or its kind's mean with few samples.
+      4. Each play and doing nothing are settled as standard settles a candidate (Decision 8.4 – 8.5): 6 draws when dice roll, the same for both; the best play's mean gain counts.
+      5. Item: a clone with the item and one without it; a policy playout to the end of the seat's next turn; the difference.
+      6. The item is added, never removed: no destroy is needed.
+      7. The playout runs to the end of the seat's next turn that starts after the position, at most 1500 steps; every seat moves by the policy, the seat's own choices get its best option; dice and choices come from the same seeds in both copies. With the item the item counts its flat 12 there, so the value is 12 plus what the item does in that time.
+      8. Positions: the tool plays arena games of the `flat` level, 12 of each table size by default, side by side, each to at most 60 game turns, and keeps about one priority position in 23 steps, at most 60 a game, with the seat to move. They stay in memory: the same seed plays the same games, so a run needs no saved file.
+         1. A card is measured on the positions where its card lies in its deck (and, for loot, the seat may play it), in an order of the card's own, up to 32; an item on 4 seeds a position.
+         2. Playing the games is most of a run: 24 games to the 150-turn cap took 16 minutes on 12 cores, the slowest game alone most of it; the cap of 60 turns keeps the early and middle game, where most positions are.
+      9. Each paired difference (a draw of a loot play, a seed of an item) counts at most one soul either way (`ValueClip`): a game won or lost in one copy and not the other is a million points; unclipped, one such sample in a hundred made an item's standard error ten thousand.
    5. A card is put into a clone by an existing test path, or by one `enginetest` helper; `CheckInvariants` after it.
-      1. Not in the `Game` API; `internal/server` and `internal/bot` never import it (depguard).
+      1. Not in the `Game` API; `internal/server` and `internal/bot` never import it (depguard rule `no-enginetest`).
+      2. No test path put a card into a hand of a running game; the engine's `TakeFromDeck` gains an item, but with events and triggers outside `Apply`. So the helper is `enginetest.PlaceFromDeck`: it moves the card from its deck by the exported state fields, as a draw or a gain moves it, as a new object, with no event and no trigger. An item's "when this enters play" is not measured.
    6. One pass, with the table off (the flat values); no iterations, so the measure does not feed on itself.
    7. Output: a generated data file, card id → value, n, standard error. A fixed seed gives the same file for the same cards.
       1. A mode measures only cards missing from the table, for a new set.
       2. A full run takes at most 30 minutes on all cores of a work machine; else fewer samples a card, with the error printed.
    8. `cardValue` (Decision 7.6) reads the table, shrunk to the mean of the card's kind by n with one constant.
-      1. Kinds: loot, active item, passive item; an unknown card gets its kind's mean.
+      1. Kinds: loot, active item (a ↷ ability), passive item; an unknown card gets its kind's mean. A starting item is in no deck, so it is never measured: it gets its kind's mean.
       2. Own hand by card; other hands by the mean, as before.
+         1. A card in another seat's hand counts its kind's mean, not its table value (lead, 2026-11-16): in an imagined world it is a guess, and its price would only add noise between worlds.
+         2. A card the seat remembers there could count its table value; but `World(i)` does not tell a remembered card from a dealt one, and the API is not widened for it: every card of another hand counts the mean.
       3. The answer-holding bonus stays a multiplier on top (Decision 7.6); it is not added twice.
+         1. A base below 0 holds nothing: the multiplier counts max(0, base), so a held answer is never a loss. Godhead measured −1.2 ± 3.6 (its policy playouts rarely use it well), so its holding value is now near 0; the tuning after 21.16 looks at it.
+      4. The mean of a kind is over its measured cards; shrunk value = (n × value + 8 × mean) / (n + 8) (`valueShrink`). A kind with no measured card keeps the flat value.
    9. The bot code still names no card: the table is generated data; a test checks every card of every set is in it or falls back.
+      1. The table is `internal/bot/values.json`, embedded (`go:embed`). To look a card up the bot reads its identity in one function, `tableKey`; `TestBotRules` allows `Card` there alone, and only for the seat's own hand and cards in play.
    10. After cards are added: `make bot-values`, then `make bots`.
-   11. Gate: 200 games of 2 players, standard with the table wins at least 55% against standard without it; time per move does not grow.
+   11. Gate: 200 games of 2 players, standard with the table wins at least 55% against standard without it (`flat`); time per move does not grow.
+      1. `make bots` plays `standard,flat` and gates it (`winGates` in `cmd/bot_arena`).
 
 ## Consequences
 
