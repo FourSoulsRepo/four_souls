@@ -325,10 +325,11 @@ func playout(w *engine.Game, p engine.PlayerID, in engine.Intent, seed uint64, s
 		} else {
 			next = policyPick(g, q, allowed, rng)
 		}
-		if ev, err = g.Apply(next); err != nil {
+		evs, ok := playOn(g, next)
+		if !ok {
 			break
 		}
-		o.see(ev, p)
+		o.see(evs, p)
 	}
 	return settledScore(g, p, o, sc), nil
 }

@@ -124,8 +124,8 @@ func ItemPlayout(world World, p engine.PlayerID, seed uint64) (float64, error) {
 		if q == p && pr.Kind == engine.PromptChoose {
 			in = policyBest(g, q, allowed, rng)
 		}
-		ev, err := g.Apply(in)
-		if err != nil {
+		ev, ok := playOn(g, in)
+		if !ok {
 			break
 		}
 		o.see(ev, p)

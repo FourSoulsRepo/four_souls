@@ -268,6 +268,15 @@ func settle(g *engine.Game, p engine.PlayerID, rng *rand.Rand, o *outcome) {
 	}
 }
 
+// playOn applies a seat's move inside a playout or a measure. A refused
+// move ends that playout where it stands, scored as it is: the move
+// being judged was applied already, so it is no error of the bot's
+// move.
+func playOn(g *engine.Game, in engine.Intent) ([]engine.Event, bool) {
+	ev, err := g.Apply(in)
+	return ev, err == nil
+}
+
 // outcome is what a settle saw happen, besides the table it left.
 type outcome struct {
 	rolled bool // a die was rolled
