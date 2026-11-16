@@ -6,7 +6,7 @@ import { diceImage } from '../dice';
 import { feel } from '../feel';
 import { t } from '../i18n';
 import { scaleFor } from '../playback';
-import { fighters } from '../prompt';
+import { fighters, mustTargets } from '../prompt';
 import { counterColor, ghostPath } from '../counters';
 import type { CounterView, MonsterStats, StatSource } from '../protocol';
 import { rewardsLine, rewardsText, statLines, sumOf, tempSources, trend, type Name, type TempSource, type Trend } from '../stats';
@@ -125,7 +125,10 @@ export function Card({
   // and a line under its zoom.
   const rewards = rewardsLine(monster?.rewards);
   // The zoom names the copied card first (19.111).
-  const lines = [...copies.map((c) => t('badge.copy', { card: name(c) })), ...sums, ...(rewards ? [rewards] : [])];
+  // A card the active player must attack: a dashed frame for everyone,
+  // and a line under its zoom (19.180).
+  const must = useApp((s) => objectId !== undefined && !!s.game && mustTargets(s.game.view).includes(objectId));
+  const lines = [...copies.map((c) => t('badge.copy', { card: name(c) })), ...sums, ...(rewards ? [rewards] : []), ...(must ? [t('badge.must_attack')] : [])];
   // The zoom names the player's fear with the card's counters (18.26).
   const zoomCounters = [...counters.filter((c) => c.count > 0), ...(fear > 0 ? [{ name: 'fear', count: fear }] : [])];
   const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines, zoomCounters);
@@ -205,7 +208,7 @@ export function Card({
       transition={{ duration: 0.25 * scale }}
       data-zone={objectId === undefined ? undefined : `obj-${String(objectId)}`}
       data-player={player}
-      className={`card size-${size} kind-${kindOf(card.type)}${landscape(card.type) ? ' landscape' : ''}${image ? '' : ' blank'}${counted > 0 ? ' has-counters' : ''}${badges && copies.length > 0 ? ' has-copy' : ''}${spent ? ' spent' : ''}${fight ? ' fight' : ''}${highlight ? ` hl-${highlight}` : ''}${flip.turn ? ` flip-${flip.turn}` : ''}`}
+      className={`card size-${size} kind-${kindOf(card.type)}${landscape(card.type) ? ' landscape' : ''}${image ? '' : ' blank'}${counted > 0 ? ' has-counters' : ''}${badges && copies.length > 0 ? ' has-copy' : ''}${spent ? ' spent' : ''}${fight ? ' fight' : ''}${must ? ' must-attack' : ''}${highlight ? ` hl-${highlight}` : ''}${flip.turn ? ` flip-${flip.turn}` : ''}`}
       style={flip.turn ? { animationDuration: `${String((FLIP_MS * scale) / 2)}ms` } : undefined}
       role={onClick ? 'button' : 'img'}
       aria-label={card.name}

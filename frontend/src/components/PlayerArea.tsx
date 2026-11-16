@@ -32,6 +32,9 @@ interface Props {
   doing?: LinePart[] | null;
   // watched: a record plays (10.2); the bottom seat is not the viewer's.
   watched?: boolean;
+  // deckAttacks are the active player's attacks only on the monster
+  // deck (19.183).
+  deckAttacks?: number;
 }
 
 // useSpent tells if a character or item is used up until it recharges.
@@ -54,7 +57,7 @@ export function PlayerArea({ you, position, tools, watched, ...rest }: Props) {
 // up when the view sends it (19.5). Curses stand at the far left
 // (15.55). At the top it mirrors the own area, the hand hanging past the top edge; in
 // a side column everything stacks in a narrow column (F-09).
-function OpponentArea({ player, name, position, active, asked, winSouls, ui, doing }: Omit<Props, 'you' | 'tools'>) {
+function OpponentArea({ player, name, position, active, asked, winSouls, ui, doing, deckAttacks = 0 }: Omit<Props, 'you' | 'tools'>) {
   const size: CardSize = position === 'left' || position === 'right' ? 'small' : 'table';
   const pick = ui.player(player.id);
   const spent = useSpent();
@@ -87,7 +90,7 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
             {player.dead && <span className="player-dead">{t('table.dead')}</span>}
           </span>
           {active && doing && <Activity parts={doing} />}
-          {active && <Allowance player={player} />}
+          {active && <Allowance player={player} deck={deckAttacks} />}
           {pick.onClick && (
             <button type="button" className="player-pick" onClick={pick.onClick}>
               {t('table.choose', { player: name })}
@@ -173,7 +176,7 @@ function OwnCents({ cents }: { cents: number }) {
 // (15.55), the souls and the character centered with its live health
 // and attack, items to its right, and the hand fanned below, partly
 // off screen (F-05, F-06, H-02, H-03, H-15, H-18).
-function OwnArea({ player, name, active, asked, winSouls, ui, tools, watched }: Omit<Props, 'you' | 'position'>) {
+function OwnArea({ player, name, active, asked, winSouls, ui, tools, watched, deckAttacks = 0 }: Omit<Props, 'you' | 'position'>) {
   const label = watched ? name : t('table.own_name', { player: name });
   const pick = ui.player(player.id);
   const hand = player.hand ?? [];
@@ -204,6 +207,9 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools, watched }: 
             <span className="player-allowance" aria-label={t('table.loot_left_label')}>
               {t('table.loot_left', { n: player.loot_plays })}
             </span>
+          )}
+          {active && deckAttacks > 0 && (
+            <span className="player-allowance">{t('table.attacks_left_deck', { n: player.attacks, deck: deckAttacks })}</span>
           )}
           {pick.onClick && (
             <button type="button" className="player-pick" onClick={pick.onClick}>
@@ -362,11 +368,13 @@ function Activity({ parts }: { parts: LinePart[] }) {
   );
 }
 
-// Allowance is what the active player may still do this turn.
-function Allowance({ player }: { player: PlayerView }) {
+// Allowance is what the active player may still do this turn; deck
+// of the attacks are only on the monster deck (19.183).
+function Allowance({ player, deck }: { player: PlayerView; deck: number }) {
   return (
     <span className="player-allowance" aria-label={t('table.allowance')}>
-      <span>{t('table.loot_left', { n: player.loot_plays })}</span> · <span>{t('table.attacks_left', { n: player.attacks })}</span> ·{' '}
+      <span>{t('table.loot_left', { n: player.loot_plays })}</span> ·{' '}
+      <span>{deck > 0 ? t('table.attacks_left_deck', { n: player.attacks, deck }) : t('table.attacks_left', { n: player.attacks })}</span> ·{' '}
       <span>{t('table.shop_left', { n: player.purchases })}</span>
     </span>
   );

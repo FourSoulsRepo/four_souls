@@ -521,6 +521,10 @@
     "text": "Kept dice: {n}",
     "note": "Tooltip of a die a card keeps on its art. n: the number."
   },
+  "badge.must_attack": {
+    "text": "Must be attacked this turn",
+    "note": "Card zoom, a line under a card the active player must attack this turn (Monster Manual)."
+  },
   "banner.act": {
     "text": "You may act",
     "note": "Prompt banner: the player may use something on another player's turn."
@@ -572,6 +576,22 @@
   "banner.label": {
     "text": "Prompt",
     "note": "Game table: screen-reader name of the banner that says what the game waits for."
+  },
+  "banner.monster_deck": {
+    "text": "the monster deck",
+    "note": "Prompt banner: the target in You must attack: {target}, when the forced attack is on the monster deck. Lower case."
+  },
+  "banner.must_attack": {
+    "text": "You must attack: {target}",
+    "note": "Prompt banner, small line under Your turn: a card makes the player attack this monster before the turn ends. target: the monster, a player, or the monster deck."
+  },
+  "banner.must_attack_any": {
+    "text": "You must attack ({n} left)",
+    "note": "Prompt banner, small line under Your turn: a card makes the player attack before the turn ends, any target. n: attacks still owed."
+  },
+  "banner.must_attack_left": {
+    "text": "You must attack: {target} ({n} left)",
+    "note": "Prompt banner, small line under Your turn: a card makes the player attack. target: the monster, a player, or the monster deck; n: attacks still owed."
   },
   "banner.on_stack": {
     "text": "On the stack: {line}",
@@ -1385,6 +1405,10 @@
       "other": "Monster discard: {n} cards"
     },
     "note": "Board: tooltip of the monster discard pile. n: cards in it."
+  },
+  "deck.must_attack": {
+    "text": "an attack on it is owed this turn",
+    "note": "Game table: added to the monster deck's name (Monster deck: 30 cards · …) while a card makes the active player attack the deck."
   },
   "deck.room": {
     "text": {
@@ -4565,6 +4589,10 @@
   "table.attacks_left": {
     "text": "Attacks {n}",
     "note": "Game table, by another active player's name: attacks left this turn."
+  },
+  "table.attacks_left_deck": {
+    "text": "Attacks {n} ({deck} deck only)",
+    "note": "Game table, by the active player's name: attacks left this turn, when some may go only to the monster deck. n: all attacks left; deck: those on the monster deck only."
   },
   "table.cents": {
     "text": {

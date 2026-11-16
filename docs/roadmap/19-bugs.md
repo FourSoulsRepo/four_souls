@@ -34,7 +34,7 @@ This step never closes; new reports are appended.
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151 | 21 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178 | 15 |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188 | 16 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141 | 15 |
@@ -57,11 +57,11 @@ This step never closes; new reports are appended.
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 
-Totals by system (178 items):
+Totals by system (179 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U, W | 39 |
+| Engine    | A, B, T, U, W | 40 |
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 51 |
 | Server    | H, N    | 4     |
@@ -5566,7 +5566,7 @@ Totals by system (178 items):
    2. Fix the test or the bug it shows.
    3. Check: the spec, both browsers, 5 workers, 10 repeats.
 
-### [ ] 19.180 The monster a player must attack is not shown
+### [x] 19.180 The monster a player must attack is not shown
 
 1. Goal: the active player sees which monster they must attack.
 2. Report (22.4 check, 2026-11-16)
@@ -5577,8 +5577,18 @@ Totals by system (178 items):
    3. Ending the turn early only says "You must attack first".
 4. Tasks:
    1. Fix in 22.5: draw it, or list it with a reason.
+5. Fix (22.5, 2026-11-16)
+   1. The monster gets the fight's frame, dashed, for everyone (`must-attack`).
+   2. Its zoom says "Must be attacked this turn".
+   3. The active player's banner: "You must attack: Gaper" under Your turn.
+   4. `forcedAttack`, `mustTargets`, `mustAttackLine` in `prompt.ts`.
+   5. A named monster counts only while it is on the table, as the engine checks.
+   6. A character counts too: Lust for Blood names the player.
+   7. Cards checked: Monster Manual, Lust for Blood, Friendly Ball, `common.go` (r, fsp2).
+   8. Vitest: `forced attacks` (`prompt.test.ts`); e2e: `duties.spec.ts`.
+   9. Use case UC-46; screenshots in `.cache/screenshots/19.180/`.
 
-### [ ] 19.181 How many attacks a player must make is not shown
+### [x] 19.181 How many attacks a player must make is not shown
 
 1. Goal: the active player sees how many more attacks they owe.
 2. Report (22.4 check, 2026-11-16)
@@ -5588,8 +5598,14 @@ Totals by system (178 items):
    2. The client shows only the attacks left, not the ones owed.
 4. Tasks:
    1. Fix in 22.5: draw it, or list it with a reason.
+5. Fix (22.5, 2026-11-16)
+   1. The banner adds the attacks owed: "You must attack: Gaper (2 left)".
+   2. With no target named: "You must attack (1 left)" (Envy, Conquest).
+   3. Nothing while an attack is open: its target is picked or fought.
+   4. Cards checked: every `ForceAttacks` caller in all sets.
+   5. Vitest and e2e as 19.180; UC-46 3a.
 
-### [ ] 19.182 Forced attacks on the monster deck are not shown
+### [x] 19.182 Forced attacks on the monster deck are not shown
 
 1. Goal: the active player sees how many deck attacks they owe.
 2. Report (22.4 check, 2026-11-16)
@@ -5599,8 +5615,15 @@ Totals by system (178 items):
    2. The client draws nothing for it.
 4. Tasks:
    1. Fix in 22.5: draw it, or list it with a reason.
+5. Fix (22.5, 2026-11-16)
+   1. The monster deck gets the same dashed frame (`Deck`'s `must`).
+   2. Its name adds "an attack on it is owed this turn".
+   3. Banner: "You must attack: the monster deck (2 left)".
+   4. The deck comes first, as `askAttackTarget` asks for it first.
+   5. Cards checked: Ambush, I Am Error, Gaper (g2), `ForceAttacks(n, true)`.
+   6. Vitest and e2e as 19.180; UC-46 2a.
 
-### [ ] 19.183 Attacks only on the monster deck are not shown
+### [x] 19.183 Attacks only on the monster deck are not shown
 
 1. Goal: the active player sees which of their attacks are deck-only.
 2. Report (22.4 check, 2026-11-16)
@@ -5610,6 +5633,11 @@ Totals by system (178 items):
    2. The player's attack count includes it, as a plain attack.
 4. Tasks:
    1. Fix in 22.5: draw it, or list it with a reason.
+5. Fix (22.5, 2026-11-16)
+   1. The attack count says it: "Attacks 2 (1 deck only)".
+   2. On the active seat for everyone; by the loot count for the player.
+   3. Cards checked: Big Spider, Gold Key, Blastocyst (`AddDeckAttack`).
+   4. e2e: `duties.spec.ts`; UC-46 2b.
 
 ### [ ] 19.184 Who helps the next attack is not shown
 
@@ -5654,3 +5682,17 @@ Totals by system (178 items):
    2. In a game the client draws nothing from the seats' state.
 4. Tasks:
    1. Fix in 22.5: draw it, or list it with a reason.
+
+### [ ] 19.188 A running attack's helpers are not shown
+
+1. Goal: every seat sees who helps the attack in progress.
+2. Report (22.5 check, 2026-11-16)
+   1. 22.5 checks that a running attack shows its helpers (owner).
+   2. `AttackView` has no helpers and no sharers.
+3. Cause (the code)
+   1. The engine keeps them in `AttackState.Helpers` and `Share`.
+   2. `View` (`view.go`) sends only the target, the deck and the odds.
+   3. Cards: Gus, Sisters Vis, Ultra Greed, Sibling Rivalry.
+   4. The client sees a helper only by their attack roll.
+4. Tasks:
+   1. Fix in 22.5: send them in `AttackView`; draw them for everyone.

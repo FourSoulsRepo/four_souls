@@ -19,8 +19,8 @@ const sources = import.meta.glob<string>(['./**/*.{ts,tsx}', '!./**/*.test.ts', 
 });
 
 // unread lists the fields the app does not read, by interface and
-// field, with why. A 19.N item is a gap 22.5 fixes; the rest stay
-// unread on purpose.
+// field, with why. A gap names its 19.N item until it is fixed; the
+// rest stay unread on purpose.
 const unread: Record<string, string> = {
   // The server drops a private event for anyone it does not name.
   'GameEvent.seen_by': 'the server filters private events by it',
@@ -48,10 +48,6 @@ const unread: Record<string, string> = {
   'Turn.room_replaced': 'the room replace comes as a prompt',
   'Turn.late_rooms': 'blocked says why such a room waits (R-TURN-18)',
   'Turn.entered': "the engine's own step state",
-  'Turn.must_attack': '19.180: the monster a player must attack is not shown',
-  'Turn.must_attacks': '19.181: how many attacks a player must make is not shown',
-  'Turn.must_attack_deck': '19.182: forced attacks on the monster deck are not shown',
-  'Turn.deck_attacks': '19.183: attacks only on the monster deck are not shown',
   'Turn.next_helpers': '19.184: who helps the next attack is not shown',
   'Turn.next_share': '19.185: who shares the next attack\'s rewards is not shown',
   'Seat.kicked': '19.187: a kicked player is not shown as gone',

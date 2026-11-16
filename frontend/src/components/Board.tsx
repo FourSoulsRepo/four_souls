@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { Kind } from '../cards';
 import { presents, timerText, type Present } from '../challenge';
 import { t } from '../i18n';
+import { forcedAttack } from '../prompt';
 import { Deck as DeckKind, type CardView, type GameView, type SlotView } from '../protocol';
 import { useApp } from '../store';
 import { Card } from './Card';
@@ -133,6 +134,7 @@ export function Board({
             discardCount={view.discard_sizes[DeckKind.monster] ?? 0}
             ui={ui}
             top={view.revealed}
+            must={forcedAttack(view)?.deck ?? false}
           />
           <DeckPair
             kind="treasure"
@@ -159,7 +161,8 @@ export function Board({
 // DeckPair is a deck and its discard, side by side. top is a drawn card
 // waiting on the deck for its slot (19.9); it leaves the deck once a
 // place effect flies it to the slot. peek is the top card only the
-// viewer may look at, e.g. under There's Options (19.30).
+// viewer may look at, e.g. under There's Options (19.30). must: an
+// attack on the deck is owed (19.182).
 function DeckPair({
   kind,
   count,
@@ -168,6 +171,7 @@ function DeckPair({
   ui,
   top,
   peek,
+  must,
 }: {
   kind: Kind;
   count: number;
@@ -176,6 +180,7 @@ function DeckPair({
   ui: Interact;
   top?: CardView | undefined;
   peek?: CardView | undefined;
+  must?: boolean | undefined;
 }) {
   const leaving = useApp(
     (s) =>
@@ -185,7 +190,7 @@ function DeckPair({
   );
   return (
     <div className="deck-pair">
-      <Deck kind={kind} count={count} size="small" handle={ui.deck(kind)} top={leaving ? undefined : top} peek={peek} />
+      <Deck kind={kind} count={count} size="small" handle={ui.deck(kind)} top={leaving ? undefined : top} peek={peek} must={must} />
       <Discard kind={kind} top={discard} count={discardCount} size="small" />
     </div>
   );

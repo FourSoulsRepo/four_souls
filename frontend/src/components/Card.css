@@ -608,6 +608,15 @@
   outline-offset: 0.125rem;
 }
 
+/* A card the active player must attack this turn (19.180): the fight
+   frame, dashed, until the fight starts. The monster deck gets it too
+   while an attack on it is owed (19.182). */
+.card.must-attack:not(.fight),
+.pile.must-attack > .card {
+  outline: 0.1875rem dashed #e53935;
+  outline-offset: 0.125rem;
+}
+
 /* While the player picks a target (15.28, V-20), the cards that answer
    glow and the rest of the table dims. A player picked as a whole
    keeps their cards lit; dialogs and the stack are not dimmed. */

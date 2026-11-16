@@ -225,6 +225,7 @@ function Table({ game, you, replaying }: { game: Update; you: number; replaying:
               active={started && view.turn.active === p.id}
               asked={asked === p.id}
               doing={doing}
+              deckAttacks={view.turn.deck_attacks ?? 0}
               winSouls={view.win_souls ?? 0}
               ui={ui}
               tools={
