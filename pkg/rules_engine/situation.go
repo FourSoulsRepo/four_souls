@@ -24,6 +24,7 @@ type Situation struct {
 
 // SituationSetup is the table. Turn: the active player is in the open
 // action phase with one loot play, attack and purchase left.
+// LootPlays, Attacks and Purchases override those (23.3).
 type SituationSetup struct {
 	Players  []SituationPlayer `json:"players"`
 	Active   int               `json:"active"`
@@ -40,6 +41,21 @@ type SituationSetup struct {
 	// in a challenge (R-CHAL-02, R-CHAL-07).
 	Bosses  []CardRef `json:"bosses,omitempty"`
 	Minions []CardRef `json:"minions,omitempty"`
+	// Attacks and Purchases override the active player's attacks and
+	// purchases left; bonus ones (Champion Belt) come on top.
+	Attacks   *int `json:"attacks,omitempty"`
+	Purchases *int `json:"purchases,omitempty"`
+	// Rolls are the next dice results, in order (as Game.ForceRolls).
+	Rolls []int `json:"rolls,omitempty"`
+	// Decks puts cards on top of decks by name ("loot", "treasure",
+	// "monster", "room"), top first, above the shuffled set cards.
+	Decks map[string][]CardRef `json:"decks,omitempty"`
+	// MonsterDamage is damage on a card in a monster, final boss, minion
+	// or room slot, by its ref.
+	MonsterDamage map[CardRef]int `json:"monster_damage,omitempty"`
+	// Counters go on cards no player controls: a card in a slot or an
+	// active bonus soul.
+	Counters []SituationCounter `json:"counters,omitempty"`
 }
 
 // SituationPlayer is one seat.
@@ -53,6 +69,13 @@ type SituationPlayer struct {
 	Dead      bool      `json:"dead,omitempty"`
 	// Deactivated lists items (or "character") that start deactivated.
 	Deactivated []CardRef `json:"deactivated,omitempty"`
+	// Counters go on the player's character ("character"), items or souls.
+	Counters []SituationCounter `json:"counters,omitempty"`
+	// Eternal lists items or souls that are eternal, as starting items.
+	Eternal []CardRef `json:"eternal,omitempty"`
+	// ExtraLootPlays are loot plays from abilities, e.g. Cain's ↷ on
+	// another player's turn (Player.ExtraLootPlays).
+	ExtraLootPlays int `json:"extra_loot_plays,omitempty"`
 }
 
 // SituationAction is the one thing a player tries. Kind is "play",
@@ -195,6 +218,9 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 			}
 			pl.Hand = append(pl.Hand, g.newObject(ref, Zone{Kind: ZoneHand}, p))
 		}
+		if err := g.setUpPlayer(&pl, i, sp); err != nil {
+			return nil, err
+		}
 		g.Players = append(g.Players, pl)
 	}
 	// Decks: every card of the sets, shuffled; enough for refills.
@@ -207,6 +233,9 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 	}
 	for d := range deckCount {
 		g.ShuffleDeck(d)
+	}
+	if err := g.setUpDecks(s.Setup.Decks); err != nil {
+		return nil, err
 	}
 	for i, ref := range s.Setup.Monsters {
 		if err := need(ref); err != nil {
@@ -247,10 +276,16 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 		}
 		g.BonusSouls = append(g.BonusSouls, g.newObject(ref, Zone{Kind: ZoneOutside}, NoPlayer))
 	}
+	if err := g.setUpSlots(s.Setup); err != nil {
+		return nil, err
+	}
 	active := PlayerID(s.Setup.Active)
 	g.Turn = Turn{Active: active, Number: 1, Step: StepAction, Entered: true, LootPlays: 1, Attacks: 1, Purchases: 1}
-	if s.Setup.LootPlays != nil {
-		g.Turn.LootPlays = *s.Setup.LootPlays
+	if err := s.Setup.setUpTurn(&g.Turn); err != nil {
+		return nil, err
+	}
+	if err := g.setUpRolls(s.Setup.Rolls); err != nil {
+		return nil, err
 	}
 	holder, stackErr := g.stackUp(s.Setup.Stack, active)
 	if stackErr != nil {

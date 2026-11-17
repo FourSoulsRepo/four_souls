@@ -1,6 +1,7 @@
 package enginetest
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/fs"
@@ -96,9 +97,13 @@ func CheckSituation(tree Tree, files fs.FS, path string, sets ...engine.CardSet)
 	if err != nil {
 		return []string{err.Error()}
 	}
+	// A test file is read strictly: a misspelt field is an error, not
+	// a field left out. A payload is read as before (rule 2 of step 23).
 	var s engine.Situation
-	if err = json.Unmarshal(data, &s); err != nil {
-		return []string{fmt.Sprintf("%s: %v", path, err)}
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.DisallowUnknownFields()
+	if err = dec.Decode(&s); err != nil {
+		return []string{fmt.Sprintf("%s: %v; the fields are in docs/wiki/Situation-payload.md", path, err)}
 	}
 	var out []string
 	if s.Expect == nil {

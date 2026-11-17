@@ -92,7 +92,7 @@ Ideas: TS-13, LR-04, R-03.
    1. A b2 file with a wrong `expect` fails `go test ./cards/b2`.
    2. A test file with no `source` fails.
 
-### [ ] 23.3 Setup: dice, decks, counters, turn
+### [x] 23.3 Setup: dice, decks, counters, turn
 
 1. Goal: the setup says what Go tests set by hand today.
 2. Tasks:
@@ -104,6 +104,37 @@ Ideas: TS-13, LR-04, R-03.
    6. List the other hand-set fields in card tests; add or reject each.
 3. Done when:
    1. A test of each field, from card text, passes.
+4. Added (count: lines in `cards/**/*_test.go`, 2026-11-17):
+   1. `rolls`: `ForceRolls`, 319.
+   2. `decks`: `PutOnDeck`, 89.
+   3. `counters`, per player and in `setup`: `AddCountersTo` 21, `AddNamedCounters` 15.
+   4. Also `Object(…).Counters =`, 8; named counters by `name`.
+   5. `monster_damage`: `Object(…).Damage =`, 17.
+   6. `extra_loot_plays` per player: 11.
+   7. `attacks`: `Turn.Attacks =` 6, `++` 4.
+   8. `purchases`: `Turn.Purchases =`, 2; the pair of `attacks`.
+   9. `eternal` per player: `.Eternal = true`, 4.
+5. Already in the format:
+   1. `Players[i].Cents =` 22, `.Damage =` 3, `.Dead =` 1.
+   2. `Turn.LootPlays =` 7: `loot_plays`.
+   3. Souls appended to `InPlay`, 8: `souls`.
+   4. `.Hand =` 6: `hand`; mid-test changes wait for `steps` (23.4).
+   5. `.Charged =` 5: `deactivated`.
+   6. `Rooms`, `Character` (4, 2): set while building the setup.
+6. Rejected:
+   1. `phase`: no card test sets `Turn.Step`.
+   2. `AddPlayerCounters` 15, `AddPresentCounters` 5: challenge only.
+   3. A challenge can't start from a setup; those tests stay Go.
+   4. `Boosts`, 4: an engine struct, challenge tests only.
+   5. `.Flipped =`, 3: Anima Sola only.
+   6. `MustAttack`, `RandomAttackMade`: 1 each, one challenge test.
+   7. `Decks[]` cut or emptied, 2: one helper each.
+   8. `Challenge`, 1: the sim test.
+7. Files: one per field, from card text.
+   1. Moved: TestIITheHighPriestess, TestChest2, TestTechX.
+   2. New: Gemini, Champion Belt, There's Options, Cain, XX. Judgement.
+   3. New in `r`: Soul of Wrath (bonus soul counters); `r` gets a runner.
+8. A test file is read strictly: an unknown field fails.
 
 ### [ ] 23.4 Several steps
 

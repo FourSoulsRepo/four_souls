@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io/fs"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -218,5 +219,98 @@ func TestStackedErrors(t *testing.T) {
 	}
 	if _, err := RunSituation([]byte(setup(`[{"kind": "play", "card": "bomb_loot", "owner": 0, "choices": ["dummy"]}]`)), testSet, abilitySet); err != nil {
 		t.Errorf("a good stack fails: %v", err)
+	}
+}
+
+// buildSetup builds a table from a setup in JSON, with the test set.
+func buildSetup(setup string) (*Game, error) {
+	var s SituationSetup
+	if err := json.Unmarshal([]byte(setup), &s); err != nil {
+		return nil, err
+	}
+	return BuildTable(s, testSet)
+}
+
+// The 23.3 setup fields land where Go tests set them by hand.
+func TestSituationSetupFields(t *testing.T) {
+	g, err := buildSetup(`{
+		"players": [
+			{"character": "hero_a", "items": ["trinket"], "souls": ["boss"], "eternal": ["trinket", "boss"],
+			 "counters": [{"card": "trinket", "count": 2}, {"card": "trinket", "name": "gold", "count": 1}, {"card": "character", "count": 4}]},
+			{"character": "hero_b", "extra_loot_plays": 2}
+		],
+		"monsters": ["gaper", "boss"], "monster_damage": {"boss": 3},
+		"bonus_souls": ["soul_x"], "counters": [{"card": "soul_x", "count": 5}, {"card": "gaper", "name": "level", "count": 1}],
+		"attacks": 0, "purchases": 2,
+		"decks": {"loot": ["penny"], "monster": ["dummy", "ambush_event"]},
+		"rolls": [6, 1]
+	}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	p0 := g.Players[0]
+	trinket, soul := g.Object(p0.InPlay[0]), g.Object(p0.InPlay[1])
+	if !trinket.Eternal || !soul.Eternal || trinket.CountersOf("") != 2 || trinket.CountersOf("gold") != 1 || g.Object(p0.Character).CountersOf("") != 4 {
+		t.Errorf("trinket %+v, soul %+v; want eternal, 2 plain and 1 gold counter", trinket, soul)
+	}
+	if g.Players[1].ExtraLootPlays != 2 {
+		t.Errorf("extra loot plays %d, want 2", g.Players[1].ExtraLootPlays)
+	}
+	gaper, boss := g.Object(g.Monsters[0].Cards[0]), g.Object(g.Monsters[1].Cards[0])
+	if boss.Damage != 3 || gaper.Damage != 0 || gaper.CountersOf("level") != 1 || g.Object(g.BonusSouls[0]).CountersOf("") != 5 {
+		t.Errorf("gaper %+v, boss %+v; want 3 damage on the boss, counters on the gaper and the soul", gaper, boss)
+	}
+	if g.Turn.Attacks != 0 || g.Turn.Purchases != 2 || g.Turn.LootPlays != 1 {
+		t.Errorf("turn %+v; want 0 attacks, 2 purchases, 1 loot play", g.Turn)
+	}
+	top := func(d DeckKind, n int) []CardRef {
+		var out []CardRef
+		for _, id := range g.DeckTop(d, n) {
+			out = append(out, g.Object(id).Card)
+		}
+		return out
+	}
+	if got := top(MonsterDeck, 2); !slices.Equal(got, []CardRef{"dummy", "ambush_event"}) {
+		t.Errorf("monster deck top %v; want dummy, then ambush_event", got)
+	}
+	if got := top(LootDeck, 1); !slices.Equal(got, []CardRef{"penny"}) {
+		t.Errorf("loot deck top %v; want penny", got)
+	}
+	if !slices.Equal(g.forcedRolls, []int{6, 1}) {
+		t.Errorf("forced rolls %v; want [6 1]", g.forcedRolls)
+	}
+}
+
+// A bad setup field is an error that names the item and its options.
+func TestSituationSetupFieldErrors(t *testing.T) {
+	const seats = `"players": [{"character": "hero_a", "items": ["trinket"]}, {"character": "hero_b"}], "monsters": ["gaper"]`
+	for _, c := range []struct{ extra, want string }{
+		{`"rolls": [3, 0]`, "roll 2 is 0, not 1 to 6"},
+		{`"rolls": [7]`, "roll 1 is 7, not 1 to 6"},
+		{`"decks": {"shop": ["trinket"]}`, `"shop" is no deck, options [treasure loot monster room]`},
+		{`"decks": {"loot": ["nope"]}`, `unknown card "nope"`},
+		{`"decks": {"loot": ["trinket"]}`, `"trinket" is no card of the loot deck`},
+		{`"monster_damage": {"boss": 1}`, `"boss" is in no slot, options [gaper]`},
+		{`"monster_damage": {"gaper": 2}`, `"gaper" has 2 HP; damage 2 is not 0 to 1`},
+		{`"counters": [{"card": "trinket", "count": 1}]`, `"trinket" is in no slot and no bonus soul, options [gaper]`},
+		{`"counters": [{"card": "gaper", "count": 0}]`, `"gaper" count 0 is below 1`},
+		{`"counters": [{"card": "gaper", "amount": 1}]`, `counter (fields card, name, count)`},
+		{`"attacks": -1`, "attacks -1 is below 0"},
+		{`"purchases": -1`, "purchases -1 is below 0"},
+	} {
+		_, err := buildSetup(`{` + seats + `, ` + c.extra + `}`)
+		if err == nil || !strings.Contains(err.Error(), c.want) {
+			t.Errorf("%s: error %v; want %q", c.extra, err, c.want)
+		}
+	}
+	for _, c := range []struct{ player, want string }{
+		{`"counters": [{"card": "penny", "count": 1}]`, `player 0 counters: "penny" is not in play, options [character trinket]`},
+		{`"eternal": ["character"]`, `player 0 eternal: "character" is not in play, options [trinket]`},
+		{`"extra_loot_plays": -1`, "player 0 extra_loot_plays -1 is below 0"},
+	} {
+		_, err := buildSetup(`{"players": [{"character": "hero_a", "items": ["trinket"], ` + c.player + `}, {"character": "hero_b"}]}`)
+		if err == nil || !strings.Contains(err.Error(), c.want) {
+			t.Errorf("%s: error %v; want %q", c.player, err, c.want)
+		}
 	}
 }

@@ -128,3 +128,13 @@ func TestSituationFiles(t *testing.T) {
 		t.Error("no error for a missing tree")
 	}
 }
+
+// A test file is read strictly: a misspelt field fails, naming it; a
+// payload outside the tree is read as before.
+func TestCheckSituationUnknownField(t *testing.T) {
+	data := strings.Replace(razorFile(cardSource, rightExpect), `"active": 0`, `"active": 0, "rols": [6]`, 1)
+	got := check(enginetest.CardTree, "razor_blade/hits-cain.json", data)
+	if len(got) != 1 || !strings.Contains(got[0], `unknown field "rols"`) || !strings.Contains(got[0], "Situation-payload.md") {
+		t.Errorf("problems %q; want one naming the field and the field list", got)
+	}
+}
