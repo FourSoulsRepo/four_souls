@@ -14,7 +14,8 @@ import (
 const maxSimSteps = 6000
 
 // TestSimulations plays whole seeded games with random legal moves for
-// 2, 3 and 4 players and checks the invariants after every step (5.9).
+// 2, 3 and 4 players and checks the invariants after every step (5.9),
+// and that every change has its event (CheckEvents, 22.10).
 // Replays are checked by FuzzSets. CI plays a few; locally:
 //
 //	FOUR_SOULS_SIMS=3000 go test -run TestSimulations ./cards/
@@ -109,10 +110,15 @@ func simulate(t *testing.T, s engine.Setup, loads *loadCheck) (*engine.Game, int
 		if in.Kind == engine.IntentDiscard {
 			in.Objects = in.Objects[:p.Count]
 		}
-		if _, err := g.Apply(in); err != nil {
+		snap := g.TakeSnapshot()
+		events, err := g.Apply(in)
+		if err != nil {
 			t.Fatalf("seed %d step %d: allowed %+v refused: %v", seed, step, in, err)
 		}
 		if err := g.CheckInvariants(); err != nil {
+			t.Fatalf("seed %d step %d after %+v: %v", seed, step, in, err)
+		}
+		if err := g.CheckEvents(snap, events); err != nil {
 			t.Fatalf("seed %d step %d after %+v: %v", seed, step, in, err)
 		}
 		loads.after(t, g, in, false)

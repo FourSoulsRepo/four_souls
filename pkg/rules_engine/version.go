@@ -50,5 +50,7 @@ const startVersion = "0.5.2"
 // eventVersion is the first engine version where every state change has
 // its event (22.3): a done event card's discard, a deck refill, a
 // recharge before its choice, a card's deactivation, and every shuffle.
+// 22.10 adds a card's ¢ change (Greed!, Auction Gavel) and the old
+// holder of a stolen item or passed curse; 0.5.4 is not released yet.
 // Older records' checksums differ: they cannot replay.
 const eventVersion = "0.5.4"

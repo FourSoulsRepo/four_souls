@@ -152,3 +152,112 @@ func TestCheckEventsMaxHPFell(t *testing.T) {
 		t.Error("the same max HP explains no damage drop")
 	}
 }
+
+// 22.10: a silent change of a player's cents fails, and so does one
+// whose events move another amount; a passed_priority names no cents.
+func TestCheckEventsPlayerCents(t *testing.T) {
+	g := eventCheckGame(t)
+	snap := g.TakeSnapshot()
+	g.Players[1].Cents += 2
+	passed := Event{Kind: EvPassed, Player: 1}
+	if err := g.CheckEvents(snap, []Event{passed}); err == nil || !strings.Contains(err.Error(), "player 1 cents") {
+		t.Fatalf("a silent cents change passed the check: %v", err)
+	}
+	gained := Event{Kind: EvGainedCents, Player: 1, Amount: 1}
+	if err := g.CheckEvents(snap, []Event{gained}); err == nil || !strings.Contains(err.Error(), "player 1 cents") {
+		t.Fatalf("a gained_cents of 1¢ explained 2¢: %v", err)
+	}
+	gained.Amount = 2
+	if err := g.CheckEvents(snap, []Event{gained}); err != nil {
+		t.Fatalf("a gained_cents of 2¢: %v", err)
+	}
+	snap = g.TakeSnapshot()
+	g.GiveCents(1, 0, 2)
+	if err := g.CheckEvents(snap, g.takeEvents()); err != nil {
+		t.Fatalf("GiveCents: %v", err)
+	}
+}
+
+// 22.10: a player's damage and soul value need an event of their kind.
+func TestCheckEventsPlayerDamageAndSouls(t *testing.T) {
+	g := eventCheckGame(t)
+	snap := g.TakeSnapshot()
+	g.Players[0].Damage++
+	passed := Event{Kind: EvPassed, Player: 0}
+	if err := g.CheckEvents(snap, []Event{passed}); err == nil || !strings.Contains(err.Error(), "player 0 player damage") {
+		t.Fatalf("silent player damage passed the check: %v", err)
+	}
+	if err := g.CheckEvents(snap, []Event{{Kind: EvDamaged, Player: 0, Amount: 1}}); err != nil {
+		t.Fatalf("damaged: %v", err)
+	}
+	g.Players[0].Damage = 0
+	// 19.193: a soul stolen in place names the player it left.
+	id := giveItem(g, 0, g.Object(g.Decks[TreasureDeck][0]).Card)
+	g.Object(id).Role = RoleSoul
+	snap = g.TakeSnapshot()
+	g.GainControl(1, id)
+	events := g.takeEvents()
+	if err := g.CheckEvents(snap, events); err != nil {
+		t.Fatalf("a stolen soul: %v", err)
+	}
+	events[0].By = 0
+	if err := g.CheckEvents(snap, events); err == nil || !strings.Contains(err.Error(), "player 0 souls") {
+		t.Fatalf("a soul lost with no event naming its player passed: %v", err)
+	}
+}
+
+// 22.10: object 0 is a real card; an event with no object does not
+// name it, so its silent move fails. An event with its card does.
+func TestCheckEventsObjectZero(t *testing.T) {
+	var g *Game
+	for seed := uint64(1); g == nil; seed++ { // a deal that leaves object 0 in its deck
+		h, _, err := NewGame(Setup{Seed: seed, Players: 2, Sets: fuzzSets})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if h.Object(0).Zone.Kind == ZoneDeck {
+			g = h
+		}
+	}
+	g.takeEvents()
+	card, d := g.Object(0).Card, g.Object(0).Zone.Deck
+	discard := func() ObjectID {
+		g.Decks[d] = remove(g.Decks[d], 0)
+		return g.discard(0, d)
+	}
+	h, err := g.Clone()
+	if err != nil {
+		t.Fatal(err)
+	}
+	snap := g.TakeSnapshot()
+	discard()
+	passed := Event{Kind: EvPassed, Player: 0} // Object unset: 0
+	if err := g.CheckEvents(snap, []Event{passed}); err == nil || !strings.Contains(err.Error(), "moved from 0") {
+		t.Fatalf("a silent move of object 0 passed the check: %v", err)
+	}
+	g = h
+	snap = g.TakeSnapshot()
+	nid := discard()
+	named := Event{Kind: EvDiscarded, Player: NoPlayer, Object: nid, Card: card}
+	if err := g.CheckEvents(snap, []Event{passed, named}); err != nil {
+		t.Fatalf("a discard of object 0 with its event: %v", err)
+	}
+}
+
+// 22.10: a max HP that falls and rises again in one step still explains
+// the damage its fall removed: checkMaxHP logs it.
+func TestCheckEventsMaxHPFellAndRose(t *testing.T) {
+	g := eventCheckGame(t)
+	g.Players[0].Damage = 2
+	snap := g.TakeSnapshot()
+	g.Players[0].Damage = 1
+	if err := g.CheckEvents(snap, nil); err == nil || !strings.Contains(err.Error(), "player 0 player damage") {
+		t.Fatalf("a silent heal passed: %v", err)
+	}
+	snap = g.TakeSnapshot()
+	g.logHPFell(hpKey{p: 0}, 1, 0)
+	g.Players[0].Damage = 0
+	if err := g.CheckEvents(snap, nil); err != nil {
+		t.Fatalf("damage a lower max HP removed: %v", err)
+	}
+}

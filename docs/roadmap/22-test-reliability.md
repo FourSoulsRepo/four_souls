@@ -154,7 +154,7 @@ Ideas: TS-07, TS-08, TS-09, TS-10, TS-11, TS-12.
    1. `make e2e-games` passes with the limits.
    2. A test page with a growing list over the limit fails the check.
 
-### [ ] 22.10 The event check covers players and whole games
+### [x] 22.10 The event check covers players and whole games
 
 1. Goal: a player's state change with no event fails too (owner, 2026-11-16).
 2. Tasks:

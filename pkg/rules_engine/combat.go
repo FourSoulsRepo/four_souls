@@ -259,6 +259,7 @@ func (g *Game) checkMaxHP() {
 		seen[k] = m
 		if was, ok := g.maxHP[k]; ok && m < was {
 			alive := !pl.Dead && was > pl.Damage
+			g.logHPFell(k, pl.Damage, max(pl.Damage-(was-m), 0))
 			pl.Damage = max(pl.Damage-(was-m), 0)
 			if alive && g.PlayerHP(p) == 0 {
 				g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: eventDeath.Msg(), Target: Target{Player: p, IsPlayer: true}})
@@ -274,6 +275,7 @@ func (g *Game) checkMaxHP() {
 		seen[k] = m
 		if was, ok := g.maxHP[k]; ok && m < was {
 			alive := was > o.Damage
+			g.logHPFell(k, o.Damage, max(o.Damage-(was-m), 0))
 			o.Damage = max(o.Damage-(was-m), 0)
 			if alive && g.HP(id) == 0 && !g.Eternal(id) {
 				g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: eventDeath.Msg(), Target: Target{Object: id}})

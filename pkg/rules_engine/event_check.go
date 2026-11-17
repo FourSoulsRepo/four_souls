@@ -3,15 +3,25 @@ package rulesengine
 import (
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 )
 
 // Snapshot is what CheckEvents compares: each object's zone, damage
 // and charge, and the order of every deck (22.2, TS-09). It keeps max
 // HP too, so a lower max HP explains only its own damage drop (22.3).
+// Each player's cents, damage and soul value too (22.10).
 type Snapshot struct {
 	objects []objectState
+	players []playerState
 	decks   [deckCount][]ObjectID
+}
+
+// playerState is what a player's events must explain (22.10). Souls is
+// the soul value the win counts (SoulValue): an item that turns into a
+// soul in place, or a soul that changes hands in place, changes no zone.
+type playerState struct {
+	Cents, Damage, Souls, MaxHP int
 }
 
 type objectState struct {
@@ -29,10 +39,39 @@ type moveLeg struct {
 	at               int
 }
 
-// changeLog is what Game.move and ShuffleDeck log for CheckEvents.
+// changeLog is what Game.move, ShuffleDeck and checkMaxHP log for
+// CheckEvents.
 type changeLog struct {
 	moves    []moveLeg
 	shuffled [deckCount]bool
+	// fell: the damage each lower max HP removed (R-MECH-21). A max HP
+	// may fall and rise again in one step, so the snapshot alone misses
+	// the fall (22.10).
+	fell []hpFell
+}
+
+type hpFell struct {
+	k hpKey
+	n int
+}
+
+// logHPFell logs damage that a lower max HP removed, while a snapshot
+// is on.
+func (g *Game) logHPFell(k hpKey, before, after int) {
+	if g.changes != nil && after < before {
+		g.changes.fell = append(g.changes.fell, hpFell{k, before - after})
+	}
+}
+
+// fellBy is the damage lower max HPs removed from k since TakeSnapshot.
+func (l *changeLog) fellBy(k hpKey) int {
+	n := 0
+	for _, f := range l.fell {
+		if f.k == k {
+			n += f.n
+		}
+	}
+	return n
 }
 
 // Change is one state change in a step that CheckEvents found.
@@ -42,8 +81,12 @@ type Change struct {
 	// What changed: "move" (a new object; Prev is the old one), "new"
 	// (a card made in a zone), "zone" (the same object), "damage",
 	// "charge", "deck order", or "shuffle" (a whole deck, Object -1).
+	// A player's change has Object -1 and What "cents", "player damage"
+	// or "souls" (22.10).
 	What string
 	Prev ObjectID
+	// Player is the player of a player's change (playerChange).
+	Player PlayerID
 	// From and To are the zones before and after.
 	From, To Zone
 	// Before and After are the old and new values of damage or charge.
@@ -51,6 +94,8 @@ type Change struct {
 	// MaxBefore and MaxAfter: for damage, the object's max HP before and
 	// after (checkedMaxHP).
 	MaxBefore, MaxAfter int
+	// Fell: for damage, what lower max HPs removed in the step (22.10).
+	Fell int
 	// at: for a move, the number of the step's events before it.
 	at int
 }
@@ -64,6 +109,8 @@ func (c Change) String() string {
 		s = "the " + zoneText(c.To) + " shuffled"
 	case "damage", "charge":
 		s = fmt.Sprintf("object %d (%s) %s in %s: %d -> %d", c.Object, c.Card, c.What, zoneText(c.To), c.Before, c.After)
+	case "cents", "player damage", "souls":
+		s = fmt.Sprintf("player %d %s: %d -> %d", c.Player, c.What, c.Before, c.After)
 	}
 	return s
 }
@@ -84,6 +131,10 @@ func (g *Game) TakeSnapshot() Snapshot {
 	for i, o := range g.Objects {
 		s.objects[i] = objectState{Zone: o.Zone, Damage: o.Damage, Charged: o.Charged, MaxHP: g.checkedMaxHP(ObjectID(i))}
 	}
+	for i, pl := range g.Players {
+		p := PlayerID(i)
+		s.players = append(s.players, playerState{Cents: pl.Cents, Damage: pl.Damage, Souls: g.SoulValue(p), MaxHP: g.playerMaxHP(p)})
+	}
 	for d := range deckCount {
 		s.decks[d] = slices.Clone(g.Decks[d])
 	}
@@ -96,7 +147,15 @@ func (g *Game) TakeSnapshot() Snapshot {
 // step (22.2).
 //
 // An event names an object by its Object, Prev, Source or stack item
-// source. A move makes a new object: an event must name the new one,
+// source. Object 0 is a real card, the first deck card made at setup,
+// and an unset field is 0 too: an event names object 0 only with its
+// card (22.10). Object 0 never leaves its deck under its own ID, and
+// every event that names a deck card carries the card.
+//
+// A player's change is named by an event of its kind (playerKinds),
+// and the cents events' amounts must add up to the cents change (22.10).
+//
+// A move makes a new object: an event must name the new one,
 // or the old one after the move. A few events name many objects
 // (wideEvents); the changes in silentChanges need no event.
 func (g *Game) CheckEvents(before Snapshot, events []Event) error {
@@ -112,11 +171,20 @@ func (g *Game) CheckEvents(before Snapshot, events []Event) error {
 			ids = append(ids, e.Item.Source)
 		}
 		for _, id := range ids {
+			if id == 0 && e.Card != g.Objects[0].Card {
+				continue // an unset field (22.10)
+			}
 			namedAt[id] = i + 1
 		}
 	}
 	var missing []string
 	for _, c := range changes {
+		if c.playerChange() {
+			if !playerNamed(c, events) && !wideNamed(g, c, events) && !silent(g, c, events) {
+				missing = append(missing, c.String())
+			}
+			continue
+		}
 		if _, ok := namedAt[c.Object]; ok {
 			continue
 		}
@@ -172,10 +240,29 @@ func (g *Game) Changes(before Snapshot) []Change {
 		if b.Damage != o.Damage {
 			c.What, c.Before, c.After = "damage", b.Damage, o.Damage
 			c.MaxBefore, c.MaxAfter = b.MaxHP, g.checkedMaxHP(id)
+			c.Fell = log.fellBy(hpKey{id: id})
 			out = append(out, c)
 		}
 		if b.Charged != o.Charged {
 			c.What, c.Before, c.After = "charge", boolInt(b.Charged), boolInt(o.Charged)
+			out = append(out, c)
+		}
+	}
+	for i := range min(len(g.Players), len(before.players)) {
+		pl, b, p := &g.Players[i], before.players[i], PlayerID(i)
+		c := Change{Object: -1, Player: p}
+		if b.Cents != pl.Cents {
+			c.What, c.Before, c.After = "cents", b.Cents, pl.Cents
+			out = append(out, c)
+		}
+		if b.Damage != pl.Damage {
+			c.What, c.Before, c.After = "player damage", b.Damage, pl.Damage
+			c.MaxBefore, c.MaxAfter = b.MaxHP, g.playerMaxHP(p)
+			c.Fell = log.fellBy(hpKey{p: p})
+			out = append(out, c)
+		}
+		if souls := g.SoulValue(p); b.Souls != souls {
+			c.What, c.Before, c.After = "souls", b.Souls, souls
 			out = append(out, c)
 		}
 	}
@@ -205,6 +292,55 @@ func (g *Game) checkedMaxHP(id ObjectID) int {
 		return 0
 	}
 	return g.objectMaxHP(id)
+}
+
+func (c Change) playerChange() bool {
+	return c.What == "cents" || c.What == "player damage" || c.What == "souls"
+}
+
+// playerKinds are the event kinds that name a player's damage or soul
+// change by their Player (22.10). Cents are counted (centsMoved).
+var playerKinds = map[string][]EventKind{
+	"player damage": {EvDamaged, EvHealed, EvPaid, EvPrevented, EvDeathPending, EvDied},
+	"souls":         {EvGainedSoul, EvDestroyed, EvDiscarded, EvGainedTreasure, EvCharacterDealt},
+}
+
+// playerNamed: an event of the change's kind names its player; for
+// cents, the step's cents events move exactly the change.
+func playerNamed(c Change, events []Event) bool {
+	if c.What == "cents" {
+		return centsMoved(c.Player, events) == c.After-c.Before
+	}
+	for _, e := range events {
+		if !slices.Contains(playerKinds[c.What], e.Kind) {
+			continue
+		}
+		// A stolen item names the player it was taken from in By (19.193).
+		stolenFrom := e.Kind == EvGainedTreasure && e.Text == "stolen" && PlayerID(e.By-1) == c.Player
+		if e.Player == c.Player || stolenFrom {
+			return true
+		}
+	}
+	return false
+}
+
+// centsMoved adds up p's cents gained and lost in events.
+func centsMoved(p PlayerID, events []Event) int {
+	n := 0
+	for _, e := range events {
+		switch {
+		case e.Kind == EvGainedCents && e.Player == p:
+			n += e.Amount
+		case e.Kind == EvLostCents && e.Player == p,
+			e.Kind == EvPaid && e.Player == p && e.Text != "HP":
+			n -= e.Amount
+		case e.Kind == EvStole && e.Player == p, e.Kind == EvGaveCents && PlayerID(e.By-1) == p:
+			n += e.Amount
+		case e.Kind == EvStole && e.Text == strconv.Itoa(int(p)), e.Kind == EvGaveCents && e.Player == p:
+			n -= e.Amount
+		}
+	}
+	return n
 }
 
 func boolInt(b bool) int {
@@ -318,8 +454,10 @@ var wideEvents = []WideEvent{
 		},
 	},
 	{
-		EvTurnEnded, "every object heals at the end of the turn (R-TURN-13)",
-		func(_ *Game, c Change, _ Event) bool { return c.What == "damage" && c.After == 0 },
+		EvTurnEnded, "every object and player heals at the end of the turn (R-TURN-13)",
+		func(_ *Game, c Change, _ Event) bool {
+			return (c.What == "damage" || c.What == "player damage") && c.After == 0
+		},
 	},
 }
 
@@ -371,10 +509,11 @@ var silentChanges = []SilentChange{
 	},
 	{
 		Name:   "max HP fell",
-		Reason: "a lower max HP removes as much damage; not healing, and the HP left stays the same (R-MECH-21)",
+		Reason: "a lower max HP removes as much damage, a player's too; not healing, and the HP left stays the same (R-MECH-21)",
 		Match: func(_ *Game, c Change, _ []Event) bool {
-			fell := c.MaxBefore - c.MaxAfter
-			return c.What == "damage" && c.To.Kind == ZoneInPlay && fell > 0 && c.After < c.Before && c.Before-c.After <= fell
+			fell := max(c.MaxBefore-c.MaxAfter, c.Fell)
+			hp := c.What == "damage" && c.To.Kind == ZoneInPlay || c.What == "player damage"
+			return hp && fell > 0 && c.After < c.Before && c.Before-c.After <= fell
 		},
 	},
 }
