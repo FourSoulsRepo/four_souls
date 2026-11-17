@@ -566,6 +566,8 @@ Swapping it is the owner's call; not part of this step.
    3. Vitest: the line hides with no names.
    4. e2e: a zoom shows the artist line; screenshots before and after.
    5. `wails build -m -tags embed` and `make e2e` pass without images.
+5. Owner notes (2026-11-17)
+   1. Owner marks 20.24 solved; step 20 done again.
 
 ### [-] 20.25 Credits screen, compared with the reference
 

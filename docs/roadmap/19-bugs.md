@@ -5924,7 +5924,7 @@ Totals by system (186 items):
 6. Owner notes (2026-11-17)
    1. Owner marks 19.193 solved.
 
-### [ ] 19.194 Strip popout test hovers the old tile
+### [x] 19.194 Strip popout test hovers the old tile
 
 1. Goal: the two-rows popout test hovers the tile it just added.
 2. Report (20.24 gate run, 2026-11-17)
@@ -5947,3 +5947,5 @@ Totals by system (186 items):
    2. Checked the other moves off the strip: 268 and 346 wait 1.2 s.
    3. 334 waits for the new tile count; 377 waits for the dim; all fine.
    4. No other spec adds strip tiles (`addTiles` lives in this file).
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.194 solved.
