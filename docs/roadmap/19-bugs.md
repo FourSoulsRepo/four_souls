@@ -55,8 +55,9 @@ This step never closes; new reports are appended.
 | T  | Events and view: data sent too early     | Engine     | 19.142                                                 | 1     |
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
+| W  | Bot: a cut-off settle scored as finished | Bots       | 19.162                                                 | 1     |
 
-Totals by system (153 items):
+Totals by system (154 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -70,6 +71,7 @@ Totals by system (153 items):
 | Go tests  | M       | 1     |
 | Go tools  | Q       | 2     |
 | Vitest    | R       | 1     |
+| Bots      | W       | 1     |
 
 ---
 
@@ -5054,3 +5056,33 @@ Totals by system (153 items):
 4. Tasks:
    1. Hand the clients back (`c.room.Store(nil)`) before `saved` goes out, or answer a message a stopped room gets.
    2. Test: a `load` sent the moment `saved` arrives gets its table.
+
+### [ ] 19.162 Standard bot: a settle cut off by its cap is scored as if it had ended
+
+1. Goal: a standard bot makes no move judged on settles that the cap cut short.
+2. Report (step 21 check phase, lead four-souls-35, 2026-11-17)
+   1. Arena standard×4, seed 28: the 30000-intent game guard at turn 110, souls [1 3 3 3].
+   2. Turn 98 (seat 1 active): seat 3 uses Portable Slot Machine 77 times out of turn, with 154 throws; 323 non-pass intents of 3602.
+   3. The uses grow: turn 92 31, turn 98 77, turn 106 121.
+3. Cause (replay of turn 98, `zz_` tests, deleted)
+   1. The stack on turn 98 is 20–36 items deep for about 2000 steps; 56 of the 77 uses are on a stack of 13 or more.
+   2. Every use adds 2 items (the ability, then Cursed Psy Horf's trigger); in a 4-player game each item takes 4 passes and its dice.
+   3. A settle (`settleSteps`, 150) then ends at the cap with the stack not empty: in 12 of 12 draws for both "pass" and "use" on 20 of 26 sampled positions.
+   4. The two settles stop at different items: "use" leaves 2–7 more items unresolved a draw.
+   5. Whatever those items would do is missing from one score only, so the gain is that difference, not the move's.
+   6. Measured, standard's judge, 40 draw sets of 12: step 19168 gain +6.1, use chosen 30 of 40; step 19977 +6.2, 22 of 40.
+   7. Same positions, settles run to their end: +0.00 (3 of 40) and −0.13 (1 of 40); step 18448 −15.3 cut, −0.23 to the end.
+   8. On an empty stack the ability's real gain is −2.06 a use (480 draws): 3¢ for a ⅓ chance of 4¢, a ⅓ chance of a loot card, a 1 damage.
+   9. Seat 3's cents went 24 → 0–29 → 4 over the turn: no farming; the uses stop only while it is short of 3¢.
+   10. Not a card bug: the engine resolves each item as written.
+4. Tasks:
+   1. [ ] `settle` tells whether it ended (quiet, turn over, game over, no one to act) or hit the cap.
+   2. [ ] Standard: a move does not beat doing nothing when any settle of it, or of doing nothing, was cut off.
+   3. [ ] Go test: a cut settle never beats doing nothing; a finished one still can.
+   4. [ ] ADR 030 Decision 8.4 and 8.6: the rule.
+   5. [ ] Replay seed 28: finishes, or the guard hits elsewhere.
+5. Checked (5.24)
+   1. The fix is in `judge`'s input, by kind of prompt only: every paid or repeatable ability, loot play, and other move on a deep stack.
+   2. `measure.go` (the card values) uses `try` too; its table is not regenerated here (no number changes); its stack positions are few.
+   3. Hard plays out to the end of the turn (cap 120): every candidate is cut by design there; not changed, reported to the lead.
+
