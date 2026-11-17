@@ -297,3 +297,26 @@ Ideas: TS-13, LR-04, R-03.
    3. `CLAUDE.md` Commands: how to run one set's files.
 3. Done when:
    1. A simple new card from the guide needs no Go test.
+
+### [ ] 23.10 Priority windows
+
+1. Goal: a file starts in any moment where a player may respond (owner, 2026-11-18).
+2. Why:
+   1. A file always starts in the open action phase, nothing declared.
+   2. There the active player can't pass (R-TURN-09).
+   3. So `priority` on an empty stack there is a state no game reaches.
+   4. Other windows have an empty stack and priority passes around.
+   5. Start phase (R-TURN-03), loot step (R-TURN-04), end phase (R-TURN-10).
+   6. A declared attack (R-ATK-02) or purchase (R-SHOP-02).
+3. Tasks:
+   1. `setup.phase`: `start`, `loot`, `action` (default) or `end`.
+   2. `setup.declared`: `attack` or `purchase`, before the target or item.
+   3. `priority` on an empty stack works in each window above.
+   4. In the open action phase, nothing declared: an error citing R-TURN-09.
+   5. With a stack, `priority` works as now (23.4).
+   6. Rewrite the Cain file into a real window, e.g. the loot step.
+   7. A file per window, expected values from the rules.
+   8. Wiki: `Situation-payload.md`; ADR 033 if it drifts.
+4. Done when:
+   1. Each window has a file where a non-active player acts.
+   2. Empty-stack `priority` in the open action phase fails, naming R-TURN-09.
