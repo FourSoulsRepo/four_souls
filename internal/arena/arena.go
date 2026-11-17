@@ -102,6 +102,10 @@ type Result struct {
 	Seats  map[bot.Level]int
 	Steps  int // applied intents
 	Passes int // of them passes
+	// SeatActs is the most intents other than passes one seat made in
+	// one game turn: the room's per-turn bot cap is about three times it
+	// (ADR 033, Decision 12.14).
+	SeatActs int
 	// Turns is each game's length in game turns, in game order.
 	Turns []int
 	Moves int // intents chosen by a bot (all of them)
@@ -239,6 +243,7 @@ func (r *Result) add(g Result) {
 	}
 	r.Steps += g.Steps
 	r.Passes += g.Passes
+	r.SeatActs = max(r.SeatActs, g.SeatActs)
 	r.Turns = append(r.Turns, g.Turns...)
 	r.PlayerDeaths += g.PlayerDeaths
 	r.MonsterKills += g.MonsterKills
@@ -296,11 +301,13 @@ func playGame(ctx context.Context, m Match, k int, r *Result) error {
 	worldSeeds := rand.New(rand.NewPCG(seed, 0)) //nolint:gosec // imagined deals, not security
 	var kinds []engine.IntentKind
 	step, turn, inTurn := 0, g.Turn.Number, 0
+	seatActs := make([]int, len(levels)) // per seat, this turn
 	attacked := false // the active player attacked this turn
 	guard := ""
 	for ; !g.Over && g.Turn.Number <= m.Cap; step++ {
 		if g.Turn.Number != turn {
 			turn, inTurn = g.Turn.Number, 0
+			clear(seatActs)
 		}
 		if inTurn > m.TurnIntents {
 			guard = fmt.Sprintf("game %d: turn %d over %d intents other than passes", seed, turn, m.TurnIntents)
@@ -356,6 +363,10 @@ func playGame(ctx context.Context, m Match, k int, r *Result) error {
 			r.Passes++
 		} else {
 			inTurn++
+			if g.Turn.Number == number { // as the room counts: a move that ends the turn is not
+				seatActs[p]++
+				r.SeatActs = max(r.SeatActs, seatActs[p])
+			}
 		}
 		kinds = append(kinds, in.Kind)
 	}

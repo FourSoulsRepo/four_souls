@@ -274,6 +274,7 @@ func report(out *printer, r arena.Result, took time.Duration) bool {
 		out.printf("  turns a game: median %d, max %d; %.0f intents a turn, %.0f%% passes; %s a move\n",
 			r.MedianTurns(), r.MaxTurns(), float64(r.Steps)/float64(max(turns, 1)),
 			100*float64(r.Passes)/float64(r.Steps), (r.Think / time.Duration(r.Moves)).Round(time.Microsecond))
+		out.printf("  at most %d intents other than passes by one seat in one turn\n", r.SeatActs)
 		out.printf("  %d player deaths, %d monsters killed (%.2f deaths a kill)\n",
 			r.PlayerDeaths, r.MonsterKills, float64(r.PlayerDeaths)/float64(max(r.MonsterKills, 1)))
 	}
