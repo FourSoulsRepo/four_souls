@@ -116,7 +116,7 @@ function BotSeat({ seat, levels }: { seat: Seat; levels: string[] }) {
   if (levels.length === 0) {
     return (
       <span>
-        <BotIcon />
+        <BotIcon level={level} />
         {seatName(seat)}
       </span>
     );
@@ -127,7 +127,7 @@ function BotSeat({ seat, levels }: { seat: Seat; levels: string[] }) {
   return (
     <span className="seat-bot">
       <span>
-        <BotIcon />
+        <BotIcon level={level} />
         {name}
       </span>
       <select

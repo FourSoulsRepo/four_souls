@@ -179,7 +179,11 @@ export function EndOverlay({ game, you, name }: { game: Update; you: number; nam
         <h2>
           <BotText text={title} />
         </h2>
-        {challenge?.reason && <p className="over-reason">{challenge.reason}</p>}
+        {challenge?.reason && (
+          <p className="over-reason">
+            <BotText text={challenge.reason} />
+          </p>
+        )}
         <p className="muted">{t('over.hint')}</p>
         <div className="overlay-buttons">
           <button

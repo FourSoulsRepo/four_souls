@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { diceDelays, diceImage } from '../dice';
-import { botNames } from '../lobby';
+import { seatMarks } from '../lobby';
 import { drawTime, otherPose, ownPose, type DrawPath, type DrawPose } from '../draw';
 import { bezier, feel } from '../feel';
 import { t } from '../i18n';
@@ -108,7 +108,7 @@ function Effect({ playing }: { playing: Playing }) {
   const image = useApp((s) => (effect.kind === 'dice' ? diceImage(s.dice, s.game?.seats, effect.player) : ''));
   // The turn banner is drawn by hand; it puts the robot before a bot's name (23.12).
   const seats = useApp((s) => s.game?.seats);
-  const bots = botNames(seats);
+  const marks = seatMarks(seats);
   const duration = (seconds: number) => seconds * scale;
   switch (effect.kind) {
     case 'fly':
@@ -172,7 +172,7 @@ function Effect({ playing }: { playing: Playing }) {
         <Layered
           playing={playing}
           start={(done) => {
-            turnBanner(effect.text, bots, effect.own, scale, done);
+            turnBanner(effect.text, marks, effect.own, scale, done);
           }}
         />
       );
@@ -545,7 +545,7 @@ function BigPlayed({ big }: { big: Big }) {
         animate={{ opacity: leaving ? 0 : 1 }}
         transition={{ duration: (leave / 2) * scale }}
       >
-        {t('effect.plays', { player: who })}
+        <BotText text={t('effect.plays', { player: who })} />
       </motion.div>
       <Card cardRef={card} size="zoom" />
     </motion.div>

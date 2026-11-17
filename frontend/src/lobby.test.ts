@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { autoJoinStep, botLead, botLevelName, botLevels, botNames, canCreate, namePieces, seatNameOf, challengeText, isAway, isTableHost, seatName, emptyLobby, lanRows, oneOpenGame, leftTable, forgotten, lost, onMessage, optionsText, remember, renamed, serverLabel, upText, type Session } from './lobby';
+import { autoJoinStep, botLead, botLevelName, botLevels, canCreate, namePieces, seatMarks, seatNameOf, challengeText, isAway, isTableHost, seatName, emptyLobby, lanRows, oneOpenGame, leftTable, forgotten, lost, onMessage, optionsText, remember, renamed, serverLabel, upText, type Session } from './lobby';
 import type { Seat, Table, Welcome } from './protocol';
 
 const start: Session = { screen: 'join', lobby: emptyLobby, game: null, error: '' };
@@ -345,29 +345,40 @@ describe('bots at the game table (23.12)', () => {
     expect(seatNameOf(null, 0)).toBe('Player 1');
   });
 
-  it('lists the names the bots show, never a player', () => {
-    expect(botNames(seats)).toEqual(['Bot 1 (Standard)', 'Bot 2 (Hard)']);
-    expect(botNames([ann])).toEqual([]);
-    expect(botNames(undefined)).toEqual([]);
+  it('lists every seat name, a bot with its level', () => {
+    expect(seatMarks(seats)).toEqual([{ name: 'Ann' }, { name: 'Bot 1 (Standard)', bot: 'standard' }, { name: 'Bot 2 (Hard)', bot: 'hard' }]);
+    expect(seatMarks([ann, { seat: 3, name: '', connected: false }])).toEqual([{ name: 'Ann' }]);
+    expect(seatMarks(undefined)).toEqual([]);
   });
 
-  it('marks every bot name in a line, the words around it plain', () => {
-    const bots = botNames(seats);
-    expect(namePieces('Bot 1 (Standard) attacks Ann', bots)).toEqual([{ text: 'Bot 1 (Standard)', bot: true }, { text: ' attacks Ann' }]);
-    expect(namePieces('Ann, Bot 2 (Hard) and Bot 1 (Standard) win!', bots)).toEqual([
+  it('marks every bot name in a line with its level, the words around it plain', () => {
+    const marks = seatMarks(seats);
+    expect(namePieces('Bot 1 (Standard) attacks Ann', marks)).toEqual([{ text: 'Bot 1 (Standard)', bot: 'standard' }, { text: ' attacks Ann' }]);
+    expect(namePieces('Ann, Bot 2 (Hard) and Bot 1 (Standard) win!', marks)).toEqual([
       { text: 'Ann, ' },
-      { text: 'Bot 2 (Hard)', bot: true },
+      { text: 'Bot 2 (Hard)', bot: 'hard' },
       { text: ' and ' },
-      { text: 'Bot 1 (Standard)', bot: true },
+      { text: 'Bot 1 (Standard)', bot: 'standard' },
       { text: ' win!' },
     ]);
-    expect(namePieces("Bot 1 (Standard)'s turn", bots)).toEqual([{ text: 'Bot 1 (Standard)', bot: true }, { text: "'s turn" }]);
+    expect(namePieces("Bot 1 (Standard)'s turn", marks)).toEqual([{ text: 'Bot 1 (Standard)', bot: 'standard' }, { text: "'s turn" }]);
   });
 
   it('leaves a line with no bot name whole', () => {
-    expect(namePieces('Ann attacks Bot 3', botNames(seats))).toEqual([{ text: 'Ann attacks Bot 3' }]);
+    expect(namePieces('Ann attacks Bot 3', seatMarks(seats))).toEqual([{ text: 'Ann attacks Bot 3' }]);
     expect(namePieces('Ann attacks', [])).toEqual([{ text: 'Ann attacks' }]);
-    expect(namePieces('', botNames(seats))).toEqual([]);
+    expect(namePieces('', seatMarks(seats))).toEqual([]);
+  });
+
+  it('never gives the robot to a player named like a bot (19.214)', () => {
+    // Max took the name the first bot shows; Cy a name that holds it.
+    const max: Seat = { seat: 3, name: 'Bot 1 (Standard)', connected: true };
+    const cy: Seat = { seat: 4, name: 'Bot 2 (Hard) Cy', connected: true };
+    const marks = seatMarks([...seats, max, cy]);
+    expect(namePieces('Bot 1 (Standard) attacks', marks)).toEqual([{ text: 'Bot 1 (Standard) attacks' }]);
+    expect(namePieces('Bot 2 (Hard) Cy attacks Bot 2 (Hard)', marks)).toEqual([{ text: 'Bot 2 (Hard) Cy attacks ' }, { text: 'Bot 2 (Hard)', bot: 'hard' }]);
+    // Being a bot comes from the seat: a seat without bot is a player's.
+    expect(seatMarks([max])).toEqual([{ name: 'Bot 1 (Standard)' }]);
   });
 
   it("keeps the robot with a bot name's first word; the rest may wrap", () => {
@@ -376,6 +387,7 @@ describe('bots at the game table (23.12)', () => {
   });
 
   it('tries the longest name first, so one inside another never splits it', () => {
-    expect(namePieces('Bot 1 (Standard) Max', ['Bot 1 (Standard)', 'Bot 1 (Standard) Max'])).toEqual([{ text: 'Bot 1 (Standard) Max', bot: true }]);
+    const marks = [{ name: 'Bot 1 (Standard)', bot: 'standard' }, { name: 'Bot 1 (Standard) Max', bot: 'hard' }];
+    expect(namePieces('Bot 1 (Standard) Max', marks)).toEqual([{ text: 'Bot 1 (Standard) Max', bot: 'hard' }]);
   });
 });

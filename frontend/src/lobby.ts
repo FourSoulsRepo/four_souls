@@ -143,9 +143,13 @@ export function botLevelName(level: string): string {
   }
 }
 
+// NamedSeat is what names a seat: a game's or table's seat, or a
+// record's (bindings/records).
+export type NamedSeat = Pick<Seat, 'name' | 'bot' | 'bot_n'>;
+
 // seatName is how a seat's player shows: a bot as a translated "Bot N
 // (level)" (ADR 033, Decision 10.3), a player by the name it chose.
-export function seatName(s: Seat): string {
+export function seatName(s: NamedSeat): string {
   if (!s.bot) {
     return s.name;
   }
@@ -154,53 +158,82 @@ export function seatName(s: Seat): string {
 
 // seatNameOf names seat p by the seats of a table or game: seatName,
 // else "Player N" for a seat the list lacks.
-export function seatNameOf(seats: readonly Seat[] | null | undefined, p: number): string {
+export function seatNameOf(seats: readonly (NamedSeat & Pick<Seat, 'seat'>)[] | null | undefined, p: number): string {
   const s = seats?.find((x) => x.seat === p);
   return s ? seatName(s) : t('table.player_n', { n: p + 1 });
 }
 
-// botNames are the names the bot seats show (seatName), so a line that
-// names one can put the robot before it (23.12).
-export function botNames(seats: readonly Seat[] | null | undefined): string[] {
-  return (seats ?? []).filter((s) => s.bot).map(seatName);
+// SeatMark is a name a line may hold: a seat's name as it shows
+// (seatName), and its level when the seat is a bot's.
+export interface SeatMark {
+  name: string;
+  bot?: string;
+}
+
+// seatMarks are the names of every seat, bots' and players' alike, so a
+// line can put the robot before a bot's name and never before a
+// player's (23.12, 19.214).
+export function seatMarks(seats: readonly NamedSeat[] | null | undefined): SeatMark[] {
+  return (seats ?? []).flatMap((s) => {
+    const name = seatName(s);
+    if (name === '') {
+      return [];
+    }
+    return s.bot ? [{ name, bot: s.bot }] : [{ name }];
+  });
 }
 
 // NamePiece is a piece of a line: plain text, or a bot's name, which
-// shows after the robot icon.
+// shows after the robot of its level bot.
 export interface NamePiece {
   text: string;
-  bot?: boolean;
+  bot?: string;
 }
 
-// namePieces splits a line at every bot name in it (botNames). A line
-// with no bot name is one plain piece. The longest name is tried first,
-// so a name inside another never splits it.
-export function namePieces(text: string, bots: readonly string[]): NamePiece[] {
-  const names = bots.filter((b) => b !== '').sort((a, b) => b.length - a.length);
-  if (names.length === 0 || !names.some((b) => text.includes(b))) {
+// namePieces splits a line at the bot names in it (seatMarks). Lines
+// arrive as text, so a name is found by its words: at each place the
+// longest name wins, so a name inside another never splits it, and of
+// two equal names the player's, so a player who took a bot's name never
+// gets the robot (19.214). A player's name stays plain
+// text; a line with no bot name is one plain piece.
+export function namePieces(text: string, marks: readonly SeatMark[]): NamePiece[] {
+  const names = [...marks].sort((a, b) => b.name.length - a.name.length || (a.bot ? 1 : 0) - (b.bot ? 1 : 0));
+  if (!names.some((m) => m.bot && text.includes(m.name))) {
     return text === '' ? [] : [{ text }];
   }
   const out: NamePiece[] = [];
+  const plain = (t: string) => {
+    const last = out.at(-1);
+    if (last && !last.bot) {
+      last.text += t;
+    } else {
+      out.push({ text: t });
+    }
+  };
   let rest = text;
   while (rest !== '') {
     let at = -1;
-    let name = '';
-    for (const b of names) {
-      const i = rest.indexOf(b);
+    let found: SeatMark | undefined;
+    for (const m of names) {
+      const i = rest.indexOf(m.name);
       if (i >= 0 && (at < 0 || i < at)) {
         at = i;
-        name = b;
+        found = m;
       }
     }
-    if (at < 0) {
-      out.push({ text: rest });
+    if (!found) {
+      plain(rest);
       break;
     }
     if (at > 0) {
-      out.push({ text: rest.slice(0, at) });
+      plain(rest.slice(0, at));
     }
-    out.push({ text: name, bot: true });
-    rest = rest.slice(at + name.length);
+    if (found.bot) {
+      out.push({ text: found.name, bot: found.bot });
+    } else {
+      plain(found.name);
+    }
+    rest = rest.slice(at + found.name.length);
   }
   return out;
 }
