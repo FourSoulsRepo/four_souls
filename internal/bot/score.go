@@ -23,6 +23,12 @@ const (
 	wCent  = 1.0
 	wLoot  = 0.75
 	wCurse = -8.0
+	// wItemFlat and wLootFlat are the flat values (Decision 20.6): every
+	// item and every loot card alike, as before the card values (21.16).
+	// The flat level and the measure of the table score with them; they
+	// are their own, so a tuning of wItem or wLoot moves neither.
+	wItemFlat = 12.0
+	wLootFlat = 0.75
 	// wHP is each HP left; wAlive is not having died this turn. Both
 	// heal at the end of the turn (R-TURN-13, R-DEATH-19): they weigh
 	// for the rest of it only. A death's lasting cost is its penalty,
@@ -102,9 +108,9 @@ type scoring struct {
 	// another seat's turn (answers); each one still held counts its
 	// base value times 1 + holdShare. Only with lead.
 	answers []engine.ObjectID
-	// flat values every loot card and item alike (wLoot, wItem), not by
-	// the measured table (Decision 20): the flat level, and the
-	// measurement of the table itself (Decision 20.6).
+	// flat values every loot card and item alike (wLootFlat,
+	// wItemFlat), not by the measured table (Decision 20): the flat
+	// level, and the measurement of the table itself (Decision 20.6).
 	flat bool
 }
 
@@ -295,7 +301,7 @@ func side(g *engine.Game, p, by engine.PlayerID, flat bool) float64 {
 //
 // A loot card in hand is worth wHand times its measured value, an item
 // its measured value scaled to wItem on average (values.go, Decision
-// 20.8); with flat, wLoot and wItem. seen: the scoring seat
+// 20.8); with flat, wLootFlat and wItemFlat. seen: the scoring seat
 // knows the card; a card in another seat's hand is not seen. In an
 // imagined world it is a guess, which the bot cannot tell from a card
 // the seat remembers, so it counts its kind's mean (Decision 20.8.2).
@@ -304,7 +310,7 @@ func cardValue(g *engine.Game, id engine.ObjectID, seen, flat bool) float64 {
 	if o.Zone.Kind == engine.ZoneHand {
 		switch {
 		case flat:
-			return wLoot
+			return wLootFlat
 		case !seen:
 			return wHand * cardTable.mean(kindLoot)
 		}
@@ -313,7 +319,7 @@ func cardValue(g *engine.Game, id engine.ObjectID, seen, flat bool) float64 {
 	switch o.Role { //nolint:exhaustive // souls count by SoulValue; the rest is nothing
 	case engine.RoleItem:
 		if flat {
-			return wItem
+			return wItemFlat
 		}
 		return cardTable.value(g, id, itemKind(g, id))
 	case engine.RoleCurse:

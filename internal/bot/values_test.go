@@ -90,12 +90,12 @@ func TestValueFallback(t *testing.T) {
 		want     float64
 		wantFlat float64
 	}{
-		{"own unknown loot", pl0.Hand[0], true, wHand * 2, wLoot},
-		{"own known loot", pl0.Hand[1], true, wHand * 1, wLoot},
-		{"other's loot", pl1.Hand[0], false, wHand * 2, wLoot},
-		{"starting item", d6, true, 30 * scale, wItem},
-		{"unknown active item", pl0.InPlay[1], true, 30 * scale, wItem},
-		{"known passive item", pl1.InPlay[0], true, 20 * scale, wItem},
+		{"own unknown loot", pl0.Hand[0], true, wHand * 2, wLootFlat},
+		{"own known loot", pl0.Hand[1], true, wHand * 1, wLootFlat},
+		{"other's loot", pl1.Hand[0], false, wHand * 2, wLootFlat},
+		{"starting item", d6, true, 30 * scale, wItemFlat},
+		{"unknown active item", pl0.InPlay[1], true, 30 * scale, wItemFlat},
+		{"known passive item", pl1.InPlay[0], true, 20 * scale, wItemFlat},
 	} {
 		if got := cardValue(g, c.id, c.seen, false); math.Abs(got-c.want) > 1e-9 {
 			t.Errorf("%s: %v, want %v", c.name, got, c.want)

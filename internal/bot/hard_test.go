@@ -233,7 +233,7 @@ func TestHoldValue(t *testing.T) {
 		without := scoreAs(g, 2, scoring{lead: true, flat: true})
 		// With the flat values Godhead's base value is an item's; the
 		// character has none. The measured base is the table's.
-		return (with - without) / wItem
+		return (with - without) / wItemFlat
 	}
 	even, ahead := per(0), per(3)
 	if even < wHold || ahead <= even+wHold {

@@ -81,7 +81,7 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
 1. Levels
    1. `standard` and `hard`, as strings in the protocol, saves and records.
    2. `random` exists in `internal/bot` for tests and the arena only.
-      1. So do `policy` (Decision 6) and `flat`: standard with every loot card and item worth alike, as before the card values (Decision 20).
+      1. So do `policy` (Decision 6) and `flat`: standard with every loot card and item worth alike, as before the card values (Decision 20.6).
    3. The server refuses any other level.
 2. Engine: `Game.Imagine(p, seed, known)`
    1. Returns a copy of the game as seat `p` may imagine it.
@@ -149,7 +149,7 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       5. "Can answer": what `Allowed` shows the seat on another seat's turn: a loot card or a card's ability (`answers`). No card names.
          1. On its own turn: the abilities of cards it controls; a room's work on the active player's turn only (R-CARD-36), and a loot card needs a loot play another seat's turn does not give (R-CARD-08).
       6. It is a multiplier on the card's base value, not a term of its own (lead, 2026-11-16): each answer the seat still holds (in hand; in play and charged, or recharging as its turn starts) counts `cardValue` × (1 + `wHold` × (1 + `wHoldLead` × lead)), with 0.2 and 2.
-         1. `cardValue` is the one function that gives a loot card in hand and an item in play their base value (0.75 and `wItem`, 15; 12 before the tuning of 2026-11-17); 21.16 makes it a value per card.
+         1. `cardValue` is the one function that gives a loot card in hand and an item in play their base value; 21.16 makes it a value per card, with items scaled to a mean of `wItem` (15; 12 before the tuning of 2026-11-17). The flat values, 0.75 and 12, stay for `flat` and the measure (Decision 20.6).
          2. So a held item answer is worth 3 to 9 more than a spent one; a character has no base value, so its ↷ adds nothing.
       7. Lead: the strongest opponent's share of the weights of every seat, past an even share; 0 with no one ahead, towards 1 as one pulls away.
       8. So the multiplier is never 0 and is up to three times higher with one opponent clearly the strongest.
@@ -390,7 +390,7 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       4. Each play and doing nothing are settled as standard settles a candidate (Decision 8.4 – 8.5): 6 draws when dice roll, the same for both; the best play's mean gain counts.
       5. Item: a clone with the item and one without it; a policy playout to the end of the seat's next turn; the difference.
       6. The item is added, never removed: no destroy is needed.
-      7. The playout runs to the end of the seat's next turn that starts after the position, at most 1500 steps; every seat moves by the policy, the seat's own choices get its best option; dice and choices come from the same seeds in both copies. With the item the item counts its flat 12 there (`wItem` when the table was measured; it was not measured again at 15), so the value is 12 plus what the item does in that time.
+      7. The playout runs to the end of the seat's next turn that starts after the position, at most 1500 steps; every seat moves by the policy, the seat's own choices get its best option; dice and choices come from the same seeds in both copies. With the item the item counts its flat 12 there (`wItemFlat`, Decision 20.6.1), so the value is 12 plus what the item does in that time.
       8. Positions: the tool plays arena games of the `flat` level, 12 of each table size by default, side by side, each to at most 60 game turns, and keeps about one priority position in 23 steps, at most 60 a game, with the seat to move. They stay in memory: the same seed plays the same games, so a run needs no saved file.
          1. A card is measured on the positions where its card lies in its deck (and, for loot, the seat may play it), in an order of the card's own, up to 32 for a loot card and 64 for an item; an item on 4 seeds a position.
          2. Playing the games is most of a run: 24 games to the 150-turn cap took 16 minutes on 12 cores, the slowest game alone most of it; the cap of 60 turns keeps the early and middle game, where most positions are.
@@ -401,6 +401,8 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       1. Not in the `Game` API; `internal/server` and `internal/bot` never import it (depguard rule `no-enginetest`).
       2. No test path put a card into a hand of a running game; the engine's `TakeFromDeck` gains an item, but with events and triggers outside `Apply`. So the helper is `enginetest.PlaceFromDeck`: it moves the card from its deck by the exported state fields, as a draw or a gain moves it, as a new object, with no event and no trigger. An item's "when this enters play" is not measured.
    6. One pass, with the table off (the flat values); no iterations, so the measure does not feed on itself.
+      1. The flat values are constants of their own: `wLootFlat` 0.75 and `wItemFlat` 12, as before 21.16 (lead, 2026-11-17).
+      2. The `flat` level and the measure use them; a tuning of `wItem` or `wLoot` moves neither, so `flat` stays the level before the card values and the gate of 20.11 compares against it.
    7. Output: a generated data file, card id → value, n, standard error. A fixed seed gives the same file for the same cards.
       1. A mode measures only cards missing from the table, for a new set.
       2. A full run takes at most 30 minutes on all cores of a work machine; else fewer samples a card, with the error printed.
@@ -422,7 +424,7 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    9. The bot code still names no card: the table is generated data; a test checks every card of every set is in it or falls back.
       1. The table is `internal/bot/values.json`, embedded (`go:embed`). To look a card up the bot reads its identity in one function, `tableKey`; `TestBotRules` allows `Card` there alone, and only for the seat's own hand and cards in play.
    10. After cards are added: `make bot-values`, then `make bots`.
-   11. Gate: 200 games of 2 players, standard with the table wins at least 55% against standard without it (`flat`); time per move does not grow.
+   11. Gate: 200 games of 2 players, standard with the table wins at least 55% against standard without it (`flat`, with the flat values of 20.6.1); time per move does not grow.
       1. `make bots` plays `standard,flat` and gates it (`winGates` in `cmd/bot_arena`).
 
 ## Consequences
