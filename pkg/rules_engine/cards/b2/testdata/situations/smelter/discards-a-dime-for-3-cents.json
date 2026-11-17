@@ -13,7 +13,7 @@
   "steps": [
     {"player": 0, "kind": "activate", "card": "smelter", "choices": ["a_dime"],
      "expect": {"allowed": true, "after": [{"player": 0, "cents": 3}], "discards": {"loot": ["a_dime"]}}},
-    {"player": 0, "kind": "activate", "card": "smelter", "expect": {"allowed": false}}
+    {"player": 0, "kind": "activate", "card": "smelter", "expect": {"allowed": false, "rule": "R-ABIL-07"}}
   ],
   "expect": {"allowed": false}
 }
