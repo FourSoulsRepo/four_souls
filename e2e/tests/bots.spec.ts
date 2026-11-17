@@ -188,3 +188,38 @@ test('the game table names each bot with its level after the robot (21.12)', asy
   await expect(history.getByRole('listitem').filter({ has: ann.getByTestId('bot-icon') }).first()).toBeVisible();
   await shot(ann, 'bots-history');
 });
+
+// A bot as the partner in a challenge (21.13 task 5, ADR 030 Decision
+// 15): Ann hosts Krampus at Normal with one bot, the game starts with
+// the challenge table, and the bot plays its own turn.
+test('Krampus starts with one bot as the partner (21.13)', async ({ browser }) => {
+  test.setTimeout(120_000);
+  const krampus = async (host: Page) => {
+    await host.getByLabel(tr('host.mode')).selectOption('challenge');
+    await host.getByLabel(tr('host.challenge'), { exact: true }).selectOption('krampus');
+    await expect(host.getByLabel(tr('host.difficulty'))).toHaveValue('normal');
+  };
+  const pages = await startGame(browser, ['Ann'], { setup: krampus, bots: ['standard'] });
+  const [ann] = pages;
+  if (!ann) {
+    throw new Error('no page');
+  }
+  const board = ann.getByRole('region', { name: tr('board.label') });
+  await expect(board.getByRole('group', { name: tr('challenge.panel') })).toBeVisible();
+  await expect(board.getByRole('group', { name: tr('board.final_boss') })).toBeVisible();
+  const name = tr('bot.name', { n: 1, level: standard() });
+  const area = ann.getByRole('region', { name, exact: true });
+  await expect(area.locator('.opp-name').getByTestId('bot-icon')).toBeVisible();
+  // Ann ends her turns until the turn badge names the bot.
+  const badge = ann.getByRole('status', { name: tr('turn_badge.label') });
+  const botTurn = async () => (await badge.getByTestId('bot-icon').count()) > 0;
+  for (let i = 0; i < 3 && !(await botTurn()); i++) {
+    await settle(pages, click, async () => (await botTurn()) || (await canEndTurn(ann)));
+    if (!(await botTurn())) {
+      await endTurn(ann);
+    }
+  }
+  await expect(badge.getByTestId('bot-icon')).toBeVisible();
+  await expect(ann.getByRole('dialog', { name: tr('pause.label') })).toHaveCount(0);
+  await shot(ann, 'bots-krampus');
+});

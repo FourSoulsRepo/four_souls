@@ -297,6 +297,7 @@ Rules for this step (owner, 2026-11-16):
    4. Arena: a `-challenge` flag (2-seat line-up, every challenge and difficulty), not in `make bots`; no rooms or deck ratios; no gates but refusals and guards.
    5. Test for refused intents: `TestChallenges`, random seats whole games, standard and hard two turns (8 playouts), so plain `go test` stays fast.
    6. The e2e (Krampus with one bot) is written after `step-21-bots-ui` merges, as the bot seat's UI is there; the Done-when numbers come in the check phase.
+   7. Check phase (2026-11-17): the e2e is `bots.spec.ts` "Krampus starts with one bot as the partner": the challenge table, the bot's robot, and the bot's own turn on the turn badge; it passed in the full Chromium run.
 5. Check phase (2026-11-17, `bot_arena -games 10 -challenge`, hard at 150 playouts, 12 cores, machine shared):
    1. Two hard bots win Krampus normal 1 of 10, hard 0 of 10, ultra 0 of 10; Trick or Treat normal 1 of 10, hard 0 of 10; ultra not run (time). Two random bots win 0 of 10 at every challenge and difficulty. So hard wins Krampus normal more often than random, by one game of ten.
    2. How they lose: on the timer. Krampus normal games end at turn 16 (median 16, max 16), the timer's 8 rounds of 2 seats; hard median 14, max 16; with 0.64 – 0.96 deaths a kill, not on deaths. Ultra ends by turn 8 – 9, before the timer: there the loss comes earlier (its reason not read out).
