@@ -10,7 +10,7 @@ import { canEndTurn, click, endTurn, settle } from './turn';
 import { appURL, serverPort } from './server';
 import { realAssets, shot } from './shot';
 import { openHost, openOnline } from './menu';
-import { tr, trRe } from './locale';
+import { anyOf, lineRe, tr, trRe } from './locale';
 
 const standard = () => tr('bot.level.standard');
 const hard = () => tr('bot.level.hard');
@@ -177,7 +177,7 @@ test('the game table names each bot with its level after the robot (21.12)', asy
       await endTurn(ann);
     }
   }
-  await expect(badge).toContainText(new RegExp(bots.map((b) => b.replace(/[()]/g, '\\$&')).join('|')));
+  await expect(badge).toContainText(anyOf(...bots.map((b) => lineRe(b))));
   await expect(stack.getByTestId('bot-icon').first()).toBeVisible();
   await shot(ann, 'bots-table');
   // A bot has no connection, yet the game never waits for it as for a
