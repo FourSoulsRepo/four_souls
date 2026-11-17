@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/FourSoulsRepo/four_souls/internal/bot"
+	"github.com/FourSoulsRepo/rules_engine/cards"
 )
 
 // TestNoRefusedIntent plays 30 whole policy games, every set, 2 to 4
@@ -162,6 +163,35 @@ func TestMemories(t *testing.T) {
 	for i, m := range memories([]bot.Level{bot.Hard, bot.Hard}, true) {
 		if m != nil {
 			t.Errorf("seat %d has a memory with NoMemory", i)
+		}
+	}
+}
+
+// TestChallenges: each challenge at each difficulty, bot with bot
+// (Decision 15.5), refuses no bot intent and trips no loop guard:
+// random seats play whole games, standard seats the first turns.
+func TestChallenges(t *testing.T) {
+	for _, c := range cards.Challenges() {
+		for _, l := range c.Levels {
+			for _, m := range []Match{
+				{Levels: []bot.Level{bot.Random, bot.Random}, Games: 2},
+				{Levels: []bot.Level{bot.Standard, bot.Hard}, Games: 1, Cap: 2, Playouts: 8},
+			} {
+				m.Challenge, m.Difficulty, m.Seed = c, l.Difficulty, 3
+				t.Run(m.Name(), func(t *testing.T) {
+					t.Parallel()
+					r, err := Play(context.Background(), m)
+					if err != nil {
+						t.Fatal(err)
+					}
+					for _, x := range append(r.Refused, r.Guards...) {
+						t.Error(x)
+					}
+					if r.Finished > 0 && r.Wins[m.Levels[0]] == 0 && r.Lost == 0 {
+						t.Errorf("%d ended, none won or lost", r.Finished)
+					}
+				})
+			}
 		}
 	}
 }

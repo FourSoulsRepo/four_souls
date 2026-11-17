@@ -122,3 +122,24 @@ func TestRunBadLevel(t *testing.T) {
 		t.Errorf("err %v", err)
 	}
 }
+
+// TestRunChallenges: -challenge plays its line-up at every challenge
+// and difficulty and prints won and lost; a standard-random line-up
+// there has no win gate, a 3-seat one is an error.
+func TestRunChallenges(t *testing.T) {
+	var out bytes.Buffer
+	if err := run(context.Background(), []string{"-games", "1", "-cap", "2", "-challenge", "standard,random"}, &out); err != nil {
+		t.Errorf("err %v, want no gate:\n%s", err, out.String())
+	}
+	for _, want := range []string{"standard-random krampus/normal", "standard-random trick_or_treat/ultra", "challenge won 0, lost 0, unfinished 1"} {
+		if !strings.Contains(out.String(), want) {
+			t.Errorf("no %q in:\n%s", want, out.String())
+		}
+	}
+	if strings.Contains(out.String(), "FAIL") || strings.Contains(out.String(), "random-standard:") {
+		t.Errorf("a gate failed, or a regular line-up was played:\n%s", out.String())
+	}
+	if err := run(context.Background(), []string{"-games", "1", "-challenge", "random,random,random"}, &bytes.Buffer{}); err == nil {
+		t.Error("a 3-seat challenge: no error")
+	}
+}

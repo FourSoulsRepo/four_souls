@@ -262,6 +262,13 @@ Rules for this step (owner, 2026-11-16):
    6. `docs/wiki/Challenges.md`: a line on bots.
 3. Done when:
    1. Two hard bots win Krampus on normal more often than two random bots; both numbers in the commit message.
+4. Decisions (rule 12, 2026-11-17):
+   1. The hub already let a bot sit at a challenge table: no hub change; `TestChallengeBot` seats a hard bot at Krampus and starts it.
+   2. Boss HP weight `wBossHP` 2 (four times `wHP`); hard scores a challenge by the team sum too, without the holding value.
+   3. The policy treats the partner like itself on a curse choice.
+   4. Arena: a `-challenge` flag (2-seat line-up, every challenge and difficulty), not in `make bots`; no rooms or deck ratios; no gates but refusals and guards.
+   5. Test for refused intents: `TestChallenges`, random seats whole games, standard and hard two turns (8 playouts), so plain `go test` stays fast.
+   6. The e2e (Krampus with one bot) is written after `step-21-bots-ui` merges, as the bot seat's UI is there; the Done-when numbers come in the check phase.
 
 ### [ ] 21.14 Docs and review
 

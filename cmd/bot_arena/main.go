@@ -3,6 +3,7 @@
 //
 //	bot_arena -games 50
 //	bot_arena -games 20 -match policy,random -match policy,policy,policy
+//	bot_arena -games 50 -challenge hard,hard -challenge random,random
 //
 // Each -match is one line-up of levels, one per seat; the seats rotate
 // from game to game. Without -match it plays the default line-ups. It
@@ -16,7 +17,10 @@
 // every card worth alike), hard under 60% of 2-player games against
 // standard, one hard among three standard not over 30%. Hard thinks
 // -playouts playouts a move, with a memory of the cards it saw unless
-// -memory=false.
+// -memory=false. Each -challenge is a 2-seat line-up played at every
+// challenge and difficulty (Decision 15.5): it prints the challenges
+// won and lost, and has no gate but the refused intents and the loop
+// guards; with -challenge alone no regular line-up is played.
 package main
 
 import (
@@ -38,6 +42,7 @@ import (
 	"github.com/FourSoulsRepo/four_souls/internal/arena"
 	"github.com/FourSoulsRepo/four_souls/internal/bot"
 	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards"
 )
 
 // minFinished is the gate of Decision 18.4: the part of games that must
@@ -150,25 +155,39 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 	turnCap := fs.Int("cap", arena.TurnCap, "game turns after which a game counts as unfinished")
 	playouts := fs.Int("playouts", arena.DefaultPlayouts, "the hard level's playouts a move")
 	memory := fs.Bool("memory", true, "give each hard seat a memory of the cards it saw (Decision 19)")
-	var matches matchFlags
+	var matches, challenges matchFlags
 	fs.Var(&matches, "match", "a line-up of levels, one per seat, comma-separated (repeat it)")
+	fs.Var(&challenges, "challenge", "a 2-seat line-up played at every challenge and difficulty (repeat it)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	if len(matches) == 0 {
+	if len(matches) == 0 && len(challenges) == 0 {
 		matches = defaultMatches
 	}
 	var ms []arena.Match
 	for _, s := range matches {
-		var levels []bot.Level
-		for name := range strings.SplitSeq(s, ",") {
-			l, err := bot.ParseLevel(strings.TrimSpace(name))
-			if err != nil {
-				return err
-			}
-			levels = append(levels, l)
+		levels, err := parseLevels(s)
+		if err != nil {
+			return err
 		}
 		ms = append(ms, arena.Match{Levels: levels, Games: *games, Seed: *seed, Cap: *turnCap, Playouts: *playouts, NoMemory: !*memory})
+	}
+	for _, s := range challenges {
+		levels, err := parseLevels(s)
+		if err != nil {
+			return err
+		}
+		if len(levels) != 2 {
+			return fmt.Errorf("-challenge %s: a challenge is for 2 seats", s)
+		}
+		for _, c := range cards.Challenges() {
+			for _, l := range c.Levels {
+				ms = append(ms, arena.Match{
+					Levels: levels, Games: *games, Seed: *seed, Cap: *turnCap, Playouts: *playouts, NoMemory: !*memory,
+					Challenge: c, Difficulty: l.Difficulty,
+				})
+			}
+		}
 	}
 	failed := false
 	pr := &printer{w: out}
@@ -195,6 +214,19 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 	return nil
 }
 
+// parseLevels reads a line-up: levels, comma-separated.
+func parseLevels(s string) ([]bot.Level, error) {
+	var levels []bot.Level
+	for name := range strings.SplitSeq(s, ",") {
+		l, err := bot.ParseLevel(strings.TrimSpace(name))
+		if err != nil {
+			return nil, err
+		}
+		levels = append(levels, l)
+	}
+	return levels, nil
+}
+
 // printer writes the report and keeps the first write error.
 type printer struct {
 	w   io.Writer
@@ -210,8 +242,12 @@ func (p *printer) printf(format string, args ...any) {
 // report prints one match; it returns false when a gate failed.
 func report(out *printer, r arena.Result, took time.Duration) bool {
 	m := r.Match
-	out.printf("%s: %d games, %d with a winner (%.1f%%) within %d turns, in %s\n",
-		m.Name(), r.Games, r.Finished, 100*r.FinishedShare(), m.Cap, took.Round(time.Millisecond))
+	ended := "with a winner"
+	if m.Challenge != nil {
+		ended = "won or lost"
+	}
+	out.printf("%s: %d games, %d %s (%.1f%%) within %d turns, in %s\n",
+		m.Name(), r.Games, r.Finished, ended, 100*r.FinishedShare(), m.Cap, took.Round(time.Millisecond))
 	if slices.Contains(m.Levels, bot.Hard) {
 		mem := "a memory"
 		if m.NoMemory {
@@ -219,7 +255,14 @@ func report(out *printer, r arena.Result, took time.Duration) bool {
 		}
 		out.printf("  hard: %d playouts a move, %s\n", m.Playouts, mem)
 	}
+	if m.Challenge != nil {
+		won := r.Finished - r.Lost
+		out.printf("  challenge won %d, lost %d, unfinished %d of %d games\n", won, r.Lost, r.Games-r.Finished, r.Games)
+	}
 	for _, l := range slices.Sorted(maps.Keys(r.Seats)) {
+		if m.Challenge != nil {
+			break // both seats win or lose together
+		}
 		chance := float64(r.Seats[l]) / float64(len(m.Levels))
 		out.printf("  %-8s wins %d of %d games (%.1f by chance)\n", l, r.Wins[l], r.Games, chance)
 	}
@@ -249,11 +292,11 @@ func report(out *printer, r arena.Result, took time.Duration) bool {
 		out.printf("  refused: %s\n", x)
 		ok = false
 	}
-	if r.Games > 0 && gated(m.Levels) && r.FinishedShare() < minFinished {
+	if r.Games > 0 && m.Challenge == nil && gated(m.Levels) && r.FinishedShare() < minFinished {
 		out.printf("  FAIL: under %.0f%% of games with a winner (Decision 18.4)\n", 100*minFinished)
 		ok = false
 	}
-	if w, has := winGateOf(m.Levels); has && r.Games > 0 {
+	if w, has := winGateOf(m.Levels); has && r.Games > 0 && m.Challenge == nil {
 		share := float64(r.Wins[w.Level]) / float64(r.Games)
 		if w.fails(share) {
 			out.printf("  FAIL: %s wins %.0f%% against %s, under %.0f%% (Decision 18)\n", w.Level, 100*share, w.Against, 100*w.Min)
@@ -263,7 +306,7 @@ func report(out *printer, r arena.Result, took time.Duration) bool {
 	if len(r.Refused) > 0 {
 		out.printf("  FAIL: %d refused bot intents (Decision 18.8)\n", len(r.Refused))
 	}
-	if !gated(m.Levels) {
+	if m.Challenge != nil || !gated(m.Levels) {
 		out.printf("  (finish share for reference: no finish gate on this line-up)\n")
 	}
 	for _, x := range r.Guards {

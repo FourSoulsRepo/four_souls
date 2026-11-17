@@ -61,6 +61,11 @@ type Match struct {
 	// NoMemory plays the hard seats without a memory (Decision 19), to
 	// measure what it is worth; else each hard seat has one.
 	NoMemory bool
+	// Challenge, when set, plays each game as this co-op challenge at
+	// Difficulty (Decision 15.5): 2 seats, no bonus souls, no rooms or
+	// deck ratios.
+	Challenge  *engine.ChallengeDef
+	Difficulty string
 	// Watch, when set, sees the real game of game k before each bot
 	// move, at step. It runs on that game's goroutine, games side by
 	// side, and must copy what it keeps: make bot-values keeps positions
@@ -68,20 +73,28 @@ type Match struct {
 	Watch func(k, step int, g *engine.Game)
 }
 
-// Name is the line-up, e.g. "policy-policy".
+// Name is the line-up, e.g. "policy-policy", and a challenge's id
+// and difficulty, e.g. "hard-hard krampus/normal".
 func (m Match) Name() string {
 	names := make([]string, len(m.Levels))
 	for i, l := range m.Levels {
 		names[i] = string(l)
 	}
-	return strings.Join(names, "-")
+	name := strings.Join(names, "-")
+	if m.Challenge != nil {
+		name += " " + m.Challenge.ID + "/" + m.Difficulty
+	}
+	return name
 }
 
 // Result counts the games of a match.
 type Result struct {
 	Match    Match
 	Games    int
-	Finished int // ended with a winner within the cap
+	Finished int // ended within the cap: a winner, or a challenge won or lost
+	// Lost counts the challenges lost (Decision 15); a won one counts a
+	// win for each seat's level.
+	Lost int
 	// Wins counts won games by level; a shared win counts for each
 	// winner's level. Seats counts the seats each level held, so
 	// Wins/Seats·players is its share against chance.
@@ -217,6 +230,7 @@ func Play(ctx context.Context, m Match) (Result, error) {
 func (r *Result) add(g Result) {
 	r.Games += g.Games
 	r.Finished += g.Finished
+	r.Lost += g.Lost
 	for l, n := range g.Wins {
 		r.Wins[l] += n
 	}
@@ -255,6 +269,16 @@ func playGame(ctx context.Context, m Match, k int, r *Result) error {
 	s := engine.Setup{
 		Seed: seed, Players: n, Sets: cards.Sets(), BonusSouls: true,
 		Rooms: seed%2 == 1, DeckRatios: seed%3 == 0,
+	}
+	if c := m.Challenge; c != nil {
+		set, ok := cards.ChallengeSet(c)
+		if !ok {
+			return fmt.Errorf("arena: challenge %s has no card set", c.ID)
+		}
+		s = engine.Setup{
+			Seed: seed, Players: n, Sets: append(cards.Sets(), set),
+			Challenge: c, Difficulty: m.Difficulty,
+		}
 	}
 	g, setup, err := engine.NewGame(s)
 	if err != nil {
@@ -346,6 +370,9 @@ func playGame(ctx context.Context, m Match, k int, r *Result) error {
 	}
 	if g.Over {
 		r.Finished++
+		if g.Challenge != nil && g.Challenge.Lost {
+			r.Lost++
+		}
 		for _, w := range g.Winners {
 			r.Wins[levels[w]]++
 		}

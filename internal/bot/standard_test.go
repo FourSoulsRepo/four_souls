@@ -489,3 +489,46 @@ func TestStandardBuysByValue(t *testing.T) {
 		}
 	}
 }
+
+// TestTeamScore: in a challenge both seats play together (Decision 15):
+// the partner's cents count for the seat, not against it; damage on
+// the final boss counts; a won challenge is the top, a lost one the
+// bottom, for both seats.
+func TestTeamScore(t *testing.T) {
+	c, _ := cards.FindChallenge("trick_or_treat")
+	set, _ := cards.ChallengeSet(c)
+	g, _, err := engine.NewGame(engine.Setup{Seed: 1, Players: 2, Sets: append(cards.Sets(), set), Challenge: c, Difficulty: engine.DifficultyNormal})
+	if err != nil {
+		t.Fatal(err)
+	}
+	base := Score(g, 0)
+	g.Players[1].Cents += 5
+	if got := Score(g, 0); math.Abs(got-base-5*wCent) > 1e-9 {
+		t.Errorf("partner's 5 cents: %v, want %v", got-base, 5*wCent)
+	}
+	base = Score(g, 0)
+	var boss engine.ObjectID
+	for _, id := range g.MonstersInPlay() {
+		if g.IsFinalBoss(id) {
+			boss = id
+		}
+	}
+	if boss == 0 {
+		t.Fatal("no final boss")
+	}
+	g.Object(boss).Damage++
+	if got := Score(g, 0); math.Abs(got-base-wBossHP) > 1e-9 {
+		t.Errorf("a boss HP less: %v, want %v", got-base, wBossHP)
+	}
+	w, err := g.Clone()
+	if err != nil {
+		t.Fatal(err)
+	}
+	w.WinChallenge()
+	g.LoseChallenge(engine.ReasonTimer.Msg())
+	for p := range engine.PlayerID(2) {
+		if Score(w, p) != scoreWin || Score(g, p) != -scoreWin {
+			t.Errorf("seat %d: won %v, lost %v", p, Score(w, p), Score(g, p))
+		}
+	}
+}

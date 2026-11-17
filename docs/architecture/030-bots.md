@@ -288,7 +288,11 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    2. The score is the team's: lost is the bottom, won the top.
    3. Then the final boss's HP, the players' souls, HP, loot and items, summed.
    4. No opponents' part; no leader.
+      1. `teamScore` (21.13): every seat's sum as seat `p` sees it (the partner's hand by its kind's mean), less 2 (`wBossHP`) for each HP a final boss has left: four times a player's HP, as the boss is the team's goal; its damage heals at the end of the turn, and an attack on it settles to its end, where only a kill lasts.
+      2. Hard scores a challenge by the same team sum: no holding value, which rests on a leader.
+      3. The policy never prefers to curse the partner: in a challenge every seat counts as its own.
    5. The arena plays each challenge at each difficulty.
+      1. `bot_arena -challenge a,b`: the line-up at every challenge and difficulty; no bonus souls, rooms or deck ratios. It prints won, lost and unfinished; no finish or win gate, only refused intents and loop guards. `make bots` plays none.
 16. Saves and restarts
    1. `savedSeat` gets the level and the number.
    2. A loaded table seats its bots at once; humans come back as today.

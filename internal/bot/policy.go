@@ -149,7 +149,8 @@ func choiceWeights(g *engine.Game, p engine.PlayerID, w engine.Prompt, allowed [
 		case engine.ChooseCursed, engine.ChoosePassCurse:
 			if o < len(c.Slots) {
 				q := engine.PlayerID(c.Slots[o])
-				ws[i] = pick(q == p, wCurseSelf, wCurseLeader+float64(g.SoulValue(q)))
+				// In a challenge the other seat is a partner, no leader.
+				ws[i] = pick(q == p || g.Challenge != nil, wCurseSelf, wCurseLeader+float64(g.SoulValue(q)))
 			}
 		}
 	}

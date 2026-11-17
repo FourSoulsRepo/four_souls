@@ -67,6 +67,13 @@ const (
 	// would hide what every other world shows (Decision 9.6).
 	noiseClip = 4 * wSoul
 
+	// wBossHP is each HP a challenge's final boss has left (Decision
+	// 15.3), taken from the team's sum: as a player's HP, damage heals
+	// at the end of the turn, but an attack on the boss settles to its
+	// end, where only a kill lasts; four times wHP, as the boss's HP is
+	// the team's goal.
+	wBossHP = 2.0
+
 	// The hard level's part (Decision 7.6). wStrength is the strength
 	// one opponent's weight grows by e: an opponent one soul ahead of
 	// another counts e times as much. No threshold: the weights move
@@ -110,7 +117,7 @@ func Score(g *engine.Game, p engine.PlayerID) float64 {
 
 // scoreAs is Score as a level scores: with sc.lead the opponents count
 // by strength and p's answers still held add their holding value
-// (Decision 7.6).
+// (Decision 7.6). A challenge is scored for the team (teamScore).
 func scoreAs(g *engine.Game, p engine.PlayerID, sc scoring) float64 {
 	if g.Over {
 		for _, w := range g.Winners {
@@ -119,6 +126,9 @@ func scoreAs(g *engine.Game, p engine.PlayerID, sc scoring) float64 {
 			}
 		}
 		return -scoreWin
+	}
+	if g.Challenge != nil {
+		return teamScore(g, p, sc)
 	}
 	if sc.lead {
 		return leadScore(g, p, sc)
@@ -136,6 +146,23 @@ func scoreAs(g *engine.Game, p engine.PlayerID, sc scoring) float64 {
 		return own
 	}
 	return own - others/float64(n)
+}
+
+// teamScore is a challenge's table (Decision 15): both players play
+// together, so every seat's sum counts for p, the partner's hand as
+// seat p sees it, less each final boss's HP left. No opponents, no
+// leader; won and lost are the top and the bottom (scoreAs).
+func teamScore(g *engine.Game, p engine.PlayerID, sc scoring) float64 {
+	s := 0.0
+	for i := range g.Players {
+		s += side(g, engine.PlayerID(i), p, sc.flat)
+	}
+	for _, id := range g.MonstersInPlay() {
+		if g.IsFinalBoss(id) {
+			s -= wBossHP * float64(g.HP(id))
+		}
+	}
+	return s
 }
 
 // leadScore is the hard level's table (Decision 7.6): p's own sum and

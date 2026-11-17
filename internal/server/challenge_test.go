@@ -318,3 +318,20 @@ func TestChallengeRestart(t *testing.T) {
 		checkKrampus(t, u.View, engine.DifficultyUltra)
 	}
 }
+
+// ADR 030, Decision 15.1: a challenge table takes a bot in its second
+// seat; the game starts as the challenge with the bot as the partner.
+func TestChallengeBot(t *testing.T) {
+	h := startHub(t)
+	host, _ := arrive(t, h, "Ann", "")
+	host.say(protocol.TypeCreate, protocol.Create{Seats: 2, Options: krampus(engine.DifficultyNormal)})
+	host.next(protocol.TypeTable, nil)
+	tb := host.seatBot(1, protocol.BotHard)
+	if s := tb.Seats[1]; s.Bot != protocol.BotHard || !s.Ready {
+		t.Fatalf("bot seat %+v", s)
+	}
+	host.say(protocol.TypeReady, protocol.Ready{Ready: true})
+	var u protocol.Update
+	host.next(protocol.TypeUpdate, &u)
+	checkKrampus(t, u.View, engine.DifficultyNormal)
+}

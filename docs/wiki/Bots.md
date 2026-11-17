@@ -52,6 +52,8 @@ The policy (`internal/bot/policy.go`, Decision 6) weighs each allowed intent and
 
 `Score(g, p)` (`internal/bot/score.go`, Decision 7) is a table from seat `p`'s side: a won game is the top value, a lost one the bottom. Else it is the seat's own sum less the opponents' average. A sum counts souls, cents, loot cards in hand, items, curses, HP left and being alive this turn; a card's base value comes from `cardValue`, which reads the measured card values (below). Every weight is a constant in that file. A soul (100) outweighs every other part of a table; HP (0.5 each) and being alive (3) weigh little, as both heal at the end of the turn; the flat values, which the `flat` level and the measure keep, are an item 15 (`wItem`), clearly more than the 10¢ it costs, and a loot card in hand 0.75, less than a cent, so a card that gives 1¢ is played and one that does nothing now is kept.
 
+In a challenge (Decision 15) both seats play together: `teamScore` adds every seat's sum (the partner's hand by its kind's mean) and takes off 2 (`wBossHP`) for each HP a final boss has left; no opponents, no leader. A won challenge is the top for both seats, a lost one the bottom. The policy then never prefers to curse the partner.
+
 A settled copy is scored by `settledScore`: its `Score`, plus `digValue` for each monster the seat killed in the settle (its rewards went to the seat). A kill lets in the next card of the monster deck, which may give a soul: `digValue` is the soul weight times the share of soul cards (card property `Soul`) in the world's monster deck, times `digShare` (0.5). Without it a kill of a monster with no soul rarely beat ending the turn.
 
 ### Standard
@@ -121,7 +123,10 @@ make bots                     # BOT_GAMES=50 per default line-up: standard again
 go run ./cmd/bot_arena -games 20 -playouts 500 -match hard,standard
 go run ./cmd/bot_arena -games 20 -match policy,random -match policy,policy,policy
 go run ./cmd/bot_arena -games 20 -cap 400 -match policy,policy,policy,policy
+go run ./cmd/bot_arena -games 50 -challenge hard,hard -challenge random,random
 ```
+
+Each `-challenge` is a 2-seat line-up played at every challenge and difficulty (`Match.Challenge`, Decision 15.5): no bonus souls, no rooms, no deck ratios. It prints the challenges won, lost and unfinished; it has no finish or win gate, only the refused intents and the loop guards. With `-challenge` alone no regular line-up is played; `make bots` plays none. `TestChallenges` (`internal/arena`) plays every challenge and difficulty with random seats to the end and with standard and hard for two turns, and fails on a refused intent or a guard.
 
 It prints, per line-up: games, games with a winner within the turn cap, wins by level against chance, median and max game turns, intents per turn, the share of passes, time per move, player deaths per monster killed; per level, in the same games: its time per move, the share of its turns with no attack, and its loot plays and purchases per seat and game (`Result.Levels`); and for every game cut by the cap, its seed, turn, souls by seat and the kinds of its last 300 intents. It exits 1, in any line-up, when a bot intent is refused or a loop guard ends a game. The finish gate, 95% of games with a winner within the cap (Decision 18.4), is only for line-ups of the levels players meet (standard from 21.5, hard from 21.6) with no random seat: `finishGated` in `cmd/bot_arena`. Random and policy line-ups print their share for reference. The win gates are `winGates` there: standard wins 70% of 2-player games against random, 55% of 2-player games against flat (Decision 20.11), hard 60% of 2-player games against standard, and one hard among three standard wins over 30% (Decision 18.5 – 18.7). Hard thinks `-playouts` playouts a move (`arena.DefaultPlayouts`, 150), never a time, so the results repeat.
 
