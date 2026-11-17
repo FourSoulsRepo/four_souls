@@ -110,6 +110,7 @@ Use option 1.
    16. `declared`: an attack or purchase, before its target or item.
    17. Everyone passes: the game moves on as in a game (R-STACK-07).
    18. Open action phase: `priority` on an empty stack is the active player's (R-TURN-09).
+   19. `declared` may come with `setup.stack`: responses resolve before the choice.
 11. `expect` comes from the rules, never from a run (5.25).
    1. A tool may write `setup` and `steps`; never `expect` (23.7).
 12. Runner

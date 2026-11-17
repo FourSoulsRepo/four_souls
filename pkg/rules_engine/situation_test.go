@@ -533,6 +533,35 @@ func TestSituationWindows(t *testing.T) {
 	if w := g.Prompt(); w.Kind != PromptChoose || w.Player != 0 || g.Choice.Purpose != ChoosePurchase {
 		t.Errorf("after the purchase's window: prompt %+v; want player 0 to pick the item", w)
 	}
+	// A response waits on the stack (23.10 follow-up): its owner holds
+	// priority (R-PRIO-03). It resolves when everyone passes (R-STACK-03);
+	// priority passes again from the active player (R-STACK-04, R-PRIO-02);
+	// only then is the target or item chosen (R-ATK-02, R-SHOP-02).
+	for _, c := range []struct {
+		declared string
+		purpose  ChoicePurpose
+	}{{"attack", ChooseAttackTarget}, {"purchase", ChoosePurchase}} {
+		g = build(SituationSetup{Declared: c.declared, Stack: []SituationStack{{DiceRoll: 3, Owner: 1}}})
+		on := g.Attack.On || g.Purchase.On
+		if !on || g.Turn.Attacks+g.Turn.Purchases != 1 || len(g.Stack) != 1 || g.Prompt().Player != 1 {
+			t.Fatalf("%s with a stack: attack %+v, purchase %+v, turn %+v, prompt %+v; want it declared, used, seat 1 to respond",
+				c.declared, g.Attack, g.Purchase, g.Turn, g.Prompt())
+		}
+		passAround(t, g, 2)
+		if len(g.Stack) != 0 || g.Prompt().Kind != PromptPriority || g.Prompt().Player != 0 {
+			t.Fatalf("%s: after the roll, stack %d, prompt %+v; want an empty stack, priority for player 0", c.declared, len(g.Stack), g.Prompt())
+		}
+		passAround(t, g, 2)
+		if w := g.Prompt(); w.Kind != PromptChoose || w.Player != 0 || g.Choice.Purpose != c.purpose {
+			t.Errorf("%s: after the stack: prompt %+v; want player 0 to choose", c.declared, w)
+		}
+	}
+	// A stack with nothing declared is as before 23.10: no attack or
+	// purchase is on.
+	g = build(SituationSetup{Stack: []SituationStack{{DiceRoll: 3, Owner: 1}}})
+	if g.Attack.On || g.Purchase.On || g.Turn.Attacks != 1 || g.Turn.Purchases != 1 {
+		t.Errorf("stack only: attack %+v, purchase %+v, turn %+v; want nothing declared", g.Attack, g.Purchase, g.Turn)
+	}
 }
 
 // A setup.phase or setup.declared that no real window has is an error
@@ -544,8 +573,8 @@ func TestSituationWindowErrors(t *testing.T) {
 		{`"declared": "end"`, `declared "end" is no declaration, options [attack purchase]`},
 		{`"phase": "loot", "declared": "attack"`, "declared attack needs phase action, not loot: it is declared only in the action phase (R-ATK-01)"},
 		{`"phase": "end", "declared": "purchase"`, "declared purchase needs phase action, not end: it is declared only in the action phase (R-SHOP-01)"},
-		{`"declared": "attack", "stack": [{"dice_roll": 3, "owner": 1}]`, "declared attack needs an empty stack (R-ATK-01)"},
-		{`"declared": "purchase", "stack": [{"dice_roll": 3, "owner": 1}]`, "declared purchase needs an empty stack (R-SHOP-01)"},
+		{`"declared": "attack", "stack": [{"kind": "attack_roll", "dice_roll": 3, "card": "dummy", "owner": 0}]`, "declared attack: stack item 1 is an attack roll, but the target is chosen only after the declaration's window (R-ATK-02)"},
+		{`"declared": "purchase", "stack": [{"dice_roll": 3, "owner": 1}, {"kind": "attack_roll", "dice_roll": 3, "card": "dummy", "owner": 0}]`, "declared purchase: stack item 2 is an attack roll, but a purchase is declared only with an empty stack, so not during an attack (R-SHOP-01)"},
 		{`"declared": "attack", "attacks": 0`, "declared attack needs one left (R-TURN-07), and attacks is 0"},
 		{`"declared": "purchase", "purchases": 0`, "declared purchase needs one left (R-SHOP-05), and purchases is 0"},
 		{`"phase": "start", "loot_plays": 1`, "phase start: loot_plays, attacks and purchases come with the action phase (R-TURN-05, R-TURN-07)"},
@@ -564,6 +593,7 @@ func TestSituationWindowErrors(t *testing.T) {
 	for _, extra := range []string{
 		`"phase": "start"`, `"phase": "loot"`, `"phase": "end"`, `"declared": "attack"`, `"declared": "purchase"`,
 		`"stack": [{"dice_roll": 3, "owner": 0}]`, `"phase": "end", "loot_plays": 0`,
+		`"declared": "attack", "stack": [{"dice_roll": 3, "owner": 0}]`, `"declared": "purchase", "stack": [{"dice_roll": 3, "owner": 0}]`,
 	} {
 		if _, err := buildSetup(`{` + seats + `, ` + extra + `, "priority": 1}`); err != nil {
 			t.Errorf("%s: %v; want no error", extra, err)

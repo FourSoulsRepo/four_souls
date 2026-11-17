@@ -75,7 +75,8 @@ type SituationSetup struct {
 	Phase string `json:"phase,omitempty"`
 	// Declared is "attack" or "purchase": the active player has declared
 	// it in the action phase and not chosen the target or item yet
-	// (R-ATK-02, R-SHOP-02).
+	// (R-ATK-02, R-SHOP-02). Stack holds the responses to it; they
+	// resolve before the choice.
 	Declared string `json:"declared,omitempty"`
 }
 

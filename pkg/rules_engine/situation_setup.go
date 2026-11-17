@@ -214,6 +214,9 @@ func (g *Game) setUpRolls(rolls []int) error {
 // R-SHOP-01): it uses one up, and priority passes before the target or
 // item is chosen (R-ATK-02, R-SHOP-02). Nothing triggers and nothing is
 // paid; the setup shows what the declaration left, as for the stack.
+// setup.stack holds the responses to it: they resolve first, and once
+// everyone passes on the empty stack the active player chooses, as in a
+// game (R-STACK-07). An attack roll is no such response.
 func (g *Game) setUpDeclared(s SituationSetup) error {
 	var rule, limit, counts string
 	var left func() int
@@ -230,10 +233,14 @@ func (g *Game) setUpDeclared(s SituationSetup) error {
 	switch {
 	case g.Turn.Step != StepAction:
 		return fmt.Errorf("situation: declared %s needs phase action, not %s: it is declared only in the action phase (%s)", s.Declared, s.Phase, rule)
-	case len(s.Stack) > 0:
-		return fmt.Errorf("situation: declared %s needs an empty stack (%s); a response to it is a step", s.Declared, rule)
 	case left() < 1:
 		return fmt.Errorf("situation: declared %s needs one left (%s), and %s is 0", s.Declared, limit, counts)
+	}
+	if i := slices.IndexFunc(s.Stack, func(st SituationStack) bool { return st.Kind == "attack_roll" }); i >= 0 {
+		if s.Declared == "attack" {
+			return fmt.Errorf("situation: declared attack: stack item %d is an attack roll, but the target is chosen only after the declaration's window (R-ATK-02), and attack rolls go against the target (R-ATK-11)", i+1)
+		}
+		return fmt.Errorf("situation: declared purchase: stack item %d is an attack roll, but a purchase is declared only with an empty stack, so not during an attack (R-SHOP-01)", i+1)
 	}
 	if s.Declared == "attack" {
 		g.spendAttack()

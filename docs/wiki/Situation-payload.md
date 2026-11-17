@@ -182,14 +182,16 @@ A real game has an empty stack with priority passing around in several moments (
 | `"phase": "loot"` | the loot step after the active player looted 1 (R-TURN-04) | none yet | the action phase begins: 1 loot play, attack and purchase (R-TURN-05, R-TURN-07) |
 | `"phase": "action"` or none | the open action phase (R-TURN-06) | 1 of each, or `loot_plays`, `attacks`, `purchases` | the active player can't pass (R-TURN-09) |
 | `"phase": "end"` | the end phase after the end-of-turn triggers (R-TURN-10); the turn's end is declared | as in the action phase | the hand size step, the room step, then the next player's turn (R-TURN-11 to R-TURN-13) |
-| `"declared": "attack"` | the action phase: the attack is declared, the target not chosen (R-ATK-02) | the attack is used (R-TURN-07) | the active player picks the target |
-| `"declared": "purchase"` | the action phase: the purchase is declared, the item not chosen (R-SHOP-02) | the purchase is used (R-SHOP-05) | the active player picks the shop item or the treasure deck |
+| `"declared": "attack"` | the action phase: the attack is declared, the target not chosen (R-ATK-02) | the attack is used (R-TURN-07) | the active player picks the target; a `setup.stack` of responses resolves first |
+| `"declared": "purchase"` | the action phase: the purchase is declared, the item not chosen (R-SHOP-02) | the purchase is used (R-SHOP-05) | the active player picks the shop item or the treasure deck; a `setup.stack` of responses resolves first |
 
 * Each window opens with the active player (R-PRIO-02), or with `setup.priority`'s seat after the players before it passed.
 * As with stacked items, nothing triggers and nothing is paid on the way in: the start-of-turn or end-of-turn triggers and the declaration's triggers are done, and a cost such as an attack tax shows in the setup's cents.
 * The game moves on as in a game (R-STACK-07). An `action` stops at the first window with an empty stack, as before; a step settles to the open action phase, so from `start` or `loot` it runs into this turn's action phase, from `end` into the next player's, and from a declaration through the target or item question (answer it with the step's `choices` or a following `choose` step).
 * In `start` and `loot`, `loot_plays`, `attacks` and `purchases` are errors: the action phase gives them (R-TURN-05, R-TURN-07). The active player's `extra_loot_plays` still count.
-* `declared` needs the action phase (R-ATK-01, R-SHOP-01), an empty stack (the declaration needs one; a response to it is a step), and an attack or purchase left (R-TURN-07, R-SHOP-05). An `attack_roll` stack item needs the action phase (R-ATK-01). Each is an error that names the rule; an unknown `phase` or `declared` lists the options.
+* `declared` needs the action phase (R-ATK-01, R-SHOP-01) and an attack or purchase left (R-TURN-07, R-SHOP-05). An `attack_roll` stack item needs the action phase (R-ATK-01). Each is an error that names the rule; an unknown `phase` or `declared` lists the options.
+* `declared` may come with a `setup.stack`: the responses made to the declaration, waiting on the stack (23.10 follow-up). The declaration itself needed an empty stack; the responses came after it. Priority goes to the top item's owner, or to `setup.priority`'s seat, as with any stack. The stack resolves first (R-STACK-03), priority passes again after each item (R-STACK-04), and once everyone passes on the empty stack the active player picks the target or item (R-ATK-02, R-SHOP-02), as in a game.
+* An `attack_roll` stack item with `declared` is an error: with `attack`, the target is chosen only after the declaration's window (R-ATK-02) and attack rolls go against the target (R-ATK-11); with `purchase`, a purchase is not declared during an attack (R-SHOP-01).
 
 ```json
 {
@@ -211,6 +213,27 @@ A real game has an empty stack with priority passing around in several moments (
      "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "cents": 1}]}}
   ],
   "expect": {"allowed": true}
+}
+```
+
+A response already on the stack (`cards/b2/testdata/situations/bomb/kills-the-fly-before-the-attack-target.json`): Cain played Bomb! on the Fly after Isaac declared. Cain's pass lets it resolve; the Fly dies (Isaac, the active player, gets its 1¢, R-CARD-13), the Dip refills the slot (R-SHOP-07), and only then does Isaac pick the target:
+
+```json
+{
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["clotty", "fly"],
+    "decks": {"monster": ["dip"]},
+    "declared": "attack",
+    "stack": [{"kind": "play", "card": "bomb", "owner": 1, "choices": ["fly"]}],
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 1, "kind": "pass",
+     "expect": {"allowed": true, "resolved": ["bomb"], "prompt": {"player": 0, "options": ["clotty", "dip", "ask.deck.monster"]}}},
+    {"kind": "choose", "choices": ["clotty"], "expect": {"allowed": true, "after": [{"player": 0, "cents": 5}]}}
+  ]
 }
 ```
 
