@@ -42,7 +42,7 @@ This step never closes; new reports are appended.
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166, 19.198                          | 4     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194, 19.197 | 44 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179, 19.189, 19.196 | 32 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179, 19.189, 19.196, 19.202, 19.203 | 34 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91, 19.201                     | 5     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63, 19.129                                          | 2     |
@@ -58,7 +58,7 @@ This step never closes; new reports are appended.
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 | X  | Bot: a cut-off settle scored as finished | Bots       | 19.199                                                 | 1     |
 
-Totals by system (193 items):
+Totals by system (195 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -66,7 +66,7 @@ Totals by system (193 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 54 |
 | Server    | H, N    | 5     |
-| e2e       | I, J    | 76    |
+| e2e       | I, J    | 78    |
 | Release   | K       | 5     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
@@ -6107,3 +6107,25 @@ Totals by system (193 items):
    1. [x] Copy with a mode of its own: `install -m 644`, which replaces the file.
    2. [x] Checked (5.24): no other Makefile target or script copies from `GOROOT` (`grep -rn GOROOT Makefile scripts`).
 5. Done when: `make site` twice in a row passes (2026-11-17: both runs passed); `make e2e` runs.
+
+### [ ] 19.202 e2e: the long-game check tests time out in a full run
+
+1. Goal: `growth.spec.ts` passes under a full parallel run.
+2. Report (merge of main into `bots`, Chromium `make e2e`, 5 workers, 2026-11-17)
+   1. Lines 59 and 67: "Test timeout of 30000ms exceeded" in `page.evaluate` (line 40).
+   2. Rerun alone, 1 worker: both passed; line 59 took 24.0 s of its 30 s.
+   3. Evidence: `merge/e2e-2.log` and `merge/e2e-2-evidence/` in the merge's scratchpad (not in git).
+3. Cause: not found yet; a guess: the test runs close to its timeout even alone, so a loaded machine pushes it over.
+4. Tasks:
+   1. Find what takes 24 s alone; shorten it or give the test a timeout of its own.
+
+### [ ] 19.203 e2e: the turn banner pass test misses its wait in a full run
+
+1. Goal: `playback.spec.ts:1975` passes under a full parallel run.
+2. Report (same run as 19.202)
+   1. Line 2003: `page.waitForFunction: Timeout 5000ms exceeded` while waiting for the accepted pass.
+   2. Rerun alone, 1 worker: passed (9.1 s).
+   3. Evidence: as 19.202.
+3. Cause: not found yet.
+4. Tasks:
+   1. Find which state the wait misses under load; wait for the exact state (5.16.10).
