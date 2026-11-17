@@ -4910,6 +4910,10 @@ Totals by system (152 items):
    5. Rerun, webkit, 3 repeats: 3 of 3 passed; so the deal matters.
    6. Evidence: `.cache/e2e-evidence/14.36-run1/` (not in git).
    7. Again in the 19.157 full run, both browsers; evidence `.cache/e2e-evidence/19.157-full1/`.
+   8. Again in the 19.160 check (2026-11-17, Chromium, the specs that use `turn.ts`, 5 workers): timed out after 120 s on turn 1.
+      1. Record `g141_Ivo_Jun`: Jacob & Esau and Bethany; before the save, a dealt Laser Eye's trigger damaged a player.
+      2. After the save, Blood Donation resolved and paid its cents; the test never went on.
+      3. Evidence: `.cache/e2e-evidence/19.160-specs/` (not in git); not rerun.
 3. Cause: not found yet.
    1. `giveRoom` swaps the character, not the eternal or other cards.
    2. Something dealt took Isaac below 2 HP before the room.
@@ -5007,13 +5011,29 @@ Totals by system (152 items):
    2. `rollback.spec.ts:101`: after the first Undo, the title was "Undo: Hal's choice".
    3. The test expects "Undo: Hal declares an attack".
    4. Evidence: `.cache/e2e-evidence/21.11-full/` (not in git); record `g153_Gia_Hal` (port 4799).
-3. Cause: in the match record; the fix is not made yet.
-   1. Step 7 declares the attack; step 10 is a choice (option 2) that shows Hal the monster deck's top, Pestilence.
+3. Cause (2026-11-17): the test helper, not the deal and not the app.
+   1. Step 7 declares the attack; step 10 picks option 2 of the target choice, the monster deck; Pestilence is revealed.
    2. Step 11 puts Pestilence in a slot and makes it the target: a deck attack.
    3. So a deck attack has one more move between the declaration and the target pick.
-   4. The first Undo undid step 11; the latest move was then step 10's choice, not the declaration.
-   5. The app was right, it seems; the test assumes an attack on a slot monster.
-4. Tasks:
-   1. Find why `settle` picked the deck: `tablePicks` order, or no slot monster to attack.
-   2. Fix the test's wait or its expectation, not the app; no ban unless the deal needs one.
-   3. Check: the spec, both browsers, 5 workers, 10 repeats.
+   4. The first Undo undid step 11; the latest move was then step 10's pick, not the declaration.
+   5. The deal was plain: Mom's Eye and Horf lay in the slots, both open to an attack.
+   6. `settle` picks on the table: `uncovered` tried the board's glowing cards in order, by a trial click with a 300 ms timeout.
+   7. A trial click waits until the card is stable, two animation frames alike; under load that took longer than 300 ms.
+   8. A probe, 6 games, animations on, 5 workers: the slot monsters failed the trial in most tries, at random; the deck card passed in some.
+   9. So `settle` skipped both slots and attacked the deck: 3 of 10 repeats of the test alone failed so (`.cache/e2e-evidence/19.160-pre/`).
+   10. The app is right: the Undo title names the latest move; a pick with no history line is "Hal's choice" (17.8).
+4. Fix
+   1. `turn.ts`: `uncovered` and `reachable` share `reaches`, a hit test with no wait.
+   2. It reads the point in the target's middle once (`elementFromPoint`); a target is reached when that point is the target or inside it.
+   3. A target out of view is scrolled into it first, as a click does.
+   4. The press itself still waits for the card as any click does.
+   5. No ban: the test checks an attack on a slot monster, and every deal has one.
+5. Checked (5.24)
+   1. Every user of `uncovered` and `reachable`: `answer` in `turn.ts` (board picks, table picks, aims) and `games.spec.ts` (random picks among reachable cards).
+   2. Other specs that expect the declaration right before the target pick: `restart.spec.ts` "a rollback reaches past a server restart" uses `settle` the same way; the shared fix covers it.
+   3. No other spec uses a trial click to choose a target; `reasons.spec.ts` uses one only to check that a click is refused.
+6. Done when:
+   1. The spec, Chromium, 5 workers, 10 repeats: 10 of 10 passed (was 7 of 10; `.cache/e2e-evidence/19.160-after/`).
+   2. Every Chromium spec that uses `turn.ts`, 5 workers: 202 passed, 1 failed: `rooms.spec.ts:72`, the open 19.156, outside this change (`.cache/e2e-evidence/19.160-specs/`).
+   3. `make frontend` passes.
+   4. WebKit not run: `libavif13` is missing on this machine.
