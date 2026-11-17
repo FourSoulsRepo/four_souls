@@ -43,6 +43,12 @@ Rules for this step (owner, 2026-11-16):
    6. Tuning once, after 21.16: full arena run; every miss in one list to the lead.
    7. The "Done when" gates still hold: line 1 is not merged until they pass at its end.
 11. Order: 21.16 runs after 21.15, in line 1, before the merge.
+12. All code first, one check phase after (owner, 2026-11-17); stronger than rules 7 and 10.
+   1. The remaining code (21.10, 21.12, 21.13, 21.14, bug 19.160) is written and committed before any arena, e2e or measurement.
+   2. Before each commit only: `go build ./...` and `go test` of the touched packages (no `-race`, no `-count`); for the frontend, typecheck and Vitest of the touched files.
+   3. No arena, e2e, sims, fuzz, lint or benchmarks until the check phase; its contents come from the lead.
+   4. Stop only on a failed build or an architecture choice; a small choice is made and written as one line under its sub-step.
+   5. `step-21-bots-ui` may merge into this branch before its e2e; the e2e runs in the check phase.
 
 ---
 
