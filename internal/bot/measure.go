@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/rand/v2"
@@ -55,13 +56,13 @@ func PlayGain(world World, p engine.PlayerID, id engine.ObjectID, draws []uint64
 		return 0, false, nil
 	}
 	sc := scoring{dig: digValue(w), flat: true}
-	base, _, err := try(w, p, nothing, draws, sc)
+	base, _, err := try(context.Background(), w, p, nothing, draws, sc)
 	if err != nil {
 		return 0, false, err
 	}
 	best := 0.0
 	for i, in := range plays {
-		t, _, err := try(w, p, in, draws, sc)
+		t, _, err := try(context.Background(), w, p, in, draws, sc)
 		if err != nil {
 			return 0, false, err
 		}

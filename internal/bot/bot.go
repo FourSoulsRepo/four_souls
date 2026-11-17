@@ -111,7 +111,7 @@ func Choose(ctx context.Context, in Input) (engine.Intent, error) {
 	case Policy:
 		return policyPick(w, in.Seat, allowed, in.Rand), nil
 	case Standard, Flat:
-		return standardPick(w, in.Seat, allowed, in.Rand, mistakeOdds, in.Level == Flat)
+		return standardPick(ctx, w, in.Seat, allowed, in.Rand, mistakeOdds, in.Level == Flat)
 	case Hard:
 		return hardPick(ctx, in, w, allowed)
 	default:

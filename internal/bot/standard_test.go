@@ -2,6 +2,7 @@ package bot
 
 import (
 	"context"
+	"errors"
 	"math"
 	"math/rand/v2"
 	"slices"
@@ -42,7 +43,7 @@ func bestKnowing(t *testing.T, g *engine.Game, p engine.PlayerID, known engine.K
 	if err != nil {
 		t.Fatal(err)
 	}
-	in, err := standardPick(w, p, w.Allowed(p), rand.New(rand.NewPCG(seed, 9)), 0, false) //nolint:gosec // test moves
+	in, err := standardPick(context.Background(), w, p, w.Allowed(p), rand.New(rand.NewPCG(seed, 9)), 0, false) //nolint:gosec // test moves
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -353,7 +354,7 @@ func TestSettleEnds(t *testing.T) {
 		if in.Kind != engine.IntentPlayLoot && quietRank(in) != 0 {
 			continue
 		}
-		_, cut, err := try(g, p, in, []uint64{1, 2}, scoring{})
+		_, cut, err := try(context.Background(), g, p, in, []uint64{1, 2}, scoring{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -581,5 +582,18 @@ func TestTeamScore(t *testing.T) {
 		if Score(w, p) != scoreWin || Score(g, p) != -scoreWin {
 			t.Errorf("seat %d: won %v, lost %v", p, Score(w, p), Score(g, p))
 		}
+	}
+}
+
+// TestStandardCancel: a cancelled context stops the standard search; it
+// returns the context's error, never a move (19.207).
+func TestStandardCancel(t *testing.T) {
+	g := newGame(t, 3, 2)
+	p := g.Prompt().Who()[0]
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	_, err := standardPick(ctx, g, p, g.Allowed(p), rand.New(rand.NewPCG(1, 2)), 0, false) //nolint:gosec // test moves
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("standardPick on a cancelled context: %v, want context.Canceled", err)
 	}
 }

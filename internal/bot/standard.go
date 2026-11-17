@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math"
@@ -46,7 +47,10 @@ var errRefused = errors.New("bot: candidate refused")
 // best score; one move in mistakes (0: never) by chance among the best
 // mistakeTop. flat values every loot card and item alike (the flat
 // level, Decision 20).
-func standardPick(w *engine.Game, p engine.PlayerID, allowed []engine.Intent, rng *rand.Rand, mistakes int, flat bool) (engine.Intent, error) {
+//
+// ctx ends the search: between candidates and between dice draws it is
+// checked, and a cancelled search returns ctx.Err() (19.207).
+func standardPick(ctx context.Context, w *engine.Game, p engine.PlayerID, allowed []engine.Intent, rng *rand.Rand, mistakes int, flat bool) (engine.Intent, error) {
 	cs := candidates(w, p, keepPlays(w, p, allowed), rng)
 	// A pass or an end of turn first: on equal scores, doing nothing
 	// beats a move that changes nothing.
@@ -59,7 +63,10 @@ func standardPick(w *engine.Game, p engine.PlayerID, allowed []engine.Intent, rn
 	tries := make([][]float64, len(cs))
 	cut := make([]bool, len(cs))
 	for i, in := range cs {
-		t, c, err := try(w, p, in, draws, sc)
+		if err := ctx.Err(); err != nil {
+			return engine.Intent{}, err
+		}
+		t, c, err := try(ctx, w, p, in, draws, sc)
 		cut[i] = c
 		switch {
 		case errors.Is(err, errRefused):
@@ -234,11 +241,14 @@ func quietRank(in engine.Intent) int {
 // the only draw. Every candidate meets the same draws, so their scores
 // differ by the move, not by luck. Each settle is scored by
 // settledScore with sc. cut: a settle ended at its cap (settle).
-func try(w *engine.Game, p engine.PlayerID, in engine.Intent, draws []uint64, sc scoring) (out []float64, cut bool, err error) {
+func try(ctx context.Context, w *engine.Game, p engine.PlayerID, in engine.Intent, draws []uint64, sc scoring) (out []float64, cut bool, err error) {
 	var src rand.PCG
 	prng := rand.New(&src) //nolint:gosec // a playout's choices, not security
 	out = make([]float64, 0, len(draws))
 	for d, seed := range draws {
+		if err := ctx.Err(); err != nil {
+			return nil, false, err
+		}
 		g, err := fork(w)
 		if err != nil {
 			return nil, false, err
