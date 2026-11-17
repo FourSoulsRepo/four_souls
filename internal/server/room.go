@@ -155,6 +155,11 @@ func NewRoom(setup engine.Setup, opts protocol.Options, seats []roomSeat) (*Room
 	if setup.Players != len(seats) {
 		return nil, fmt.Errorf("server: %d seats for %d players", len(seats), setup.Players)
 	}
+	if len(seats) > 0 && seats[0].bot != "" {
+		// Seat 0 is the host's; a bot is never the host (ADR 033,
+		// Decision 10.12; 19.205). Every way a room is made checks here.
+		return nil, errors.New("server: a bot on seat 0, the host's")
+	}
 	r := &Room{in: make(chan request, 64), done: make(chan struct{}), setup: setup, opts: opts, seats: seats, second: time.Second, now: time.Now, limitTick: time.Minute, botThink: hardThink}
 	for i, s := range seats {
 		r.tokens = append(r.tokens, s.token)

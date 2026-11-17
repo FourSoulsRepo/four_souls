@@ -931,6 +931,37 @@ func TestBotsAfterHostLeft(t *testing.T) {
 	}
 }
 
+// TestBotsAddOnFreedHostSeat: after the host of a table without bots
+// left, the next player's "Add bot" on the free seat 0 works the first
+// time: the player moves into seat 0 and the bot takes the seat the
+// player left (Decision 10.12.4 – 5; 19.206).
+func TestBotsAddOnFreedHostSeat(t *testing.T) {
+	h := startHub(t)
+	ann, tb := openTable(t, h, 3)
+	bo, _ := arrive(t, h, "Bo", "")
+	bo.say(protocol.TypeJoin, protocol.Join{Game: tb.Game})
+	bo.next(protocol.TypeTable, nil)
+	ann.say(protocol.TypeLeave, struct{}{})
+	for {
+		var now protocol.Table
+		bo.next(protocol.TypeTable, &now)
+		if now.Seats[0].Name == "" {
+			break
+		}
+	}
+	bo.say(protocol.TypeBot, protocol.Bot{Seat: 0, Level: protocol.BotStandard}) // the free seat the screen showed
+	for {
+		tb = protocol.Table{}
+		bo.next(protocol.TypeTable, &tb)
+		if tb.Seats[1].Bot != "" {
+			break
+		}
+	}
+	if tb.You != 0 || tb.Seats[0].Name != "Bo" || tb.Seats[1].Bot != protocol.BotStandard {
+		t.Fatalf("the bot did not take the seat Bo left: %+v", tb)
+	}
+}
+
 // TestBotsKeptOverRestart: a lobby table's bots wait in its restart file
 // and sit down again; a level the new server does not allow leaves its
 // seat free (N-20, ADR 033, Decision 17).

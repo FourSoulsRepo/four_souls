@@ -17,6 +17,21 @@ const seatWait = 2
 func shuffleSeats(seats []roomSeat, seed uint64) {
 	rng := rand.New(rand.NewPCG(seed, seed^0x5ea7)) //nolint:gosec // seating, not security
 	rng.Shuffle(len(seats), func(i, j int) { seats[i], seats[j] = seats[j], seats[i] })
+	if seats[0].bot == "" {
+		return
+	}
+	// Seat 0 is the host's: a bot never sits there (ADR 033, Decision
+	// 10.12; 19.205). It swaps with a human the same seed picks.
+	var humans []int
+	for i, s := range seats {
+		if s.bot == "" {
+			humans = append(humans, i)
+		}
+	}
+	if len(humans) > 0 {
+		h := humans[rng.IntN(len(humans))]
+		seats[0], seats[h] = seats[h], seats[0]
+	}
 }
 
 // seatInfo tells whether token holds a seat here: at a table, or in a

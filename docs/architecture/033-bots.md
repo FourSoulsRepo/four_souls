@@ -246,6 +246,8 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       3. So the room's host stays seat 0, as for saves and the end of a game (19.84).
       4. A table without bots keeps seat 0 free for the next player, as before (Rule 6 of step 23).
       5. Its first `bot` message moves the next human into seat 0 first.
+         1. Such a message for seat 0, the seat the screen showed free, seats the bot on the seat that human left (19.206).
+      6. A bot is never the host, anywhere (owner, 2026-11-17): Random seats swap a bot dealt seat 0 with a human the same seed picks, and `NewRoom` refuses a bot on seat 0 (19.205).
    13. A restart file of a lobby table keeps its bots (`savedSeat` → `bot`, `bot_n`).
       1. A level the restarted server does not allow leaves its seat free.
 11. Room

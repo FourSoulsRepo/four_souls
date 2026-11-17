@@ -531,8 +531,17 @@ func (h *Hub) bot(c *Client, env protocol.Envelope) {
 		return
 	}
 	t := c.table
-	if t != nil && t.loaded == nil && t.promoteHost() {
-		h.tableChanged(t) // the host left before this table had bots
+	if t != nil && t.loaded == nil {
+		from := slices.IndexFunc(t.seats, func(s tableSeat) bool { return s.token != "" })
+		if t.promoteHost() {
+			h.tableChanged(t) // the host left before this table had bots
+			if m.Seat == 0 {
+				// The sender saw seat 0 free and offered a bot there; it
+				// is now the sender's own, so the bot takes the seat the
+				// sender left (Decision 10.12.4 – 5; 19.206).
+				m.Seat = from
+			}
+		}
 	}
 	switch {
 	case t == nil:
