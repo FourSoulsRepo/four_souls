@@ -355,3 +355,25 @@ func TestHardYields(t *testing.T) {
 		t.Errorf("the other goroutine waited %v for the core", worst)
 	}
 }
+
+// TestHardTimeBudget: a budget of time alone, as the room gives
+// (Budget{Time: botThink}; Playouts 0 sets no cap), stops at its time:
+// it plays more than one round and answers soon after the time is up.
+func TestHardTimeBudget(t *testing.T) {
+	g := attackTable(t, []engine.SituationPlayer{weakSeat, strongSeat(2), hardSeat}, 1, "pin")
+	passTo(t, g, 2)
+	in := input(t, g, 2, Hard, 1)
+	const think = 150 * time.Millisecond
+	in.Budget = Budget{Time: think}
+	start := time.Now()
+	if _, err := Choose(context.Background(), in); err != nil {
+		t.Fatal(err)
+	}
+	took := time.Since(start)
+	if took < think {
+		t.Errorf("answered after %v, before the budget %v ran out", took, think)
+	}
+	if took > think+raceSlow*100*time.Millisecond {
+		t.Errorf("answered after %v; budget %v", took, think)
+	}
+}
