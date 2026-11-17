@@ -6044,7 +6044,7 @@ Totals by system (209 items):
       1. Save, a normal game and a challenge: fixed (one path, `Room.save`).
       2. End by the host and end by an idle limit (`endWith`): the same race; fixed, `TestEndAndCreateAtOnce`.
       3. A finished game closing (`checkLimits`): no message goes out first; unchanged.
-      4. Leave: the room hands the client back itself before it answers; unchanged.
+      4. Leaving a running game is a dropped connection (`Room.drop`): no reply goes out, so nothing races; a kick hits only away players.
       5. Rollback, restart and a kept game's resume: the room goes on; no hand-back.
 
 ### [ ] 19.199 Standard bot: a settle cut off by its cap is scored as if it had ended
