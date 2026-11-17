@@ -226,6 +226,8 @@ Rules for this step (owner, 2026-11-16):
    3. `-bot_think`: a Go duration string (`Config.BotThink`, config `bot_think`, ENV `FOUR_SOULS_BOT_THINK`), 100 ms to 10 s; compose and `.env.example` carry it.
    4. Hard's allocations, the simple part: `eachPart`, behind every stat read, walked a new `inPlay()` slice and a new `facesOf` slice for each card; it now walks them in place (`eachInPlay`, `eachFace`; `inPlay` and `facesOf` build their lists from them, so the order is defined once). The playout copy (about 240 KB) is not reused: that needs a copy into an existing game, which the lead ruled out.
    5. Measure in the check phase: tasks 2.2 (`cmd/server_load` with bots), 2.3 (wiki Load-test), 2.5 (longest bot turn), 2.6 (latency, `GOMAXPROCS=1`, `GOMEMLIMIT`), and the Done when; also the effect of the `checkMaxHP` change and hard's allocations.
+   6. Check phase (lead, 2026-11-17): measure the share of hard moves with ≤ 2 candidates and the time spent on them (639e595 plays the full budget); if notable, cut the budget for few candidates.
+   7. A hard bot with no thinker slot within its budget plays that move as standard (55be6e6); written in ADR 030, Decision 17.3.1.
 
 ### [ ] 21.11 Lobby screen
 
