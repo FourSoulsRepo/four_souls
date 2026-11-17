@@ -649,6 +649,22 @@
     "text": "Shop",
     "note": "Board: screen-reader name of the shop slots."
   },
+  "bot.level.hard": {
+    "text": "Hard",
+    "note": "A bot's level, on the table screen and after a bot's name (ADR 030): the stronger bot, which thinks ahead."
+  },
+  "bot.level.standard": {
+    "text": "Standard",
+    "note": "A bot's level, on the table screen and after a bot's name (ADR 030): the plain bot."
+  },
+  "bot.name": {
+    "text": "Bot {n} ({level})",
+    "note": "A bot's seat name, after a robot icon (ADR 030). n: the bot's number at this table, from 1; level: its level, bot.level.*."
+  },
+  "bot.number": {
+    "text": "Bot {n}",
+    "note": "Table screen, for the host: a bot's name before its level menu (ADR 030). n: the bot's number at this table, from 1."
+  },
   "card.angelic_intervention.cancel_the_attack": {
     "text": "Cancel the attack?",
     "note": "Card question while Angelic Intervention resolves."
@@ -2874,6 +2890,22 @@
   "lobby.back": {
     "text": "Back",
     "note": "Button at the bottom of the Host, LAN, Online and game list screens: one screen back."
+  },
+  "lobby.bots.add": {
+    "text": "Add bot",
+    "note": "Table screen, for the host: on a free seat, before one button per bot level; also the screen-reader name of that group (ADR 030)."
+  },
+  "lobby.bots.add_level": {
+    "text": "Add bot: {level}",
+    "note": "Table screen, for the host: screen-reader name of a button that seats a bot of this level on the free seat. level: bot.level.*."
+  },
+  "lobby.bots.level": {
+    "text": "Level of {name}",
+    "note": "Table screen, for the host: screen-reader name of a bot's level menu; a new pick changes the level. name: bot.number."
+  },
+  "lobby.bots.remove": {
+    "text": "Remove {name}",
+    "note": "Table screen, for the host: the × button and its tooltip; takes the bot away and frees its seat. name: bot.number."
   },
   "lobby.connect": {
     "text": "Connect",

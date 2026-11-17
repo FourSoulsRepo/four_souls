@@ -7,6 +7,7 @@ import { partsOf, secondsLeft } from '../stack';
 import { useApp } from '../store';
 import { playerColor } from '../table';
 import { nextChange, tickSound, timerShows } from '../timer';
+import { BotText } from './BotIcon';
 import { still } from './lunge';
 import './Actions.css';
 
@@ -84,13 +85,17 @@ function PromptBanner({
         {!banner ? (
           paused === 'vote' ? t('banner.vote') : t('banner.paused')
         ) : mine ? (
-          banner.title
+          <BotText text={banner.title} />
         ) : (
           <Waiting player={banner.player} name={name(banner.player)} />
         )}
         {deadline > 0 && <ResponseTimer key={deadline} deadline={deadline} ticks={mine} />}
       </div>
-      {banner?.hint && <div className="prompt-hint">{banner.hint}</div>}
+      {banner?.hint && (
+        <div className="prompt-hint">
+          <BotText text={banner.hint} />
+        </div>
+      )}
     </section>
   );
 }
@@ -104,7 +109,7 @@ function Waiting({ player, name }: { player: number; name: string }) {
           // A line's parts never change order, so the index is a stable key.
           // eslint-disable-next-line @eslint-react/no-array-index-key
           <b key={i} style={{ color: playerColor(player) }}>
-            {p.text}
+            <BotText text={p.text} />
           </b>
         ) : (
           p.text

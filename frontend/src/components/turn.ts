@@ -5,7 +5,9 @@
 // and locks nothing; the buttons below stay live. The viewer's own turn
 // plays the turn-start sound as it shows (20.17).
 import { feel } from '../feel';
+import { botLead, namePieces } from '../lobby';
 import { playSound } from '../sounds';
+import { botPath } from './BotIcon';
 import { layer, still } from './lunge';
 
 // turnFrames are the banner's keyframes over its life: it fades in as
@@ -24,9 +26,37 @@ export function turnFrames(calm: boolean): Keyframe[] {
   ];
 }
 
+// botLine fills the label with the text, the robot before each bot's
+// name in it (botNames, 21.12), as BotText draws it.
+function botLine(label: HTMLElement, text: string, bots: readonly string[]): void {
+  for (const p of namePieces(text, bots)) {
+    if (!p.bot) {
+      label.append(p.text);
+      continue;
+    }
+    const name = document.createElement('span');
+    name.className = 'bot-name';
+    const lead = document.createElement('span');
+    lead.className = 'bot-lead';
+    const [first, rest] = botLead(p.text);
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'bot-icon');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('fill-rule', 'evenodd');
+    path.setAttribute('d', botPath);
+    svg.append(path);
+    lead.append(svg, first);
+    name.append(lead, rest);
+    label.append(name);
+  }
+}
+
 // turnBanner shows the banner and calls done after feel.turn.wait. A
-// banner still on screen from a turn before goes at once.
-export function turnBanner(text: string, own: boolean, scale: number, done: () => void): void {
+// banner still on screen from a turn before goes at once. bots are the
+// table's bot names.
+export function turnBanner(text: string, bots: readonly string[], own: boolean, scale: number, done: () => void): void {
   const host = layer();
   for (const old of host.querySelectorAll('.effect-turn')) {
     old.remove();
@@ -36,7 +66,7 @@ export function turnBanner(text: string, own: boolean, scale: number, done: () =
   box.dataset.testid = 'turn-banner';
   const label = document.createElement('div');
   label.className = 'effect-banner effect-turn-text';
-  label.textContent = text;
+  botLine(label, text, bots);
   box.append(label);
   host.append(box);
   if (own) {

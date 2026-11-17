@@ -41,7 +41,7 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.161                                  | 3     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154 | 37 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.160 | 38 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.158, 19.159 | 24 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
@@ -64,7 +64,7 @@ Totals by system (152 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 42 |
 | Server    | H, N    | 4     |
-| e2e       | I, J    | 61    |
+| e2e       | I, J    | 62    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
@@ -4910,6 +4910,10 @@ Totals by system (152 items):
    5. Rerun, webkit, 3 repeats: 3 of 3 passed; so the deal matters.
    6. Evidence: `.cache/e2e-evidence/14.36-run1/` (not in git).
    7. Again in the 19.157 full run, both browsers; evidence `.cache/e2e-evidence/19.157-full1/`.
+   8. Again in the 19.160 check (2026-11-17, Chromium, the specs that use `turn.ts`, 5 workers): timed out after 120 s on turn 1.
+      1. Record `g141_Ivo_Jun`: Jacob & Esau and Bethany; before the save, a dealt Laser Eye's trigger damaged a player.
+      2. After the save, Blood Donation resolved and paid its cents; the test never went on.
+      3. Evidence: `.cache/e2e-evidence/19.160-specs/` (not in git); not rerun.
 3. Cause: not found yet.
    1. `giveRoom` swaps the character, not the eternal or other cards.
    2. Something dealt took Isaac below 2 HP before the room.
@@ -4998,6 +5002,41 @@ Totals by system (152 items):
 4. Tasks:
    1. Find whether hover-off is sent, and when, under load.
    2. Check: the spec, webkit, 5 workers, 10 repeats.
+
+### [ ] 19.160 e2e: Godmode Undo names a deck attack's choice, not the declaration
+
+1. Goal: `rollback.spec.ts` "in Godmode each Undo undoes one move" passes whatever the deal.
+2. Report (21.11 `make e2e`, 2026-11-17)
+   1. Chromium; WebKit could not start on this machine (no `libavif13`).
+   2. `rollback.spec.ts:101`: after the first Undo, the title was "Undo: Hal's choice".
+   3. The test expects "Undo: Hal declares an attack".
+   4. Evidence: `.cache/e2e-evidence/21.11-full/` (not in git); record `g153_Gia_Hal` (port 4799).
+3. Cause (2026-11-17): the test helper, not the deal and not the app.
+   1. Step 7 declares the attack; step 10 picks option 2 of the target choice, the monster deck; Pestilence is revealed.
+   2. Step 11 puts Pestilence in a slot and makes it the target: a deck attack.
+   3. So a deck attack has one more move between the declaration and the target pick.
+   4. The first Undo undid step 11; the latest move was then step 10's pick, not the declaration.
+   5. The deal was plain: Mom's Eye and Horf lay in the slots, both open to an attack.
+   6. `settle` picks on the table: `uncovered` tried the board's glowing cards in order, by a trial click with a 300 ms timeout.
+   7. A trial click waits until the card is stable, two animation frames alike; under load that took longer than 300 ms.
+   8. A probe, 6 games, animations on, 5 workers: the slot monsters failed the trial in most tries, at random; the deck card passed in some.
+   9. So `settle` skipped both slots and attacked the deck: 3 of 10 repeats of the test alone failed so (`.cache/e2e-evidence/19.160-pre/`).
+   10. The app is right: the Undo title names the latest move; a pick with no history line is "Hal's choice" (17.8).
+4. Fix
+   1. `turn.ts`: `uncovered` and `reachable` share `reaches`, a hit test with no wait.
+   2. It reads the point in the target's middle once (`elementFromPoint`); a target is reached when that point is the target or inside it.
+   3. A target out of view is scrolled into it first, as a click does.
+   4. The press itself still waits for the card as any click does.
+   5. No ban: the test checks an attack on a slot monster, and every deal has one.
+5. Checked (5.24)
+   1. Every user of `uncovered` and `reachable`: `answer` in `turn.ts` (board picks, table picks, aims) and `games.spec.ts` (random picks among reachable cards).
+   2. Other specs that expect the declaration right before the target pick: `restart.spec.ts` "a rollback reaches past a server restart" uses `settle` the same way; the shared fix covers it.
+   3. No other spec uses a trial click to choose a target; `reasons.spec.ts` uses one only to check that a click is refused.
+6. Done when:
+   1. The spec, Chromium, 5 workers, 10 repeats: 10 of 10 passed (was 7 of 10; `.cache/e2e-evidence/19.160-after/`).
+   2. Every Chromium spec that uses `turn.ts`, 5 workers: 202 passed, 1 failed: `rooms.spec.ts:72`, the open 19.156, outside this change (`.cache/e2e-evidence/19.160-specs/`).
+   3. `make frontend` passes.
+   4. WebKit not run: `libavif13` is missing on this machine.
 
 ### [ ] 19.161 A load right after "saved" goes to the old room
 

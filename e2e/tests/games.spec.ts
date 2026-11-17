@@ -1,7 +1,7 @@
 // Whole games with every card set, played by random moves through the
-// UI, for 2, 3 and 4 players (owner request, 2026-10-15), and the
-// Krampus (14.26) and Trick or Treat (14.34) challenges for 2 at each
-// difficulty. A game must end
+// UI, for 2, 3 and 4 players (owner request, 2026-10-15), one player
+// with three bots (21.12), and the Krampus (14.26) and Trick or Treat
+// (14.34) challenges for 2 at each difficulty. A game must end
 // with a winner, or a challenge won or lost, with no server error, no page error and no console
 // error or warning on any page. Each test logs how long its game took.
 //
@@ -388,6 +388,13 @@ async function play(pages: Page[], names: string[], problems: string[], rnd: Rnd
       const seconds = ((Date.now() - start) / 1000).toFixed(0);
       console.log(`  ${names[0] ?? ''}: turn ${String(first.turn)}, step ${String(first.step)}, ${seconds} s, souls ${await souls(pages[0] as Page)}`);
     }
+    // Nobody leaves these games, and a bot is never away (21.12): the
+    // game never pauses.
+    for (const [i, page] of pages.entries()) {
+      if (await page.getByRole('dialog', { name: tr('pause.label') }).isVisible()) {
+        throw new Error(`${names[i] ?? String(i)}: the game paused, as if a seat had left`);
+      }
+    }
     if (first.turn > maxTurns) {
       throw new Error(`no winner after ${String(maxTurns)} turns`);
     }
@@ -487,6 +494,9 @@ interface Game {
   title: string;
   run: string;
   players: number;
+  // bots are the levels of the bots that fill the seats after the
+  // players (21.12); none by default.
+  bots?: string[];
   setup: (host: Page) => Promise<void>;
   over: (page: Page) => Promise<string>;
 }
@@ -495,6 +505,24 @@ interface Game {
 async function regularOver(page: Page): Promise<string> {
   await expect(page.getByRole('dialog', { name: tr('over.title') })).toBeVisible();
   return 'over';
+}
+
+// botsOver: a game with bots ends with a winner too; a bot that won is
+// named with its robot (21.12).
+async function botsOver(page: Page): Promise<string> {
+  const over = page.getByRole('dialog', { name: tr('over.title') });
+  await expect(over).toBeVisible();
+  const won = await page.evaluate(() => {
+    interface S {
+      game: { view: { winners?: number[] }; seats?: { seat: number; bot?: string }[] } | null;
+    }
+    const g = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState().game;
+    return (g?.view.winners ?? []).map((w) => g?.seats?.find((s) => s.seat === w)?.bot ?? '');
+  });
+  if (won.some((level) => level !== '')) {
+    await expect(over.getByRole('heading').getByTestId('bot-icon').first()).toBeVisible();
+  }
+  return `won by ${won.map((level) => level || 'the player').join(', ')}`;
 }
 
 // challengeOver: a challenge ends won or lost, and a loss says why
@@ -521,6 +549,16 @@ const games: Game[] = [
     setup: everySet,
     over: regularOver,
   })),
+  // One player and three bots (21.12): the bots play at their real
+  // pace (ADR 030 Decision 13), a hard one among two standard.
+  {
+    title: '1 player and 3 bots finish a game with every card set',
+    run: 'b',
+    players: 1,
+    bots: ['standard', 'hard', 'standard'],
+    setup: everySet,
+    over: botsOver,
+  },
   // Krampus (14.26): 2 players, each difficulty, played to its end.
   ...['normal', 'hard', 'ultra'].map((difficulty) => ({
     title: `2 players finish the Krampus challenge at ${difficulty}`,
@@ -562,6 +600,7 @@ test.describe('whole random games', () => {
       const pages = await startGame(browser, names, {
         setup: game.setup,
         bans,
+        bots: game.bots ?? [],
         open: (page) => {
           // A click that never lands fails fast: the next round looks
           // again, and the stall check sees a game that stops moving.

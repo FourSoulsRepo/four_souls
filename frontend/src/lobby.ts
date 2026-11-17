@@ -1,6 +1,6 @@
 // The lobby state and how server messages change it. Pure, so it is
 // tested without a socket.
-import type { Difficulty, Envelope, GameInfo, Games, Options, ProtocolError, RollbackMode, Saved, SaveInfo, Setup, Table, Update, Welcome } from './protocol';
+import type { Difficulty, Envelope, GameInfo, Games, Options, ProtocolError, RollbackMode, Saved, SaveInfo, Seat, Setup, Table, Update, Welcome } from './protocol';
 import { errorText } from './protocol';
 import type { LanServer, RecentServer, Rejoin } from './bridge';
 import { t } from './i18n';
@@ -128,6 +128,115 @@ export function upText(up: ServerUp | undefined): string {
     return t('lobby.online.down');
   }
   return t('lobby.online.open_games', { n: up.open });
+}
+
+// botLevelName names a bot level (ADR 030); an unknown one (a newer
+// server's) shows its ID.
+export function botLevelName(level: string): string {
+  switch (level) {
+    case 'standard':
+      return t('bot.level.standard');
+    case 'hard':
+      return t('bot.level.hard');
+    default:
+      return level;
+  }
+}
+
+// seatName is how a seat's player shows: a bot as a translated "Bot N
+// (level)" (ADR 030, Decision 10.3), a player by the name it chose.
+export function seatName(s: Seat): string {
+  if (!s.bot) {
+    return s.name;
+  }
+  return t('bot.name', { n: s.bot_n ?? 0, level: botLevelName(s.bot) });
+}
+
+// seatNameOf names seat p by the seats of a table or game: seatName,
+// else "Player N" for a seat the list lacks.
+export function seatNameOf(seats: readonly Seat[] | null | undefined, p: number): string {
+  const s = seats?.find((x) => x.seat === p);
+  return s ? seatName(s) : t('table.player_n', { n: p + 1 });
+}
+
+// botNames are the names the bot seats show (seatName), so a line that
+// names one can put the robot before it (21.12).
+export function botNames(seats: readonly Seat[] | null | undefined): string[] {
+  return (seats ?? []).filter((s) => s.bot).map(seatName);
+}
+
+// NamePiece is a piece of a line: plain text, or a bot's name, which
+// shows after the robot icon.
+export interface NamePiece {
+  text: string;
+  bot?: boolean;
+}
+
+// namePieces splits a line at every bot name in it (botNames). A line
+// with no bot name is one plain piece. The longest name is tried first,
+// so a name inside another never splits it.
+export function namePieces(text: string, bots: readonly string[]): NamePiece[] {
+  const names = bots.filter((b) => b !== '').sort((a, b) => b.length - a.length);
+  if (names.length === 0 || !names.some((b) => text.includes(b))) {
+    return text === '' ? [] : [{ text }];
+  }
+  const out: NamePiece[] = [];
+  let rest = text;
+  while (rest !== '') {
+    let at = -1;
+    let name = '';
+    for (const b of names) {
+      const i = rest.indexOf(b);
+      if (i >= 0 && (at < 0 || i < at)) {
+        at = i;
+        name = b;
+      }
+    }
+    if (at < 0) {
+      out.push({ text: rest });
+      break;
+    }
+    if (at > 0) {
+      out.push({ text: rest.slice(0, at) });
+    }
+    out.push({ text: name, bot: true });
+    rest = rest.slice(at + name.length);
+  }
+  return out;
+}
+
+// botLead splits a bot's name after its first word: the robot keeps to
+// that word on its line, and the rest may wrap, as in a narrow side
+// column (21.12).
+export function botLead(name: string): [string, string] {
+  const i = name.indexOf(' ');
+  return i < 0 ? [name, ''] : [name.slice(0, i), name.slice(i)];
+}
+
+// isAway reports whether a seat's player lost the connection. A bot has
+// no connection, yet it is never away (ADR 030, Decision 11.2).
+export function isAway(s: Seat): boolean {
+  return s.name !== '' && !s.connected && !s.bot;
+}
+
+// isTableHost reports whether the viewer hosts the table: the first
+// player in seat order. That is seat 0, or, once the host left a table
+// without bots, the player the server moves there on the first bot
+// (ADR 030, Decision 10.12).
+export function isTableHost(table: Table): boolean {
+  const first = (table.seats ?? []).find((s) => s.name !== '' && !s.bot);
+  return first?.seat === table.you;
+}
+
+// botLevels lists the bot levels the viewer may seat at the table: those
+// the server allows (Welcome.bots), for its host only, and never at a
+// loaded save's table, whose seats wait for its players (Decision 10.5).
+// Empty: no bot buttons.
+export function botLevels(table: Table, welcome: Welcome | null): string[] {
+  if (table.loaded || !isTableHost(table)) {
+    return [];
+  }
+  return welcome?.bots ?? [];
 }
 
 // optionsText sums up the match setup for the table.

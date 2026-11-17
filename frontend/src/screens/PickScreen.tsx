@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { BotText } from '../components/BotIcon';
 import { Card } from '../components/Card';
 import { pickToggle } from '../choice';
+import { seatName } from '../lobby';
 import { t } from '../i18n';
 import type { Setup } from '../protocol';
 import { playSound } from '../sounds';
@@ -87,7 +89,7 @@ export function PickScreen({ setup }: { setup: Setup }) {
       <ul className="pick-seats" aria-label={t('pick.players')}>
         {setup.seats.map((s) => (
           <li key={s.seat} className={setup.picked?.at(s.seat) ? 'picked' : ''}>
-            {s.name}: {setup.picked?.at(s.seat) ? t('pick.has_picked') : t('pick.choosing')}
+            <BotText text={seatName(s)} seats={setup.seats} />: {setup.picked?.at(s.seat) ? t('pick.has_picked') : t('pick.choosing')}
           </li>
         ))}
       </ul>

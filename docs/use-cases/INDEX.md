@@ -45,3 +45,4 @@
 | UC-41 | Host a challenge | `frontend`, `internal/settings`, `internal/server` | Implemented | [server/uc-41-host-a-challenge.md](server/uc-41-host-a-challenge.md) |
 | UC-42 | Play a challenge | `frontend`, `rules_engine` | Implemented | [app/uc-42-play-a-challenge.md](app/uc-42-play-a-challenge.md) |
 | UC-43 | Update the app | `internal/update`, `updater.go`, `frontend` | Implemented | [app/uc-43-update-the-app.md](app/uc-43-update-the-app.md) |
+| UC-44 | Play with bots | `frontend`, `internal/server` | Implemented | [app/uc-44-play-with-bots.md](app/uc-44-play-with-bots.md) |

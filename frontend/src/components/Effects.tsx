@@ -1,12 +1,14 @@
 import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { diceDelays, diceImage } from '../dice';
+import { botNames } from '../lobby';
 import { drawTime, otherPose, ownPose, type DrawPath, type DrawPose } from '../draw';
 import { bezier, feel } from '../feel';
 import { t } from '../i18n';
 import type { Effect } from '../playback';
 import { playSound, type Sound } from '../sounds';
 import { useApp, type Big, type Playing } from '../store';
+import { BotText } from './BotIcon';
 import { Card } from './Card';
 import { Die, DieCube } from './Die';
 import { playerColor } from '../table';
@@ -104,6 +106,9 @@ function Effect({ playing }: { playing: Playing }) {
   const { effect, scale, done } = playing;
   // A die is drawn in its roller's look (15.6).
   const image = useApp((s) => (effect.kind === 'dice' ? diceImage(s.dice, s.game?.seats, effect.player) : ''));
+  // The turn banner is drawn by hand; it puts the robot before a bot's name (21.12).
+  const seats = useApp((s) => s.game?.seats);
+  const bots = botNames(seats);
   const duration = (seconds: number) => seconds * scale;
   switch (effect.kind) {
     case 'fly':
@@ -159,7 +164,7 @@ function Effect({ playing }: { playing: Playing }) {
           }}
           onAnimationComplete={done}
         >
-          {effect.text}
+          <BotText text={effect.text} />
         </motion.div>
       );
     case 'turn':
@@ -167,7 +172,7 @@ function Effect({ playing }: { playing: Playing }) {
         <Layered
           playing={playing}
           start={(done) => {
-            turnBanner(effect.text, effect.own, scale, done);
+            turnBanner(effect.text, bots, effect.own, scale, done);
           }}
         />
       );
@@ -662,7 +667,7 @@ function ChangedDie({
         </motion.div>
         {label && (
           <div className="effect-label" style={{ color: playerColor(player) }}>
-            {label}
+            <BotText text={label} />
           </div>
         )}
       </div>
@@ -868,7 +873,7 @@ function ThrownDie({ values, label, image, playing }: { values: number[]; label:
       </div>
       {label && (
         <div ref={wordsRef} className="effect-label">
-          {label}
+          <BotText text={label} />
         </div>
       )}
     </div>

@@ -52,10 +52,33 @@ export const tap: Tap = async (_, l) => {
   await l.tap();
 };
 
+// reaches reports whether a click on the target's middle would reach
+// it now: nothing covers that point. It reads the page once, with no
+// wait. A trial click waited for the target to be stable, two animation
+// frames alike, and under a full run's load that often took longer than
+// any short timeout: settle then skipped the monster slots and picked
+// the monster deck, a move more than the test expected (19.160).
+async function reaches(target: Locator): Promise<boolean> {
+  return target
+    .evaluate((el) => {
+      const inView = (r: DOMRect) => r.top >= 0 && r.left >= 0 && r.bottom <= window.innerHeight && r.right <= window.innerWidth;
+      if (!inView(el.getBoundingClientRect())) {
+        el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      }
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) {
+        return false;
+      }
+      const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return hit !== null && el.contains(hit);
+    })
+    .catch(() => false);
+}
+
 // uncovered is the first of the targets a click would reach, if any.
 async function uncovered(targets: Locator): Promise<Locator | undefined> {
   for (const t of await targets.all()) {
-    if (await t.click({ trial: true, timeout: 300 }).then(() => true, () => false)) {
+    if (await reaches(t)) {
       return t;
     }
   }
@@ -66,7 +89,7 @@ async function uncovered(targets: Locator): Promise<Locator | undefined> {
 export async function reachable(targets: Locator): Promise<Locator[]> {
   const out: Locator[] = [];
   for (const t of await targets.all()) {
-    if (await t.click({ trial: true, timeout: 300 }).then(() => true, () => false)) {
+    if (await reaches(t)) {
       out.push(t);
     }
   }

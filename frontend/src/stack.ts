@@ -2,6 +2,7 @@
 // tested without a browser.
 import { monsterRows } from './challenge';
 import { say, t } from './i18n';
+import { seatNameOf } from './lobby';
 import type { GameView, Seat, StackItem } from './protocol';
 import { oddsLine, rollChanges, type Name } from './stats';
 
@@ -49,10 +50,11 @@ export interface Names {
   card: (ref: string) => string;
 }
 
-// seatNames names players by their seats' nicknames and cards by card.
+// seatNames names players by their seats (seatName: a nickname, or a
+// bot's translated "Bot N (level)", 21.12) and cards by card.
 export function seatNames(seats: readonly Seat[] | null | undefined, card: (ref: string) => string): Names {
   return {
-    player: (p) => seats?.find((s) => s.seat === p)?.name ?? t('table.player_n', { n: p + 1 }),
+    player: (p) => seatNameOf(seats, p),
     card,
   };
 }
