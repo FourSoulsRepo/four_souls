@@ -2,7 +2,7 @@ package rulesengine
 
 // Version is the rules engine version.
 // Bump it with every change to rules behavior; see docs/roadmap/08-first-release.md.
-const Version = "0.5.4"
+const Version = "0.5.5"
 
 // StateMeaning numbers what the saved state's fields mean (N-20). Raise
 // it when a field keeps its JSON name and type but means something new:
@@ -54,3 +54,10 @@ const startVersion = "0.5.2"
 // holder of a stolen item or passed curse; 0.5.4 is not released yet.
 // Older records' checksums differ: they cannot replay.
 const eventVersion = "0.5.4"
+
+// deckVersion is the first engine version where a deck's cards changing
+// places out of sight send deck_order, a look tells where the card lies
+// (looked_at's deck), and setup and refills send only shuffled (ADR 033,
+// Decision 19; 19.212). Older records' checksums differ: they cannot
+// replay.
+const deckVersion = "0.5.5"
