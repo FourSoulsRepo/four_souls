@@ -5076,12 +5076,17 @@ Totals by system (154 items):
    9. Seat 3's cents went 24 → 0–29 → 4 over the turn: no farming; the uses stop only while it is short of 3¢.
    10. Not a card bug: the engine resolves each item as written.
 4. Tasks:
-   1. [ ] `settle` tells whether it ended (quiet, turn over, game over, no one to act) or hit the cap.
-   2. [ ] Standard: a move does not beat doing nothing when any settle of it, or of doing nothing, was cut off.
-   3. [ ] Go test: a cut settle never beats doing nothing; a finished one still can.
-   4. [ ] ADR 030 Decision 8.4 and 8.6: the rule.
+   1. [x] `settle` tells whether it ended (quiet, turn over, game over, no one to act) or hit the cap.
+   2. [x] Standard: a move does not beat doing nothing when any settle of it, or of doing nothing, was cut off.
+   3. [x] Go test: a cut settle never beats doing nothing; a finished one still can.
+   4. [x] ADR 030 Decision 8.4 and 8.6: the rule.
    5. [ ] Replay seed 28: finishes, or the guard hits elsewhere.
-5. Checked (5.24)
+5. Fix (2026-11-17)
+   1. `settle` returns false when `settleSteps` cut it off; `try` reports a cut over its draws.
+   2. `uncut` (standard only): such a move scores at most doing nothing less `wAct`; no number changed.
+   3. Tests: `TestUncut` (fails with the rule taken out), `TestSettleEnds`.
+   4. ADR 030 Decision 8.4.3.
+6. Checked (5.24)
    1. The fix is in `judge`'s input, by kind of prompt only: every paid or repeatable ability, loot play, and other move on a deep stack.
    2. `measure.go` (the card values) uses `try` too; its table is not regenerated here (no number changes); its stack positions are few.
    3. Hard plays out to the end of the turn (cap 120): every candidate is cut by design there; not changed, reported to the lead.

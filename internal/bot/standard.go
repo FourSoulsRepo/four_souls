@@ -57,8 +57,10 @@ func standardPick(w *engine.Game, p engine.PlayerID, allowed []engine.Intent, rn
 	}
 	sc := scoring{dig: digValue(w), flat: flat}
 	tries := make([][]float64, len(cs))
+	cut := make([]bool, len(cs))
 	for i, in := range cs {
-		t, err := try(w, p, in, draws, sc)
+		t, c, err := try(w, p, in, draws, sc)
+		cut[i] = c
 		switch {
 		case errors.Is(err, errRefused):
 			// Every candidate is allowed; a refused one is a bug, never
@@ -73,7 +75,7 @@ func standardPick(w *engine.Game, p engine.PlayerID, allowed []engine.Intent, rn
 	if len(w.Stack) > 0 {
 		noise = noiseAll(noiseStack)
 	}
-	scores := judge(cs, tries, noise, 0)
+	scores := uncut(cs, judge(cs, tries, noise, 0), cut)
 	order := make([]int, len(cs))
 	for i := range order {
 		order[i] = i
@@ -132,6 +134,25 @@ func judge(cs []engine.Intent, tries [][]float64, noise noiseOf, clip float64) [
 			}
 		}
 		scores[i] = scores[0] + m - wAct - noise(cs[i])*stdErr(gain)
+	}
+	return scores
+}
+
+// uncut keeps a move whose settles were cut off from beating doing
+// nothing (Decision 8.4.3): when a settle of the move, or of doing
+// nothing (first in cs), ended at settleSteps with the table not quiet,
+// the two scores stop at different items of the stack, and the gain is
+// what the items left unresolved would have done, not the move's. Such
+// a move scores no more than doing nothing less wAct. With no way to do
+// nothing the scores stay as they are: a choice must be made.
+func uncut(cs []engine.Intent, scores []float64, cut []bool) []float64 {
+	if len(cs) == 0 || quietRank(cs[0]) != 0 {
+		return scores
+	}
+	for i := range cs {
+		if quietRank(cs[i]) != 0 && (cut[i] || cut[0]) {
+			scores[i] = min(scores[i], scores[0]-wAct)
+		}
 	}
 	return scores
 }
@@ -212,33 +233,35 @@ func quietRank(in engine.Intent) int {
 // reseed the copy's dice from draws[d]. A settle that rolled no dice is
 // the only draw. Every candidate meets the same draws, so their scores
 // differ by the move, not by luck. Each settle is scored by
-// settledScore with sc.
-func try(w *engine.Game, p engine.PlayerID, in engine.Intent, draws []uint64, sc scoring) ([]float64, error) {
+// settledScore with sc. cut: a settle ended at its cap (settle).
+func try(w *engine.Game, p engine.PlayerID, in engine.Intent, draws []uint64, sc scoring) (out []float64, cut bool, err error) {
 	var src rand.PCG
 	prng := rand.New(&src) //nolint:gosec // a playout's choices, not security
-	out := make([]float64, 0, len(draws))
+	out = make([]float64, 0, len(draws))
 	for d, seed := range draws {
 		g, err := fork(w)
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
 		if d > 0 {
 			g.RNG = engine.NewRNG(seed)
 		}
 		ev, err := g.Apply(in)
 		if err != nil {
-			return nil, fmt.Errorf("%w: %w", errRefused, err)
+			return nil, false, fmt.Errorf("%w: %w", errRefused, err)
 		}
 		var o outcome
 		o.see(ev, p)
 		src.Seed(seed, settleStream)
-		settle(g, p, prng, &o)
+		if !settle(g, p, prng, &o) {
+			cut = true
+		}
 		out = append(out, settledScore(g, p, o, sc))
 		if !o.rolled {
 			break
 		}
 	}
-	return out, nil
+	return out, cut, nil
 }
 
 // fork copies a world: the one place the bot copies a game (Decision
@@ -252,17 +275,18 @@ func fork(w *engine.Game) (*engine.Game, error) {
 // gets the policy's best option, as p will choose it with care. It stops at the game
 // end, when the turn ends, when the active player may act on an empty
 // stack with no attack or purchase going on, or after settleSteps
-// (Decision 8.4). What it sees goes into o.
-func settle(g *engine.Game, p engine.PlayerID, rng *rand.Rand, o *outcome) {
+// (Decision 8.4). What it sees goes into o. It reports false when
+// settleSteps cut it off: the table is not quiet yet (Decision 8.4.3).
+func settle(g *engine.Game, p engine.PlayerID, rng *rand.Rand, o *outcome) bool {
 	turn := g.Turn.Number
 	for range settleSteps {
 		if g.Over || g.Turn.Number != turn || quiet(g) {
-			break
+			return true
 		}
 		pr := g.Prompt()
 		who := pr.Who()
 		if len(who) == 0 {
-			break
+			return true
 		}
 		q := who[0]
 		// A priority prompt is passed: tried at once, as Allowed costs
@@ -274,18 +298,19 @@ func settle(g *engine.Game, p engine.PlayerID, rng *rand.Rand, o *outcome) {
 		if err != nil {
 			allowed := g.Allowed(q)
 			if len(allowed) == 0 {
-				break
+				return true
 			}
 			in := policyPick(g, q, allowed, rng)
 			if q == p && pr.Kind == engine.PromptChoose {
 				in = policyBest(g, q, allowed, rng)
 			}
 			if ev, err = g.Apply(in); err != nil {
-				break
+				return true
 			}
 		}
 		o.see(ev, p)
 	}
+	return g.Over || g.Turn.Number != turn || quiet(g)
 }
 
 // playOn applies a seat's move inside a playout or a measure. A refused

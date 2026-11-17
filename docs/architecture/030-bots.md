@@ -169,6 +169,10 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    4. It runs to the end of what the candidate started: the stack empty and no attack or purchase going on, the turn's end, or the game's end; cap 150 steps.
       1. So an attack runs to its end: the monster dead, the attacker dead and its penalty paid, or the attack cancelled.
       2. A cap of 40 (2026-11-16) cut off a fifth of 2-player fights and half of 4-player ones.
+      3. A settle the cap cuts off, the table not quiet yet, judges no move (bug 19.162): a move does not beat doing nothing when any settle of it, or of doing nothing, was cut (`uncut`).
+         1. The two then stop at different items of a deep stack; the gain was what the items left unresolved would do, not the move's.
+         2. Standard×4 seed 28, a stack of 20–36 items: a paid roll ability measured +6 a use cut off, 0.0 settled to its end; it was used 77 times on one turn.
+         3. A choice with no way to do nothing keeps its means.
    5. A candidate whose settle threw a die is settled 12 times and scored by the mean (6 before the tuning of 2026-11-17: an attack that wins a soul in one settle of several was judged on one or two draws).
       1. The first on the world's own dice, the others with the copy's RNG reseeded.
       2. Each settle's policy choices come from a seed of its own.

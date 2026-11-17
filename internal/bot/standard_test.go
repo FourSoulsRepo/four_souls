@@ -312,6 +312,57 @@ func TestJudge(t *testing.T) {
 	}
 }
 
+// TestUncut (bug 19.162): a move whose settles, or those of doing
+// nothing, were cut off by settleSteps never beats doing nothing; a
+// move settled to its end keeps its score; a choice with no way to do
+// nothing keeps its means.
+func TestUncut(t *testing.T) {
+	pass := engine.Intent{Kind: engine.IntentPass}
+	use := engine.Intent{Kind: engine.IntentActivate}
+	cs := []engine.Intent{pass, use}
+	tries := [][]float64{{10, 0, 20, 10}, {16, 6, 26, 16}}
+	for _, c := range []struct {
+		name string
+		cut  []bool
+		wins bool
+	}{
+		{"both ended", []bool{false, false}, true},
+		{"the move cut", []bool{false, true}, false},
+		{"doing nothing cut", []bool{true, false}, false},
+		{"both cut", []bool{true, true}, false},
+	} {
+		s := uncut(cs, judge(cs, tries, noiseAll(noiseStack), 0), c.cut)
+		if got := s[1] > s[0]; got != c.wins {
+			t.Errorf("%s: move %v, nothing %v; move wins %v, want %v", c.name, s[1], s[0], got, c.wins)
+		}
+	}
+	choose := []engine.Intent{{Kind: engine.IntentChoose, Choice: 0}, {Kind: engine.IntentChoose, Choice: 1}}
+	if s := uncut(choose, []float64{2, 2.5}, []bool{true, true}); s[0] != 2 || s[1] != 2.5 {
+		t.Errorf("choices: %v, want the means", s)
+	}
+}
+
+// TestSettleEnds: settles that reach their end (a coin card played and
+// resolved; the turn ended) are not reported cut.
+func TestSettleEnds(t *testing.T) {
+	g := table(t, engine.SituationSetup{
+		Players: []engine.SituationPlayer{{Character: "isaac", Hand: []engine.CardRef{"a_nickel"}}, {Character: "cain"}},
+	})
+	p := g.Turn.Active
+	for _, in := range g.Allowed(p) {
+		if in.Kind != engine.IntentPlayLoot && quietRank(in) != 0 {
+			continue
+		}
+		_, cut, err := try(g, p, in, []uint64{1, 2}, scoring{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if cut {
+			t.Errorf("%+v: a short settle was cut", in)
+		}
+	}
+}
+
 // TestStandardDigs: no monster in play gives a soul, but a kill lets
 // in the next card of the monster deck (Decision 7.9). With good odds
 // and an item to lose it attacks; at 1 HP against hard monsters it
