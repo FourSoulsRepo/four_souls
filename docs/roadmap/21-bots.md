@@ -122,7 +122,8 @@ Rules for this step (owner, 2026-11-16):
    2. Under 100 ms per move on average (lead, 2026-11-16; was 50 ms).
    3. `make bots`: standard×2, ×3 and ×4 each finish 95% of games with a winner within 150 turns; the finish gate is switched on for standard.
    4. Short runs, 20 games each (2026-11-16, machine shared with line 2): standard wins 18 of 20 against random (90%); finished ×2 100% (median 30 turns), ×3 100% (median 42), ×4 90% (median 61; seed 15 is a table The Harbingers locks, seed 9 a long turn of real plays, no loop); deaths a kill 1.20, 1.44, 2.16; 11–41 ms a move under load.
-   5. The full `make bots`, time per move, B/op and allocs/op run once at the end of line 1 (rule 7.3); the 95% gate is decided there.
+   5. Full run at the end of line 1 (2026-11-17, `make bots`, 50 games a line-up, machine shared): standard wins 43 of 50 (86%) against random. Finished: ×2 96% (48 of 50, median 39 turns); ×3 not reached: 94% (47 of 50, median 60; seeds 10, 23, 35 at the cap); ×4 not reached: 90% (45 of 50, median 66; seeds 10, 11, 15, 18, 42). Deaths a kill ×2 1.69, ×3 1.86, ×4 2.07 (policy 2.22, 2.32, 2.38). Turns with no attack: standard 47 – 54%, policy 17 – 18%. Seed 13, 2 players: standard×2 not finished at 150 turns (souls 2 and 3; 2.97 deaths a kill); hard×2 won in 12 turns.
+   6. Time per move: `BenchmarkStandardMove` 6.7 – 7.5 ms, 2.9 – 3.3 MB, 42 000 – 46 000 allocations; in the arena, 12 games side by side, 10 – 25 ms.
 
 ### [x] 21.6 Hard level
 
@@ -143,9 +144,10 @@ Rules for this step (owner, 2026-11-16):
    2. One hard among three standard wins over 30%.
    3. A missed gate: tune, write the numbers into ADR 030, or stop and tell the owner.
    4. Short run, 20 games, 2 players, 150 playouts a move (2026-11-16): hard wins 14 of 20 against standard (70%); all 20 finished (median 25 turns, max 58); no refused intent, no loop guard; 1.36 deaths a kill; 0.31 s a hard move under load.
-   5. One hard among three standard: not run yet (owner, 2026-11-16: tuning after 21.16).
+   5. One hard among three standard (end of line 1, 50 games, 150 playouts): hard wins 32 of 50 (64%); 48 finished (96%), median 49 turns; 1.69 deaths a kill.
    6. The built situations pass on 8 worlds each at 150 playouts: the win answered, the weak seat's kill passed, the strong seat's soul answered (3 souls and 2), the leader hit.
-   7. The full `make bots`, time per move, B/op and allocs/op run once at the end of line 1 (rule 7.3); the gates are decided there.
+   7. Full run at the end of line 1 (2026-11-17, 50 games, 2 players): hard wins against standard 32 of 50 (64%) at 50 playouts a move, 34 of 50 (68%) at 150, 41 of 50 (82%) at 500; finished 100%, 98%, 100%. Hard×4, 20 games: all finished, median 48 turns, 1.25 deaths a kill. Turns with no attack, same games at 150: hard 35%, standard 52%.
+   8. Time: `BenchmarkHardMove` 0.43 – 0.61 s, 196 – 198 MB, 3.8 – 3.9 million allocations a move (machine loaded); `BenchmarkPlayout` 2.7 – 2.9 ms; in the arena 0.19 s a move at 50 playouts, 0.56 s at 150, 1.67 s at 500 (ADR 030, Decision 9.8.6).
 
 ### [ ] 21.7 Bots in the lobby
 
@@ -281,7 +283,7 @@ Rules for this step (owner, 2026-11-16):
    3. Test 6 (`TestMemoryIsTrue`): 100 games of every set and challenge, 49 449 steps, every seat checked at every step; 30 622 remembered cards out of sight checked, none wrong.
    4. The ways a seat sees a card, what it forgets, and the engine fields: ADR 030, Decision 19.14 – 19.17.
    5. Short run, 20 games, 2 players, 150 playouts a move, seeds 1–20 (2026-11-16): hard with memory wins 18 of 20 against standard (90%); without memory (21.6, same seeds) 14 of 20. All 20 finished (median 18 turns, max 70); no refused intent, no loop guard; 1.16 deaths a kill; 0.48 s a hard move under load.
-   6. The full `make bots` runs once at the end of line 1 (rule 7.3).
+   6. Full run at the end of line 1 (2026-11-17): hard with memory wins 34 of 50 (68%) against standard at 150 playouts; hard without memory was not run again. `TestMemoryStress` (800 games of 2000 steps) runs from `make sims`.
 
 ### [x] 21.16 Card values
 
@@ -309,6 +311,7 @@ Rules for this step (owner, 2026-11-16):
    4. Helper: no test path put a card into a running game's hand; `enginetest.PlaceFromDeck` (one helper, quiet, `CheckInvariants` after); depguard `no-enginetest` keeps it out of `internal/server` and `internal/bot`.
    5. Full run (2026-11-17, 12 cores, i7-8750H, machine shared): 7 min 55 s; 36 flat games to 60 turns give 1934 positions in 4 min 55 s; 329 cards, 32 samples each (3 loot cards fewer, `magic_marker` none: falls back to the loot mean).
    6. Error: median standard error loot 0.79 (max 5.7), active items 4.4 (max 6.4), passive items 3.8 (max 6.7); kind means loot 5.09, active 4.43, passive 7.31.
-   7. Short run, 20 games of 2 players: standard with the table wins 11 of 20 (55%) against flat; 100% finished, median 30 turns; 12.7 ms a move for both levels together. The 200-game gate and time per move: at the tuning after 21.16.
+   7. Short run, 20 games of 2 players: standard with the table wins 11 of 20 (55%) against flat; 100% finished, median 30 turns; 12.7 ms a move for both levels together. The 200-game gate and time per move: item 10.
    8. Scale fixes (lead, 2026-11-17): loot in hand at `wHand` 0.5, items scaled to a mean of 12 (horizon), shrink by precision, active items also by their uses. Full run 11 min: 1934 positions in 4 min 48 s; 32 samples a loot card, 64 an item; median standard error loot 0.79, active 3.05, passive 2.70; scaled means loot 5.09 (in hand 2.55), active 10.32, passive 12.90; τ loot 9.69, active 3.28, passive 5.88.
    9. Short run after the scale fixes, 20 games of 2 players: standard wins 13 of 20 (65%) against flat; 100% finished, median 34 turns, max 89; 20.5 ms a move for both levels together (12.7 ms before the fixes; the machine was shared, measured at the tuning).
+   10. Full run at the end of line 1 (2026-11-17): 200 games of 2 players, not reached: standard with the table wins 108 of 200 (54%) against flat; 99% finished, median 34 turns; 1.39 deaths a kill. Time per move did not grow: standard 19.6 ms, flat 21.8 ms in the same games. A seat's game: loot plays standard 27.9, flat 25.6; purchases standard 3.8, flat 6.6.
