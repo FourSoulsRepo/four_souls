@@ -41,7 +41,7 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119, 19.167 | 12 |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166                                  | 3     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169 | 42 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194 | 43 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179, 19.189 | 31 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
@@ -57,7 +57,7 @@ This step never closes; new reports are appended.
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 
-Totals by system (185 items):
+Totals by system (186 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -65,7 +65,7 @@ Totals by system (185 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 53 |
 | Server    | H, N    | 4     |
-| e2e       | I, J    | 73    |
+| e2e       | I, J    | 74    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
@@ -5923,3 +5923,27 @@ Totals by system (185 items):
    10. Steps' checksums change; engine 0.5.4 is unreleased (`eventVersion`).
 6. Owner notes (2026-11-17)
    1. Owner marks 19.193 solved.
+
+### [ ] 19.194 Strip popout test hovers the old tile
+
+1. Goal: the two-rows popout test hovers the tile it just added.
+2. Report (20.24 gate run, 2026-11-17)
+   1. `strip.spec.ts:383`, webkit: "toHaveCount 6, received 4".
+   2. Failed again on rerun: 1 of 8 (`--repeat-each 8`).
+   3. Evidence: `.cache/e2e-evidence/20.24-1710/`.
+   4. Snapshot: the strip still shows the old tile; its popout has 4 results.
+3. Cause (the test)
+   1. Since 20.21 the strip holds its tiles while the pointer is on it.
+   2. The test moves off, then adds a tile at once.
+   3. The leave was not handled yet; the new tile waited behind the hold.
+   4. The hover then found the old tile on top.
+   5. The app was right: tiles come in when the pointer leaves (UC-15).
+4. Tasks:
+   1. Wait for the exact state: zoom hidden, dim off (hold gone).
+   2. Then wait until the new tile is on top before hovering it.
+   3. Check every `mouse.move` off the strip in `strip.spec.ts`.
+5. Fix (2026-11-17)
+   1. The test waits for the dim to clear, then for a new top tile.
+   2. Checked the other moves off the strip: 268 and 346 wait 1.2 s.
+   3. 334 waits for the new tile count; 377 waits for the dim; all fine.
+   4. No other spec adds strip tiles (`addTiles` lives in this file).

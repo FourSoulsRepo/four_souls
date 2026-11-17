@@ -396,7 +396,13 @@ test('a popout lays its targets in one row up to four, then in two rows (20.21)'
   const row = await Promise.all([0, 1, 2, 3].map(async (i) => (await box(results.nth(i))).y));
   expect(new Set(row.map(Math.round)).size).toBe(1);
   await page.mouse.move(900, 700);
+  // The strip holds its tiles while the pointer is on it (20.21); wait
+  // until it lets go, then for the new tile on top (19.194).
+  await expect(zoom).toBeHidden();
+  await expect(page.getByTestId('strip-dim')).not.toHaveClass(/on/);
+  const top = await tiles.first().getAttribute('data-key');
   await addTiles(page, 1, [...four, 'pills', 'a_nickel']);
+  await expect(tiles.first()).not.toHaveAttribute('data-key', top ?? '');
   await tiles.first().hover();
   await expect(results).toHaveCount(6);
   const ys = await Promise.all([0, 2, 3, 5].map(async (i) => (await box(results.nth(i))).y));
