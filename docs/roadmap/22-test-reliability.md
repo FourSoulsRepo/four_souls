@@ -155,6 +155,7 @@ Ideas: TS-07, TS-08, TS-09, TS-10, TS-11, TS-12.
 3. Done when:
    1. `make e2e-games` passes with the limits.
    2. A test page with a growing list over the limit fails the check.
+   3. 2026-11-17: a full `make e2e-games` passed after 19.191: 9 of 9, 42.7 min.
 
 ### [x] 22.10 The event check covers players and whole games
 

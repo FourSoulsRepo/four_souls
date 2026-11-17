@@ -43,7 +43,7 @@ import { autoJoinStep, emptyLobby, forgotten, leftTable, lost, onMessage, rememb
 import { connectFirst, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
-import { bonusSlot, chargedIn, createPlayback, effectsFor, hpOf, playedEnds, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
+import { bonusSlot, chargedIn, createPlayback, effectsFor, hpOf, playedEnds, scaleFor, seenBefore, shopSlot, slotZone, type Death, type Effect } from './playback';
 import { empty } from './presence';
 import { animates, autoplayPause, clampStep, hideHands, replayUpdate, withoutRecordCards, withRecordCards, type Replaying, type ReplaySpeed } from './replay';
 import { loadSounds, playSound, setSoundVolume } from './sounds';
@@ -593,7 +593,7 @@ export const useApp = create<AppState>()((set, get) => {
           return view ? bonusSlot(view, ref) : undefined;
         },
         diedAt,
-        seen: (ref) => (get().game?.events ?? []).some((e) => e.kind === 'card_revealed' && e.card === ref),
+        seen: (ref, object) => seenBefore(get().game, ref, object),
         roll: (stack) => get().game?.view.stack?.find((it) => it.id === stack)?.roll,
         hpAfter: (e) => hpOf(u.view, e),
         charged: (p) => chargedIn(u.view, p),

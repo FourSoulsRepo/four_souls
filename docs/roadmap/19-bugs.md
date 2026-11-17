@@ -5799,7 +5799,7 @@ Totals by system (184 items):
    2. Decide: drop presence then, or queue lobby messages.
    3. Check every `send` caller for the same race.
 
-### [ ] 19.191 Animation clash: a card seen on the deck, then revealed into a slot
+### [x] 19.191 Animation clash: a card seen on the deck, then revealed into a slot
 
 1. Goal: a card revealed on top of a deck may then be revealed into a slot.
 2. Report (22.9 subagent, 2026-11-17)
@@ -5807,18 +5807,64 @@ Totals by system (184 items):
    2. Both pages logged "animation clash: reveal shows chest after reveal".
    3. The game itself ended with a winner: 35 turns, 1926 steps.
    4. Evidence: `.cache/e2e-evidence/22.9-games-780402/` (not in git).
-3. Cause (the record; not confirmed in the code yet)
+3. Cause (the record and the code)
    1. Step 1515: Bob reveals the top monster card, Chest (object 54).
    2. Its event: `card_revealed`, text "monster deck".
    3. Step 1523: Tumor dies; Chest is revealed into the slot (object 684).
-   4. The steps between are auto passes: likely two updates in a row.
-   5. A `reveal` claim carries no object (19.136), so one card name clashes.
-   6. Close to 19.136 and 19.139: the playback may be right, the rule wrong.
+   4. Steps 1516–1527 are server auto passes: no player could act.
+   5. A `reveal` claim carried no object (19.136), so one card name clashed.
+   6. Close to 19.136 and 19.139: the playback was right, the rule wrong.
+   7. A record replay in the engine: `CanAct` false from 1515 to 1526.
+   8. So steps 1515–1527 came in one update, to both pages: one beat.
+   9. Cheese Grater's reveal left Chest on its deck; Bob put it back.
+   10. The refill moved it into the slot: a new object, a new public event.
+   11. Two showings, as 19.139 found for a deal: legal (ADR 012 2.11–2.13).
+   12. Not 19.4: there one draw shows its card, then the slot pick does.
+   13. `seen` (19.4) checks the update before only, by the card's name.
+   14. In one update it never applies; across two it hid another copy too.
 4. Tasks:
-   1. [ ] Confirm the cause in `animations.ts` and the playback.
-   2. [ ] Fix it game-wide: every reveal of a card seen just before.
-   3. [ ] Vitest for the pair; rerun `GAME_SEED=780402 make e2e-games`.
-
+   1. [x] Confirm the cause in `animations.ts` and the playback.
+   2. [x] Fix it game-wide: every reveal of a card seen just before.
+   3. [x] Vitest for the pair; rerun `GAME_SEED=780402 make e2e-games`.
+5. Fix (2026-11-17)
+   1. `reveal`, `fly`, `place` and `draw` effects carry the event's object.
+   2. `claimEffect` passes it to `claim`, as `played` did (19.136).
+   3. Known, different objects never clash; same or unknown: as before.
+   4. `claim` keeps every live claim of a card, not only the newest.
+   5. So one copy's claim never hides another copy's.
+   6. `claimDeal` moved to `animations.ts`; it claims each dealt copy by object.
+   7. Two copies in one deal were one claim by name; now two.
+   8. `seen` is `seenBefore`: the view's `revealed` card (19.9), or the same object.
+   9. A deck attack still shows its card once (19.4); the e2e test sets `revealed`.
+   10. A card that moved, or another copy, shows again in the next update.
+   11. ADR 012 2.11–2.14; Animations.md: rule 4, `arrive`, `show`, `reveal`, `choice-deal`.
+6. Claims and callers checked
+   1. `claimEffect` `fly`: every producer sets the object (discard, death, soul, treasure, buy, present).
+   2. `claimEffect` `place`: a slot's `card_revealed`, its object.
+   3. `claimEffect` `draw`: an own draw's `looted` object; others claim nothing.
+   4. `claimEffect` `reveal`: the `card_revealed` object.
+   5. `claimEffect` `played`: had its object (19.136).
+   6. `claimDeal` (`choice-deal`): `data-object` of each card (19.141).
+   7. `Card` pop-in (`claimed`) and `HandCard` (`arrivedBy`) only read claims.
+   8. They keep keying on the name: a copy no effect brought then stays still.
+   9. That shows nothing twice; a view card's object may differ from its event's.
+   10. Not claims, left by name: `holdReveals`, `playedEnds`.
+   11. `holdReveals` joins only effects in a row; a discard's fly has a new object.
+   12. Unknown object: a `fly` from an event without one (rare); as before.
+   13. A deck attack whose slot a kicked seat's forced pick makes in the same update.
+   14. Its two reveals then have two objects and show twice; not seen in play.
+7. Tests
+   1. Vitest `animations.test.ts`: two objects in one beat and in a row, no clash.
+   2. One object twice, or no object: a clash as before (19.4).
+   3. A later copy's claim does not hide an earlier copy's.
+   4. Arrivals of copies at one place, by object; `claimDeal` of two copies.
+   5. Vitest `playback.test.ts`: the record's pair gives two reveals; `seenBefore`.
+8. Reruns (2026-11-17)
+   1. `GAME_SEED=780402`, 2 players: passed, 224 turns, 33 min, no clash.
+   2. Its deal differs from the report's: that server seed was random.
+   3. The report ran without `GAME_SEED`: the test sent seed 0, a random deal.
+   4. So the exact pair is checked by the Vitest built from the record.
+   5. Full `make e2e-games`: 9 of 9 passed, 42.7 min, no clash.
 
 ### [x] 19.192 No event when a card moves a player's ¢
 

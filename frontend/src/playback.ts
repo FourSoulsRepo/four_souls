@@ -21,13 +21,16 @@ export type Effect =
   // table card it flies off; it hides until the next view (19.73).
   // sound plays as the card leaves (18.7).
   // start: a starting item, at the start-of-game screen's pace (20.22).
-  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean; leaves?: number; lifts?: number; sound?: Sound; start?: boolean }
+  // object: the card's object where it lands, so two copies, or one card
+  // that moved, are two cards to the claims (19.191); the same on draw,
+  // reveal and place.
+  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean; leaves?: number; lifts?: number; sound?: Sound; start?: boolean; object?: number }
   | { kind: 'popup'; at: string[]; text: string; tone: 'good' | 'bad' }
   // draw: a looted card (20.7). own: the viewer's, shown at the show
   // spot on its way to the hand; else back only, deck to hand, but a
   // card taken from the loot discard is public: face up. pace is
   // its time factor, by its place among the player's draws (drawPace).
-  | { kind: 'draw'; from: string[]; to: string[]; card?: string; own: boolean; pace: number }
+  | { kind: 'draw'; from: string[]; to: string[]; card?: string; own: boolean; pace: number; object?: number }
   // dice: thrown for a fresh roll or a reroll (15.62); a changed roll
   // spins in with its old value, a shot comes from the card that
   // changes it, and it turns to the new one (15.76). dice: every die of
@@ -42,7 +45,7 @@ export type Effect =
   | { kind: 'turn'; text: string; own: boolean; charges?: number[] }
   // reveal: the card grows out of its deck to the middle; it holds
   // there when the next effect moves it, else shrinks back (15.73).
-  | { kind: 'reveal'; card: string; deck: string[]; hold?: boolean }
+  | { kind: 'reveal'; card: string; deck: string[]; hold?: boolean; object?: number }
   // played: another player's loot card rises from their hand, shows
   // large and goes on the stack (15.31, H-10, 15.74). It outlives its
   // effect: playback goes on 1 s after it shows (20.9, playedEnds).
@@ -50,7 +53,7 @@ export type Effect =
   | { kind: 'played'; card: string; who: string; from: string[]; to: string[]; object?: number }
   // place: a card flies into a slot and stays there until the view is
   // shown, so later effects play over it (19.3).
-  | { kind: 'place'; from: string[]; to: string[]; card: string; back: Kind; middle?: boolean }
+  | { kind: 'place'; from: string[]; to: string[]; card: string; back: Kind; middle?: boolean; object?: number }
   // lunge: the attacker's card hits the target and returns (15.3, V-12).
   // lethal: the hit kills; the table shakes (20.3).
   | { kind: 'lunge'; from: string[]; to: string[]; amount: number; lethal?: boolean }
@@ -89,9 +92,28 @@ export interface Death {
   object: number;
 }
 
+// objectOf is an effect's object field, when the event names one.
+function objectOf(object: number | undefined): { object?: number } {
+  return object === undefined ? {} : { object };
+}
+
+// seenBefore tells if the update on screen showed the card large
+// already (19.4): the card a deck attack drew, waiting for its slot,
+// or the same object revealed. A card that moved since, under a new
+// object, or another copy is a new showing (19.191).
+export function seenBefore(shown: Pick<Update, 'events' | 'view'> | null | undefined, card: string, object: number | undefined): boolean {
+  if (!shown) {
+    return false;
+  }
+  if (shown.view.revealed?.card === card) {
+    return true;
+  }
+  return (shown.events ?? []).some((e) => e.kind === 'card_revealed' && e.card === card && (object === undefined || e.object === undefined || e.object === object));
+}
+
 // flyFrom flies a dead card from where it died, once (19.73).
-function flyFrom(death: Death, to: string[], card: string | undefined, back: Kind): Extract<Effect, { kind: 'fly' }> {
-  return { kind: 'fly', from: [death.zone], to, card, back, lifts: death.object };
+function flyFrom(death: Death, to: string[], card: string | undefined, back: Kind, object?: number): Extract<Effect, { kind: 'fly' }> {
+  return { kind: 'fly', from: [death.zone], to, card, back, lifts: death.object, ...objectOf(object) };
 }
 
 interface Context {
@@ -110,8 +132,9 @@ interface Context {
   // diedAt keeps where each dead card died, by its held object, across
   // updates: reward rolls may come before its discard or soul (19.73).
   diedAt: Map<number, Death>;
-  // seen tells if the update before revealed the card (19.4).
-  seen: (card: string) => boolean;
+  // seen tells if the update before revealed the card (19.4); object
+  // is the card's object now (seenBefore, 19.191).
+  seen: (card: string, object: number | undefined) => boolean;
   // roll is the value of a roll on the stack shown now, if any (15.76).
   roll: (stack: number) => number | undefined;
   // hpAfter is a damaged target's HP in this update's view, if shown (20.3).
@@ -260,6 +283,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
           ...((own || discard) && e.card ? { card: e.card } : {}),
           own,
           pace: drawPace(n),
+          ...(own ? objectOf(e.object) : {}),
         });
         break;
       }
@@ -268,7 +292,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         // stack, else its stack row (15.74).
         if (e.text === 'stack' && e.prev) {
           const from = [`played-${String(e.prev)}`, `stack-src-${String(e.prev)}`, `obj-${String(e.prev)}`, 'deck-loot'];
-          out.push({ kind: 'fly', from, to: ['discard-loot'], card: e.card, back: 'loot', leaves: e.prev });
+          out.push({ kind: 'fly', from, to: ['discard-loot'], card: e.card, back: 'loot', leaves: e.prev, ...objectOf(e.object) });
           break;
         }
         const kind = e.card ? kindOf(ctx.card(e.card)?.type ?? '') : 'loot';
@@ -276,7 +300,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         const death = e.prev ? ctx.diedAt.get(e.prev) : undefined;
         if (death && e.prev) {
           ctx.diedAt.delete(e.prev);
-          out.push(flyFrom(death, [`discard-${kind}`], e.card, kind));
+          out.push(flyFrom(death, [`discard-${kind}`], e.card, kind, e.object));
           break;
         }
         const from = [`obj-${String(e.prev ?? e.object ?? 0)}`];
@@ -284,7 +308,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
           from.push(...handZones(e.player));
         }
         from.push(`deck-${kind}`);
-        out.push({ kind: 'fly', from, to: [`discard-${kind}`], card: e.card, back: kind });
+        out.push({ kind: 'fly', from, to: [`discard-${kind}`], card: e.card, back: kind, ...objectOf(e.object) });
         break;
       }
       case 'dice_rolled':
@@ -375,7 +399,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
           const kind = kindOf(ctx.card(e.card ?? '')?.type ?? 'Monster Card');
           const death = ctx.diedAt.get(e.prev) ?? { zone: `obj-${String(e.prev)}`, object: e.prev };
           ctx.diedAt.delete(e.prev);
-          out.push({ ...flyFrom(death, playerZones(e.player), e.card, kind), sound: 'soulGain' });
+          out.push({ ...flyFrom(death, playerZones(e.player), e.card, kind, e.object), sound: 'soulGain' });
           break;
         }
         // A bonus soul flies from its card on the board, if it was drawn
@@ -383,7 +407,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         if (e.text === 'bonus soul') {
           const death = ctx.bonusBefore(e.card ?? '');
           if (death) {
-            out.push({ ...flyFrom(death, playerZones(e.player), e.card, kindOf('Bonus Soul Card')), sound: 'soulGain' });
+            out.push({ ...flyFrom(death, playerZones(e.player), e.card, kindOf('Bonus Soul Card'), e.object), sound: 'soulGain' });
           }
           break;
         }
@@ -397,13 +421,13 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         // A starting item flies to its player from the chooser's picked
         // card, else from the treasure deck, silent (20.22).
         if (e.text === 'starting item') {
-          out.push({ kind: 'fly', from: [keptZone(e.player), 'deck-treasure'], to: playerZones(e.player), card: e.card, back: 'treasure', start: true });
+          out.push({ kind: 'fly', from: [keptZone(e.player), 'deck-treasure'], to: playerZones(e.player), card: e.card, back: 'treasure', start: true, ...objectOf(e.object) });
           break;
         }
         // A treasure drawn from its deck flies to the player with its
         // sound, one per item; a stolen item does not (18.9).
         if (e.text !== 'stolen') {
-          out.push({ kind: 'fly', from: ['deck-treasure'], to: playerZones(e.player), card: e.card, back: 'treasure', sound: 'treasureGain' });
+          out.push({ kind: 'fly', from: ['deck-treasure'], to: playerZones(e.player), card: e.card, back: 'treasure', sound: 'treasureGain', ...objectOf(e.object) });
         }
         break;
       case 'purchased': {
@@ -411,7 +435,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         // shows empty meanwhile. The deck top flew as gained_treasure.
         const slot = e.text === 'treasure deck' || !e.card ? undefined : ctx.shopBefore(e.card);
         if (slot) {
-          out.push({ kind: 'fly', from: [slot.zone], to: playerZones(e.player), card: e.card, back: 'treasure', lifts: slot.object, sound: 'treasureGain' });
+          out.push({ kind: 'fly', from: [slot.zone], to: playerZones(e.player), card: e.card, back: 'treasure', lifts: slot.object, sound: 'treasureGain', ...objectOf(e.object) });
         }
         break;
       }
@@ -437,8 +461,8 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         // A deck attack reveals its card, then puts it in a slot in the
         // next update: it shows large once (19.4).
         const kind = kindOf(ctx.card(e.card)?.type ?? '');
-        if (!ctx.seen(e.card)) {
-          out.push({ kind: 'reveal', card: e.card, deck: [`deck-${kind}`] });
+        if (!ctx.seen(e.card, e.object)) {
+          out.push({ kind: 'reveal', card: e.card, deck: [`deck-${kind}`], ...objectOf(e.object) });
         }
         // A card put into a slot, e.g. a deck attack's monster, is there
         // before the attack roll that follows it.
@@ -446,7 +470,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         // row's place takes it (14.25).
         const slot = e.object ? ctx.slot(e.object) : undefined;
         if (slot) {
-          out.push({ kind: 'place', from: [`deck-${kind}`], to: slot.startsWith('minion-') ? [slot, 'minions'] : [slot], card: e.card, back: kind });
+          out.push({ kind: 'place', from: [`deck-${kind}`], to: slot.startsWith('minion-') ? [slot, 'minions'] : [slot], card: e.card, back: kind, ...objectOf(e.object) });
         }
         break;
       }
@@ -462,10 +486,10 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
       // A destroyed present goes to the treasure discard face up
       // (R-KRAMPUS-08); a given one to its player (R-KRAMPUS-10).
       case 'present_destroyed':
-        out.push({ kind: 'fly', from: [`present-${e.text ?? ''}`], to: ['discard-treasure'], ...(e.card ? { card: e.card } : {}), back: 'treasure' });
+        out.push({ kind: 'fly', from: [`present-${e.text ?? ''}`], to: ['discard-treasure'], ...(e.card ? { card: e.card } : {}), back: 'treasure', ...objectOf(e.object) });
         break;
       case 'present_given':
-        out.push({ kind: 'fly', from: [`present-${e.text ?? ''}`], to: playerZones(e.player), ...(e.card ? { card: e.card } : {}), back: 'treasure', sound: 'treasureGain' });
+        out.push({ kind: 'fly', from: [`present-${e.text ?? ''}`], to: playerZones(e.player), ...(e.card ? { card: e.card } : {}), back: 'treasure', sound: 'treasureGain', ...objectOf(e.object) });
         break;
       case 'challenge_won':
         out.push({ kind: 'banner', text: t('effect.challenge_won'), won: true });
@@ -484,7 +508,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
             who: ctx.name(e.player),
             from: handZones(e.player),
             to: ['stack'],
-            ...(e.object === undefined ? {} : { object: e.object }),
+            ...objectOf(e.object),
           });
         }
         break;

@@ -1,6 +1,6 @@
 import { createContext, use, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import { discardIntent, modeLines, orderIntent, outcomeLines, type Actions } from '../actions';
-import { claim } from '../animations';
+import { claimDeal, dealKey } from '../animations';
 import { deckKinds, type Kind } from '../cards';
 import { choiceRow, confirmFirst, dealDelays, dealPose, keptZone, pickToggle } from '../choice';
 import { feel } from '../feel';
@@ -44,24 +44,6 @@ function useLook(): Kind | undefined {
   });
 }
 
-// dealt keeps, per prompt step, the cards a deal claimed, so a second
-// mount of the same choice (React's StrictMode) does not claim again.
-const dealt = new Map<number, Set<string>>();
-
-// claimDeal claims each card a deal shows (ADR 012): it returns the
-// cards that may fly; a card another animation showed just now comes at
-// once instead. A card's object, when known, tells copies apart (19.141).
-function claimDeal(step: number, cards: { card: string; object?: number | undefined }[]): Set<string> {
-  let ok = dealt.get(step);
-  if (!ok) {
-    const seen = new Map(cards.map((c) => [c.card, c.object]));
-    ok = new Set([...seen].filter(([card, object]) => claim(card, 'show', 'choice-deal', { object })).map(([card]) => card));
-    dealt.clear();
-    dealt.set(step, ok);
-  }
-  return ok;
-}
-
 const ms = (s: number) => s * 1000;
 
 // sample is a motion as WAAPI keyframes, one per frame of 1/30 s.
@@ -88,14 +70,15 @@ function enter(root: HTMLElement, entry: Entry, deck: Kind | undefined, scale: n
   if (entry === 'grow' || (entry === 'deal' && !box)) {
     parts.push(...els.map(grow));
   } else if (entry === 'deal' && box) {
+    const objectOf = (el: HTMLElement) => (el.dataset.object ? Number(el.dataset.object) : undefined);
     const may = claimDeal(
       step,
-      els.map((el) => ({ card: el.dataset.deal ?? '', ...(el.dataset.object ? { object: Number(el.dataset.object) } : {}) })),
+      els.map((el) => ({ card: el.dataset.deal ?? '', object: objectOf(el) })),
     );
     const delays = dealDelays(els.length);
     root.classList.add('dealing');
     els.forEach((el, i) => {
-      if (!may.has(el.dataset.deal ?? '')) {
+      if (!may.has(dealKey(el.dataset.deal ?? '', objectOf(el)))) {
         return;
       }
       const r = el.getBoundingClientRect();

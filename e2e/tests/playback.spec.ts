@@ -756,6 +756,9 @@ test('a deck attack shows the revealed monster large once (19.4)', async ({ brow
       throw new Error('no game');
     }
     first.top = { ...second.top, id: 990 };
+    // The engine's view shows the drawn card while its slot is picked
+    // (19.9); the slot's card is a new object (19.191).
+    drawn.view.revealed = { ...second.top, id: 989 };
     s.receive({
       type: 'update',
       data: { ...drawn, step: drawn.step + 1, events: [{ kind: 'card_revealed', player: you, object: 989, card }] },
