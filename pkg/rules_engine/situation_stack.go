@@ -121,13 +121,35 @@ func (g *Game) stackedLoot(p PlayerID, st SituationStack) (StackItem, error) {
 	return g.activationItem(a, src), nil
 }
 
-// stackedAbility: an activated ability of a card the owner controls.
-func (g *Game) stackedAbility(p PlayerID, st SituationStack) (StackItem, error) {
-	i := slices.IndexFunc(g.controlled(p), func(id ObjectID) bool { return g.Object(id).Card == st.Card })
-	if i < 0 {
-		return StackItem{}, fmt.Errorf("owner %d controls no %q", st.Owner, st.Card)
+// stackSource finds card among what p controls, then on top of the
+// slots of rows. A card in a slot has the active player as its "you"
+// (R-CARD-36), so only they may own its ability.
+func (g *Game) stackSource(p PlayerID, card CardRef, rows [][]Slot) (ObjectID, bool) {
+	cards := g.controlled(p)
+	for _, row := range rows {
+		for _, s := range row {
+			if top, ok := s.TopOf(); ok {
+				cards = append(cards, top)
+			}
+		}
 	}
-	src := g.controlled(p)[i]
+	i := slices.IndexFunc(cards, func(id ObjectID) bool { return g.Object(id).Card == card })
+	if i < 0 {
+		return 0, false
+	}
+	return cards[i], true
+}
+
+// stackedAbility: an activated ability of a card the owner controls,
+// or of a room in a room slot, whose owner is the active player (23.6).
+func (g *Game) stackedAbility(p PlayerID, st SituationStack) (StackItem, error) {
+	src, ok := g.stackSource(p, st.Card, [][]Slot{g.Rooms})
+	switch {
+	case !ok:
+		return StackItem{}, fmt.Errorf("owner %d controls no %q, and no room slot holds it", st.Owner, st.Card)
+	case g.abilityController(src) != p:
+		return StackItem{}, fmt.Errorf("owner %d is not the active player; only they use a room's abilities (R-CARD-36)", st.Owner)
+	}
 	refs := g.AbilitiesOf(src)
 	if st.Ability < 0 || st.Ability >= len(refs) || g.ability(refs[st.Ability]).Kind != Activated {
 		return StackItem{}, fmt.Errorf("%q has no activated ability %d", st.Card, st.Ability)
@@ -144,19 +166,10 @@ func (g *Game) stackedAbility(p PlayerID, st SituationStack) (StackItem, error) 
 // of a monster or room in a slot, whose "you" is the active player. Its
 // event's player is the owner.
 func (g *Game) stackedTrigger(p PlayerID, st SituationStack) (StackItem, error) {
-	cards := g.controlled(p)
-	for _, rows := range append(g.MonsterRows(), g.Rooms) {
-		for _, s := range rows {
-			if top, ok := s.TopOf(); ok {
-				cards = append(cards, top)
-			}
-		}
-	}
-	i := slices.IndexFunc(cards, func(id ObjectID) bool { return g.Object(id).Card == st.Card })
-	if i < 0 || g.abilityController(cards[i]) != p {
+	src, ok := g.stackSource(p, st.Card, append(g.MonsterRows(), g.Rooms))
+	if !ok || g.abilityController(src) != p {
 		return StackItem{}, fmt.Errorf("owner %d controls no %q", st.Owner, st.Card)
 	}
-	src := cards[i]
 	refs := g.AbilitiesOf(src)
 	if st.Ability < 0 || st.Ability >= len(refs) || g.ability(refs[st.Ability]).Kind != Triggered {
 		return StackItem{}, fmt.Errorf("%q has no triggered ability %d", st.Card, st.Ability)

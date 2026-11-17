@@ -374,7 +374,7 @@ func TestSituationThrowStep(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err = g.runStep(SituationAction{Player: 0, Kind: "attack", Choices: []string{"gaper"}}, "throw", true); err != nil {
+	if _, err = g.runStep(SituationAction{Player: 0, Kind: "attack", Choices: []string{"gaper"}}, stopAt{throw: true}, true); err != nil {
 		t.Fatal(err)
 	}
 	if g.Prompt().Kind != PromptThrow {
@@ -439,5 +439,61 @@ func TestSituationPriority(t *testing.T) {
 	}
 	if w := g.Prompt(); w.Player != 0 || g.Priority.Passes != 0 {
 		t.Errorf("prompt %+v, passes %d; want player 0 over the roll's owner, no passes", w, g.Priority.Passes)
+	}
+}
+
+// roomSet has one room, as Beggar without the roll, with the text
+// "$ Pay 1¢: Gain 2¢".
+var roomSet = CardSet{Name: "rooms", Cards: []CardDef{
+	{Ref: "cent_room", Kind: RoomCard, Copies: 1, Abilities: []Ability{
+		{Kind: Activated, Text: "Pay 1¢: Gain 2¢.", Costs: []Cost{PayCents(1)}, Effects: []Effect{GainCents(2)}},
+	}},
+}}
+
+// roomTable: hero_a is active with 1¢, hero_b holds priority with 1¢;
+// cent_room is in the room slot.
+func roomTable(stack, steps string) string {
+	return `{"sets": ["test", "rooms"],
+		"setup": {"players": [{"character": "hero_a", "cents": 1}, {"character": "hero_b", "cents": 1}], "active": 0,
+			"rooms": ["cent_room"], "stack": ` + stack + `},
+		"steps": ` + steps + `}`
+}
+
+// A room works as an item (23.6): an activate step may name it, and
+// only the active player may use it (R-CARD-33, R-CARD-36); a stacked
+// room ability is the active player's, costs paid.
+func TestSituationRoom(t *testing.T) {
+	run := func(data string) Answer {
+		t.Helper()
+		ans, err := RunSituation([]byte(data), testSet, roomSet)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return ans
+	}
+	// The room's text: pay 1¢, gain 2¢.
+	ans := run(roomTable(`[]`, `[{"player": 0, "kind": "activate", "card": "cent_room",
+		"expect": {"allowed": true, "after": [{"player": 0, "cents": 2}], "resolved": ["cent_room"]}}]`))
+	if ans.Matches == nil || !*ans.Matches {
+		t.Errorf("active player: answer %+v; want a match", ans)
+	}
+	ans = run(strings.Replace(roomTable(`[]`, `[{"player": 1, "kind": "activate", "card": "cent_room"}]`), `"active": 0,`, `"active": 0, "priority": 1,`, 1))
+	if ans.Allowed || ans.Rule != "R-CARD-36" {
+		t.Errorf("other player: answer %+v; want a refusal by R-CARD-36", ans)
+	}
+	// On the stack its 1¢ is paid: the setup shows 0¢; it resolves for 2¢.
+	ans = run(strings.Replace(roomTable(`[{"kind": "activate", "card": "cent_room", "owner": 0}]`,
+		`[{"player": 0, "kind": "pass", "expect": {"allowed": true, "after": [{"player": 0, "cents": 2}], "resolved": ["cent_room"]}}]`),
+		`"hero_a", "cents": 1`, `"hero_a"`, 1))
+	if ans.Matches == nil || !*ans.Matches {
+		t.Errorf("stacked: answer %+v; want a match", ans)
+	}
+	_, err := RunSituation([]byte(roomTable(`[{"kind": "activate", "card": "cent_room", "owner": 1}]`, `[{"kind": "pass"}]`)), testSet, roomSet)
+	if err == nil || !strings.Contains(err.Error(), "owner 1 is not the active player; only they use a room's abilities (R-CARD-36)") {
+		t.Errorf("stacked for another player: error %v; want the rule", err)
+	}
+	_, err = RunSituation([]byte(roomTable(`[]`, `[{"player": 0, "kind": "activate", "card": "hero_b"}]`)), testSet, roomSet)
+	if err == nil || !strings.Contains(err.Error(), `player 0 controls no "hero_b", and no room slot holds it`) {
+		t.Errorf("unknown source: error %v; want it named", err)
 	}
 }

@@ -235,3 +235,23 @@ func TestCheckSituationExpectUnknownField(t *testing.T) {
 		}
 	}
 }
+
+// The strict reader covers the 23.6 checks: prompt, resolved, events.
+func TestCheckSituationOrderUnknownField(t *testing.T) {
+	expect := `, "expect": {"allowed": true, "prompt": {"player": 0, "optons": []},
+		"resolved": ["razor_blade"], "events": [{"kind": "damaged", "plyer": 1}], "resolve": []}`
+	got := check(enginetest.CardTree, "razor_blade/hits-cain.json", razorFile(cardSource, expect))
+	want := []string{
+		`expect.prompt: unknown field "optons"; did you mean "options"?`,
+		`expect.events[0]: unknown field "plyer"; did you mean "player"?`,
+		`expect: unknown field "resolve"; did you mean "resolved"?`,
+	}
+	if len(got) != len(want)+1 {
+		t.Fatalf("problems %q; want %d fields and the field list", got, len(want))
+	}
+	for i, w := range want {
+		if !strings.HasSuffix(got[i], w) {
+			t.Errorf("problem %q; want it to end with %q", got[i], w)
+		}
+	}
+}

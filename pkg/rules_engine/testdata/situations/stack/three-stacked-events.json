@@ -15,5 +15,5 @@
     ]
   },
   "action": {"player": 1, "kind": "pass"},
-  "expect": {"allowed": true, "after": [{"player": 0, "hand": 0, "cents": 0}, {"player": 1, "cents": 3, "damage": 1}]}
+  "expect": {"allowed": true, "resolved": ["coin_bag", "bomb_loot", "dice_roll"], "after": [{"player": 0, "hand": 0, "cents": 0}, {"player": 1, "cents": 3, "damage": 1}]}
 }

@@ -138,3 +138,78 @@ func TestSituationExpectOldCounts(t *testing.T) {
 		t.Errorf("mismatch %q; want hand and souls as counts", got)
 	}
 }
+
+// promptTable: hero_a activates razor ("Pay 5¢: Deal 1 damage to a
+// monster or player.") with no choices; expect is the step's.
+func promptTable(expect string) string {
+	return `{"sets": ["test", "abilities"],
+		"setup": {"players": [{"character": "hero_a", "items": ["razor"], "cents": 7}, {"character": "hero_b"}], "active": 0, "monsters": ["gaper"]},
+		"steps": [{"player": 0, "kind": "activate", "card": "razor", "expect": ` + expect + `}]}`
+}
+
+// A prompt check stops the step at the question and checks who is
+// asked and every option, in any order (23.6).
+func TestSituationExpectPrompt(t *testing.T) {
+	// razor's text: a monster or player; a target question ends with
+	// cancel (R-ABIL-04: targets are chosen as it goes on the stack).
+	right := `{"allowed": true, "prompt": {"player": 0, "options": ["gaper", "player 2 (hero_b)", "player 1 (hero_a)", "ask.cancel"]}}`
+	if got := runExpect(t, promptTable(right)); len(got) != 0 {
+		t.Errorf("mismatch %q; want none", got)
+	}
+	for _, c := range []struct{ expect, want string }{
+		{`"prompt": {"player": 1}`, "prompt player is 0, expected 1"},
+		{`"prompt": {"options": ["gaper", "ask.cancel"]}`, `prompt options are ["gaper" "player 1 (hero_a)" "player 2 (hero_b)" "ask.cancel"], expected ["gaper" "ask.cancel"]`},
+	} {
+		got := runExpect(t, promptTable(`{"allowed": true, `+c.expect+`}`))
+		if want := "step 1 (activate razor): " + c.want; len(got) != 1 || got[0] != want {
+			t.Errorf("%s: mismatch %q; want %q", c.expect, got, want)
+		}
+	}
+	// With no question open, the check says what the game waits for.
+	data := razorSteps("", `[{"player": 0, "kind": "end_turn", "expect": {"allowed": true, "prompt": {"player": 0}}}]`)
+	got := runExpect(t, data)
+	if want := "step 1 (end_turn): prompt: no question is open, the game waits for a priority action or a pass"; len(got) != 1 || got[0] != want {
+		t.Errorf("mismatch %q; want %q", got, want)
+	}
+}
+
+// stackTable: coin_bag ("↷: Gain 3¢.") on top of bomb_loot (1 damage
+// to hero_b) on top of a roll of 4; hero_b passes and all resolve.
+func stackTable(expect string) string {
+	return `{"sets": ["test", "abilities"],
+		"setup": {"players": [{"character": "hero_a"}, {"character": "hero_b", "items": ["coin_bag"], "deactivated": ["coin_bag"]}], "active": 0,
+			"stack": [{"dice_roll": 4, "owner": 1}, {"kind": "play", "card": "bomb_loot", "owner": 0, "choices": ["player 2 (hero_b)"]},
+				{"kind": "activate", "card": "coin_bag", "owner": 1}]},
+		"steps": [{"player": 1, "kind": "pass", "expect": ` + expect + `}]}`
+}
+
+// resolved: names in order, others may come between (R-STACK-02);
+// events: kinds that must, or must not, happen (23.6).
+func TestSituationExpectResolvedAndEvents(t *testing.T) {
+	for _, right := range []string{
+		`"resolved": ["coin_bag", "bomb_loot", "dice_roll"]`,
+		`"resolved": ["coin_bag", "dice_roll"]`,
+		`"events": [{"kind": "damaged", "player": 1}, {"kind": "damaged", "player": 0, "none": true}, {"kind": "died", "none": true}]`,
+	} {
+		if got := runExpect(t, stackTable(`{"allowed": true, `+right+`}`)); len(got) != 0 {
+			t.Errorf("%s: mismatch %q; want none", right, got)
+		}
+	}
+	for _, c := range []struct{ expect, want string }{
+		{`"resolved": ["bomb_loot", "coin_bag"]`, "resolved [coin_bag bomb_loot damage dice_roll], expected [bomb_loot coin_bag] in this order"},
+		{`"resolved": []`, "resolved [coin_bag bomb_loot damage dice_roll], expected [] in this order"},
+		{`"resolved": ["nope"]`, `resolved: "nope" is no card and no stack item, items [attack_roll damage death death_penalty death_step dice_roll]`},
+		{`"events": [{"kind": "damaged", "player": 0}]`, `events: no "damaged" for player 0, expected one`},
+		{`"events": [{"kind": "damaged", "player": 1, "none": true}]`, `events: 1 "damaged" for player 1, expected none`},
+		{`"events": [{"kind": "died"}]`, `events: no "died", expected one`},
+	} {
+		got := runExpect(t, stackTable(`{"allowed": true, `+c.expect+`}`))
+		if want := "step 1 (pass): " + c.want; len(got) != 1 || got[0] != want {
+			t.Errorf("%s: mismatch %q; want %q", c.expect, got, want)
+		}
+	}
+	got := runExpect(t, stackTable(`{"allowed": true, "events": [{"kind": "damage"}]}`))
+	if len(got) != 1 || !strings.HasPrefix(got[0], `step 1 (pass): events: "damage" is no event kind, options [`) || !strings.Contains(got[0], " damaged ") {
+		t.Errorf("mismatch %q; want the event kinds listed", got)
+	}
+}

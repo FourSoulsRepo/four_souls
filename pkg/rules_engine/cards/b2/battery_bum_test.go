@@ -20,14 +20,3 @@ func TestBatteryBum(t *testing.T) {
 		t.Errorf("without 4¢: refused by %s, want R-ABIL-07", rule)
 	}
 }
-
-func TestBatteryBumOffersOnlyActiveItems(t *testing.T) {
-	tb := enginetest.NewSetup(t, engine.SituationSetup{Players: []engine.SituationPlayer{
-		{Character: "isaac", Items: items("battery_bum", "the_d6", "breakfast", "jawbone"), Deactivated: items("the_d6"), Cents: 4},
-		seat("cain"),
-	}}, Set)
-	tb.Start(0, "battery_bum", 0)
-	if opts := tb.Options(); len(opts) != 2 || opts[0] != "the_d6" {
-		t.Errorf("options %v, want the D6 and cancel (not the passive Breakfast, the charged Jawbone or itself)", opts)
-	}
-}

@@ -1,0 +1,17 @@
+{
+  "title": "Bomb Bum on Isaac's turn: Cain holds priority but can't use the room",
+  "source": ["card bomb_bum", "R-CARD-33", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain", "hand": ["bomb"]}
+    ],
+    "active": 0,
+    "priority": 1,
+    "monsters": ["fly", "leech"],
+    "rooms": ["bomb_bum"]
+  },
+  "action": {"player": 1, "kind": "activate", "card": "bomb_bum", "choices": ["bomb"]},
+  "expect": {"allowed": false, "rule": "R-CARD-36", "after": [{"player": 1, "hand_cards": ["bomb"]}]}
+}

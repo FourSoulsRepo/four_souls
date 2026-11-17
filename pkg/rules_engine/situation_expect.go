@@ -258,3 +258,149 @@ func (g *Game) checkGame(c *checks, e Expectation) {
 	refs, ids, _ := g.slotCards()
 	c.counters("", e.Counters, refs, ids, g)
 }
+
+// ExpectedPrompt checks the open question once a step settled (23.6):
+// Player is who is asked, Options every option by plain label
+// (Game.Plain), in any order. A field left out is not checked.
+type ExpectedPrompt struct {
+	Player  *int     `json:"player,omitempty"`
+	Options []string `json:"options,omitempty"`
+}
+
+// ExpectedEvent is an event kind that must happen (23.6), for Player
+// when set. None: no such event may happen.
+type ExpectedEvent struct {
+	Kind   EventKind `json:"kind"`
+	Player *int      `json:"player,omitempty"`
+	None   bool      `json:"none,omitempty"`
+}
+
+// asks reports whether e checks a prompt, so settling stops at it.
+func (e *Expectation) asks() bool { return e != nil && e.Prompt != nil }
+
+// checkPrompt compares the open question with x.
+func (g *Game) checkPrompt(c *checks, x *ExpectedPrompt) {
+	if x == nil {
+		return
+	}
+	w := g.Prompt()
+	if w.Kind != PromptChoose && w.Kind != PromptOrder {
+		c.add("prompt: no question is open, the game waits for %s", waitingFor(w.Kind))
+		return
+	}
+	c.int("prompt player", x.Player, int(w.Player))
+	if x.Options == nil {
+		return
+	}
+	got := g.PlainOptions()
+	a, b := slices.Clone(x.Options), slices.Clone(got)
+	slices.Sort(a)
+	slices.Sort(b)
+	if !slices.Equal(a, b) {
+		c.add("prompt options are %q, expected %q", got, x.Options)
+	}
+}
+
+// stackItemNames name stack items that are not a card's loot, ability
+// or trigger in a resolved check.
+var stackItemNames = map[StackKind]string{
+	StackRoll: "dice_roll", StackDamage: "damage", StackDeath: "death",
+	StackPenalty: "death_penalty", StackDeathStep: "death_step",
+}
+
+// resolvedName names a resolved item: its card for a loot card, an
+// ability or a trigger; else its kind, attack_roll for an attack roll.
+func resolvedName(e Event) string {
+	if e.Item == nil {
+		return string(e.Card)
+	}
+	switch {
+	case e.Item.Kind == StackRoll && e.Item.Attack:
+		return "attack_roll"
+	case e.Item.Kind == StackLoot || e.Item.Kind == StackAbility || e.Item.Kind == StackTrigger:
+		return string(e.Card)
+	}
+	return stackItemNames[e.Item.Kind]
+}
+
+// checkResolved compares the items that resolved with want, in order:
+// each name must resolve after the one before it; other items may
+// resolve between them. nil is not checked; an empty list expects none.
+func (g *Game) checkResolved(c *checks, want []string, events []Event) {
+	if want == nil {
+		return
+	}
+	var got []string
+	for _, e := range events {
+		if e.Kind == EvStackResolved {
+			got = append(got, resolvedName(e))
+		}
+	}
+	kinds := []string{"attack_roll"}
+	for _, n := range stackItemNames {
+		kinds = append(kinds, n)
+	}
+	slices.Sort(kinds)
+	for _, n := range want {
+		if _, ok := g.cards.find(CardRef(n)); !ok && !slices.Contains(kinds, n) {
+			c.add("resolved: %q is no card and no stack item, items %v", n, kinds)
+			return
+		}
+	}
+	if !inOrder(want, got) || len(want) == 0 && len(got) > 0 {
+		c.add("resolved %v, expected %v in this order", got, want)
+	}
+}
+
+// inOrder reports whether want is a subsequence of got: each item
+// after the one before it.
+func inOrder(want, got []string) bool {
+	at := 0
+	for _, n := range want {
+		for at < len(got) && got[at] != n {
+			at++
+		}
+		if at == len(got) {
+			return false
+		}
+		at++
+	}
+	return true
+}
+
+// eventKinds are every event kind, sorted, for errors.
+func eventKinds() []string {
+	out := make([]string, 0, len(barrierKinds))
+	for k := range barrierKinds {
+		out = append(out, string(k))
+	}
+	slices.Sort(out)
+	return out
+}
+
+// checkEvents checks that each expected kind happened (for its player,
+// when set), or with None that it did not.
+func checkEvents(c *checks, want []ExpectedEvent, events []Event) {
+	for _, x := range want {
+		if _, ok := barrierKinds[x.Kind]; !ok {
+			c.add("events: %q is no event kind, options %v", x.Kind, eventKinds())
+			continue
+		}
+		who := ""
+		if x.Player != nil {
+			who = fmt.Sprintf(" for player %d", *x.Player)
+		}
+		n := 0
+		for _, e := range events {
+			if e.Kind == x.Kind && (x.Player == nil || int(e.Player) == *x.Player) {
+				n++
+			}
+		}
+		switch {
+		case x.None && n > 0:
+			c.add("events: %d %q%s, expected none", n, x.Kind, who)
+		case !x.None && n == 0:
+			c.add("events: no %q%s, expected one", x.Kind, who)
+		}
+	}
+}

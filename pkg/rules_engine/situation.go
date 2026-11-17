@@ -131,6 +131,15 @@ type Expectation struct {
 	// Over and Winners check the game's end; Winners are seats.
 	Over    *bool `json:"over,omitempty"`
 	Winners []int `json:"winners,omitempty"`
+	// Prompt checks the open question: who is asked and its options.
+	// It also makes settling stop at that question (23.6).
+	Prompt *ExpectedPrompt `json:"prompt,omitempty"`
+	// Resolved names stack items in the order they resolved: a card
+	// ref or an item kind (dice_roll, attack_roll, …). Other items may
+	// resolve between them; an empty list expects none (23.6).
+	Resolved []string `json:"resolved,omitempty"`
+	// Events are event kinds that must happen, or with None must not.
+	Events []ExpectedEvent `json:"events,omitempty"`
 }
 
 // ExpectedPlayer checks one player after everything resolved. Hand and
@@ -191,12 +200,17 @@ func RunSituation(data []byte, sets ...CardSet) (Answer, error) {
 	var mismatch []string
 	checked := s.Expect != nil
 	for i, st := range steps {
-		next := ""
+		var stop stopAt
 		if i+1 < len(steps) {
-			next = steps[i+1].Kind
+			stop = stopAt{question: steps[i+1].Kind == "choose", throw: steps[i+1].Kind == "throw"}
+		}
+		// A prompt check stops at the question it checks (23.6): the
+		// step's own, or the file's on the last step.
+		if st.Expect.asks() || (i == len(steps)-1 && s.Expect.asks()) {
+			stop.question = true
 		}
 		label := fmt.Sprintf("step %d (%s)", i+1, st.label())
-		res, err := g.runStep(st.SituationAction, next, multi)
+		res, err := g.runStep(st.SituationAction, stop, multi)
 		if err != nil {
 			if multi {
 				return Answer{}, fmt.Errorf("situation: %s: %s", label, strings.TrimPrefix(err.Error(), "situation: "))
@@ -212,13 +226,13 @@ func RunSituation(data []byte, sets ...CardSet) (Answer, error) {
 		}
 		if st.Expect != nil {
 			checked = true
-			for _, m := range g.mismatches(res.allowed, res.rule, *st.Expect) {
+			for _, m := range g.mismatches(res.allowed, res.rule, res.events, *st.Expect) {
 				mismatch = append(mismatch, label+": "+m)
 			}
 		}
 	}
 	if s.Expect != nil {
-		for _, m := range g.mismatches(ans.Allowed, ans.Rule, *s.Expect) {
+		for _, m := range g.mismatches(ans.Allowed, ans.Rule, ans.Events, *s.Expect) {
 			switch {
 			case !multi:
 				mismatch = append(mismatch, m)
@@ -268,11 +282,15 @@ type stepResult struct {
 	events       []Event
 }
 
-// runStep tries one step and, when allowed, settles with its choices.
-// next is the following step's kind: settling stops at the question a
-// "choose" step answers or the roll a "throw" step throws. steps is
-// true for Situation.Steps, which settle to the open action phase.
-func (g *Game) runStep(a SituationAction, next string, steps bool) (stepResult, error) {
+// stopAt is where settling stops early: at a question once the choices
+// are used up (a following "choose" step, or a prompt check), and at a
+// roll waiting to be thrown (a following "throw" step).
+type stopAt struct{ question, throw bool }
+
+// runStep tries one step and, when allowed, settles with its choices,
+// stopping as stop says. steps is true for Situation.Steps, which
+// settle to the open action phase.
+func (g *Game) runStep(a SituationAction, stop stopAt, steps bool) (stepResult, error) {
 	choices := a.Choices
 	var in Intent
 	switch a.Kind {
@@ -284,7 +302,7 @@ func (g *Game) runStep(a SituationAction, next string, steps bool) (stepResult, 
 		if len(choices) == 0 {
 			return stepResult{}, fmt.Errorf("situation: choose needs choices, options %v", g.PlainOptions())
 		}
-		ev, err := g.settle(choices, next, steps)
+		ev, err := g.settle(choices, stop, steps)
 		return stepResult{allowed: true, events: ev}, err
 	case "throw":
 		w := g.Prompt()
@@ -311,7 +329,7 @@ func (g *Game) runStep(a SituationAction, next string, steps bool) (stepResult, 
 	case err != nil:
 		return stepResult{}, err
 	}
-	more, err := g.settle(choices, next, steps)
+	more, err := g.settle(choices, stop, steps)
 	return stepResult{allowed: true, events: append(ev, more...)}, err
 }
 
@@ -520,12 +538,14 @@ func (a SituationAction) intent(g *Game) (Intent, error) {
 		}
 		return Intent{}, fmt.Errorf("situation: %q is not in player %d's hand", a.Card, a.Player)
 	case "activate":
-		for _, id := range g.controlled(p) {
+		// A room in a room slot too: the engine refuses it to anyone
+		// but the active player (R-CARD-36), as in a game.
+		for _, id := range append(g.controlled(p), g.roomsInPlay()...) {
 			if g.Object(id).Card == a.Card {
 				return Intent{Player: p, Kind: IntentActivate, Objects: []ObjectID{id}, Choice: a.Ability}, nil
 			}
 		}
-		return Intent{}, fmt.Errorf("situation: player %d controls no %q", a.Player, a.Card)
+		return Intent{}, fmt.Errorf("situation: player %d controls no %q, and no room slot holds it", a.Player, a.Card)
 	default:
 		return Intent{}, fmt.Errorf("situation: unknown action kind %q (play, activate, attack, purchase, end_turn, pass, throw, choose, reveal)", a.Kind)
 	}
@@ -553,9 +573,9 @@ func (g *Game) OrderOf(refs []string) ([]ObjectID, error) {
 // settle answers choices by label and lets everyone pass until the stack
 // is empty and the action is over. toAction (steps) also passes empty
 // windows until the open action phase (an end_turn runs to the next
-// player's turn). It stops at a question with no choice left when next
-// is "choose", and at a roll to throw when next is "throw".
-func (g *Game) settle(choices []string, next string, toAction bool) ([]Event, error) {
+// player's turn). It stops at a question with no choice left when
+// stop.question, and at a roll to throw when stop.throw.
+func (g *Game) settle(choices []string, stop stopAt, toAction bool) ([]Event, error) {
 	var out []Event
 	for range 1000 {
 		w := g.Prompt()
@@ -563,7 +583,7 @@ func (g *Game) settle(choices []string, next string, toAction bool) ([]Event, er
 		switch {
 		case g.Over:
 			return out, nil
-		case (w.Kind == PromptChoose || w.Kind == PromptOrder) && len(choices) == 0 && next == "choose":
+		case (w.Kind == PromptChoose || w.Kind == PromptOrder) && len(choices) == 0 && stop.question:
 			return out, nil
 		case w.Kind == PromptChoose:
 			if len(choices) == 0 {
@@ -585,7 +605,7 @@ func (g *Game) settle(choices []string, next string, toAction bool) ([]Event, er
 			}
 			choices = choices[w.Count:]
 			in = Intent{Player: w.Player, Kind: IntentOrder, Objects: order}
-		case w.Kind == PromptThrow && next == "throw":
+		case w.Kind == PromptThrow && stop.throw:
 			return out, nil
 		case w.Kind == PromptThrow:
 			in = Intent{Player: w.Player, Kind: IntentThrow}
@@ -603,8 +623,9 @@ func (g *Game) settle(choices []string, next string, toAction bool) ([]Event, er
 	return out, errors.New("situation: the action never settled")
 }
 
-// mismatches compares a result and the table with an expectation.
-func (g *Game) mismatches(allowed bool, rule string, e Expectation) []string {
+// mismatches compares a result, its events and the table with an
+// expectation.
+func (g *Game) mismatches(allowed bool, rule string, events []Event, e Expectation) []string {
 	var out []string
 	if allowed != e.Allowed {
 		out = append(out, fmt.Sprintf("allowed is %v, expected %v", allowed, e.Allowed))
@@ -621,6 +642,9 @@ func (g *Game) mismatches(allowed bool, rule string, e Expectation) []string {
 	}
 	g.checkDecks(&c, e.Decks, e.Discards)
 	g.checkGame(&c, e)
+	g.checkPrompt(&c, e.Prompt)
+	g.checkResolved(&c, e.Resolved, events)
+	checkEvents(&c, e.Events, events)
 	return c
 }
 
@@ -647,7 +671,7 @@ func BuildTable(setup SituationSetup, sets ...CardSet) (*Game, error) {
 // and passes priority until the stack is empty and no attack or purchase
 // is going on.
 func (g *Game) Settle(choices ...string) ([]Event, error) {
-	return g.settle(choices, "", false)
+	return g.settle(choices, stopAt{}, false)
 }
 
 // Run does the queued automatic work after direct calls (RefillSlots),

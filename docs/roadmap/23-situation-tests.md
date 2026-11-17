@@ -212,7 +212,7 @@ Ideas: TS-13, LR-04, R-03.
    3. Moved in `r`: TestMegaSatanWins, TestRedChampions, TestSumptorium.
    4. Soul of Wrath's file also checks `soul_cards`.
 
-### [ ] 23.6 Checks on prompts and order
+### [x] 23.6 Checks on prompts and order
 
 1. Goal: a file checks what a player is asked and what resolves first.
 2. Tasks:
@@ -229,6 +229,40 @@ Ideas: TS-13, LR-04, R-03.
    1. A Lucky Foot and Bomb! file checks the order.
    2. A Bomb Bum file activates the room.
    3. A file starts with a room's ability on the stack and resolves it.
+4. Added (count: lines in `cards/**/*_test.go`, 2026-11-17):
+   1. `prompt.options`: `tb.Options()` 40, `PlainOptions` 1.
+   2. `prompt.player`: `G.Prompt()` 41; most are loops that pass.
+   3. `resolved`: `ResolvedAt` 4, `FirstAttackRoll` 7, `resolvedItems` 4.
+   4. `events`: `enginetest.Has` 9, `Kind == engine.Ev` 38.
+5. Shape:
+   1. `prompt`: `player` and `options`, any order; a field left out is not checked.
+   2. A prompt check stops its step at the question, as a next `choose` does.
+   3. The top-level `prompt` does that for the last step and for `action`.
+   4. `resolved`: an ordered subsequence; other items may resolve between.
+   5. A card names its loot, ability or trigger; other items by kind.
+   6. Kinds: `dice_roll`, `attack_roll`, `damage`, `death` and the rest.
+   7. A full list was rejected: Bomb!'s damage item would be in every file.
+   8. `events`: `kind`, optional `player`, `none: true` for "must not".
+   9. Event kinds are the engine's names; an unknown one lists them all.
+   10. A step's checks read its own events; the top one every step's.
+6. Rejected:
+   1. Roll values: `resolvedRoll` 13; `resolved` names items, not values.
+   2. Event fields past kind and player (`By`, `Card`, `Amount`): too varied.
+   3. Option order (`opts[0]`, 5): the display order; the set is checked.
+   4. Prompt text keys (1) and `Look` (3): too few.
+7. Rooms work as items (owner, 2026-11-17):
+   1. An `activate` step finds a room in a room slot too.
+   2. The engine refuses another player by R-CARD-36, as in a game.
+   3. A stacked `activate` uses the `trigger` kind's slot lookup.
+   4. Its owner must be the active player; else an error names R-CARD-36.
+8. Files:
+   1. `b2`: `interactions/lucky-foot-bomb.json` checks the order.
+   2. Moved: TestTheBattery, TestBatteryBumOffersOnlyActiveItems (prompt).
+   3. Moved: TestXXITheWorld (events).
+   4. Moved in `r`: TestBombBum, TestBeggar, TestRedVise.
+   5. New in `r`: Bomb Bum refused to Cain; Beggar from the stack.
+   6. New in `r`: Red Vise spares a player with 2 loot cards.
+   7. `stack/three-stacked-events.json` also checks `resolved`.
 
 ### [ ] 23.7 Dump a Go test's setup as a file
 

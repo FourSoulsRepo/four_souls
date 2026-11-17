@@ -100,6 +100,11 @@ Use option 1.
    6. `expect` checks are named as in `setup`; one left out is not checked (23.5).
    7. A card list in `expect` names every card, in any order.
    8. A deck in `expect.decks` compares only its top cards, top first.
+   9. `prompt` checks the open question: who is asked, every option (23.6).
+   10. A prompt check stops its step at the question it checks.
+   11. `resolved` names stack items in order; others may come between.
+   12. `events` names event kinds that must, or must not, happen.
+   13. A room works as an item in `activate` steps and `setup.stack`.
 11. `expect` comes from the rules, never from a run (5.25).
    1. A tool may write `setup` and `steps`; never `expect` (23.7).
 12. Runner

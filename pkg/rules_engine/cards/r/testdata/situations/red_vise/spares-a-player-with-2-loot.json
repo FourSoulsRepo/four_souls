@@ -1,0 +1,15 @@
+{
+  "title": "Red Vise: Isaac ends his turn with 2 loot cards in hand and takes no damage",
+  "source": ["card red_vise"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["a_penny", "a_nickel"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "rooms": ["red_vise"]
+  },
+  "steps": [{"player": 0, "kind": "end_turn"}],
+  "expect": {"allowed": true, "events": [{"kind": "damaged", "none": true}], "active": 1}
+}
