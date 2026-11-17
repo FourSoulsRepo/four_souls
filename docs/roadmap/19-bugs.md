@@ -38,7 +38,7 @@ This step never closes; new reports are appended.
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157      | 7     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141 | 15 |
-| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
+| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119, 19.163 | 12    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.161                                  | 3     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.160 | 38 |
@@ -57,13 +57,13 @@ This step never closes; new reports are appended.
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 | W  | Bot: a cut-off settle scored as finished | Bots       | 19.162                                                 | 1     |
 
-Totals by system (154 items):
+Totals by system (155 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B, T, U | 33 |
 | Card data | C       | 2     |
-| Client    | D–G, O, P, S, V | 42 |
+| Client    | D–G, O, P, S, V | 43 |
 | Server    | H, N    | 4     |
 | e2e       | I, J    | 62    |
 | Release   | K       | 4     |
@@ -5092,3 +5092,18 @@ Totals by system (154 items):
    2. `measure.go` (the card values) uses `try` too; its table is not regenerated here (no number changes); its stack positions are few.
    3. Hard plays out to the end of the turn (cap 120): every candidate is cut by design there; not changed, reported to the lead.
 
+### [ ] 19.163 The corner Menu covers a long right-hand seat name
+
+1. Goal: the right column's seat name is never under the corner Menu, in any language.
+2. Report (step 21 check phase, part 2, 2026-11-17)
+   1. `make screenshots LOCALE=qps`, `screen-bots-table.png`: the Menu button covers the robot and most of "Bot 3 (Standard)" on the right.
+   2. English, same scene: the name wraps beside the Menu, clear of it.
+   3. Evidence: `screenshots/qps/screen-bots-table.png` in the check phase's scratchpad (not in git).
+3. Cause: `Table.css`, `.player-right .opp-name::before` (21.12).
+   1. The float that keeps the name clear of the Menu is 5.25rem wide, fit to the English "Menu".
+   2. A longer label (qps, a translation) makes the button wider than the float.
+4. Tasks:
+   1. The Menu button gives its width to the page: `--game-menu-width` on the root, kept current by a `ResizeObserver` (`GameMenu.tsx`).
+   2. The float takes that width plus the gap; English looks as before.
+   3. Vitest: the button sets the variable.
+   4. Screenshots: `bots.spec.ts`, English and qps.
