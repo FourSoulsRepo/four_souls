@@ -122,9 +122,28 @@ func (s *search) run(w0 *engine.Game) error {
 			}
 		}
 		if s.moves() <= 1 {
-			return nil
+			return s.rest(w0)
 		}
 		s.halve()
+	}
+}
+
+// rest plays the last candidates on further worlds until a time
+// budget with no playout cap runs out: the rounds share out the
+// playouts the first world's time foretold, and the time a move has is
+// its to use (Decision 9.8.1). With a cap it ends at once.
+func (s *search) rest(w0 *engine.Game) error {
+	if s.cap > 0 || s.until.IsZero() {
+		return nil
+	}
+	for {
+		err := s.world(w0)
+		if errors.Is(err, errStop) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
 	}
 }
 
