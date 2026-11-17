@@ -185,6 +185,11 @@ func TestBotsSaveAndLoad(t *testing.T) {
 	if code := impostor.failure(); code != protocol.ErrNotInSave {
 		t.Errorf("a player called Bot 1 joins: %s", code)
 	}
+	// A saved game's seats are its own: no bot changes there (Decision 16).
+	ann.say(protocol.TypeBot, protocol.Bot{Seat: 1, Level: protocol.BotHard})
+	if code, key := ann.refusal(); code != protocol.ErrBadSetup || key != "error.bot_saved" {
+		t.Errorf("a bot changed at a saved game's table: %s %s", code, key)
+	}
 	ann.say(protocol.TypeReady, protocol.Ready{Ready: true})
 	var u protocol.Update
 	ann.next(protocol.TypeUpdate, &u)

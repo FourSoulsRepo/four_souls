@@ -766,6 +766,10 @@ func TestBotRefusals(t *testing.T) {
 			t.Errorf("a bot in seat %d: %s %s", seat, code, key)
 		}
 	}
+	ann.say(protocol.TypeBot, protocol.Bot{Seat: 1}) // "take away the bot" from Bo's seat
+	if code, key := ann.refusal(); code != protocol.ErrBadSetup || key != "error.bot_seat" {
+		t.Errorf("a player's seat taken as a bot's: %s %s", code, key)
+	}
 	for _, level := range []string{"random", "policy", "Standard", "nightmare"} {
 		ann.say(protocol.TypeBot, protocol.Bot{Seat: 2, Level: level})
 		if code, key := ann.refusal(); code != protocol.ErrBadSetup || key != "error.bot_level" {
