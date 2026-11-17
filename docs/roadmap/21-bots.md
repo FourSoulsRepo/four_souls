@@ -131,6 +131,8 @@ Rules for this step (owner, 2026-11-16):
    5. Full run at the end of line 1 (2026-11-17, `make bots`, 50 games a line-up, machine shared): standard wins 43 of 50 (86%) against random. Finished: ×2 96% (48 of 50, median 39 turns); ×3 not reached: 94% (47 of 50, median 60; seeds 10, 23, 35 at the cap); ×4 not reached: 90% (45 of 50, median 66; seeds 10, 11, 15, 18, 42). Deaths a kill ×2 1.69, ×3 1.86, ×4 2.07 (policy 2.22, 2.32, 2.38). Turns with no attack: standard 47 – 54%, policy 17 – 18%. Seed 13, 2 players: standard×2 not finished at 150 turns (souls 2 and 3; 2.97 deaths a kill); hard×2 won in 12 turns.
    6. Time per move: `BenchmarkStandardMove` 6.7 – 7.5 ms, 2.9 – 3.3 MB, 42 000 – 46 000 allocations; in the arena, 12 games side by side, 10 – 25 ms.
    7. Tuning (2026-11-17), partial, not measured in full: attack bar 0 on an empty stack (other moves 1), 12 dice draws, `wItem` 15. Bar 0 for every move with 12 draws: standard×3 98% (49 of 50, median 40), but seed 28 hit the turn guard (items used in a loop), so other moves got 1 back. Attacks only, before `wItem` 15: standard×3 98% (49 of 50, median 31, max 150; seed 11 at the cap), 1.83 deaths a kill, 28% of turns with no attack, 1.7 purchases a seat, 73 ms a move (machine shared). ×4, seed 13, random, flat, hard and `wItem` 15 not measured.
+   8. Check phase, before 7937f18 (2026-11-17, 30 games, 12 cores, machine shared): standard×4 29 of 30 finished (96.7%, median 44 turns, max 110); seed 28 hit the game guard (30000 intents at turn 110, bug 19.162); 1.93 deaths a kill; 34.8 ms a move.
+   9. After 7937f18 (2026-11-17, e5797b5, 30 games, seeds 1–30 with seed 28, 12 cores, no other job; load average 2.6 at the start, up to 15.8 from the arena itself): standard×4 30 of 30 finished (100%), median 49 turns, max 127; no loop guard, nothing refused; 1.79 deaths a kill; 31% of turns with no attack; 17.5 ms a move; 5 min 33 s.
 
 ### [x] 21.6 Hard level
 
@@ -155,6 +157,10 @@ Rules for this step (owner, 2026-11-16):
    6. The built situations pass on 8 worlds each at 150 playouts: the win answered, the weak seat's kill passed, the strong seat's soul answered (3 souls and 2), the leader hit.
    7. Full run at the end of line 1 (2026-11-17, 50 games, 2 players): hard wins against standard 32 of 50 (64%) at 50 playouts a move, 34 of 50 (68%) at 150, 41 of 50 (82%) at 500; finished 100%, 98%, 100%. Hard×4, 20 games: all finished, median 48 turns, 1.25 deaths a kill. Turns with no attack, same games at 150: hard 35%, standard 52%.
    8. Time: `BenchmarkHardMove` 0.43 – 0.61 s, 196 – 198 MB, 3.8 – 3.9 million allocations a move (machine loaded); `BenchmarkPlayout` 2.7 – 2.9 ms; in the arena 0.19 s a move at 50 playouts, 0.56 s at 150, 1.67 s at 500 (ADR 030, Decision 9.8.6).
+   9. Check phase, before 7937f18 (2026-11-17, 150 playouts, 12 cores, machine shared): hard wins 12 of 20 (60%) against standard, 20 of 20 finished (median 23 turns, max 47), 1.34 deaths a kill, 0.64 s a hard move; hard×4 not run (time).
+   10. After 7937f18 (2026-11-17, e5797b5, 150 playouts, 12 cores, no other job; load average 8.3 at the start from the run before, up to 19.0 from the arena itself):
+       1. Hard against standard, 20 games: hard wins 12 of 20 (60%, exactly at the gate); 20 of 20 finished, median 23 turns, max 47; 1.34 deaths a kill; no loop guard, nothing refused; hard 0.27 s a move, standard 13 ms; turns with no attack hard 27%, standard 21%; 7 min 4 s.
+       2. Hard×4, 4 games (lead: only whether they finish with no loop or guard): 4 of 4 finished with a winner, median 80 turns, max 115; no loop guard, nothing refused; 2.14 deaths a kill; 0.21 s a move; 31% of turns with no attack. The 4 games ran side by side, so the slowest game took the whole 27 min 55 s (load average 7.4 at the start, 2.7 – 8.5 during).
 
 ### [x] 21.7 Bots in the lobby
 
