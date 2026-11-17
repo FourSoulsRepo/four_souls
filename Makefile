@@ -95,7 +95,8 @@ site: ## Build the rules website into frontend/dist-site: site.wasm.gz (size che
 		echo "site.wasm: $$raw bytes raw, $$gz bytes gzip (budget $(SITE_BUDGET))" && \
 		if [ $$gz -gt $(SITE_BUDGET) ]; then echo "site.wasm.gz is above the $(SITE_BUDGET)-byte budget (ADR 026)"; exit 1; fi
 	@node cmd/website/smoke.mjs "$$(go env GOROOT)/lib/wasm/wasm_exec.js" $(SITE_DIR)/site.wasm.gz
-	@cp "$$(go env GOROOT)/lib/wasm/wasm_exec.js" $(SITE_DIR)/wasm_exec.js
+	@# install sets its own mode: the toolchain's copy is read-only (19.201).
+	@install -m 644 "$$(go env GOROOT)/lib/wasm/wasm_exec.js" $(SITE_DIR)/wasm_exec.js
 	@cd frontend && npx vite build --mode site --logLevel warn && mv dist-site/site.html dist-site/index.html
 	@echo "site: frontend/dist-site/index.html"
 
