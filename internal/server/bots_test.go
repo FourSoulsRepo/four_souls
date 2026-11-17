@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"log"
+	"os"
 	"runtime"
 	"slices"
 	"strconv"
@@ -426,10 +427,16 @@ func TestBotsGame(t *testing.T) {
 	for i := range seeds {
 		seeds[i] = uint64(1000 + i) //nolint:gosec // a small game number
 	}
-	if raceEnabled || testing.Short() {
+	switch {
+	case raceEnabled || testing.Short():
 		// The race detector slows whole games ten times: the two
 		// shortest, one of each line-up (17 and 16 turns).
 		seeds = []uint64{1002, 1015}
+	case os.Getenv("FOUR_SOULS_BOT_GAMES") == "":
+		// All twenty take minutes, most of this package's time: make
+		// bots plays them (FOUR_SOULS_BOT_GAMES=1); go test plays four,
+		// two of each line-up.
+		seeds = []uint64{1000, 1002, 1005, 1015}
 	}
 	games := len(seeds)
 	// A few games at a time: twenty at once load the machine so much
@@ -437,9 +444,9 @@ func TestBotsGame(t *testing.T) {
 	slots := make(chan struct{}, 4)
 	var mu sync.Mutex
 	var most time.Duration
-	for i, seed := range seeds {
+	for _, seed := range seeds {
 		levels := []string{protocol.BotStandard, protocol.BotHard, protocol.BotStandard}
-		if i%2 == 1 {
+		if seed%2 == 1 { // the line-up by the seed, as when all twenty play
 			levels = []string{protocol.BotHard, protocol.BotStandard, protocol.BotHard}
 		}
 		t.Run(strconv.FormatUint(seed, 10), func(t *testing.T) {

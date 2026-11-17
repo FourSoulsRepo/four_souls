@@ -179,10 +179,12 @@ sims: ## Play SIMS whole random games with the real sets, then the challenges; t
 # BOT_GAMES per line-up; fails on a refused bot intent or when under 95%
 # of games end with a winner within the turn cap, or a loop guard. Then
 # TestStandardNoLoop: whole standard games that once looped (Decision
-# 8.6), too long for go test's timeout. Local.
+# 8.6), too long for go test's timeout; and TestBotsGame's twenty games
+# of a player and bots on the server (23.8). Local.
 bots: ## Play whole games between bot levels and print wins (BOT_GAMES); then the loop replays
 	@go run ./cmd/bot_arena -games $(BOT_GAMES)
 	@FOUR_SOULS_ARENA_GAMES=1 go test -count=1 -timeout 60m -run '^TestStandardNoLoop$$' -v ./internal/arena
+	@FOUR_SOULS_BOT_GAMES=1 go test -count=1 -timeout 60m -run '^TestBotsGame$$' ./internal/server
 
 # The bots' card values (ADR 033, Decision 20): measures every loot card
 # and item on positions of arena games and writes internal/bot/values.json.

@@ -147,7 +147,7 @@ A new engine move of a deck card out of sight that keeps the deck's size needs a
 Its flags: `-games` (50 a line-up; `make bots` passes `BOT_GAMES`), `-seed` (1), `-cap` (150 game turns), `-playouts` (150 a hard move), `-memory` (true: each hard seat remembers), `-match` and `-challenge` (repeat them). Without `-match` and `-challenge` it plays the default line-ups below.
 
 ```sh
-make bots                     # BOT_GAMES=50 per default line-up: standard against random, standard against flat, hard against standard, one hard among three standard, standard×2–4, policy×2–4
+make bots                     # BOT_GAMES=50 per default line-up: standard against random, standard against flat, hard against standard, one hard among three standard, standard×2–4, policy×2–4; then TestStandardNoLoop and TestBotsGame's 20 server games
 go run ./cmd/bot_arena -games 20 -playouts 500 -match hard,standard
 go run ./cmd/bot_arena -games 20 -match policy,random -match policy,policy,policy
 go run ./cmd/bot_arena -games 20 -cap 400 -match policy,policy,policy,policy
