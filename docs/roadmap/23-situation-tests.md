@@ -222,9 +222,13 @@ Ideas: TS-13, LR-04, R-03.
    4. An `activate` step may name a room in a room slot (owner, 2026-11-17).
       1. Only the active player may use it (R-CARD-33, R-CARD-36).
       2. Move the Bomb Bum and Beggar tests to files.
+      3. A `setup.stack` `activate` item may name a room too, as an item.
+      4. Its owner is the active player, who activated it.
+      5. Same rules as a stacked item ability: costs paid, nothing triggers.
 3. Done when:
    1. A Lucky Foot and Bomb! file checks the order.
    2. A Bomb Bum file activates the room.
+   3. A file starts with a room's ability on the stack and resolves it.
 
 ### [ ] 23.7 Dump a Go test's setup as a file
 
