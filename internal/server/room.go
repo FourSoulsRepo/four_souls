@@ -140,6 +140,9 @@ type Room struct {
 	botRand  *mrand.Rand
 	memory   []*world.Memory
 	botThink time.Duration
+	// botPlayouts caps a hard move's playouts (0: none); tests set it,
+	// with a long botThink, so a seeded bot game repeats under any load.
+	botPlayouts int
 	// thinkSlots is the hub's limit on hard thinkers; nil: none.
 	thinkSlots chan struct{}
 	botWork    atomic.Int64

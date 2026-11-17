@@ -31,8 +31,8 @@ func TestBotsMemoryLikeArena(t *testing.T) {
 	for _, seed := range seeds {
 		known += playMemoryGame(t, seed, 400)
 	}
-	// Bots think on a time budget, so a seed's game differs from run to
-	// run; some games remember nothing. The seeds together must.
+	// Hard thinks by playout count here (memoryRoom), so each seed's
+	// game repeats; together they must remember something.
 	if known == 0 {
 		t.Error("the memories never held a card; the check proves nothing")
 	}
@@ -139,7 +139,10 @@ func memoryRoom(t *testing.T, seed uint64, seats []string) *Room {
 	if err != nil {
 		t.Fatal(err)
 	}
-	r.second, r.botThink = time.Millisecond, 2*time.Millisecond
+	// A playout count, not a time: with 2 ms a loaded machine gave hard
+	// no playout at all, so it only passed, and no game remembered a
+	// card (check phase of step 21).
+	r.second, r.botThink, r.botPlayouts = time.Millisecond, time.Minute, 8
 	r.recInfo.game = "g1"
 	t.Cleanup(r.stopThinkers)
 	r.play(characters(setsOf(codes))[:len(seats)])

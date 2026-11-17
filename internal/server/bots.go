@@ -102,10 +102,11 @@ func botLevel(level string) (botai.Level, error) {
 }
 
 // botBudget is the search budget of a level: hard thinks for the room's
-// botThink; standard needs none (Decision 8.10).
+// botThink, and at most botPlayouts playouts when a test sets them;
+// standard needs none (Decision 8.10).
 func (r *Room) botBudget(level string) botai.Budget {
 	if level == protocol.BotHard {
-		return botai.Budget{Time: r.botThink}
+		return botai.Budget{Time: r.botThink, Playouts: r.botPlayouts}
 	}
 	return botai.Budget{}
 }
