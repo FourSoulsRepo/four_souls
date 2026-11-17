@@ -64,7 +64,7 @@ func (g *Game) clone(keepSaved bool) *Game {
 	c.Challenge = clonePtr(g.Challenge, (*ChallengeState).clone)
 	c.Sets = slices.Clone(g.Sets)
 	c.Banned = slices.Clone(g.Banned)
-	c.asks = maps.Clone(g.asks)                                   // an askEffect holds functions only
+	c.asks = maps.Clone(g.asks) // an askEffect holds functions only
 	if keepSaved {
 		c.saved.since = cloneEach(g.saved.since, (*ReplayStep).clone) // origin is never changed in place
 	} else {

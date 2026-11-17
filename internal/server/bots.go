@@ -69,8 +69,8 @@ func (g *botGuard) grow(n int) {
 }
 
 // hardThink is the hard bot's time budget per move (Decision 9.8), the
-// default of the flag -bot_think (Decision 17.2.1).
-const hardThink = 1500 * time.Millisecond
+// default of the flag -bot_think (Decision 17.2.1): the bot's own.
+const hardThink = botai.DefaultThink
 
 // thinkLimit is how many hard bots may think at once in the whole hub
 // (Decision 17.2): half the cores Go uses, at least one. The rest wait.

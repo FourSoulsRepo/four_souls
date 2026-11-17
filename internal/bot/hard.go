@@ -19,9 +19,9 @@ import (
 const (
 	// playoutSteps caps a playout (Decision 9.3).
 	playoutSteps = 120
-	// defaultThink is the time a budget with neither cap thinks
-	// (Decision 9.8).
-	defaultThink = 1500 * time.Millisecond
+	// DefaultThink is the time a budget with neither cap thinks
+	// (Decision 9.8), and the server's -bot_think default (17.2.1).
+	DefaultThink = 1500 * time.Millisecond
 	// yieldSteps: a playout yields the core every this many steps, as
 	// well as after it ends; a long playout would else hold it.
 	yieldSteps = 16
@@ -50,7 +50,7 @@ func hardPick(ctx context.Context, in Input, w *engine.Game, allowed []engine.In
 		start: time.Now(),
 	}
 	if s.cap == 0 && in.Budget.Time == 0 {
-		s.until = s.start.Add(defaultThink)
+		s.until = s.start.Add(DefaultThink)
 	} else if in.Budget.Time > 0 {
 		s.until = s.start.Add(in.Budget.Time)
 	}

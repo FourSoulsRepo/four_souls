@@ -13,10 +13,6 @@ import (
 // coins, prices, HP, ATK, evasion, souls on the table. Every weight is
 // here.
 const (
-	// shopPrice is what a shop item or the treasure deck's top costs
-	// (R-SHOP-03); the policy buys only with that much.
-	shopPrice = 10
-
 	// In the active player's open action phase.
 	wEndTurn  = 1.0  // ends the turn once nothing else draws
 	wAttack   = 0.5  // any attack: souls come from monsters
@@ -108,7 +104,7 @@ func policyWeights(g *engine.Game, p engine.PlayerID, allowed []engine.Intent) [
 		case engine.IntentAttack:
 			ws[i] = wAttack + wAttackOd*max(bestOdds(g, p), deckOdds(g, p))
 		case engine.IntentPurchase:
-			ws[i] = pick(pl.Cents >= shopPrice, wPurchase, 0)
+			ws[i] = pick(pl.Cents >= engine.BasePrice, wPurchase, 0) // buys only with the base price (R-SHOP-03)
 		case engine.IntentPlayLoot:
 			ws[i] = pick(open, wLootOwn, wLootElse)
 		case engine.IntentActivate:

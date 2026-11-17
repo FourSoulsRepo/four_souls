@@ -5,9 +5,9 @@ type PurchaseState struct {
 	On bool `json:"on,omitempty"`
 }
 
-// basePrice is the default price of a shop item or the top of the
+// BasePrice is the default price of a shop item or the top of the
 // treasure deck (R-SHOP-03).
-const basePrice = 10
+const BasePrice = 10
 
 // Events about purchasing.
 const (
@@ -74,9 +74,9 @@ func (g *Game) purchase(item ObjectID, fromDeck bool) {
 // prompt sends it with each option (20.11).
 func (g *Game) priceOf(item ObjectID, fromDeck bool) int {
 	if fromDeck {
-		return basePrice
+		return BasePrice
 	}
-	price := max(basePrice+g.bonus(StatShopPrice, g.Turn.Active, item), 0) // e.g. Steamy Sale
+	price := max(BasePrice+g.bonus(StatShopPrice, g.Turn.Active, item), 0) // e.g. Steamy Sale
 	if g.Turn.FreeShopItem && g.Turn.ShopBought == 0 {
 		price = 0 // Credit Card
 	}
