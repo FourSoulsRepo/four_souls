@@ -1,0 +1,18 @@
+{
+  "title": "Golden Razor Blade used twice for 5¢ each: Cain (2 HP) dies",
+  "source": ["card golden_razor_blade", "card cain"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["golden_razor_blade"], "cents": 10},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "golden_razor_blade", "choices": ["player 2 (cain)"]},
+    {"player": 0, "kind": "activate", "card": "golden_razor_blade", "choices": ["player 2 (cain)"]}
+  ],
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 0}, {"player": 1, "dead": true}]}
+}

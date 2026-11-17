@@ -136,7 +136,7 @@ Ideas: TS-13, LR-04, R-03.
    3. New in `r`: Soul of Wrath (bonus soul counters); `r` gets a runner.
 8. A test file is read strictly: an unknown field fails.
 
-### [ ] 23.4 Several steps
+### [x] 23.4 Several steps
 
 1. Goal: a file plays several actions in a row.
 2. Tasks:
@@ -154,6 +154,13 @@ Ideas: TS-13, LR-04, R-03.
 3. Done when:
    1. An attack, a roll and an end turn run from one file.
    2. The Cain file uses `priority` and has no stack.
+4. Done (2026-11-17):
+   1. Steps settle to the open action phase.
+   2. They stop early only for a next `choose` or `throw` step.
+   3. `action` keeps its old settle; old payloads answer the same.
+   4. Moved: TestEdensBlessing (2 files), TestDagaz, TestPolydactyly.
+   5. Moved: TestBlankCard, TestGoldenRazorBlade.
+   6. New: Eden's Blessing after a fly: attack, throw, end turn.
 
 ### [ ] 23.5 Richer checks
 

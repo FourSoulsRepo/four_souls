@@ -112,6 +112,12 @@ func (w *fieldWalker) unknown(t reflect.Type, key, path string, at int64) {
 // it ignores case.
 func fieldType(t reflect.Type, key string) (reflect.Type, bool) {
 	for f := range t.Fields() {
+		if inner, ok := promoted(f); ok {
+			if ft, ok := fieldType(inner, key); ok {
+				return ft, true
+			}
+			continue
+		}
 		if name := jsonName(f); name != "" && strings.EqualFold(name, key) {
 			return f.Type, true
 		}
@@ -122,11 +128,26 @@ func fieldType(t reflect.Type, key string) (reflect.Type, bool) {
 func fieldNames(t reflect.Type) []string {
 	var names []string
 	for f := range t.Fields() {
+		if inner, ok := promoted(f); ok {
+			names = append(names, fieldNames(inner)...)
+			continue
+		}
 		if name := jsonName(f); name != "" {
 			names = append(names, name)
 		}
 	}
 	return names
+}
+
+// promoted is the struct type of an embedded field with no JSON name,
+// whose fields JSON reads as the outer struct's (SituationStep).
+func promoted(f reflect.StructField) (reflect.Type, bool) {
+	t := f.Type
+	for t.Kind() == reflect.Pointer {
+		t = t.Elem()
+	}
+	name, _, _ := strings.Cut(f.Tag.Get("json"), ",")
+	return t, f.Anonymous && name == "" && t.Kind() == reflect.Struct
 }
 
 // jsonName is a field's JSON name, or "" for one JSON skips.

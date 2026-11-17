@@ -1,0 +1,17 @@
+{
+  "title": "Eden's Blessing: Isaac ends his turn with 0¢ and gains 6¢",
+  "source": ["card edens_blessing"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["edens_blessing"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 6}]}
+}

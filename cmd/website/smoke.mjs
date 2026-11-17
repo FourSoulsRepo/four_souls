@@ -49,6 +49,12 @@ assert.equal(allowed.allowed, true);
 assert.equal(allowed.matches, true, JSON.stringify(allowed.mismatch));
 assert.ok(allowed.events.length > 0);
 
+// Steps (23.4): the answer is the first refused step's.
+const steps = JSON.parse(api.check(payload('steps-third-penny-refused.json')));
+assert.equal(steps.allowed, false);
+assert.equal(steps.rule, 'R-CARD-08');
+assert.equal(steps.matches, true, JSON.stringify(steps.mismatch));
+
 assert.ok(JSON.parse(api.check('not json')).error);
 assert.ok(JSON.parse(api.check()).error);
 

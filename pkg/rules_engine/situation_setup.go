@@ -177,3 +177,24 @@ func (g *Game) setUpRolls(rolls []int) error {
 	g.ForceRolls(rolls...)
 	return nil
 }
+
+// openSetupWindow opens the first window: for holder, the top item's owner
+// or the active player, unless the setup names the seat (23.4). With an
+// empty stack, the players from the active player up to that seat have
+// passed (R-PRIO-02), so when it and the rest pass the window closes as
+// in a game (R-PRIO-05).
+func (g *Game) openSetupWindow(seat *int, holder PlayerID) error {
+	if seat == nil {
+		g.openWindow(holder)
+		return nil
+	}
+	n := len(g.Players)
+	if *seat < 0 || *seat >= n {
+		return fmt.Errorf("situation: priority %d is not a seat, options 0 to %d", *seat, n-1)
+	}
+	g.openWindow(PlayerID(*seat))
+	if len(g.Stack) == 0 {
+		g.Priority.Passes = (*seat - int(g.Turn.Active) + n) % n
+	}
+	return nil
+}

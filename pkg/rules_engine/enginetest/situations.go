@@ -131,7 +131,14 @@ func CheckSituation(tree Tree, files fs.FS, path string, sets ...engine.CardSet)
 	if err != nil {
 		return append(out, fmt.Sprintf("%s: %v", path, err))
 	}
-	step := fmt.Sprintf("step 1 (%s %s)", s.Action.Kind, s.Action.Card)
+	if s.Action == nil {
+		// Steps: each mismatch names its step, or the end (23.4).
+		for _, m := range ans.Mismatch {
+			out = append(out, path+", "+m)
+		}
+		return out
+	}
+	step := strings.TrimSpace(fmt.Sprintf("step 1 (%s %s", s.Action.Kind, s.Action.Card)) + ")"
 	if ans.Rule != "" {
 		step += fmt.Sprintf(", refused by %s: %s", ans.Rule, ans.Reason)
 	}

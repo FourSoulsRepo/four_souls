@@ -95,6 +95,8 @@ Use option 1.
    1. Old payloads keep working; website links hold them (12.7).
    2. `action` stays; `steps` is added beside it (23.4).
    3. Every new field is optional for a payload.
+   4. A file has `action` or `steps`, never both.
+   5. A step may carry its own `expect`; the top one is checked at the end.
 11. `expect` comes from the rules, never from a run (5.25).
    1. A tool may write `setup` and `steps`; never `expect` (23.7).
 12. Runner
@@ -106,6 +108,7 @@ Use option 1.
    6. It reads a test file strictly: an unknown field fails (23.3).
    7. A payload outside a tree is read as before.
    8. An unknown field's error names its line, path and nearest field.
+   9. A mismatch names its step, or the end for the top `expect`.
 13. A new card's simple tests are files from now on.
    1. `Adding-a-card.md` says how (23.9).
 

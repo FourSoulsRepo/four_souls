@@ -146,7 +146,63 @@ func TestCheckSituationUnknownFieldPlace(t *testing.T) {
 	got := check(enginetest.CardTree, "razor_blade/hits-cain.json", data)
 	want := []string{
 		`line 4, setup.players[1]: unknown field "centz"; did you mean "cents"?`,
-		`line 5, top level: unknown field "zzz"; fields: title, sets, seed, setup, action, expect, source`,
+		`line 5, top level: unknown field "zzz"; fields: title, sets, seed, setup, action, steps, expect, source`,
+	}
+	if len(got) != 3 {
+		t.Fatalf("problems %q; want two fields and the field list", got)
+	}
+	for i, w := range want {
+		if !strings.HasSuffix(got[i], w) {
+			t.Errorf("problem %q; want it to end with %q", got[i], w)
+		}
+	}
+}
+
+// razorSteps is razorFile with steps: Razor Blade on Cain, then the
+// end of the turn; step is the first step's extra fields.
+func razorSteps(step, expect string) string {
+	return `{
+		"title": "Razor Blade on Cain, then end the turn",` + cardSource + `
+		"sets": ["b2"],
+		"setup": {"players": [{"character": "isaac", "items": ["razor_blade"]}, {"character": "cain"}], "active": 0},
+		"steps": [
+			{"player": 0, "kind": "activate", "card": "razor_blade", "choices": ["player 2 (cain)"]` + step + `},
+			{"player": 0, "kind": "end_turn"}
+		]` + expect + `
+	}`
+}
+
+// A step's mismatch names the file and the step; the end's names the end.
+func TestCheckSituationStepMismatch(t *testing.T) {
+	// The card text: Cain takes 1 damage. R-TURN-13: it heals as the turn passes.
+	right := razorSteps(`, "expect": {"allowed": true, "after": [{"player": 1, "damage": 1}]}`, `, "expect": {"allowed": true, "after": [{"player": 1, "damage": 0}]}`)
+	if got := check(enginetest.CardTree, "razor_blade/hits-cain.json", right); len(got) != 0 {
+		t.Fatalf("problems %q; want none", got)
+	}
+	wrong := razorSteps(`, "expect": {"allowed": true, "after": [{"player": 1, "damage": 2}]}`, `, "expect": {"allowed": true, "after": [{"player": 1, "damage": 1}]}`)
+	got := check(enginetest.CardTree, "razor_blade/hits-cain.json", wrong)
+	want := []string{
+		"razor_blade/hits-cain.json, step 1 (activate razor_blade): player 1 damage is 1, expected 2",
+		"razor_blade/hits-cain.json, end: player 1 damage is 0, expected 1",
+	}
+	if len(got) != len(want) {
+		t.Fatalf("problems %q; want %q", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Errorf("problem %q; want %q", got[i], want[i])
+		}
+	}
+}
+
+// The strict reader walks steps too: a typo names the step's path.
+func TestCheckSituationStepUnknownField(t *testing.T) {
+	data := razorSteps(`, "choises": []`, `, "expect": {"allowed": true}`)
+	data = strings.Replace(data, `{"player": 0, "kind": "end_turn"}`, `{"player": 0, "kind": "end_turn", "zzz": 1}`, 1)
+	got := check(enginetest.CardTree, "razor_blade/hits-cain.json", data)
+	want := []string{
+		`steps[0]: unknown field "choises"; did you mean "choices"?`,
+		`steps[1]: unknown field "zzz"; fields: player, kind, card, ability, choices, expect`,
 	}
 	if len(got) != 3 {
 		t.Fatalf("problems %q; want two fields and the field list", got)

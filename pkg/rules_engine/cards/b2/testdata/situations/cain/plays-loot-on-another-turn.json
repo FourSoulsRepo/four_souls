@@ -1,5 +1,5 @@
 {
-  "title": "Cain used his tap on Isaac's turn: he plays A Penny! in response to a roll",
+  "title": "Cain used his tap on Isaac's turn: with priority, he plays A Penny!",
   "source": ["card cain", "card a_penny", "R-CARD-08"],
   "sets": ["b2"],
   "setup": {
@@ -9,7 +9,7 @@
     ],
     "active": 0,
     "monsters": ["fly", "leech"],
-    "stack": [{"dice_roll": 3, "owner": 1}]
+    "priority": 1
   },
   "action": {"player": 1, "kind": "play", "card": "a_penny"},
   "expect": {"allowed": true, "after": [{"player": 1, "cents": 1, "hand": 0}]}

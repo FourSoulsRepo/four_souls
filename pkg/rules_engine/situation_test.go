@@ -314,3 +314,130 @@ func TestSituationSetupFieldErrors(t *testing.T) {
 		}
 	}
 }
+
+// razorSteps is a payload with Razor ("Pay 5¢: deal 1 damage") and
+// hero_a's 7 cents; extra is put in setup, steps after "steps":.
+func razorSteps(extra, steps string) string {
+	return `{"sets":["test","abilities"],"setup":{"players":[{"character":"hero_a","items":["razor"],"cents":7},
+		{"character":"hero_b"}],"active":0,"monsters":["gaper"]` + extra + `},"steps":` + steps + `}`
+}
+
+// A step may leave a question for a following choose step, may be
+// refused, and later steps still run; each step's expect is checked
+// after it, the file's at the end (23.4).
+func TestSituationSteps(t *testing.T) {
+	data := razorSteps("", `[
+		{"player": 0, "kind": "activate", "card": "razor"},
+		{"kind": "choose", "choices": ["player 2 (hero_b)"], "expect": {"allowed": true, "after": [{"player": 0, "cents": 2}, {"player": 1, "damage": 1}]}},
+		{"player": 0, "kind": "activate", "card": "razor", "expect": {"allowed": false, "rule": "R-ABIL-07"}},
+		{"player": 0, "kind": "end_turn"}]`)
+	// R-ABIL-07: 2¢ can't pay 5¢. R-TURN-13: damage heals as the turn passes.
+	end := `, "expect": {"allowed": false, "rule": "R-ABIL-07", "after": [{"player": 1, "damage": 0}]}`
+	ans, err := RunSituation([]byte(strings.TrimSuffix(data, "}")+end+"}"), testSet, abilitySet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ans.Allowed || ans.Rule != "R-ABIL-07" || ans.Matches == nil || !*ans.Matches {
+		t.Fatalf("answer %+v; want the first refusal, R-ABIL-07, and a match", ans)
+	}
+
+	// Wrong values: each mismatch names its step, or the end.
+	wrong := strings.Replace(data, `"damage": 1}]}}`, `"damage": 2}]}}`, 1)
+	end = `, "expect": {"allowed": true, "after": [{"player": 1, "damage": 1}]}`
+	ans, err = RunSituation([]byte(strings.TrimSuffix(wrong, "}")+end+"}"), testSet, abilitySet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []string{
+		"step 2 (choose): player 1 damage is 1, expected 2",
+		"end, first refusal at step 3 (activate razor), refused by R-ABIL-07",
+		"allowed is false, expected true",
+		"player 1 damage is 0, expected 1",
+	}
+	got := strings.Join(ans.Mismatch, "\n")
+	for _, w := range want {
+		if !strings.Contains(got, w) {
+			t.Errorf("mismatch %q; want %q in it", ans.Mismatch, w)
+		}
+	}
+}
+
+// Settling stops at a roll for a following throw step.
+func TestSituationThrowStep(t *testing.T) {
+	data := razorSteps(`,"rolls":[6,6]`, `[
+		{"player": 0, "kind": "attack", "choices": ["gaper"]},
+		{"kind": "throw"}]`)
+	g, err := BuildTable(SituationSetup{
+		Players:  []SituationPlayer{{Character: "hero_a"}, {Character: "hero_b"}},
+		Monsters: []CardRef{"gaper"},
+	}, testSet, abilitySet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = g.runStep(SituationAction{Player: 0, Kind: "attack", Choices: []string{"gaper"}}, "throw", true); err != nil {
+		t.Fatal(err)
+	}
+	if g.Prompt().Kind != PromptThrow {
+		t.Fatalf("prompt %+v; want a roll to throw", g.Prompt())
+	}
+	// gaper: HP 2, DC 3, 3¢; hero_a ATK 1. The attack goes on until it
+	// ends (R-ATK-11): two 6s hit twice and kill it, for 3¢.
+	end := `, "expect": {"allowed": true, "after": [{"player": 0, "cents": 10, "damage": 0}]}`
+	ans, err := RunSituation([]byte(strings.TrimSuffix(data, "}")+end+"}"), testSet, abilitySet)
+	if err != nil || ans.Matches == nil || !*ans.Matches {
+		t.Fatalf("answer %+v, %v; want a match", ans, err)
+	}
+}
+
+func TestSituationStepErrors(t *testing.T) {
+	for _, c := range []struct{ data, want string }{
+		{`{"sets":["test"],"setup":{"players":[{"character":"hero_a"}]},"action":{"kind":"pass"},"steps":[{"kind":"pass"}]}`, "both action and steps"},
+		{`{"sets":["test"],"setup":{"players":[{"character":"hero_a"}]},"steps":[]}`, "steps is empty"},
+		{`{"sets":["test"],"setup":{"players":[{"character":"hero_a"}]}}`, "needs an action or steps"},
+		{razorSteps(`,"priority":2`, `[{"kind":"pass"}]`), "priority 2 is not a seat, options 0 to 1"},
+		{razorSteps(`,"priority":-1`, `[{"kind":"pass"}]`), "priority -1 is not a seat"},
+		{razorSteps("", `[{"kind":"choose","choices":["gaper"]}]`), "step 1 (choose): choose: no question is open"},
+		{razorSteps("", `[{"kind":"throw"}]`), "step 1 (throw): throw: no roll waits to be thrown"},
+		{razorSteps("", `[{"kind":"pass"},{"kind":"dance"}]`), `step 2 (dance): unknown action kind "dance"`},
+		{razorSteps("", `[{"kind":"activate","card":"razor"},{"kind":"choose"}]`), "step 2 (choose): choose needs choices"},
+		{razorSteps("", `[{"kind":"activate","card":"razor"},{"kind":"pass"}]`), "step 1 (activate razor): a choice is needed"},
+		{razorSteps("", `[{"kind":"reveal","card":"penny"}]`), "step 1 (reveal penny): reveal: \"penny\" is no card of the monster deck"},
+	} {
+		_, err := RunSituation([]byte(c.data), testSet, abilitySet)
+		if err == nil || !strings.Contains(err.Error(), c.want) {
+			t.Errorf("error %v; want %q", err, c.want)
+		}
+	}
+}
+
+// setup.priority: with an empty stack the players before the seat, from
+// the active player, have passed (R-PRIO-02); when it and the rest pass,
+// the window closes as in a game (R-PRIO-05). With a stack it overrides
+// the top item's owner.
+func TestSituationPriority(t *testing.T) {
+	seat := func(n int) *int { return &n }
+	players := []SituationPlayer{{Character: "hero_a"}, {Character: "hero_b"}, {Character: "hero_c"}}
+	g, err := BuildTable(SituationSetup{Players: players, Active: 1, Priority: seat(0)}, testSet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if w := g.Prompt(); w.Kind != PromptPriority || w.Player != 0 || g.Priority.Passes != 2 {
+		t.Fatalf("prompt %+v, passes %d; want player 0 with 2 passes (players 1 and 2)", w, g.Priority.Passes)
+	}
+	if _, err = g.Apply(Intent{Player: 0, Kind: IntentPass}); err != nil {
+		t.Fatal(err)
+	}
+	// All three passed with an empty stack: the action phase goes back
+	// to the active player (R-STACK-07, R-TURN-09).
+	if w := g.Prompt(); w.Kind != PromptPriority || w.Player != 1 || g.Priority.Passes != 0 || g.Turn.Active != 1 {
+		t.Errorf("prompt %+v, passes %d; want the active player 1 with no passes", w, g.Priority.Passes)
+	}
+
+	g, err = BuildTable(SituationSetup{Players: players, Priority: seat(0), Stack: []SituationStack{{DiceRoll: 3, Owner: 2}}}, testSet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if w := g.Prompt(); w.Player != 0 || g.Priority.Passes != 0 {
+		t.Errorf("prompt %+v, passes %d; want player 0 over the roll's owner, no passes", w, g.Priority.Passes)
+	}
+}
