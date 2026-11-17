@@ -94,6 +94,8 @@ Use options 1, 3, 5 and 10.
    12. Version 6: texts are messages, a key and values (ADR 021, 16.4).
    13. Prompt questions and options, stack labels, reasons, `error` → `text`.
    14. Version 7: bots (ADR 030, 21.7); an older client would take a bot's seat for a free one.
+   15. Version 7 also: event `deck_order` and `Event.deck` (ADR 030, 21.15); v7: bot seats, deck_order.
+   16. A client skips an event kind it does not know: no history line, no animation.
 6. Cards
    1. Messages carry card refs (`the_d6`, `the_d6@2`), never card text.
    2. A client shows an unknown ref as a blank card with the ref (SP-05).

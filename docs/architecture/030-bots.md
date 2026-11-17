@@ -227,6 +227,8 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    9. The game list counts bot seats as taken.
    10. `welcome` → `bots` lists the levels the server allows (Decision 17); the app hides the others.
    11. The protocol version goes up by one (ADR 006): version 7.
+      1. v7: bot seats, deck_order (the event of Decision 19.16.2).
+      2. The client and the website skip an event kind they do not know (checked at the merge, 2026-11-17).
    12. A host who leaves a table with bots: the next human in seat order moves into seat 0 and hosts.
       1. The game list names the new host; bots keep their seats.
       2. With no human left the table closes (10.8).

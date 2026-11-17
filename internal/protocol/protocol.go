@@ -25,7 +25,8 @@ import (
 // questions and options, stack labels, reasons, errors.
 // 7: bots (ADR 030, Decision 10): bot seats, the bot message and the
 // levels the server allows; an older client would take a bot's seat
-// for a free one.
+// for a free one. Also the event deck_order and Event.Deck (ADR 030,
+// Decision 19.16). v7: bot seats, deck_order.
 const Version = 7
 
 // DefaultPort is the server's TCP port unless configured.
