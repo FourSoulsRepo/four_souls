@@ -214,7 +214,7 @@ Rules for this step (owner, 2026-11-16):
 3. Done when:
    1. 20 tables of 1 human and 3 hard bots: no room stall over 100 ms; every bot answers before the response timer.
 
-### [ ] 21.11 Lobby screen
+### [x] 21.11 Lobby screen
 
 1. Goal: the host adds bots in the app (ADR 030, Decision 10).
 2. Tasks:
@@ -229,6 +229,7 @@ Rules for this step (owner, 2026-11-16):
    9. The lobby never shows a bot as away or disconnected: `Seat.Connected` is false for a bot.
 3. Done when:
    1. Use case "Play with bots" passes as an e2e test.
+      1. UC-44; `e2e/tests/bots.spec.ts`: the host adds 3 bots, changes and removes one, starts alone, and the bots throw their first-player dice.
 
 ### [ ] 21.12 Bots at the game table
 

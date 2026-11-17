@@ -1,0 +1,9 @@
+/* The robot sits on the text line, in the text's color. */
+.bot-icon {
+  flex: none;
+  width: 1.15em;
+  height: 1.15em;
+  margin-right: 0.35em;
+  vertical-align: -0.2em;
+  fill: currentColor;
+}

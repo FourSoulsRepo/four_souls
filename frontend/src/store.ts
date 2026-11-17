@@ -51,6 +51,7 @@ import {
   protocolVersion,
   recordURL,
   wsURLs,
+  type Bot,
   type Create,
   type Envelope,
   type Hello,
@@ -357,6 +358,9 @@ interface AppState extends Session {
   joinGame: (game: string, password?: string) => void;
   loadSave: (save: string) => void;
   setReady: (ready: boolean) => void;
+  // seatBot seats a bot of the level, changes its level, or with level
+  // '' takes it away; the host only (ADR 030, Decision 10.4).
+  seatBot: (seat: number, level: string) => void;
   // pick picks one of the player's draft offers (GS-01, 14.11).
   pick: (card: string) => void;
   leaveTable: () => Promise<void>;
@@ -1164,6 +1168,9 @@ export const useApp = create<AppState>()((set, get) => {
     },
     setReady: (ready) => {
       send('ready', { ready });
+    },
+    seatBot: (seat, level) => {
+      send('bot', { seat, level } satisfies Bot);
     },
     pick: (card) => {
       send('pick', { card });

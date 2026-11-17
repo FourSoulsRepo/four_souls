@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { autoJoinStep, canCreate, challengeText, emptyLobby, lanRows, oneOpenGame, leftTable, forgotten, lost, onMessage, optionsText, remember, renamed, serverLabel, upText, type Session } from './lobby';
-import type { Table } from './protocol';
+import { autoJoinStep, botLevelName, botLevels, canCreate, challengeText, isAway, isTableHost, seatName, emptyLobby, lanRows, oneOpenGame, leftTable, forgotten, lost, onMessage, optionsText, remember, renamed, serverLabel, upText, type Session } from './lobby';
+import type { Seat, Table, Welcome } from './protocol';
 
 const start: Session = { screen: 'join', lobby: emptyLobby, game: null, error: '' };
 
@@ -275,5 +275,59 @@ describe('LAN Join (19.149)', () => {
     expect(autoJoinStep(a, { type: 'table', data: table })).toEqual({ next: null, fail: false });
     expect(autoJoinStep(a, { type: 'update', data: {} })).toEqual({ next: null, fail: false });
     expect(autoJoinStep(a, { type: 'welcome', data: {} })).toEqual({ next: a, fail: false });
+  });
+});
+
+describe('bots at the table (ADR 030)', () => {
+  const bot: Seat = { seat: 1, name: 'Bot 1', connected: false, ready: true, bot: 'standard', bot_n: 1 };
+  const free: Seat = { seat: 2, name: '', connected: false };
+  const ann: Seat = { seat: 0, name: 'Ann', connected: true };
+  const bo: Seat = { seat: 3, name: 'Bo', connected: true };
+  const withBots: Table = { game: 'g1', you: 0, seats: [ann, bot, free, bo], sets: ['b2'] };
+  const welcome: Welcome = { protocol: 7, app: '0.1.0', engine: '0.1.0', token: '', seat: -1, bots: ['standard', 'hard'] };
+
+  it('names a bot by its number and level, a player by the name', () => {
+    expect(seatName(bot)).toBe('Bot 1 (Standard)');
+    expect(seatName({ ...bot, bot: 'hard', bot_n: 3 })).toBe('Bot 3 (Hard)');
+    expect(seatName(ann)).toBe('Ann');
+  });
+
+  it("shows a newer server's level by its ID", () => {
+    expect(botLevelName('hard')).toBe('Hard');
+    expect(botLevelName('ultra')).toBe('ultra');
+  });
+
+  it('never shows a bot as away, though it has no connection', () => {
+    expect(isAway(bot)).toBe(false);
+    expect(isAway({ ...ann, connected: false })).toBe(true);
+    expect(isAway(free)).toBe(false);
+  });
+
+  it('gives the host the levels the server allows', () => {
+    expect(botLevels(withBots, welcome)).toEqual(['standard', 'hard']);
+    expect(botLevels(withBots, { ...welcome, bots: ['standard'] })).toEqual(['standard']);
+  });
+
+  it('gives no buttons when the server allows no bots', () => {
+    expect(botLevels(withBots, { ...welcome, bots: undefined })).toEqual([]);
+    expect(botLevels(withBots, { ...welcome, bots: [] })).toEqual([]);
+    expect(botLevels(withBots, null)).toEqual([]);
+  });
+
+  it('gives no buttons to the other players', () => {
+    expect(isTableHost({ ...withBots, you: 3 })).toBe(false);
+    expect(botLevels({ ...withBots, you: 3 }, welcome)).toEqual([]);
+  });
+
+  it("gives no buttons at a saved game's table: its seats wait for its players", () => {
+    expect(botLevels({ ...withBots, loaded: 'g1' }, welcome)).toEqual([]);
+  });
+
+  it('makes the first player in seat order the host once seat 0 is free', () => {
+    // The host left a table without bots; the server moves Bo to seat 0
+    // on the first bot (Decision 10.12). A bot never hosts.
+    const left: Table = { ...withBots, you: 3, seats: [{ ...free, seat: 0 }, bot, free, bo] };
+    expect(isTableHost(left)).toBe(true);
+    expect(botLevels(left, welcome)).toEqual(['standard', 'hard']);
   });
 });
