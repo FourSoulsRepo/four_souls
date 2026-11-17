@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151 | 21 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110 | 22 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193 | 18 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
@@ -57,11 +57,11 @@ This step never closes; new reports are appended.
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 
-Totals by system (184 items):
+Totals by system (185 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U, W | 42 |
+| Engine    | A, B, T, U, W | 43 |
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 53 |
 | Server    | H, N    | 4     |
@@ -3504,7 +3504,7 @@ Totals by system (184 items):
    3. Test: the same choices in a rules test end the turn.
 5. e2e-games bans them too: Smelter, Portable Slot Machine, in `games.spec.ts` (2026-11-08).
 
-### [ ] 19.110 Headless Horseman: prevent death lands it on 1 HP, so its heal ends at 3
+### [x] 19.110 Headless Horseman: prevent death lands it on 1 HP, so its heal ends at 3
 
 1. Goal: the Horseman's death prevention does not heal; its 2 HP heal starts from 0 HP and ends at 2.
 2. Report (owner, 2026-11-01)
@@ -3536,8 +3536,8 @@ Totals by system (184 items):
    6. Open question 33 records the ruling.
    7. Gates: `make build vet test lint` exit 0.
    8. Not changed: `PreventYourDeath` for players (Broken Ankh, Guppy's Collar); they still heal to 1 HP.
-7. Owner notes
-   1. Waiting for the owner's review.
+7. Owner notes (2026-11-17)
+   1. Owner marks 19.110 solved.
 
 ### [x] 19.111 Glitch's copy mark does not say which card it copies
 
@@ -4938,7 +4938,7 @@ Totals by system (184 items):
    2. Check other specs that use Blood Donation the same way.
    3. Check: the spec, both browsers, 5 workers, 10 repeats.
 
-### [ ] 19.157 Trick: a monster that gains a revealed monster's abilities shows no copy mark
+### [x] 19.157 Trick: a monster that gains a revealed monster's abilities shows no copy mark
 
 1. Goal: a monster that gained abilities shows a copy mark for every gained card.
 2. Report (owner, 2026-11-11)
@@ -4984,6 +4984,8 @@ Totals by system (184 items):
    18. Both reran 3 times per browser: 12 of 12 passed.
    19. Evidence: `.cache/e2e-evidence/19.157-full1/` (not in git).
    20. Screenshots: `.cache/screenshots/19.157/before/` and `after/`.
+7. Owner notes (2026-11-17)
+   1. Owner marks 19.157 solved.
 
 ### [x] 19.158 e2e: Soft rollback test sees Undo instead of Ask to undo
 
