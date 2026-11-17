@@ -23,7 +23,7 @@ Each step ends in something that runs and is tested.
 | 16 | Localization | Menus, messages, and cards in several languages | 8 | Done |
 | 14 | More sets | Gold Box, Four Souls+, Requiem, promos | 8 | In progress |
 | 12 | Rules website | Engine in WebAssembly on GitHub Pages, in English and Russian | 8, 16 | In progress |
-| 20 | Game feel | Hearthstone-like timing, impacts and pacing (ADR 027) | 8 | Done |
+| 20 | Game feel | Hearthstone-like timing, impacts and pacing (ADR 027) | 8 | In progress |
 | 18 | Play-test | New-user check, play-test, docs check | 14 | In progress |
 | 21 | Bindings by domain | Wails bindings split into packages under `bindings/` | 8 | Done |
 | 22 | Test reliability | Bugs caught by tests before play tests (ADR 032) | 19 | Done |
@@ -329,6 +329,7 @@ Step 10 done (owner, 2026-11-16); it merges with step 18.
 6. One sound per moment; response timer only near its end.
 7. Ideas: V-54, V-13, V-22.
 8. Artists and translators credited like the reference (CD-14).
+9. Deck choices show deck backs, not buttons (V-56).
 
 ## 21. Bindings by domain
 
