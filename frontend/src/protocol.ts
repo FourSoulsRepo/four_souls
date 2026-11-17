@@ -6,7 +6,7 @@ import type { Msg } from './locale';
 
 export type { Msg } from './locale';
 
-export const protocolVersion = 6;
+export const protocolVersion = 7;
 export const defaultPort = 4774;
 
 export interface Envelope {
@@ -38,6 +38,8 @@ export interface Welcome {
   presence?: boolean;
   // name is the server's name, shown instead of its address (N-18).
   name?: string;
+  // bots lists the bot levels a host may seat here (ADR 030); none: no bots.
+  bots?: string[];
 }
 
 // Presence is what a player points at now (15.35, ADR 016): the card
@@ -180,6 +182,15 @@ export interface Seat {
   kicked?: boolean;
   // dice is the seat's dice look (V-19); none draws the default one.
   dice?: string;
+  // bot is a bot seat's level, bot_n its number: name is "Bot N" (ADR 030).
+  bot?: string;
+  bot_n?: number;
+}
+
+// Bot seats, changes or removes (level "") a bot; the host only (ADR 030).
+export interface Bot {
+  seat: number;
+  level: string;
 }
 
 export interface Table {

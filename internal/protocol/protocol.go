@@ -23,7 +23,10 @@ import (
 // table as if the undone steps still stood.
 // 6: texts are messages, a key and its values (ADR 021, 16.4): prompt
 // questions and options, stack labels, reasons, errors.
-const Version = 6
+// 7: bots (ADR 030, Decision 10): bot seats, the bot message and the
+// levels the server allows; an older client would take a bot's seat
+// for a free one.
+const Version = 7
 
 // DefaultPort is the server's TCP port unless configured.
 const DefaultPort = 4774
@@ -82,7 +85,29 @@ const (
 
 	// The host ends a game for everyone (19.84). An older server refuses it.
 	TypeEnd = "end" // client → server: the game stops unfinished
+
+	// Bots (ADR 030, Decision 10).
+	TypeBot = "bot" // client → server: the host seats, changes or removes a bot
 )
+
+// Bot levels a player meets (ADR 030, Decision 1). The server allows
+// some or all of them (Welcome.Bots); internal/bot names the same
+// strings.
+const (
+	BotStandard = "standard"
+	BotHard     = "hard"
+)
+
+// BotLevels lists the levels a player meets, easiest first.
+func BotLevels() []string { return []string{BotStandard, BotHard} }
+
+// Bot seats a bot of Level at Seat, changes its level, or takes it away
+// when Level is "" (ADR 030, Decision 10.4). Only the host sends it,
+// only for a free seat or a bot's seat.
+type Bot struct {
+	Seat  int    `json:"seat"`
+	Level string `json:"level"`
+}
 
 // Envelope wraps every message. ID is set by the client on requests;
 // the server copies it into replies.
@@ -129,6 +154,9 @@ type Welcome struct {
 	// Name is the server's name, set by its operator; the app shows it
 	// instead of the address (N-18). Empty on an app's own host.
 	Name string `json:"name,omitempty"`
+	// Bots lists the bot levels a host may seat here (ADR 030,
+	// Decision 17); empty: none. The app hides the others.
+	Bots []string `json:"bots,omitempty"`
 }
 
 // Intent asks the server to do something; the server fills in the
@@ -294,6 +322,10 @@ type Seat struct {
 	Kicked    bool   `json:"kicked,omitempty"` // the seat is empty for good (N-08)
 	// Dice is the seat's dice look (V-19); "" draws the default one.
 	Dice string `json:"dice,omitempty"`
+	// Bot is the level of a bot's seat; "": a human's or a free one
+	// (ADR 030, Decision 10.1). Name is then "Bot N", N being BotN.
+	Bot  string `json:"bot,omitempty"`
+	BotN int    `json:"bot_n,omitempty"`
 }
 
 // Presence is what a player points at now (N-15): the card they aim
@@ -528,7 +560,9 @@ type Ready struct {
 }
 
 // Table is the table a player sits at, before the game starts. The
-// game starts by itself when every seat is taken and everyone is ready.
+// game starts by itself when every seat is taken and every human is
+// ready. Seat 0 is the host's; when the host leaves, the next human
+// moves there (ADR 030, Decision 10).
 type Table struct {
 	Game    string   `json:"game"`
 	You     int      `json:"you"` // your seat

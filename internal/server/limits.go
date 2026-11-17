@@ -18,6 +18,8 @@ func (r *Room) checkLimits() {
 		return // a finished game stays for its record download
 	}
 	now := r.now()
+	// Only players count: a bot has no client, so a game of bots alone
+	// is empty (ADR 030, Decision 11.7).
 	if slices.ContainsFunc(r.seats, func(s roomSeat) bool { return s.client != nil }) {
 		r.emptySince = time.Time{}
 	} else if r.emptySince.IsZero() {
@@ -61,7 +63,7 @@ func (r *Room) endWith(n protocol.Notice) {
 	for _, s := range r.seats {
 		if s.client != nil {
 			s.client.send(protocol.TypeNotice, 0, n)
-		} else if !s.kicked {
+		} else if !s.kicked && s.bot == "" { // a bot has nobody to tell
 			away = append(away, s.token)
 		}
 	}

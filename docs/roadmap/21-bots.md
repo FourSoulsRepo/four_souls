@@ -149,24 +149,25 @@ Rules for this step (owner, 2026-11-16):
    7. Full run at the end of line 1 (2026-11-17, 50 games, 2 players): hard wins against standard 32 of 50 (64%) at 50 playouts a move, 34 of 50 (68%) at 150, 41 of 50 (82%) at 500; finished 100%, 98%, 100%. Hard×4, 20 games: all finished, median 48 turns, 1.25 deaths a kill. Turns with no attack, same games at 150: hard 35%, standard 52%.
    8. Time: `BenchmarkHardMove` 0.43 – 0.61 s, 196 – 198 MB, 3.8 – 3.9 million allocations a move (machine loaded); `BenchmarkPlayout` 2.7 – 2.9 ms; in the arena 0.19 s a move at 50 playouts, 0.56 s at 150, 1.67 s at 500 (ADR 030, Decision 9.8.6).
 
-### [ ] 21.7 Bots in the lobby
+### [x] 21.7 Bots in the lobby
 
 1. Goal: the host seats bots at a table (ADR 030, Decision 10).
 2. Tasks:
-   1. `protocol`: `Seat.Bot`, `Seat.BotN`, message `bot`, bots flag in the hello answer, version + 1.
+   1. `protocol`: `Seat.Bot`, `Seat.BotN`, message `bot`, the allowed levels in the hello answer (`welcome` → `bots`), version + 1.
    2. Hub: add, change and remove a bot; host only; refusals with translated messages.
    3. Start rule: all seats taken, every human ready; a table with no human closes.
    4. The game list counts bot seats as taken.
    5. A host who leaves: the next human becomes the host, or the table closes.
    6. Restart file of a lobby table keeps its bots (N-20).
-   7. Dedicated server flag `-bots`; the app's own server always allows them.
+   7. Dedicated server flag `-bots=off|standard|all`, default `all`; the app's own server always allows every level (lead, 2026-11-16).
+      1. `-bot_think` moves to 21.10: nothing reads it before the bot driver and the thinker limit.
    8. A table with bots does not start yet: one guarded refusal, removed in 21.8.
    9. Tests in `hub_test.go` for each rule above.
    10. `docs/wiki/Server.md`: the flag; ADR 006 list of messages.
 3. Done when:
    1. A table of 1 human and 3 bots shows as full and waits only for the human.
 
-### [ ] 21.8 Bots in the room
+### [x] 21.8 Bots in the room
 
 1. Goal: bots play a running game (ADR 030, Decisions 11 – 14).
 2. Tasks:
@@ -185,7 +186,7 @@ Rules for this step (owner, 2026-11-16):
 3. Done when:
    1. `TestBotsGame` plays 20 seeded games of 1 human and 3 bots, standard and hard, to the end.
 
-### [ ] 21.9 Saves, restarts, records
+### [x] 21.9 Saves, restarts, records
 
 1. Goal: a game with bots survives a save and a server restart (ADR 030, Decision 16).
 2. Tasks:
@@ -207,6 +208,9 @@ Rules for this step (owner, 2026-11-16):
    3. Wiki `Load-test.md`: how to run it with bots, and the numbers measured.
    4. Engine: `checkMaxHP` takes 57% of a standard move (21.5 profile); cache it, or recompute only when an HP bonus changes.
    5. Measure the longest bot turn in seconds with the server's pauses (Decision 13): 40 or more paid abilities at 1–2 s each keep humans waiting over a minute (21.5 arena).
+   6. Room latency (lead, 2026-11-16): 182 ms was measured under the load of two lines.
+      1. Measure again on a quiet machine, and separately with `GOMAXPROCS=1`.
+      2. Numbers taken under load never go into the wiki.
 3. Done when:
    1. 20 tables of 1 human and 3 hard bots: no room stall over 100 ms; every bot answers before the response timer.
 
@@ -214,13 +218,15 @@ Rules for this step (owner, 2026-11-16):
 
 1. Goal: the host adds bots in the app (ADR 030, Decision 10).
 2. Tasks:
-   1. `TableScreen`: on a free seat, the host sees "Add bot" with the two levels.
-   2. On a bot seat: its name, level, robot icon; the host changes the level or removes it.
-   3. Other players see the bot and its level, no buttons.
-   4. Buttons hidden when the server does not allow bots.
-   5. Every string in every locale; `make i18n`.
-   6. Unit tests in `lobby.test.ts`; e2e: host a table, add 3 bots, start alone.
-   7. Works without the private images.
+   1. First, before any new work: `make frontend` and `make i18n` on the frontend edits of 21.7 (`protocol.ts`, `protocol.test.ts`, locales).
+   2. `TableScreen`: on a free seat, the host sees "Add bot" with the two levels.
+   3. On a bot seat: its name, level, robot icon; the host changes the level or removes it.
+   4. Other players see the bot and its level, no buttons.
+   5. Buttons hidden when the server does not allow bots.
+   6. Every string in every locale; `make i18n`.
+   7. Unit tests in `lobby.test.ts`; e2e: host a table, add 3 bots, start alone.
+   8. Works without the private images.
+   9. The lobby never shows a bot as away or disconnected: `Seat.Connected` is false for a bot.
 3. Done when:
    1. Use case "Play with bots" passes as an e2e test.
 
@@ -229,7 +235,7 @@ Rules for this step (owner, 2026-11-16):
 1. Goal: everyone sees which seats are bots (N-21).
 2. Tasks:
    1. Seat name: translated "Bot N (level)" with the robot icon, everywhere a seat name shows: table, history, stack, pause and vote windows, game end.
-   2. A bot seat never shows "away".
+   2. A bot seat never shows "away" or disconnected: `Seat.Connected` is false for a bot.
    3. e2e: one human and three bots play a whole game; reuse the helpers of `games.spec.ts`.
    4. `make e2e-games` gets a variant with bots.
    5. Check the pace by eye on screenshots or a recording; note it in the commit.

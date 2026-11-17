@@ -46,6 +46,12 @@ type savedSeat struct {
 	Token  string `json:"token"`
 	Kicked bool   `json:"kicked,omitempty"` // kept over a restart (N-20)
 	Dice   string `json:"dice,omitempty"`   // kept over a restart (N-20)
+	// Bot and BotN are a bot seat's level and number (ADR 030,
+	// Decision 16.1): a lobby table and a game keep them over a restart,
+	// a saved game until it is loaded (21.7, 21.9). A bot seat has no
+	// token.
+	Bot  string `json:"bot,omitempty"`
+	BotN int    `json:"bot_n,omitempty"`
 }
 
 // save writes the game to the saves folder and stops the room: only
@@ -74,7 +80,7 @@ func (r *Room) save(c *Client, env protocol.Envelope) {
 		Step: r.step, Steps: r.steps, Record: r.path, State: state,
 	}
 	for _, s := range r.seats {
-		f.Seats = append(f.Seats, savedSeat{Name: s.name, Token: s.token})
+		f.Seats = append(f.Seats, savedSeat{Name: s.name, Token: s.token, Bot: s.bot, BotN: s.botN})
 	}
 	data, err := json.Marshal(f)
 	if err != nil {
@@ -178,9 +184,18 @@ func (h *Hub) load(c *Client, env protocol.Envelope) {
 		c.fail(env.ID, protocol.ErrMissingSets, errMissingSets.Msg(engine.Str("sets", missing)))
 		return
 	}
+	if reason, ok := h.botsAllowed(f.Seats); !ok {
+		c.fail(env.ID, protocol.ErrBadSetup, reason.Msg())
+		return
+	}
 	t := &table{id: f.Game, host: f.Seats[0].Name, sets: f.Sets, opts: f.Options, loaded: f, seats: make([]tableSeat, len(f.Seats))}
 	for i, s := range f.Seats {
 		t.seats[i] = tableSeat{name: s.Name, token: s.Token}
+		if s.Bot != "" {
+			// A bot sits down at once; only the players come back (ADR
+			// 030, Decision 16.2).
+			t.seats[i] = tableSeat{name: s.Name, bot: s.Bot, botN: s.BotN, ready: true}
+		}
 	}
 	i := t.claim(c)
 	if i < 0 {
@@ -216,19 +231,36 @@ func (h *Hub) seatLoaded(c *Client, t *table, i int) {
 }
 
 // claim finds the seat of a saved game that is c's: its token, or else
-// a free seat with c's nickname. -1: none.
+// a free seat with c's nickname. A bot's seat is never anyone's, not
+// even a player's called "Bot 1". -1: none.
 func (t *table) claim(c *Client) int {
 	for i, s := range t.seats {
-		if s.client == nil && s.token == c.token {
+		if s.client == nil && s.bot == "" && s.token == c.token {
 			return i
 		}
 	}
 	for i, s := range t.seats {
-		if s.client == nil && s.name == c.name {
+		if s.client == nil && s.bot == "" && s.name == c.name {
 			return i
 		}
 	}
 	return -1
+}
+
+// botsAllowed checks a save's bots against the levels this server
+// allows (ADR 030, Decision 17.1): loading seats them, as a host would.
+// Else it gives the refusal.
+func (h *Hub) botsAllowed(seats []savedSeat) (engine.Key, bool) {
+	for _, s := range seats {
+		switch {
+		case s.Bot == "":
+		case len(h.bots) == 0:
+			return errBotsOff, false
+		case !slices.Contains(h.bots, s.Bot):
+			return errBotLevel, false
+		}
+	}
+	return engine.Key{}, true
 }
 
 // resumeLoaded starts a room from a save instead of a new game.

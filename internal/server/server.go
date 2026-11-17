@@ -52,11 +52,35 @@ type Config struct {
 	// KeepGames keeps the tables and games over a restart, in the saves
 	// folder (N-20). The dedicated server sets it; an app's host does not.
 	KeepGames bool `json:"-"`
+	// Bots is which bot levels a host may seat: BotsOff, BotsStandard or
+	// BotsAll (ADR 030, Decision 17). An app's own host keeps BotsAll.
+	Bots string `json:"bots"`
+}
+
+// Values of Config.Bots.
+const (
+	BotsOff      = "off"      // no bots
+	BotsStandard = "standard" // standard bots only: hard ones cost CPU
+	BotsAll      = "all"      // every level a player meets
+)
+
+// botLevels returns the levels a Config.Bots value allows, and whether
+// the value is known.
+func botLevels(mode string) ([]string, bool) {
+	switch mode {
+	case BotsOff:
+		return nil, true
+	case BotsStandard:
+		return []string{protocol.BotStandard}, true
+	case BotsAll:
+		return protocol.BotLevels(), true
+	}
+	return nil, false
 }
 
 // DefaultConfig is used for settings the flags and file leave out.
 func DefaultConfig() Config {
-	return Config{Port: protocol.DefaultPort, Records: "records", Retention: 30, Saves: "saves", Presence: true, EmptyMinutes: 30, GameHours: 24}
+	return Config{Port: protocol.DefaultPort, Records: "records", Retention: 30, Saves: "saves", Presence: true, EmptyMinutes: 30, GameHours: 24, Bots: BotsAll}
 }
 
 // LoadConfig reads a JSON config file over the defaults.
@@ -83,6 +107,9 @@ func (c Config) Check() error {
 		return errors.New("server: empty_minutes and game_hours are 0 or more")
 	case c.Name != "" && !validName(c.Name):
 		return fmt.Errorf("server: name must be 1–%d characters, without control characters", protocol.MaxServerName)
+	}
+	if _, ok := botLevels(c.Bots); !ok {
+		return fmt.Errorf("server: bots %q is not %s, %s or %s", c.Bots, BotsOff, BotsStandard, BotsAll)
 	}
 	return nil
 }
@@ -119,6 +146,7 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 	hub := NewHub()
 	hub.records, hub.cards, hub.seed, hub.saves = cfg.Records, cardTexts(), cfg.Seed, cfg.Saves
 	hub.hostOnly, hub.presence = cfg.HostOnly, cfg.Presence
+	hub.bots, _ = botLevels(cfg.Bots)
 	hub.name, _ = protocol.CleanServerName(cfg.Name)
 	hub.emptyLimit = time.Duration(cfg.EmptyMinutes) * time.Minute
 	hub.gameLimit = time.Duration(cfg.GameHours) * time.Hour

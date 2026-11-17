@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -207,6 +208,106 @@ func TestBackFacesMatchCardData(t *testing.T) {
 	for _, back := range dataBacks {
 		if !texts[back] {
 			t.Errorf("records carry no text for back %s", back)
+		}
+	}
+}
+
+// TestBotsRecord: a game's record names its bot seats with their levels
+// and numbers, and a human's seat as before. It goes on over a restart:
+// one resume, the bots' moves are steps like any, and it replays with
+// every checksum (ADR 030, Decision 16.5; ADR 007, item 2.20; 21.9).
+func TestBotsRecord(t *testing.T) {
+	dir := t.TempDir()
+	h, stop := botHub(t, dir, time.Millisecond)
+	ann, w := arrive(t, h, "Ann", "")
+	ann.say(protocol.TypeCreate, protocol.Create{Seats: 3})
+	ann.next(protocol.TypeTable, nil)
+	ann.seatBot(1, protocol.BotStandard)
+	ann.seatBot(2, protocol.BotHard)
+	ann.say(protocol.TypeReady, protocol.Ready{Ready: true})
+	playUntil := func(p *player, step int) {
+		t.Helper()
+		for {
+			var u protocol.Update
+			p.next(protocol.TypeUpdate, &u)
+			if u.View.Over || u.Step > step {
+				return
+			}
+			if in, ok := passOrForced(u); ok {
+				p.say(protocol.TypeIntent, protocol.Intent{Intent: in})
+			}
+		}
+	}
+	playUntil(ann, 20)
+	stop()
+	h, stop = botHub(t, dir, time.Millisecond)
+	back, _ := arrive(t, h, "Ann", w.Token)
+	playUntil(back, 40)
+	stop()
+
+	files, err := filepath.Glob(filepath.Join(dir, "records", "*"+record.Ext))
+	if err != nil || len(files) != 1 {
+		t.Fatalf("records %v, %v", files, err)
+	}
+	rec, err := record.ReadFile(files[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []record.Seat{{Seat: 0, Name: "Ann"}, {Seat: 1, Name: "Bot 1", Bot: protocol.BotStandard, BotN: 1}, {Seat: 2, Name: "Bot 2", Bot: protocol.BotHard, BotN: 2}}
+	if !slices.Equal(rec.Header.Seats, want) {
+		t.Errorf("record seats %+v, want %+v", rec.Header.Seats, want)
+	}
+	if rec.Resumes != 1 {
+		t.Errorf("resumes %d, want 1", rec.Resumes)
+	}
+	var steps []engine.StepRecord
+	bots := 0
+	for _, st := range rec.Steps {
+		var in engine.Intent
+		if err := json.Unmarshal(st.Intent, &in); err != nil {
+			t.Fatal(err)
+		}
+		if in.Player != 0 {
+			bots++
+		}
+		steps = append(steps, engine.StepRecord{Intent: in, Checksum: st.Checksum})
+	}
+	if bots == 0 || len(steps) <= 40 {
+		t.Errorf("%d steps, %d of bots; want over 40, some of bots", len(steps), bots)
+	}
+	if _, err := engine.Replay(replaySetup(t, rec.Header.Setup), steps); err != nil {
+		t.Fatalf("the record does not replay: %v", err)
+	}
+}
+
+// TestBotSeatRecordToken: a bot's seat has the empty token; a record
+// request with an empty, a missing or an invalid token gets nothing
+// from a game with bots, even once it is over (RP-05, 21.7).
+func TestBotSeatRecordToken(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "g1"+record.Ext)
+	if err := os.WriteFile(path, []byte("rec"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	h := startHub(t)
+	room := &Room{tokens: []string{"tok", ""}, path: path}
+	room.over.Store(true)
+	done := make(chan struct{})
+	h.send(hubRequest{run: func(h *Hub) {
+		h.games = append(h.games, started{info: protocol.GameInfo{ID: "g1", Started: true}, room: room})
+		close(done)
+	}})
+	<-done
+	srv := httptest.NewServer(http.HandlerFunc(h.downloadRecord))
+	defer srv.Close()
+	for _, q := range []string{"game=g1&token=", "game=g1", "game=g1&token=%20", "game=g1&token=not-a-token"} {
+		resp, err := http.Get(srv.URL + "/record?" + q) //nolint:noctx // test
+		if err != nil {
+			t.Fatal(err)
+		}
+		_ = resp.Body.Close() //nolint:errcheck // test
+		if resp.StatusCode != http.StatusForbidden {
+			t.Errorf("%s: %d, want forbidden", q, resp.StatusCode)
 		}
 	}
 }

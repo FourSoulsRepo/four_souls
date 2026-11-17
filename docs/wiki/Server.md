@@ -64,6 +64,34 @@ A spot names exactly one thing: a card every player can see (`object`), a slot o
 
 Any client of a dedicated server may create a game or load a saved one. A server started with `Config.HostOnly` lets only clients on its own computer do that (loopback address, `wsConn.Local`); everyone else gets `not_host` and only joins (N-17). Only the app's `Host` sets it, so friends of an app's host never open games on that app. `welcome.create` tells each client which case it is; the app shows **Create a game** only then.
 
+## Bots in the lobby
+
+ADR 030, Decision 10 (21.7). The host seats bots at a table with `bot` `{seat, level}`; an empty level takes the bot away. `Hub.bot` refuses, each with a translated message: a client at no table (`not_seated`), anyone but the host (`not_host`, `error.host_bots`), a loaded save's table (`error.bot_saved`), seat 0, a player's seat or no seat (`error.bot_seat`), and a level the server does not allow (`error.bot_level`; `error.bots_off` when it allows none); the last four are `bad_setup`. Taking away a bot that is not there does nothing.
+
+A bot seat (`tableSeat.bot`, `botN`) has no token and no client, and is always ready. It is named `Bot N` in English for records and logs, N being the smallest number no seat uses as a number or as a name; a new level keeps the number. `taken` counts it, so the game list, `/status` and a join see it as taken: a joining player gets a free seat only. `startIfReady` starts a table when every seat is taken and every human is ready; the room then plays the bots (below).
+
+The host is seat 0. When the host leaves a table with bots, `promoteHost` moves the next human in seat order into seat 0 and the game list names them; bots keep their seats. A table with no human left closes, bots and all. A table without bots keeps seat 0 free for the next player to join, as before bots; the first `bot` message there moves the next human into seat 0 first. A loaded save's table takes no new bot: its seats wait for its players (N-11). A lobby table's restart file keeps its bots (`savedSeat.Bot`, `BotN`); a restarted server that no longer allows a level leaves that seat free.
+
+The levels a host may seat come from `Config.Bots`, the dedicated server's `-bots` flag: `off`, `standard` or `all` (the default); `Config.Check` refuses any other value. `welcome` → `bots` lists them, so the app shows only those. The app's own `Host` keeps `all`. The level names are `protocol.BotStandard` and `protocol.BotHard` (`protocol.BotLevels`); `internal/bot` names the same strings.
+
+## Bots in the room
+
+ADR 030, Decisions 11 – 14 (21.8). `roomSeat.bot` and `botN` carry the seat's level and number into the room, and every update's seats name them. A bot seat has no client and no token. It is never away, so it never pauses the game; kick votes and Soft rollback votes count clients, so bots never vote.
+
+The driver is `internal/server/bots.go`. After every broadcast of a running game, `drive` looks at the seats the prompt waits for. It notes each such bot seat with something allowed, unless a thinker is open for the same step; once the request is handled, `Run` starts one thinker for each (`startThinkers`), under its own `ctx`, so the room's end ends them too. `think` copies the game on the room goroutine with `world.For` (the seat's `known` goes in) and hands the thinker only the worlds, a random source of its own and the budget: hard thinks for `Room.botThink` (1.5 s; the `-bot_think` flag comes in 21.10), standard needs none. The thinker runs `bot.Choose` on its own goroutine, waits out the pace, and sends its answer as a room request with its number and the step it was for.
+
+The room applies the answer like a client's intent (`botMove`): record, rollback history, automatic passes. An answer whose thinker was dropped is ignored. A newer step, a rollback (a new step), a pause, an open Soft vote and the game end drop the open thinkers and cancel their `ctx`; the next broadcast starts them again. A bot with no move, or an intent the engine refuses, gets its fallback move (`botFallbacks`), and the log says so: the forced answer of the response timer, else any allowed intent, since a must-attack forbids both pass and end turn. The response timer may be off, so the bot never waits for it (`TestBotsMustAttackFallback`). An allowed intent the engine refuses is logged as an engine bug, with seed, step and intent.
+
+Pace (Decision 13): a pass or an answer to a prompt comes 0.7 of the room's `second` after the prompt; an action in the bot's own turn 1 to 2. Thinking time counts inside it. Tests shorten `second`.
+
+Bans and picks (Decision 14): on a bot's ban turn the room bans a random character of the pool 0.7 `second` later; in a draft each bot picks one of its offer at random as the offers go out. Start-of-game choices are prompts, answered by `bot.Choose`.
+
+`Room.botWork` keeps the longest time the driver, with its copies for the thinkers, held the room: the work only bots cost it. A bot's move then costs the room what a player's intent does; one that holds it over the stall limit is logged as "a bot's move". `TestBotsGame` plays 20 seeded games of one player and three bots, standard and hard, four at a time, to their end, and checks the driver stays under the limit.
+
+Saves and restarts (Decision 16, 21.9): `savedSeat` keeps a bot's `bot` and `bot_n`, with no token, in a save and in a game's restart file. A loaded save's table seats its bots at once, ready; `claim` never gives a player a bot's seat, not even one called "Bot 1", so the game starts when its players are back. A save with a level the server does not allow is not loaded (`error.bot_level`, `error.bots_off`, `bad_setup`). A kept game keeps its bots whatever `-bots` says now; it waits paused for its players, and once they are back the bots think again from the kept step, with no notice on the same engine (`TestBotsRestartMidTurn`). Memory is not saved. The idle limit's "no player connected" counts players only, and an idle end or a lost game tells only players. Each match record's seat names a bot's `bot` and `bot_n` (ADR 007, item 2.20).
+
+Two places wait for line 1 of step 21: `botLevel` maps a level `internal/bot` does not know yet to the policy (marked "stand-in until line 1 merges"), and `remember`, where the hard seat's memory is fed (marked "memory from 21.15").
+
 ## Server name
 
 An operator may name the server (`Config.Name`, `-name`, N-18). `Config.Check` refuses a name that `protocol.CleanServerName` rejects: empty after trimming, over `protocol.MaxServerName` (40) characters, or with control characters. Every `welcome` carries it in `name`; the app shows it instead of the address. Each match record's header keeps it in `server` too. The app's own host has none.
