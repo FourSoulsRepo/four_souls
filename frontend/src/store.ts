@@ -37,7 +37,7 @@ import { cardLanguagesOf } from './locale';
 import { entriesFor, linkMarks, lookedAt, moveOf, restartCut, rolledBack, voteEnded, type Entry, type Looked, type Move, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
-import { autoJoinStep, emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, type AutoJoin, type Screen, type ServerUp, type Session } from './lobby';
+import { autoJoinStep, emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, seatNameOf, type AutoJoin, type Screen, type ServerUp, type Session } from './lobby';
 import { connectFirst, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
@@ -447,7 +447,7 @@ export const useApp = create<AppState>()((set, get) => {
   let effectKey = 0;
   // names reads players from an update and cards from the card data.
   const names = (u: Update) => ({
-    player: (p: number) => u.seats?.find((s) => s.seat === p)?.name ?? t('table.player_n', { n: p + 1 }),
+    player: (p: number) => seatNameOf(u.seats, p),
     card: (ref: string) => get().cards.get(ref)?.name ?? ref,
   });
   // diedAt is where each dead card died, by its held object, until it

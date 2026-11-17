@@ -716,6 +716,16 @@
   order: -1;
 }
 
+/* On the right the name's lines end before the corner menu, down to
+   its foot: a longer name, as a bot's "Bot N (level)", wraps beside it
+   and under it (21.12). A short name fits beside it, as before. */
+.player-right .opp-name::before {
+  content: '';
+  float: right;
+  width: 5.25rem;
+  height: 2rem;
+}
+
 .player-left .hidden-hand,
 .player-right .hidden-hand {
   align-self: center;

@@ -11,6 +11,7 @@ import { Count, useCount, useFlip } from './Count';
 import { HandCard, useHandGap } from './HandCard';
 import type { Interact } from './Interact';
 import { HiddenHand, RevealedHand } from './Pile';
+import { BotText } from './BotIcon';
 import { Part } from './StackPanel';
 import './Table.css';
 import { rem } from '../uiScale';
@@ -73,7 +74,7 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
         <div className="opp-status">
           <b className="opp-name">
             <PlayerDot player={player.id} />
-            {name}
+            <BotText text={name} />
             {asked && <Hourglass player={player.id} />}
           </b>
           <span className="opp-line">
@@ -88,7 +89,7 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
           {active && <Allowance player={player} />}
           {pick.onClick && (
             <button type="button" className="player-pick" onClick={pick.onClick}>
-              {t('table.choose', { player: name })}
+              <BotText text={t('table.choose', { player: name })} />
             </button>
           )}
         </div>

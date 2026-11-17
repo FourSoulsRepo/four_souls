@@ -80,6 +80,8 @@ Network play runs against the real Go server: `e2e/playwright.config.ts` starts 
 * a page reloads, which drops its game;
 * one round of moves takes over 30 seconds.
 
+It plays one game of one player and three bots too (21.12, ADR 030): `startGame`'s `bots` option seats a bot of each listed level after the players, through the host's Add bot buttons, so the bots play at their real pace (Decision 13: 0.7 s an answer, 1 to 2 s an action) and the game is slower than one of humans. The random player plays as in the other games; the bots play by themselves. A bot that wins must show its robot in the game end's title. In every game here the table must never pause: nobody leaves, and a bot is never away. Run it alone with `-g "bots"`.
+
 It also plays the Krampus (14.26) and Trick or Treat (14.34) challenges ([Challenges](Challenges)) once each at each difficulty, Normal, Hard and Ultra Hard, for 2 players with every card set. Random play rarely wins one: the timer runs out or the presents are destroyed in a few minutes. The random moves answer the challenges' own dialogs like any other: the forgo and flip questions, the fear pick, the attack-start throws and the trigger order. That is a valid end. The game must reach game over with "Challenge won!" or "Challenge lost" and its reason on both pages; the test logs the result and the timer left. Each test logs its seed when it starts, so a game that never ends still names it.
 
 It is slow, so `make e2e` skips it. Run it with `make e2e-games` (Chromium only). Every 10 turns a test prints the turn, step, time and each player's souls; at the end, its seed, time, turns, steps and moves. `GAME_SEED=N` repeats the moves' choices; the server's deal stays random. The pages play at the "fast" animation speed: every effect still plays and is claimed, so the clash check holds, at half its time (19.137). `GAME_SPEED=normal` plays at the normal pace.
@@ -110,6 +112,7 @@ So one round of `make e2e-games` (one game per player count, one after another) 
 ### Working on it
 
 * Run one setup: `cd e2e && FULL_GAMES=1 npx playwright test games --project chromium -g "4 players"`.
+* The bots game alone: `cd e2e && FULL_GAMES=1 npx playwright test games --project chromium -g "bots"`.
 * More games: add `--repeat-each N`; `--workers 3` plays three at once. Each repeat hosts under its own names (`Rnd<players>r<repeat><Name>`), so its progress lines stay apart.
 * Progress lines start with the host's name, so games played at once stay apart.
 * A failed game's record lands in `.cache/e2e-games/`. Replay it in Go with `engine.Replay` or by applying each step's intent to `engine.NewGame`; the header's `setup` (seed, sets, characters) rebuilds the deal.

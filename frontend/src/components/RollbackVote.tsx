@@ -3,6 +3,7 @@ import { t } from '../i18n';
 import type { Update } from '../protocol';
 import { useApp } from '../store';
 import { Timer } from './ActionBar';
+import { BotText } from './BotIcon';
 import './Overlays.css';
 
 // RollbackVotePanel is the open Soft vote (ADR 020, item 5). The game
@@ -38,8 +39,12 @@ export function RollbackVotePanel({ game, you, name }: { game: Update; you: numb
   const target = { step: v.step, seat: v.author, last: v.last };
   return (
     <section className="overlay-box rollback-vote" role="dialog" aria-label={t('rollback.label')}>
-      <h2>{title}</h2>
-      <p>{t('rollback.undoes', { move: moveText(moves, target, you, name), n: v.undo })}</p>
+      <h2>
+        <BotText text={title} />
+      </h2>
+      <p>
+        <BotText text={t('rollback.undoes', { move: moveText(moves, target, you, name), n: v.undo })} />
+      </p>
       <p className="muted">
         {t('rollback.needed', { yes, n: v.need })}
         {v.deadline ? <Timer deadline={v.deadline} /> : null}
@@ -49,7 +54,7 @@ export function RollbackVotePanel({ game, you, name }: { game: Update; you: numb
           const b = votes.find((x) => x.seat === p);
           return (
             <li key={p}>
-              {who(p)}: {b ? (b.yes ? t('rollback.voted_yes') : t('rollback.voted_no')) : '…'}
+              <BotText text={who(p)} />: {b ? (b.yes ? t('rollback.voted_yes') : t('rollback.voted_no')) : '…'}
             </li>
           );
         })}

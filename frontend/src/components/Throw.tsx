@@ -7,6 +7,7 @@ import type { Prompt } from '../protocol';
 import type { Names } from '../stack';
 import { useApp } from '../store';
 import { playerColor } from '../table';
+import { BotText } from './BotIcon';
 import { Die } from './Die';
 import './Throw.css';
 
@@ -61,7 +62,7 @@ export function Throw({ waiting, you, names, action, disabled }: Props) {
         <Die value={handFace} image={image} label={mine ? t('throw.your_dice') : t('throw.dice_of', { player })} hidden />
       </div>
       <div className="throw-label" style={{ color: playerColor(waiting.player) }}>
-        {mine ? t('throw.you_throwing') : t('throw.throwing', { player })}
+        {mine ? t('throw.you_throwing') : <BotText text={t('throw.throwing', { player })} />}
       </div>
     </div>
   );

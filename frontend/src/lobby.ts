@@ -152,6 +152,67 @@ export function seatName(s: Seat): string {
   return t('bot.name', { n: s.bot_n ?? 0, level: botLevelName(s.bot) });
 }
 
+// seatNameOf names seat p by the seats of a table or game: seatName,
+// else "Player N" for a seat the list lacks.
+export function seatNameOf(seats: readonly Seat[] | null | undefined, p: number): string {
+  const s = seats?.find((x) => x.seat === p);
+  return s ? seatName(s) : t('table.player_n', { n: p + 1 });
+}
+
+// botNames are the names the bot seats show (seatName), so a line that
+// names one can put the robot before it (21.12).
+export function botNames(seats: readonly Seat[] | null | undefined): string[] {
+  return (seats ?? []).filter((s) => s.bot).map(seatName);
+}
+
+// NamePiece is a piece of a line: plain text, or a bot's name, which
+// shows after the robot icon.
+export interface NamePiece {
+  text: string;
+  bot?: boolean;
+}
+
+// namePieces splits a line at every bot name in it (botNames). A line
+// with no bot name is one plain piece. The longest name is tried first,
+// so a name inside another never splits it.
+export function namePieces(text: string, bots: readonly string[]): NamePiece[] {
+  const names = bots.filter((b) => b !== '').sort((a, b) => b.length - a.length);
+  if (names.length === 0 || !names.some((b) => text.includes(b))) {
+    return text === '' ? [] : [{ text }];
+  }
+  const out: NamePiece[] = [];
+  let rest = text;
+  while (rest !== '') {
+    let at = -1;
+    let name = '';
+    for (const b of names) {
+      const i = rest.indexOf(b);
+      if (i >= 0 && (at < 0 || i < at)) {
+        at = i;
+        name = b;
+      }
+    }
+    if (at < 0) {
+      out.push({ text: rest });
+      break;
+    }
+    if (at > 0) {
+      out.push({ text: rest.slice(0, at) });
+    }
+    out.push({ text: name, bot: true });
+    rest = rest.slice(at + name.length);
+  }
+  return out;
+}
+
+// botLead splits a bot's name after its first word: the robot keeps to
+// that word on its line, and the rest may wrap, as in a narrow side
+// column (21.12).
+export function botLead(name: string): [string, string] {
+  const i = name.indexOf(' ');
+  return i < 0 ? [name, ''] : [name.slice(0, i), name.slice(i)];
+}
+
 // isAway reports whether a seat's player lost the connection. A bot has
 // no connection, yet it is never away (ADR 030, Decision 11.2).
 export function isAway(s: Seat): boolean {

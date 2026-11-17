@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { autoJoinStep, botLevelName, botLevels, canCreate, challengeText, isAway, isTableHost, seatName, emptyLobby, lanRows, oneOpenGame, leftTable, forgotten, lost, onMessage, optionsText, remember, renamed, serverLabel, upText, type Session } from './lobby';
+import { autoJoinStep, botLead, botLevelName, botLevels, botNames, canCreate, namePieces, seatNameOf, challengeText, isAway, isTableHost, seatName, emptyLobby, lanRows, oneOpenGame, leftTable, forgotten, lost, onMessage, optionsText, remember, renamed, serverLabel, upText, type Session } from './lobby';
 import type { Seat, Table, Welcome } from './protocol';
 
 const start: Session = { screen: 'join', lobby: emptyLobby, game: null, error: '' };
@@ -329,5 +329,53 @@ describe('bots at the table (ADR 030)', () => {
     const left: Table = { ...withBots, you: 3, seats: [{ ...free, seat: 0 }, bot, free, bo] };
     expect(isTableHost(left)).toBe(true);
     expect(botLevels(left, welcome)).toEqual(['standard', 'hard']);
+  });
+});
+
+describe('bots at the game table (21.12)', () => {
+  const ann: Seat = { seat: 0, name: 'Ann', connected: true };
+  const bot1: Seat = { seat: 1, name: 'Bot 1', connected: false, bot: 'standard', bot_n: 1 };
+  const bot2: Seat = { seat: 2, name: 'Bot 2', connected: false, bot: 'hard', bot_n: 2 };
+  const seats = [ann, bot1, bot2];
+
+  it('names a seat as the table does, a bot translated with its level', () => {
+    expect(seatNameOf(seats, 0)).toBe('Ann');
+    expect(seatNameOf(seats, 2)).toBe('Bot 2 (Hard)');
+    expect(seatNameOf(seats, 3)).toBe('Player 4');
+    expect(seatNameOf(null, 0)).toBe('Player 1');
+  });
+
+  it('lists the names the bots show, never a player', () => {
+    expect(botNames(seats)).toEqual(['Bot 1 (Standard)', 'Bot 2 (Hard)']);
+    expect(botNames([ann])).toEqual([]);
+    expect(botNames(undefined)).toEqual([]);
+  });
+
+  it('marks every bot name in a line, the words around it plain', () => {
+    const bots = botNames(seats);
+    expect(namePieces('Bot 1 (Standard) attacks Ann', bots)).toEqual([{ text: 'Bot 1 (Standard)', bot: true }, { text: ' attacks Ann' }]);
+    expect(namePieces('Ann, Bot 2 (Hard) and Bot 1 (Standard) win!', bots)).toEqual([
+      { text: 'Ann, ' },
+      { text: 'Bot 2 (Hard)', bot: true },
+      { text: ' and ' },
+      { text: 'Bot 1 (Standard)', bot: true },
+      { text: ' win!' },
+    ]);
+    expect(namePieces("Bot 1 (Standard)'s turn", bots)).toEqual([{ text: 'Bot 1 (Standard)', bot: true }, { text: "'s turn" }]);
+  });
+
+  it('leaves a line with no bot name whole', () => {
+    expect(namePieces('Ann attacks Bot 3', botNames(seats))).toEqual([{ text: 'Ann attacks Bot 3' }]);
+    expect(namePieces('Ann attacks', [])).toEqual([{ text: 'Ann attacks' }]);
+    expect(namePieces('', botNames(seats))).toEqual([]);
+  });
+
+  it("keeps the robot with a bot name's first word; the rest may wrap", () => {
+    expect(botLead('Bot 1 (Standard)')).toEqual(['Bot', ' 1 (Standard)']);
+    expect(botLead('Robot')).toEqual(['Robot', '']);
+  });
+
+  it('tries the longest name first, so one inside another never splits it', () => {
+    expect(namePieces('Bot 1 (Standard) Max', ['Bot 1 (Standard)', 'Bot 1 (Standard) Max'])).toEqual([{ text: 'Bot 1 (Standard) Max', bot: true }]);
   });
 });

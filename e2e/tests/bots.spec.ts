@@ -1,10 +1,12 @@
 // Bots in the lobby (21.11, ADR 030 Decision 10): the host seats bots on
 // free seats, changes their level or takes them away; the others see
-// them with no buttons. Against the real Go server, which allows every
-// level by default.
+// them with no buttons. At the game table (21.12) each bot's name is its
+// translated "Bot N (level)" after the robot. Against the real Go
+// server, which allows every level by default.
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
-import { gameId, lobbyGame, throwFirstRoll } from './game';
+import { addBot, gameId, lobbyGame, startGame, throwFirstRoll } from './game';
+import { canEndTurn, click, endTurn, settle } from './turn';
 import { appURL, serverPort } from './server';
 import { realAssets, shot } from './shot';
 import { openHost, openOnline } from './menu';
@@ -36,11 +38,6 @@ function seat(seats: Locator, i: number): Locator {
   return seats.locator(`li[data-seat="${String(i)}"]`);
 }
 
-// addBot presses a free seat's Add bot button for the level.
-async function addBot(seats: Locator, i: number, level: string): Promise<void> {
-  await seat(seats, i).getByRole('button', { name: tr('lobby.bots.add_level', { level }) }).click();
-}
-
 // joinTable joins the game id from another app on the same server;
 // listed checks the game's row first.
 async function joinTable(page: Page, name: string, id: string, listed: (row: Locator) => Promise<void>): Promise<Locator> {
@@ -65,9 +62,9 @@ test('the host fills the table with 3 bots and starts alone', async ({ browser }
   await expect(seat(seats, 1).getByRole('group', { name: tr('lobby.bots.add') })).toBeVisible();
   await shot(ann, 'table-bots-free');
 
-  await addBot(seats, 1, standard());
-  await addBot(seats, 2, hard());
-  await addBot(seats, 3, standard());
+  await addBot(ann, 1, standard());
+  await addBot(ann, 2, hard());
+  await addBot(ann, 3, standard());
   for (const [i, level] of ['standard', 'hard', 'standard'].entries()) {
     const row = seat(seats, i + 1);
     const name = tr('bot.number', { n: i + 1 });
@@ -88,7 +85,7 @@ test('the host fills the table with 3 bots and starts alone', async ({ browser }
   const bot2 = tr('bot.number', { n: 2 });
   await seat(seats, 2).getByRole('button', { name: tr('lobby.bots.remove', { name: bot2 }) }).click();
   await expect(seat(seats, 2)).toContainText(tr('lobby.seats.waiting'));
-  await addBot(seats, 2, standard());
+  await addBot(ann, 2, standard());
   await expect(seat(seats, 2).getByRole('combobox', { name: tr('lobby.bots.level', { name: bot2 }) })).toHaveValue('standard');
   await expect(ann.getByRole('status')).toHaveText('');
 
@@ -104,7 +101,7 @@ test('the other players see the bots and their levels, with no buttons', async (
   const ann = await (await browser.newContext()).newPage();
   const bo = await (await browser.newContext()).newPage();
   const annSeats = await hostTable(ann, 'Ann', 4);
-  await addBot(annSeats, 2, hard());
+  await addBot(ann, 2, hard());
   const id = await gameId(ann);
 
   // A bot's seat is taken in the game list.
@@ -113,7 +110,7 @@ test('the other players see the bots and their levels, with no buttons', async (
     await expect(row).toContainText(tr('lobby.game_row', { host: 'Ann', taken: 2, n: 4 }));
   });
   await expect(seat(annSeats, 1)).toContainText('Bo');
-  await addBot(annSeats, 3, standard());
+  await addBot(ann, 3, standard());
 
   await expect(seat(boSeats, 2)).toContainText(tr('bot.name', { n: 1, level: hard() }));
   await expect(seat(boSeats, 2).getByTestId('bot-icon')).toBeVisible();
@@ -150,4 +147,44 @@ test('a server that allows no bots shows no bot buttons', async ({ page }) => {
   const seats = await hostTable(page, 'Cy', 3);
   await expect(seat(seats, 1)).toContainText(tr('lobby.seats.waiting'));
   await expect(seats.getByRole('button')).toHaveCount(0);
+});
+
+// Bots at the game table (21.12): one player and three bots. The bots
+// keep the real pace (ADR 030 Decision 13), so the test plays only until
+// a bot's turn shows on the turn badge, in the history and on the stack.
+test('the game table names each bot with its level after the robot (21.12)', async ({ browser }) => {
+  test.setTimeout(120_000);
+  const pages = await startGame(browser, ['Ann'], { bots: ['standard', 'hard', 'standard'] });
+  const [ann] = pages;
+  if (!ann) {
+    throw new Error('no page');
+  }
+  const bots = [tr('bot.name', { n: 1, level: standard() }), tr('bot.name', { n: 2, level: hard() }), tr('bot.name', { n: 3, level: standard() })];
+  for (const name of bots) {
+    const area = ann.getByRole('region', { name, exact: true });
+    await expect(area.locator('.opp-name')).toHaveText(name);
+    await expect(area.locator('.opp-name').getByTestId('bot-icon')).toBeVisible();
+  }
+  const badge = ann.getByRole('status', { name: tr('turn_badge.label') });
+  const stack = ann.getByRole('complementary', { name: tr('stack.title') });
+  const botTurn = async () => (await badge.getByTestId('bot-icon').count()) > 0;
+  // Ann passes on the bots' stack and ends her own turns, until the
+  // stack waits for her on a bot's item.
+  const botOnStack = async () => (await botTurn()) && (await stack.getByTestId('bot-icon').count()) > 0;
+  for (let i = 0; i < 4 && !(await botOnStack()); i++) {
+    await settle(pages, click, async () => (await botOnStack()) || (!(await botTurn()) && (await canEndTurn(ann))));
+    if (!(await botOnStack())) {
+      await endTurn(ann);
+    }
+  }
+  await expect(badge).toContainText(new RegExp(bots.map((b) => b.replace(/[()]/g, '\\$&')).join('|')));
+  await expect(stack.getByTestId('bot-icon').first()).toBeVisible();
+  await shot(ann, 'bots-table');
+  // A bot has no connection, yet the game never waits for it as for a
+  // player who left (21.12 task 2).
+  await expect(ann.getByRole('dialog', { name: tr('pause.label') })).toHaveCount(0);
+  await ann.getByRole('button', { name: tr('history.title'), exact: true }).click();
+  const history = ann.getByRole('complementary', { name: tr('history.title'), exact: true });
+  await expect(history.getByRole('listitem').filter({ has: ann.getByTestId('bot-icon') }).first()).toBeVisible();
+  await shot(ann, 'bots-history');
 });

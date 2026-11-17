@@ -233,7 +233,7 @@ Rules for this step (owner, 2026-11-16):
    2. waits: WebKit e2e (libavif13, owner), 19.160.
       1. Lead (2026-11-17): not closed, and the branch not merged, until a full `make e2e` passes, WebKit too.
 
-### [ ] 21.12 Bots at the game table
+### [~] 21.12 Bots at the game table
 
 1. Goal: everyone sees which seats are bots (N-21).
 2. Tasks:
@@ -245,6 +245,18 @@ Rules for this step (owner, 2026-11-16):
    6. Layers and animations stay as they are; a new element follows ADR 012 and ADR 015.
 3. Done when:
    1. `make frontend e2e` passes; screenshots in `.cache/screenshots/21.12/`.
+   2. waits: check phase (e2e incl. WebKit). Owner (2026-11-17): code first, tests later; pace: check phase.
+   3. Before the stop: `bots.spec.ts`, Chromium, 4 of 4 passed twice; English screenshots in `.cache/screenshots/21.12/en/`; qps not taken.
+4. Decisions (agent, 2026-11-17):
+   1. The robot goes before a bot name wherever a line names it: `namePieces` finds the names in the finished text, so no translated line changes.
+   2. Also in the prompt banner, the stack's wait lines, start-of-game waits, a look at a hand, choice options, dice labels and banners, not only the places listed.
+   3. The turn banner is drawn by hand (`turn.ts`); it builds the same robot span; no new animation, no new layer.
+   4. The robot keeps to the name's first word; the rest of the name may wrap.
+   5. The right column's name keeps clear of the corner Menu by a float spacer: a long name wraps beside and under it; a short name looks as before. The first screenshot showed "Bot 3 (Standard)" under Menu.
+   6. The whole-game e2e with bots lives in `games.spec.ts` only (`make e2e-games`): at the bots' real pace it is too slow for `make e2e`; `bots.spec.ts` plays until a bot's turn instead.
+   7. No server flag to speed the bots up for tests.
+   8. Every game of `games.spec.ts` now fails when the table pauses: none of them has a player who leaves.
+   9. The bots game seats standard, hard, standard.
 
 ### [ ] 21.13 Bots in challenges
 
