@@ -133,9 +133,52 @@ func (g *Game) setUpSlots(s SituationSetup) error {
 	return nil
 }
 
-// setUpTurn applies the turn's overrides. loot_plays is unchecked, as
-// before 23.3, so old payloads keep their answers.
+// setupPhases are the values of setup.phase and the step each starts
+// in, its priority window open (23.10). The step's own work is done:
+// start is after the recharge and the start-of-turn triggers
+// (R-TURN-03), loot after the active player looted (R-TURN-04), end
+// after the end-of-turn triggers (R-TURN-10). When everyone passes, the
+// game moves on as in a game (R-STACK-07).
+var setupPhases = []struct {
+	name string
+	step Step
+}{{"start", StepStartTriggers}, {"loot", StepLootWindow}, {"action", StepAction}, {"end", StepEndTriggers}}
+
+// phaseStep is the step setup.phase names; none is the action phase.
+func (s SituationSetup) phaseStep() (Step, error) {
+	if s.Phase == "" {
+		return StepAction, nil
+	}
+	names := make([]string, len(setupPhases))
+	for i, p := range setupPhases {
+		if p.name == s.Phase {
+			return p.step, nil
+		}
+		names[i] = p.name
+	}
+	return 0, fmt.Errorf("situation: phase %q is no phase, options %v", s.Phase, names)
+}
+
+// setUpTurn sets the turn's step and applies its overrides. loot_plays
+// is unchecked, as before 23.3, so old payloads keep their answers.
 func (s SituationSetup) setUpTurn(t *Turn) error {
+	step, err := s.phaseStep()
+	if err != nil {
+		return err
+	}
+	t.Step = step
+	switch step { //nolint:exhaustive // the other steps are no setup phase
+	case StepStartTriggers, StepLootWindow:
+		// The action phase gives the loot play, attack and purchase
+		// (R-TURN-05, R-TURN-07); before it there are none.
+		if s.LootPlays != nil || s.Attacks != nil || s.Purchases != nil {
+			return fmt.Errorf("situation: phase %s: loot_plays, attacks and purchases come with the action phase (R-TURN-05, R-TURN-07); leave them out", s.Phase)
+		}
+		t.LootPlays, t.Attacks, t.Purchases = 0, 0, 0
+		return nil
+	case StepEndTriggers:
+		t.EndDeclared = true // the action phase ended (R-TURN-09)
+	}
 	if s.LootPlays != nil {
 		t.LootPlays = *s.LootPlays
 	}
@@ -166,11 +209,49 @@ func (g *Game) setUpRolls(rolls []int) error {
 	return nil
 }
 
+// setUpDeclared declares the setup's attack or purchase, as the active
+// player does in the action phase with an empty stack (R-ATK-01,
+// R-SHOP-01): it uses one up, and priority passes before the target or
+// item is chosen (R-ATK-02, R-SHOP-02). Nothing triggers and nothing is
+// paid; the setup shows what the declaration left, as for the stack.
+func (g *Game) setUpDeclared(s SituationSetup) error {
+	var rule, limit, counts string
+	var left func() int
+	switch s.Declared {
+	case "":
+		return nil
+	case "attack":
+		rule, limit, counts, left = "R-ATK-01", "R-TURN-07", "attacks", g.attacksLeft
+	case "purchase":
+		rule, limit, counts, left = "R-SHOP-01", "R-SHOP-05", "purchases", g.purchasesLeft
+	default:
+		return fmt.Errorf("situation: declared %q is no declaration, options [attack purchase]", s.Declared)
+	}
+	switch {
+	case g.Turn.Step != StepAction:
+		return fmt.Errorf("situation: declared %s needs phase action, not %s: it is declared only in the action phase (%s)", s.Declared, s.Phase, rule)
+	case len(s.Stack) > 0:
+		return fmt.Errorf("situation: declared %s needs an empty stack (%s); a response to it is a step", s.Declared, rule)
+	case left() < 1:
+		return fmt.Errorf("situation: declared %s needs one left (%s), and %s is 0", s.Declared, limit, counts)
+	}
+	if s.Declared == "attack" {
+		g.spendAttack()
+		g.Attack = AttackState{On: true}
+	} else {
+		g.spendPurchase()
+		g.Purchase = PurchaseState{On: true}
+	}
+	return nil
+}
+
 // openSetupWindow opens the first window: for holder, the top item's owner
 // or the active player, unless the setup names the seat (23.4). With an
 // empty stack, the players from the active player up to that seat have
 // passed (R-PRIO-02), so when it and the rest pass the window closes as
-// in a game (R-PRIO-05).
+// in a game (R-PRIO-05). In the open action phase nobody passes on an
+// empty stack: the active player can't (R-TURN-09), so the seat must be
+// theirs (23.10).
 func (g *Game) openSetupWindow(seat *int, holder PlayerID) error {
 	if seat == nil {
 		g.openWindow(holder)
@@ -179,6 +260,10 @@ func (g *Game) openSetupWindow(seat *int, holder PlayerID) error {
 	n := len(g.Players)
 	if *seat < 0 || *seat >= n {
 		return fmt.Errorf("situation: priority %d is not a seat, options 0 to %d", *seat, n-1)
+	}
+	if PlayerID(*seat) != g.Turn.Active && g.inOpenActionPhase() {
+		return fmt.Errorf("situation: priority %d: in the open action phase with an empty stack only the active player %d holds priority, and they can't pass (R-TURN-09); "+
+			"for another seat use phase start, loot or end, declared attack or purchase, or a stack", *seat, g.Turn.Active)
 	}
 	g.openWindow(PlayerID(*seat))
 	if len(g.Stack) == 0 {

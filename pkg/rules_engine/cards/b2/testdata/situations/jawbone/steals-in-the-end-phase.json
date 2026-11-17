@@ -1,0 +1,23 @@
+{
+  "title": "Isaac's end phase: Maggy holds priority and steals 3¢ with Jawbone; then the turn passes to her",
+  "source": ["card jawbone", "R-TURN-10", "R-PRIO-02", "R-STACK-07", "R-TURN-13", "R-TURN-02", "R-TURN-04"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "cents": 3},
+      {"character": "maggy", "items": ["jawbone"]}
+    ],
+    "active": 0,
+    "monsters": ["clotty", "fly"],
+    "decks": {"loot": ["a_penny"]},
+    "phase": "end",
+    "priority": 1
+  },
+  "steps": [
+    {"player": 1, "kind": "activate", "card": "jawbone", "choices": ["player 1 (isaac)"],
+     "expect": {"allowed": true,
+       "after": [{"player": 0, "cents": 0}, {"player": 1, "cents": 3, "deactivated": [], "hand_cards": ["a_penny"]}],
+       "active": 1}}
+  ],
+  "expect": {"allowed": true}
+}

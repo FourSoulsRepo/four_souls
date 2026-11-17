@@ -19,14 +19,20 @@ const (
 
 // declarePurchase: priority passes before the item is chosen (R-SHOP-02).
 func (g *Game) declarePurchase(p PlayerID) {
+	g.spendPurchase()
+	g.Purchase = PurchaseState{On: true}
+	g.emit(Event{Kind: EvPurchaseDeclared, Player: p})
+	g.openWindow(p)
+}
+
+// spendPurchase uses one of the turn's purchases on a declaration
+// (R-SHOP-05): a regular one first, then a bonus one.
+func (g *Game) spendPurchase() {
 	if g.Turn.Purchases > 0 {
 		g.Turn.Purchases--
 	} else {
 		g.Turn.BonusPurchasesUsed++
 	}
-	g.Purchase = PurchaseState{On: true}
-	g.emit(Event{Kind: EvPurchaseDeclared, Player: p})
-	g.openWindow(p)
 }
 
 // askPurchase offers the shop items and the top of the treasure deck.

@@ -417,7 +417,7 @@ func TestSituationStepErrors(t *testing.T) {
 func TestSituationPriority(t *testing.T) {
 	seat := func(n int) *int { return &n }
 	players := []SituationPlayer{{Character: "hero_a"}, {Character: "hero_b"}, {Character: "hero_c"}}
-	g, err := BuildTable(SituationSetup{Players: players, Active: 1, Priority: seat(0)}, testSet)
+	g, err := BuildTable(SituationSetup{Players: players, Active: 1, Phase: "start", Priority: seat(0)}, testSet)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -427,18 +427,147 @@ func TestSituationPriority(t *testing.T) {
 	if _, err = g.Apply(Intent{Player: 0, Kind: IntentPass}); err != nil {
 		t.Fatal(err)
 	}
-	// All three passed with an empty stack: the action phase goes back
-	// to the active player (R-STACK-07, R-TURN-09).
-	if w := g.Prompt(); w.Kind != PromptPriority || w.Player != 1 || g.Priority.Passes != 0 || g.Turn.Active != 1 {
-		t.Errorf("prompt %+v, passes %d; want the active player 1 with no passes", w, g.Priority.Passes)
+	// All three passed with an empty stack: the game moves on (R-STACK-07)
+	// to the loot step, where the active player loots 1 and gets priority
+	// again (R-TURN-04, R-PRIO-02).
+	w := g.Prompt()
+	if w.Kind != PromptPriority || w.Player != 1 || g.Priority.Passes != 0 || g.Turn.Step != StepLootWindow || len(g.Players[1].Hand) != 1 {
+		t.Errorf("prompt %+v, passes %d, step %d, hand %d; want the active player 1 in the loot step, no passes, 1 card",
+			w, g.Priority.Passes, g.Turn.Step, len(g.Players[1].Hand))
 	}
 
-	g, err = BuildTable(SituationSetup{Players: players, Priority: seat(0), Stack: []SituationStack{{DiceRoll: 3, Owner: 2}}}, testSet)
+	// The open action phase: the active player can't pass (R-TURN-09), so
+	// nobody else gets priority on an empty stack; the active seat is fine.
+	_, err = BuildTable(SituationSetup{Players: players, Active: 1, Priority: seat(0)}, testSet)
+	if err == nil || !strings.Contains(err.Error(), "R-TURN-09") {
+		t.Errorf("open action phase, seat 0: error %v; want one naming R-TURN-09", err)
+	}
+	g, err = BuildTable(SituationSetup{Players: players, Active: 1, Priority: seat(1)}, testSet)
+	if err != nil || g.Prompt().Player != 1 || g.Priority.Passes != 0 {
+		t.Errorf("open action phase, active seat: error %v, prompt %+v; want the active player 1", err, g.Prompt())
+	}
+
+	g, err = BuildTable(SituationSetup{Players: players, Priority: seat(1), Stack: []SituationStack{{DiceRoll: 3, Owner: 2}}}, testSet)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if w := g.Prompt(); w.Player != 0 || g.Priority.Passes != 0 {
-		t.Errorf("prompt %+v, passes %d; want player 0 over the roll's owner, no passes", w, g.Priority.Passes)
+	if w := g.Prompt(); w.Player != 1 || g.Priority.Passes != 0 {
+		t.Errorf("prompt %+v, passes %d; want player 1 over the roll's owner, no passes", w, g.Priority.Passes)
+	}
+}
+
+// passAround passes for whoever holds priority, n times.
+func passAround(t *testing.T, g *Game, n int) {
+	t.Helper()
+	for range n {
+		w := g.Prompt()
+		if w.Kind != PromptPriority {
+			t.Fatalf("prompt %+v; want priority to pass", w)
+		}
+		if _, err := g.Apply(Intent{Player: w.Player, Kind: IntentPass}); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+// setup.phase and setup.declared start in a real priority window
+// (23.10); when everyone passes, the game moves on as in a game.
+func TestSituationWindows(t *testing.T) {
+	seat := func(n int) *int { return &n }
+	players := []SituationPlayer{{Character: "hero_a"}, {Character: "hero_b"}}
+	build := func(s SituationSetup) *Game {
+		t.Helper()
+		s.Players = players
+		g, err := BuildTable(s, testSet)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return g
+	}
+	// No phase: the open action phase with one loot play, attack and
+	// purchase (R-TURN-05, R-TURN-07), as before 23.10.
+	g := build(SituationSetup{})
+	if g.Turn.Step != StepAction || g.Turn.LootPlays != 1 || g.Turn.Attacks != 1 || g.Turn.Purchases != 1 || !g.inOpenActionPhase() {
+		t.Errorf("turn %+v; want the open action phase, 1 of each", g.Turn)
+	}
+	// Start and loot: before the action phase there is no loot play,
+	// attack or purchase yet (R-TURN-05, R-TURN-07).
+	for _, phase := range []string{"start", "loot"} {
+		g = build(SituationSetup{Phase: phase, Priority: seat(1)})
+		if g.Turn.LootPlays != 0 || g.Turn.Attacks != 0 || g.Turn.Purchases != 0 || g.Prompt().Player != 1 || g.Priority.Passes != 1 {
+			t.Errorf("%s: turn %+v, prompt %+v; want none of each, seat 1 after 1 pass", phase, g.Turn, g.Prompt())
+		}
+	}
+	// Loot: everyone passes and the action phase begins (R-TURN-04),
+	// with its loot play, attack and purchase (R-TURN-05, R-TURN-07).
+	passAround(t, g, 1)
+	if !g.inOpenActionPhase() || g.Turn.LootPlays != 1 || g.Turn.Attacks != 1 || g.Prompt().Player != 0 {
+		t.Errorf("after the loot step: turn %+v, prompt %+v; want the open action phase", g.Turn, g.Prompt())
+	}
+	// End: everyone passes; the turn passes to the next player
+	// (R-TURN-13), whose start phase opens (R-TURN-03).
+	g = build(SituationSetup{Phase: "end"})
+	if g.Turn.Step != StepEndTriggers || g.inOpenActionPhase() {
+		t.Fatalf("end: turn %+v; want the end phase", g.Turn)
+	}
+	passAround(t, g, 2)
+	if g.Turn.Active != 1 || g.Turn.Step != StepStartTriggers || g.Prompt().Player != 1 {
+		t.Errorf("after the end phase: turn %+v, prompt %+v; want player 1's start phase", g.Turn, g.Prompt())
+	}
+	// A declared attack used one (R-TURN-07); once everyone passes, the
+	// active player picks the target (R-ATK-02).
+	g = build(SituationSetup{Declared: "attack", Priority: seat(1)})
+	if !g.Attack.On || g.Turn.Attacks != 0 || g.Priority.Passes != 1 {
+		t.Fatalf("attack: %+v, turn %+v, passes %d; want it declared and used", g.Attack, g.Turn, g.Priority.Passes)
+	}
+	passAround(t, g, 1)
+	if w := g.Prompt(); w.Kind != PromptChoose || w.Player != 0 || g.Choice.Purpose != ChooseAttackTarget {
+		t.Errorf("after the attack's window: prompt %+v; want player 0 to pick the target", w)
+	}
+	// A declared purchase likewise (R-SHOP-02, R-SHOP-05).
+	g = build(SituationSetup{Declared: "purchase"})
+	if !g.Purchase.On || g.Turn.Purchases != 0 {
+		t.Fatalf("purchase: %+v, turn %+v; want it declared and used", g.Purchase, g.Turn)
+	}
+	passAround(t, g, 2)
+	if w := g.Prompt(); w.Kind != PromptChoose || w.Player != 0 || g.Choice.Purpose != ChoosePurchase {
+		t.Errorf("after the purchase's window: prompt %+v; want player 0 to pick the item", w)
+	}
+}
+
+// A setup.phase or setup.declared that no real window has is an error
+// that names the rule or lists the options (23.10).
+func TestSituationWindowErrors(t *testing.T) {
+	const seats = `"players": [{"character": "hero_a"}, {"character": "hero_b"}], "monsters": ["dummy"]`
+	for _, c := range []struct{ extra, want string }{
+		{`"phase": "main"`, `phase "main" is no phase, options [start loot action end]`},
+		{`"declared": "end"`, `declared "end" is no declaration, options [attack purchase]`},
+		{`"phase": "loot", "declared": "attack"`, "declared attack needs phase action, not loot: it is declared only in the action phase (R-ATK-01)"},
+		{`"phase": "end", "declared": "purchase"`, "declared purchase needs phase action, not end: it is declared only in the action phase (R-SHOP-01)"},
+		{`"declared": "attack", "stack": [{"dice_roll": 3, "owner": 1}]`, "declared attack needs an empty stack (R-ATK-01)"},
+		{`"declared": "purchase", "stack": [{"dice_roll": 3, "owner": 1}]`, "declared purchase needs an empty stack (R-SHOP-01)"},
+		{`"declared": "attack", "attacks": 0`, "declared attack needs one left (R-TURN-07), and attacks is 0"},
+		{`"declared": "purchase", "purchases": 0`, "declared purchase needs one left (R-SHOP-05), and purchases is 0"},
+		{`"phase": "start", "loot_plays": 1`, "phase start: loot_plays, attacks and purchases come with the action phase (R-TURN-05, R-TURN-07)"},
+		{`"phase": "loot", "attacks": 2`, "phase loot: loot_plays, attacks and purchases come with the action phase"},
+		{`"phase": "start", "purchases": 0`, "phase start: loot_plays, attacks and purchases come with the action phase"},
+		{`"phase": "end", "stack": [{"kind": "attack_roll", "dice_roll": 3, "card": "dummy", "owner": 0}]`, "an attack roll needs phase action: attacks are declared only in the action phase (R-ATK-01)"},
+		{`"priority": 1`, "priority 1: in the open action phase with an empty stack only the active player 0 holds priority, and they can't pass (R-TURN-09)"},
+		{`"phase": "action", "priority": 1`, "(R-TURN-09)"},
+	} {
+		_, err := buildSetup(`{` + seats + `, ` + c.extra + `}`)
+		if err == nil || !strings.Contains(err.Error(), c.want) {
+			t.Errorf("%s: error %v; want %q", c.extra, err, c.want)
+		}
+	}
+	// The same seat is fine in every other window.
+	for _, extra := range []string{
+		`"phase": "start"`, `"phase": "loot"`, `"phase": "end"`, `"declared": "attack"`, `"declared": "purchase"`,
+		`"stack": [{"dice_roll": 3, "owner": 0}]`, `"phase": "end", "loot_plays": 0`,
+	} {
+		if _, err := buildSetup(`{` + seats + `, ` + extra + `, "priority": 1}`); err != nil {
+			t.Errorf("%s: %v; want no error", extra, err)
+		}
 	}
 }
 
@@ -477,7 +606,7 @@ func TestSituationRoom(t *testing.T) {
 	if ans.Matches == nil || !*ans.Matches {
 		t.Errorf("active player: answer %+v; want a match", ans)
 	}
-	ans = run(strings.Replace(roomTable(`[]`, `[{"player": 1, "kind": "activate", "card": "cent_room"}]`), `"active": 0,`, `"active": 0, "priority": 1,`, 1))
+	ans = run(strings.Replace(roomTable(`[]`, `[{"player": 1, "kind": "activate", "card": "cent_room"}]`), `"active": 0,`, `"active": 0, "phase": "loot", "priority": 1,`, 1))
 	if ans.Allowed || ans.Rule != "R-CARD-33" { // R-CARD-33: only the active player uses a room
 		t.Errorf("other player: answer %+v; want a refusal by R-CARD-33", ans)
 	}

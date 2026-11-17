@@ -1,6 +1,6 @@
 {
-  "title": "Bomb Bum on Isaac's turn: Cain holds priority but can't use the room",
-  "source": ["card bomb_bum", "R-CARD-33", "R-CARD-36"],
+  "title": "Bomb Bum in Isaac's loot step: Cain holds priority but can't use the room",
+  "source": ["card bomb_bum", "R-CARD-33", "R-CARD-36", "R-TURN-04"],
   "sets": ["b2", "r"],
   "setup": {
     "players": [
@@ -8,6 +8,7 @@
       {"character": "cain", "hand": ["bomb"]}
     ],
     "active": 0,
+    "phase": "loot",
     "priority": 1,
     "monsters": ["fly", "leech"],
     "rooms": ["bomb_bum"]

@@ -28,7 +28,7 @@ A situation is a small JSON document: a table position, one action or several [s
 * `setup.players[].counters` — counters on the player's cards: `[{"card": "tech_x", "count": 3}]`; `card` is an item or soul ref, or `"character"`; `name` names the counters (`{"card": "bum_friend", "name": "gold", "count": 1}`), none for plain counters. See [Counters](#counters).
 * `setup.players[].eternal` — items or souls that are eternal, as a starting item (R-ABIL-18): `["the_bone"]`.
 * `setup.players[].extra_loot_plays` — loot plays from abilities that work on any turn, as Cain's ↷ gives on another player's turn: `1`.
-* `setup.active` — the active player; the turn is in the open action phase with one loot play, attack and purchase left (`loot_plays`, `attacks` and `purchases` override them; bonus ones, as Champion Belt's, come on top).
+* `setup.active` — the active player; the turn is in the open action phase with one loot play, attack and purchase left (`loot_plays`, `attacks` and `purchases` override them; bonus ones, as Champion Belt's, come on top), unless `setup.phase` or `setup.declared` names another window.
 * `setup.monsters`, `setup.shop` — the top card of each slot.
 * `setup.rooms` — the room in each room slot (R-SETUP-12); the active player uses its abilities (R-CARD-33, R-CARD-36).
 * `setup.monster_damage` — damage on a card in a monster, final boss, minion or room slot, by its ref: `{"gemini": 2}`. It must leave the card at least 1 HP.
@@ -38,6 +38,8 @@ A situation is a small JSON document: a table position, one action or several [s
 * `setup.bosses`, `setup.minions` — a challenge's final boss and minion slots, one card each (R-CHAL-02, R-CHAL-07).
 * `setup.stack` — items already on the stack, bottom first: dice rolls, loot cards, abilities, triggers and attack rolls; see [Stacked items](#stacked-items).
 * `setup.priority` — the seat that holds priority at the start, from 0: `1`. See [Priority](#priority).
+* `setup.phase` — the turn's window the situation starts in: `start`, `loot`, `action` (the default) or `end` (23.10). See [Windows](#windows).
+* `setup.declared` — `attack` or `purchase`: the active player has declared it in the action phase and not chosen the target or item yet (R-ATK-02, R-SHOP-02). See [Windows](#windows).
 * `action.kind` — `play`, `activate`, `attack`, `purchase`, `end_turn` or `pass`; `card` and `ability` pick the card. `activate` names a card the player controls, or a room in a room slot (23.6): only the active player may use a room, so another player's `activate` is refused by R-CARD-33, as in a game. Also `throw`, `choose` and `reveal`, which mostly make sense as [steps](#steps).
 * `action.choices` — answers to the prompts that follow, by option label: an option's plain form, with no language (`Game.Plain`, 16.4). A card is its ref (`"bomb"`), a player `"player 2 (hero_b)"`, a number its digits, a card's own words (a "choose one-" option) the words; any other option is its key, then its values (`"ask.deck.monster"`, `"ask.cancel"`, `"ask.yes"`, `"ask.slot_card 1 fly"`).
 * `steps` — several actions in a row, each with its own `choices` and an optional `expect`; a situation has `action` or `steps`, never both. See [Steps](#steps).
@@ -144,16 +146,17 @@ Lucky Foot resolves first and makes the roll a 4, then Bomb! deals 1 damage to M
 
 `setup.priority` names the seat that holds priority when the situation starts (23.4). Without it, priority goes to the top stacked item's owner, or to the active player.
 
-* With an empty stack, the players before that seat in turn order, counted from the active player, have already passed (R-PRIO-02). The engine counts those passes, so when the seat and the players after it pass too, the window closes as in a game (R-PRIO-05): the action phase goes back to the active player.
-* With a stack, it overrides the top item's owner; nobody has passed yet.
+* With an empty stack, the players before that seat in turn order, counted from the active player, have already passed (R-PRIO-02). The engine counts those passes, so when the seat and the players after it pass too, the window closes as in a game (R-PRIO-05) and the game moves on (R-STACK-07); see [Windows](#windows).
+* In the open action phase (no `phase` or `"phase": "action"`, nothing declared, an empty stack) only the active player may hold priority: they can't pass there (R-TURN-09), so no other player ever gets it. Another seat is an error that names R-TURN-09; the active player's seat is fine (it is the default). Start the situation in a real window instead: `phase` `start`, `loot` or `end`, a `declared` attack or purchase, or a stack.
+* With a stack, it overrides the top item's owner; nobody has passed yet. This works in every window.
 * A seat outside the players is an error.
 
 So a player who may act on another player's turn needs no dice roll on the stack just to get priority:
 
 ```json
 {
-  "title": "Cain used his tap on Isaac's turn: with priority, he plays A Penny!",
-  "source": ["card cain", "card a_penny", "R-CARD-08"],
+  "title": "Isaac's loot step: Cain used his tap, so with priority he plays A Penny!",
+  "source": ["card cain", "card a_penny", "R-TURN-04", "R-PRIO-02", "R-CARD-08"],
   "sets": ["b2"],
   "setup": {
     "players": [
@@ -161,10 +164,53 @@ So a player who may act on another player's turn needs no dice roll on the stack
       {"character": "cain", "hand": ["a_penny"], "deactivated": ["character"], "extra_loot_plays": 1}
     ],
     "active": 0,
+    "phase": "loot",
     "priority": 1
   },
   "action": {"player": 1, "kind": "play", "card": "a_penny"},
-  "expect": {"allowed": true, "after": [{"player": 1, "cents": 1, "hand": 0}]}
+  "expect": {"allowed": true, "after": [{"player": 1, "cents": 1, "hand": 0, "deactivated": ["character"]}]}
+}
+```
+
+## Windows
+
+A real game has an empty stack with priority passing around in several moments (23.10). `setup.phase` and `setup.declared` start the situation in one of them; the step's own work is already done, and the setup shows the table as it is then.
+
+| Setup | The moment | Turn counts | When everyone passes |
+|-------|------------|-------------|----------------------|
+| `"phase": "start"` | the start phase after the recharge step and the start-of-turn triggers (R-TURN-02, R-TURN-03) | no loot play, attack or purchase yet | the loot step: the active player loots 1 (R-TURN-04), then its window |
+| `"phase": "loot"` | the loot step after the active player looted 1 (R-TURN-04) | none yet | the action phase begins: 1 loot play, attack and purchase (R-TURN-05, R-TURN-07) |
+| `"phase": "action"` or none | the open action phase (R-TURN-06) | 1 of each, or `loot_plays`, `attacks`, `purchases` | the active player can't pass (R-TURN-09) |
+| `"phase": "end"` | the end phase after the end-of-turn triggers (R-TURN-10); the turn's end is declared | as in the action phase | the hand size step, the room step, then the next player's turn (R-TURN-11 to R-TURN-13) |
+| `"declared": "attack"` | the action phase: the attack is declared, the target not chosen (R-ATK-02) | the attack is used (R-TURN-07) | the active player picks the target |
+| `"declared": "purchase"` | the action phase: the purchase is declared, the item not chosen (R-SHOP-02) | the purchase is used (R-SHOP-05) | the active player picks the shop item or the treasure deck |
+
+* Each window opens with the active player (R-PRIO-02), or with `setup.priority`'s seat after the players before it passed.
+* As with stacked items, nothing triggers and nothing is paid on the way in: the start-of-turn or end-of-turn triggers and the declaration's triggers are done, and a cost such as an attack tax shows in the setup's cents.
+* The game moves on as in a game (R-STACK-07). An `action` stops at the first window with an empty stack, as before; a step settles to the open action phase, so from `start` or `loot` it runs into this turn's action phase, from `end` into the next player's, and from a declaration through the target or item question (answer it with the step's `choices` or a following `choose` step).
+* In `start` and `loot`, `loot_plays`, `attacks` and `purchases` are errors: the action phase gives them (R-TURN-05, R-TURN-07). The active player's `extra_loot_plays` still count.
+* `declared` needs the action phase (R-ATK-01, R-SHOP-01), an empty stack (the declaration needs one; a response to it is a step), and an attack or purchase left (R-TURN-07, R-SHOP-05). An `attack_roll` stack item needs the action phase (R-ATK-01). Each is an error that names the rule; an unknown `phase` or `declared` lists the options.
+
+```json
+{
+  "title": "Isaac declared an attack: before he picks the target, Maggy uses Monster Manual on the Fly, so he must attack it",
+  "source": ["card monster_manual", "card fly", "R-ATK-02", "R-ATK-03", "R-ATK-04", "R-ATK-12", "R-TURN-07", "R-PRIO-02"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "maggy", "items": ["monster_manual"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["clotty", "fly"],
+    "declared": "attack",
+    "priority": 1,
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 1, "kind": "activate", "card": "monster_manual", "choices": ["fly"],
+     "expect": {"allowed": true, "attacks": 0, "prompt": {"player": 0, "options": ["fly"]}}},
+    {"kind": "choose", "choices": ["fly"],
+     "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "cents": 1}]}}
+  ],
+  "expect": {"allowed": true}
 }
 ```
 
@@ -205,7 +251,7 @@ Step kinds, besides those of `action`:
 
 ### When a step settles
 
-After each allowed step the runner settles: it answers the questions with that step's `choices`, in order, throws every roll, and lets every player pass until the active player's action phase is open again: an empty stack, no attack or purchase going on, the turn's end not declared. Whoever holds priority then keeps it, so a `pass` step hands priority to the next player. So an `end_turn` step runs through the end phase into the next player's action phase, as `enginetest`'s `EndTurn` does.
+After each allowed step the runner settles: it answers the questions with that step's `choices`, in order, throws every roll, and lets every player pass until the active player's action phase is open again: an empty stack, no attack or purchase going on, the turn's end not declared. Whoever holds priority then keeps it, so a `pass` step hands priority to the next player. So an `end_turn` step runs through the end phase into the next player's action phase, as `enginetest`'s `EndTurn` does; a step in a [window](#windows) runs on the same way.
 
 Two exceptions look one step ahead, and only one:
 

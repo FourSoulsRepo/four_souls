@@ -29,7 +29,8 @@ type Situation struct {
 
 // SituationSetup is the table. Turn: the active player is in the open
 // action phase with one loot play, attack and purchase left.
-// LootPlays, Attacks and Purchases override those (23.3).
+// LootPlays, Attacks and Purchases override those (23.3); Phase and
+// Declared start it in another priority window (23.10).
 type SituationSetup struct {
 	Players  []SituationPlayer `json:"players"`
 	Active   int               `json:"active"`
@@ -64,7 +65,18 @@ type SituationSetup struct {
 	// Priority is the seat that holds priority. With an empty stack the
 	// players before it in turn order, from the active player, have
 	// passed (R-PRIO-02); with a stack it overrides the top item's owner.
+	// In the open action phase only the active player holds it there
+	// (R-TURN-09).
 	Priority *int `json:"priority,omitempty"`
+	// Phase is the step whose priority window the situation starts in
+	// (23.10): "start" (after the start-of-turn triggers, R-TURN-03),
+	// "loot" (after the loot step's loot, R-TURN-04), "action" (the
+	// default) or "end" (after the end-of-turn triggers, R-TURN-10).
+	Phase string `json:"phase,omitempty"`
+	// Declared is "attack" or "purchase": the active player has declared
+	// it in the action phase and not chosen the target or item yet
+	// (R-ATK-02, R-SHOP-02).
+	Declared string `json:"declared,omitempty"`
 }
 
 // SituationPlayer is one seat.
@@ -504,6 +516,9 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 	if err := s.Setup.setUpTurn(&g.Turn); err != nil {
 		return nil, err
 	}
+	if err := g.setUpDeclared(s.Setup); err != nil {
+		return nil, err
+	}
 	if err := g.setUpRolls(s.Setup.Rolls); err != nil {
 		return nil, err
 	}
@@ -658,7 +673,8 @@ func containsRef(list []CardRef, r CardRef) bool {
 }
 
 // BuildTable builds a game from a situation setup: the active player is
-// in the open action phase. For card tests, the sandbox and card authors.
+// in the open action phase, or the window setup.phase and
+// setup.declared name. For card tests, the sandbox and card authors.
 func BuildTable(setup SituationSetup, sets ...CardSet) (*Game, error) {
 	names := make([]string, len(sets))
 	for i, set := range sets {

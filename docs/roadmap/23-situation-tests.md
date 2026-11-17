@@ -298,7 +298,7 @@ Ideas: TS-13, LR-04, R-03.
 3. Done when:
    1. A simple new card from the guide needs no Go test.
 
-### [ ] 23.10 Priority windows
+### [x] 23.10 Priority windows
 
 1. Goal: a file starts in any moment where a player may respond (owner, 2026-11-18).
 2. Why:
@@ -320,3 +320,19 @@ Ideas: TS-13, LR-04, R-03.
 4. Done when:
    1. Each window has a file where a non-active player acts.
    2. Empty-stack `priority` in the open action phase fails, naming R-TURN-09.
+5. Done (2026-11-18):
+   1. `phase: start`: after the recharge and start-of-turn triggers (R-TURN-03).
+   2. `phase: loot`: after the active player looted 1 (R-TURN-04).
+   3. `phase: end`: after the end-of-turn triggers (R-TURN-10).
+   4. Start and loot: no loot play, attack or purchase yet (R-TURN-05, R-TURN-07).
+   5. Their `loot_plays`, `attacks`, `purchases` are errors.
+   6. `declared`: used up as on a declaration; nothing paid, nothing triggers.
+   7. `declared` needs the action phase, an empty stack, one left.
+   8. An `attack_roll` stack item needs the action phase (R-ATK-01).
+   9. Everyone passes: the game moves on (R-STACK-07), as in a game.
+   10. Steps settle to the open action phase; from `end`, the next player's.
+   11. Empty-stack `priority` in the open action phase: an error, R-TURN-09.
+   12. Engine: `spendAttack`, `spendPurchase` split from the declarations.
+   13. Cain: the loot step; Bomb Bum (`r`): the loot step too.
+   14. New in `b2`: Mr. Boom (start), Jawbone (end, purchase).
+   15. New in `b2`: Monster Manual (declared attack).

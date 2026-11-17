@@ -179,10 +179,14 @@ func (g *Game) stackedTrigger(p PlayerID, st SituationStack) (StackItem, error) 
 }
 
 // stackedAttackRoll: the active player attacks the monster card; the
-// attack is declared and its target chosen, which used one attack.
+// attack is declared and its target chosen, which used one attack. It
+// needs the action phase (R-ATK-01).
 func (g *Game) stackedAttackRoll(p PlayerID, st SituationStack) (StackItem, error) {
 	if p != g.Turn.Active {
 		return StackItem{}, fmt.Errorf("owner %d is not the active player; only they attack here", st.Owner)
+	}
+	if g.Turn.Step != StepAction {
+		return StackItem{}, errors.New("an attack roll needs phase action: attacks are declared only in the action phase (R-ATK-01)")
 	}
 	target, found := ObjectID(0), false
 	for _, id := range g.MonstersInPlay() {

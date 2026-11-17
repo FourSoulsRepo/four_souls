@@ -137,6 +137,12 @@ func TestCheckSituationUnknownField(t *testing.T) {
 	if len(got) != 2 || !strings.Contains(got[0], `setup: unknown field "rols"; did you mean "rolls"?`) || !strings.Contains(got[1], "Situation-payload.md") {
 		t.Errorf("problems %q; want the field, its place, the nearest name and the field list", got)
 	}
+	// The 23.10 fields are known too, so a misspelt one is named.
+	data = strings.Replace(razorFile(cardSource, rightExpect), `"active": 0`, `"active": 0, "phase": "action", "declarde": "attack"`, 1)
+	got = check(enginetest.CardTree, "razor_blade/hits-cain.json", data)
+	if len(got) != 2 || !strings.Contains(got[0], `setup: unknown field "declarde"; did you mean "declared"?`) {
+		t.Errorf("problems %q; want only the misspelt declared", got)
+	}
 }
 
 // An unknown field names its line and path; with no near name, the
