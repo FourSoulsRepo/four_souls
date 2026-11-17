@@ -96,6 +96,7 @@ func (r *Room) save(c *Client, env protocol.Envelope) {
 		return
 	}
 	r.closeRecord(false)
+	r.backToLobby() // before saved: a load sent at once reaches the lobby (19.198)
 	for _, x := range r.clients {
 		x.send(protocol.TypeSaved, 0, protocol.Saved{Save: f.Game})
 	}

@@ -75,19 +75,23 @@ type Room struct {
 
 	// The match record (6.9). path is fixed when the room is made; over
 	// is read by the hub for downloads and hellos (19.32).
-	recDir   string
-	recInfo  recordInfo
-	steps    int // applied steps, for the record of a saved game
-	saves    string
-	loaded   *saveFile // the save this room continues, if any
-	stopped  bool      // saved: the room ends, its players go back to the lobby
-	hub      *Hub
-	rec      *record.Writer
-	path     string
-	over     atomic.Bool
-	timer    *time.Timer // the response timer (N-07)
-	timerGen int
-	deadline time.Time
+	recDir  string
+	recInfo recordInfo
+	steps   int // applied steps, for the record of a saved game
+	saves   string
+	loaded  *saveFile // the save this room continues, if any
+	stopped bool      // saved: the room ends, its players go back to the lobby
+	// handedBack: backToLobby ran. A save or an end hands the players
+	// back before they hear of it, so their next message reaches the
+	// lobby, never this room (19.198).
+	handedBack bool
+	hub        *Hub
+	rec        *record.Writer
+	path       string
+	over       atomic.Bool
+	timer      *time.Timer // the response timer (N-07)
+	timerGen   int
+	deadline   time.Time
 
 	// pub is the public table presence checks against, for pubStep of
 	// pubGame (15.35).
@@ -516,6 +520,10 @@ func newToken() string {
 
 // backToLobby hands the room's players back to the lobby after a save.
 func (r *Room) backToLobby() {
+	if r.handedBack {
+		return
+	}
+	r.handedBack = true
 	for _, c := range r.clients {
 		c.room.Store(nil)
 	}

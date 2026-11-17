@@ -66,6 +66,7 @@ func (r *Room) end(c *Client, env protocol.Envelope) {
 // endWith ends the game unfinished. Connected players hear why at once,
 // the others when they come back; everyone goes back to the lobby.
 func (r *Room) endWith(n protocol.Notice) {
+	r.backToLobby() // before the notice: the next message reaches the lobby (19.198)
 	var away []string
 	for _, s := range r.seats {
 		if s.client != nil {

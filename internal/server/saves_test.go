@@ -226,3 +226,32 @@ func (p *player) nextOf(types ...string) protocol.Envelope {
 		}
 	}
 }
+
+// TestSaveAndLoadAtOnce: a load sent the moment saved arrives gets its
+// table, in a normal game as in a challenge (19.198).
+func TestSaveAndLoadAtOnce(t *testing.T) {
+	h := startHubWithSaves(t, t.TempDir())
+	players := startTableWith(t, h, protocol.Create{Seats: 2})
+	players[0].next(protocol.TypeUpdate, nil)
+	players[0].say(protocol.TypeSave, struct{}{})
+	var saved protocol.Saved
+	players[0].next(protocol.TypeSaved, &saved)
+	players[0].say(protocol.TypeLoad, protocol.Load(saved))
+	var tb protocol.Table
+	players[0].next(protocol.TypeTable, &tb)
+	if tb.Loaded != saved.Save {
+		t.Fatalf("loaded table %+v", tb)
+	}
+}
+
+// TestEndAndCreateAtOnce: a create sent the moment the end notice
+// arrives gets its table (19.198, 5.24).
+func TestEndAndCreateAtOnce(t *testing.T) {
+	h := startHubWithSaves(t, t.TempDir())
+	players := startTableWith(t, h, protocol.Create{Seats: 2})
+	players[0].next(protocol.TypeUpdate, nil)
+	players[0].say(protocol.TypeEnd, struct{}{})
+	players[0].next(protocol.TypeNotice, nil)
+	players[0].say(protocol.TypeCreate, protocol.Create{Seats: 2})
+	players[0].next(protocol.TypeTable, nil)
+}

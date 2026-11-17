@@ -6038,8 +6038,14 @@ Totals by system (209 items):
    3. A `load` sent at once can reach `Client.Receive` while `room` is still set: it goes to the stopped room and gets no table.
    4. The test sends `load` right after `saved`; so could a fast client.
 4. Tasks:
-   1. Hand the clients back (`c.room.Store(nil)`) before `saved` goes out, or answer a message a stopped room gets.
-   2. Test: a `load` sent the moment `saved` arrives gets its table.
+   1. [x] Hand the clients back before `saved` goes out: `Room.save` calls `backToLobby` first, which now runs once (`handedBack`); its hub request (drop the game) is queued before any message the client sends after `saved`.
+   2. [x] Test: a `load` sent the moment `saved` arrives gets its table (`TestSaveAndLoadAtOnce`; `TestChallengeSaveAndLoad`).
+   3. [x] Checked (5.24), every reply after which a client may at once ask the lobby:
+      1. Save, a normal game and a challenge: fixed (one path, `Room.save`).
+      2. End by the host and end by an idle limit (`endWith`): the same race; fixed, `TestEndAndCreateAtOnce`.
+      3. A finished game closing (`checkLimits`): no message goes out first; unchanged.
+      4. Leave: the room hands the client back itself before it answers; unchanged.
+      5. Rollback, restart and a kept game's resume: the room goes on; no hand-back.
 
 ### [ ] 19.199 Standard bot: a settle cut off by its cap is scored as if it had ended
 
