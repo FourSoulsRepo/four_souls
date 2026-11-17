@@ -478,8 +478,10 @@ func playBotsGame(t *testing.T, seed uint64, levels []string) (time.Duration, in
 		ann.seatBot(i+1, level)
 	}
 	ann.say(protocol.TypeReady, protocol.Ready{Ready: true})
-	const limit = 2 * time.Minute
-	start := time.Now()
+	// A turn cap, not a time: the bots think by playout count, so the
+	// game repeats; a wall clock failed it on a loaded machine (check
+	// phase of step 21). A stuck game fails in ann.next.
+	const turnCap = 150 // the arena's (ADR 030, Decision 18.4.1)
 	for {
 		var u protocol.Update
 		ann.next(protocol.TypeUpdate, &u)
@@ -489,8 +491,8 @@ func playBotsGame(t *testing.T, seed uint64, levels []string) (time.Duration, in
 		if u.View.Over {
 			return time.Duration(ann.c.room.Load().botWork.Load()), u.View.Turn.Number
 		}
-		if time.Since(start) > limit {
-			t.Fatalf("seed %d: no end after %v, turn %d", seed, limit, u.View.Turn.Number)
+		if u.View.Turn.Number > turnCap {
+			t.Fatalf("seed %d: no end within %d turns", seed, turnCap)
 		}
 		if in, ok := passOrForced(u); ok {
 			ann.say(protocol.TypeIntent, protocol.Intent{Intent: in})
