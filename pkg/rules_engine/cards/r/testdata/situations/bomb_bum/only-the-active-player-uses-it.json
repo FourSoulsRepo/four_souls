@@ -13,5 +13,5 @@
     "rooms": ["bomb_bum"]
   },
   "action": {"player": 1, "kind": "activate", "card": "bomb_bum", "choices": ["bomb"]},
-  "expect": {"allowed": false, "rule": "R-CARD-36", "after": [{"player": 1, "hand_cards": ["bomb"]}]}
+  "expect": {"allowed": false, "rule": "R-CARD-33", "after": [{"player": 1, "hand_cards": ["bomb"]}]}
 }

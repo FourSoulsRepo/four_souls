@@ -38,7 +38,7 @@ A situation is a small JSON document: a table position, one action or several [s
 * `setup.bosses`, `setup.minions` — a challenge's final boss and minion slots, one card each (R-CHAL-02, R-CHAL-07).
 * `setup.stack` — items already on the stack, bottom first: dice rolls, loot cards, abilities, triggers and attack rolls; see [Stacked items](#stacked-items).
 * `setup.priority` — the seat that holds priority at the start, from 0: `1`. See [Priority](#priority).
-* `action.kind` — `play`, `activate`, `attack`, `purchase`, `end_turn` or `pass`; `card` and `ability` pick the card. `activate` names a card the player controls, or a room in a room slot (23.6): only the active player may use a room, so another player's `activate` is refused by R-CARD-36, as in a game. Also `throw`, `choose` and `reveal`, which mostly make sense as [steps](#steps).
+* `action.kind` — `play`, `activate`, `attack`, `purchase`, `end_turn` or `pass`; `card` and `ability` pick the card. `activate` names a card the player controls, or a room in a room slot (23.6): only the active player may use a room, so another player's `activate` is refused by R-CARD-33, as in a game. Also `throw`, `choose` and `reveal`, which mostly make sense as [steps](#steps).
 * `action.choices` — answers to the prompts that follow, by option label: an option's plain form, with no language (`Game.Plain`, 16.4). A card is its ref (`"bomb"`), a player `"player 2 (hero_b)"`, a number its digits, a card's own words (a "choose one-" option) the words; any other option is its key, then its values (`"ask.deck.monster"`, `"ask.cancel"`, `"ask.yes"`, `"ask.slot_card 1 fly"`).
 * `steps` — several actions in a row, each with its own `choices` and an optional `expect`; a situation has `action` or `steps`, never both. See [Steps](#steps).
 * `expect` — optional: `allowed`, the refusal `rule`, `after` checks per player, and checks of monsters, decks, the turn, the game's end, the open question, the resolve order and events; see [Checks](#checks). `allowed` is a plain boolean: leaving it out expects a refusal.
@@ -111,7 +111,7 @@ events: 1 "damaged" for player 1, expected none
 
 `choices` are the mode and targets chosen when the item went on the stack, in the order the prompts ask them, by the same labels as `action.choices`: `"player 2 (maggy)"`, `"bomb"`, a dice roll below it `"ask.roll_of 2"`, a mode its words. A target can be an item lower on the stack. Answers the item asks for while it resolves (an amount, a yes) go in `action.choices`.
 
-A room's ability works as an item's (23.6): the room's "you" is the active player (R-CARD-36), so its owner must be the active player, who activated it; another owner is an error that names the rule.
+A room's ability works as an item's (23.6): the room's "you" is the active player (R-CARD-36), and only the active player uses its abilities (R-CARD-33), so its owner must be the active player, who activated it; another owner is an error that names the rule.
 
 Each item is as it is just after it went on the stack: its costs are paid and nothing is paid again. The setup shows what the costs left: a stacked loot card is in no hand, a tapped item is in `deactivated`, spent cents are not in `cents`. Nothing triggers as the items go on the stack. A trigger's event is the owner's ("when you …"). An attack roll means the active player attacks that monster: the attack is declared and used, and every attack roll attacks the same monster.
 

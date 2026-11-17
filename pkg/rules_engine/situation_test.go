@@ -478,8 +478,8 @@ func TestSituationRoom(t *testing.T) {
 		t.Errorf("active player: answer %+v; want a match", ans)
 	}
 	ans = run(strings.Replace(roomTable(`[]`, `[{"player": 1, "kind": "activate", "card": "cent_room"}]`), `"active": 0,`, `"active": 0, "priority": 1,`, 1))
-	if ans.Allowed || ans.Rule != "R-CARD-36" {
-		t.Errorf("other player: answer %+v; want a refusal by R-CARD-36", ans)
+	if ans.Allowed || ans.Rule != "R-CARD-33" { // R-CARD-33: only the active player uses a room
+		t.Errorf("other player: answer %+v; want a refusal by R-CARD-33", ans)
 	}
 	// On the stack its 1¢ is paid: the setup shows 0¢; it resolves for 2¢.
 	ans = run(strings.Replace(roomTable(`[{"kind": "activate", "card": "cent_room", "owner": 0}]`,
@@ -489,7 +489,7 @@ func TestSituationRoom(t *testing.T) {
 		t.Errorf("stacked: answer %+v; want a match", ans)
 	}
 	_, err := RunSituation([]byte(roomTable(`[{"kind": "activate", "card": "cent_room", "owner": 1}]`, `[{"kind": "pass"}]`)), testSet, roomSet)
-	if err == nil || !strings.Contains(err.Error(), "owner 1 is not the active player; only they use a room's abilities (R-CARD-36)") {
+	if err == nil || !strings.Contains(err.Error(), "owner 1 is not the active player; only they use a room's abilities (R-CARD-33)") {
 		t.Errorf("stacked for another player: error %v; want the rule", err)
 	}
 	_, err = RunSituation([]byte(roomTable(`[]`, `[{"player": 0, "kind": "activate", "card": "hero_b"}]`)), testSet, roomSet)

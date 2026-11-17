@@ -123,7 +123,8 @@ func (g *Game) stackedLoot(p PlayerID, st SituationStack) (StackItem, error) {
 
 // stackSource finds card among what p controls, then on top of the
 // slots of rows. A card in a slot has the active player as its "you"
-// (R-CARD-36), so only they may own its ability.
+// (R-CARD-36): only they use a room's abilities (R-CARD-33), so only
+// they may own its ability.
 func (g *Game) stackSource(p PlayerID, card CardRef, rows [][]Slot) (ObjectID, bool) {
 	cards := g.controlled(p)
 	for _, row := range rows {
@@ -148,7 +149,7 @@ func (g *Game) stackedAbility(p PlayerID, st SituationStack) (StackItem, error) 
 	case !ok:
 		return StackItem{}, fmt.Errorf("owner %d controls no %q, and no room slot holds it", st.Owner, st.Card)
 	case g.abilityController(src) != p:
-		return StackItem{}, fmt.Errorf("owner %d is not the active player; only they use a room's abilities (R-CARD-36)", st.Owner)
+		return StackItem{}, fmt.Errorf("owner %d is not the active player; only they use a room's abilities (R-CARD-33)", st.Owner)
 	}
 	refs := g.AbilitiesOf(src)
 	if st.Ability < 0 || st.Ability >= len(refs) || g.ability(refs[st.Ability]).Kind != Activated {

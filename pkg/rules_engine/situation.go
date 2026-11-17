@@ -539,7 +539,7 @@ func (a SituationAction) intent(g *Game) (Intent, error) {
 		return Intent{}, fmt.Errorf("situation: %q is not in player %d's hand", a.Card, a.Player)
 	case "activate":
 		// A room in a room slot too: the engine refuses it to anyone
-		// but the active player (R-CARD-36), as in a game.
+		// but the active player (R-CARD-33), as in a game.
 		for _, id := range append(g.controlled(p), g.roomsInPlay()...) {
 			if g.Object(id).Card == a.Card {
 				return Intent{Player: p, Kind: IntentActivate, Objects: []ObjectID{id}, Choice: a.Ability}, nil

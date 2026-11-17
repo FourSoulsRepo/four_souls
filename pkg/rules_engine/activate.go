@@ -29,7 +29,7 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 	o := g.Object(src)
 	if o.Zone.Kind == ZoneInPlay && o.Role == RoleRoom {
 		if p != g.Turn.Active {
-			return deny("R-CARD-36", refuseOnlyYourTurn.Msg(), "only the active player uses a room's abilities")
+			return deny("R-CARD-33", refuseOnlyYourTurn.Msg(), "only the active player uses a room's abilities")
 		}
 		if contains(g.Turn.LateRooms, src) {
 			return deny("R-TURN-18", refuseNextTurn.Msg(), "a room that entered in the end phase can't be used this turn")
