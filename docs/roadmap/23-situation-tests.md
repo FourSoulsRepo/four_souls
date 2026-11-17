@@ -145,8 +145,15 @@ Ideas: TS-13, LR-04, R-03.
    3. A step may expect a refusal; later steps still run.
    4. Step kinds as `enginetest`: `throw`, `choose`, `reveal`.
    5. `expect` may sit on a step, checked after it.
+   6. `setup.priority`: the seat that holds priority (owner, 2026-11-17).
+      1. Empty stack: the players before it in turn order passed (R-PRIO-02).
+      2. The engine records those passes (R-PRIO-05).
+      3. With a stack, it overrides the top item's owner.
+      4. Rewrite `cain/plays-loot-on-another-turn.json` with it.
+      5. Its dice roll on the stack was only for priority.
 3. Done when:
    1. An attack, a roll and an end turn run from one file.
+   2. The Cain file uses `priority` and has no stack.
 
 ### [ ] 23.5 Richer checks
 
