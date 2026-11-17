@@ -6138,39 +6138,40 @@ Totals by system (210 items):
 4. Tasks:
    1. Find which state the wait misses under load; wait for the exact state (5.16.10).
 
-### [ ] 19.204 Bot thinker: each move's context stays alive until the room ends
+### [x] 19.204 Bot thinker: each move's context stays alive until the room ends
 
 1. Goal: a bot move leaves nothing behind in the room.
 2. Report (owner's review of `bots`, 2026-11-17): `think` makes a `context.WithCancel` per move; on a normal answer nobody cancels it (`botMove` only clears `r.thinkers[seat]`).
 3. Cause: the child context stays registered with the room's context until the room ends: one per bot move, all game long.
 4. Tasks:
-   1. [ ] `defer cancel()` in the thinker goroutine; `botMove` checks id and step, never the context.
-   2. [ ] Test: under a parent that holds a goroutine per live child, N bot moves leave no goroutine.
+   1. [x] `defer cancel()` in the thinker goroutine; `botMove` checks id and step, never the context.
+   2. [x] `TestBotsThinkerContextsEnd`: under a parent that holds a goroutine per live child, 20 bot moves leave none; without the fix 19 are left.
 
-### [ ] 19.205 Random seats can put a bot on seat 0: nobody may save or end the game
+### [x] 19.205 Random seats can put a bot on seat 0: nobody may save or end the game
 
 1. Goal: seat 0 is always a human; a bot is never the host, anywhere (owner, 2026-11-17).
 2. Report (owner's review): `shuffleSeats(seats, gameSeed)` (hub.go) shuffles bots too; save and end check `c.seat != 0`. One player and three bots: 3 deals in 4.
 3. Cause: ADR 033 10.12 says the host sits on seat 0 and a bot never does; the shuffle broke that.
 4. Tasks:
-   1. [ ] After the shuffle, a bot on seat 0 swaps with a human chosen from the same seed.
-   2. [ ] One check of "seat 0 is a human" where the room is made; every path checked (5.24) listed here.
-   3. [ ] Test; the rule in ADR 033.
+   1. [x] After the shuffle, a bot on seat 0 swaps with a human chosen from the same seed (`shuffleSeats`); a table without bots shuffles as before.
+   2. [x] `NewRoom` refuses a bot on seat 0: every room, new, loaded or kept over a restart, is made there.
+   3. [x] Paths checked (5.24): the lobby (a bot is never offered seat 0: `error.bot_seat`; the host leaving moves the next human there, 10.12); game start with random seats (fixed); a load (the save keeps the room's seats, so seat 0 is a human); a restart (`NewRoom`); the human host leaving a running game (no one is reseated; seat 0 stays theirs, away); `GameInfo.Host` (the table's host, a human's name); the client's Save and End (seat 0, a human).
+   4. [x] `TestShuffleSeatsKeepsBotOffSeat0`; ADR 033 10.12.6.
 
-### [ ] 19.206 "Add bot" after the host left a table without bots fails once
+### [x] 19.206 "Add bot" after the host left a table without bots fails once
 
 1. Goal: "Add bot" works the first time after the host leaves.
 2. Report (owner's review): `TableScreen.tsx:51` and `Hub.bot`: the server moves the sender to seat 0 and answers `error.bot_seat`.
-3. Cause: to be found (ADR 033 10.12.4–5).
+3. Cause: the table showed seat 0 free with "Add bot"; `Hub.bot` first moves the sender into seat 0 (10.12.5), so the bot then asked for seat 0, now the sender's.
 4. Tasks:
-   1. [ ] Fix in line with 10.12.4–5; server test.
+   1. [x] After that move, a `bot` for seat 0 seats the bot on the seat the sender left (10.12.5.1). `TestBotsAddOnFreedHostSeat`.
 
-### [ ] 19.207 A standard bot's search cannot be cancelled
+### [x] 19.207 A standard bot's search cannot be cancelled
 
 1. Goal: a step, a pause or the room's end stops a standard bot's search at once.
 2. Report (owner's review): `standardPick` takes no context.
 3. Tasks:
-   1. [ ] ctx into `standardPick`, checked between candidates and between dice draws; a cancelled search returns `ctx.Err()`. Test.
+   1. [x] ctx into `standardPick` and `try`, checked between candidates and between dice draws; a cancelled search returns `ctx.Err()`. `TestStandardCancel`.
 
 ### [x] 19.208 Bots think at a table no human is connected to
 
@@ -6182,41 +6183,45 @@ Totals by system (210 items):
 4. Tasks:
    1. [x] Covered by `TestBotsWaitWhilePausedVotingOver` (the only player leaves: no thinker, a late answer dropped, the bot thinks again on return); no code change.
 
-### [ ] 19.209 A panic in a bot's memory crashes the server
+### [x] 19.209 A panic in a bot's memory crashes the server
 
 1. Goal: a bad step in `Memory.Observe` costs one seat's memory, not the server.
 2. Report (owner's review): `remember` runs on the room goroutine with no `recover`.
 3. Tasks:
-   1. [ ] Recover as `botWorlds` does: log with replay data, reset that seat's memory, the game goes on. Test.
+   1. [x] `Room.observe` recovers as `botWorlds` does: logged with replay data, that seat's memory `Reset`, counted as a panic (19.211), the game goes on. `TestBotsMemoryPanic`.
 
 ### [ ] 19.210 A looping bot plays until the game's hour limit
 
 1. Goal: a bot that repeats a move without end stops within its turn.
 2. Report (owner's review): the room has no per-turn cap on a bot's moves (the arena has `MaxTurnIntents`).
 3. Tasks:
-   1. [ ] Count each bot seat's non-pass moves in the current turn; past a cap, only forced answers until the turn ends; one log line. Cap from arena logs, about 3× the largest seen. Test; ADR 033 Decision 12.
+   1. [x] `botTurnActs` (150): each bot seat's moves that are not passes in the current turn; past it only forced answers until the turn ends; one log line. A rollback in the turn keeps the count; a load or restart starts over. `TestBotsTurnCap`; ADR 033 12.14.
+   2. [ ] The arena's largest count of one seat in one turn, to check 150 is about 3× it: measured in the final check of the review fixes.
 
-### [ ] 19.211 A bot that panics every move floods the log
+### [x] 19.211 A bot that panics every move floods the log
 
 1. Goal: a repeated bot panic costs one stack, not one per move.
 2. Report (owner's review): `logBotPanic` writes a full stack each time; `deploy/` sets no log size limit.
 3. Tasks:
-   1. [ ] Full stack only for a room's first panic, then one line; after 5 panics of one seat in a game, that seat plays forced answers only. Same for `botWorlds` and `remember`. Test; ADR 033 Decision 12.
-   2. [ ] `deploy/`: if no log limit anywhere, a separate item.
+   1. [x] Full stack only for a room's first panic, then one line; after 5 panics of one seat in a game (`botPanicLimit`), that seat plays forced answers only, said once. `Choose`, `botWorlds` and `remember` count alike. `TestBotsPanicLimit`; ADR 033 12.12.5–6.
+   2. [x] `deploy/`: systemd logs to journald, which caps itself; Docker keeps every line: 19.218.
 
-### [ ] 19.212 The engine version did not move with deck_order
+### [x] 19.212 The engine version did not move with deck_order
 
 1. Goal: a record replays only on an engine that makes the same steps.
 2. Report (owner's review): `version.go` is still 0.5.4, already tagged in main; `deck_order` and `looked_at.deck` enter the step checksum.
 3. Tasks:
-   1. [ ] Version 0.5.5, a boundary constant, CanReplay refuses 0.5.4 and older with a clear message. Check StateMeaning and every place that writes or compares the version. Test.
+   1. [x] Version 0.5.5, `deckVersion`, CanReplay refuses 0.5.4 and older naming deck_order. `TestCanReplay`, `TestCanReplayDeckVersion`; new records replay (the record tests).
+   2. [x] StateMeaning stays 3: no saved field means something new; `deck_order` and the look's deck are events, not state.
+   3. [x] Other places: saves load only on the same engine version (N-11), so a 0.5.4 save is refused as any other; record files and the website read `Version`; go.mod files require `v0.0.0` with a replace; no testdata holds a version. CHANGELOG has a line. No tag: releases come from main.
 
-### [ ] 19.213 Imagine copies the replay log, then drops it
+### [x] 19.213 Imagine copies the replay log, then drops it
 
 1. Goal: a bot's world costs no copy of the game's save tracking.
 2. Report (owner's review): `Clone` copies `saved.since` (grows all game); `Imagine` then sets `tracking{off: true}`.
 3. Tasks:
-   1. [ ] An inner clone without `saved` for Imagine; `Clone` unchanged. Benchmark after 300 and 3000 steps, before and after.
+   1. [x] `clone(keepSaved)`; `Imagine` uses `clone(false)`; `Clone` unchanged.
+   2. [x] `BenchmarkImagine`, 200 runs × 3, a loaded machine (time is noise there): after 300 steps 396 → 377 KB and 114 → 96 allocs a world; after 3000 steps 622 → 448 KB and 278 → 107 allocs.
 
 ### [ ] 19.214 A player named like a bot gets the robot
 
