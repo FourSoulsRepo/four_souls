@@ -252,7 +252,7 @@ Not [x] (2026-11-17): Done when 1 asks for 20 tables of hard bots on one core; o
 
 ### [~] 23.11 Lobby screen
 
-Not [x] (2026-11-17): the full `make e2e` passed in Chromium (287, check phase), WebKit not run (no libavif13; owner), and 19.197 is still open.
+Not [x] (2026-11-18): the full `make e2e` passed in Chromium (287, check phase); the full WebKit run did not pass (19.219, 19.220); 19.197 is solved.
 
 1. Goal: the host adds bots in the app (ADR 033, Decision 10).
 2. Tasks:
@@ -270,10 +270,14 @@ Not [x] (2026-11-17): the full `make e2e` passed in Chromium (287, check phase),
       1. UC-47; `e2e/tests/bots.spec.ts`: the host adds 3 bots, changes and removes one, starts alone, and the bots throw their first-player dice.
    2. waits: WebKit e2e (libavif13, owner), 19.197.
       1. Lead (2026-11-17): not closed, and the branch not merged, until a full `make e2e` passes, WebKit too.
+      2. WebKit (2026-11-17, libavif13 installed with the owner's leave; 5 workers): run 1 218 passed, 92 failed, 12 skipped, 4 did not run (30.6 min, load up to 50 from another session's tests); run 2 295 passed, 18 failed, 12 skipped, 1 did not run (24.2 min).
+      3. Every failure but one passed again with 1 worker: they time out under load (19.220). `playback.spec.ts:1975` fails in WebKit every time, also alone (19.219).
+      4. No failure was in the bot code: all 5 tests of `bots.spec.ts` passed in both WebKit runs. 19.197 is solved (owner).
+      5. Evidence: `.cache/e2e-evidence/23-webkit/` (not in git).
 
 ### [~] 23.12 Bots at the game table
 
-Not [x] (2026-11-17): it waits for the WebKit e2e, as 23.11; Chromium passed in full.
+Not [x] (2026-11-18): it waits for a passing full WebKit e2e, as 23.11; Chromium passed in full; `bots.spec.ts` passed in both WebKit runs (23.11, 3.2).
 
 1. Goal: everyone sees which seats are bots (N-21).
 2. Tasks:
@@ -286,6 +290,7 @@ Not [x] (2026-11-17): it waits for the WebKit e2e, as 23.11; Chromium passed in 
 3. Done when:
    1. `make frontend e2e` passes; screenshots in `.cache/screenshots/21.12/`.
    2. waits: check phase (e2e incl. WebKit). Owner (2026-11-17): code first, tests later; pace: check phase.
+      1. WebKit (2026-11-17): `bots.spec.ts`, 5 of 5 passed in both full runs, the game table test (`:155`) among them; the full run did not pass (23.11, 3.2).
    3. Before the stop: `bots.spec.ts`, Chromium, 4 of 4 passed twice; English screenshots in `.cache/screenshots/21.12/en/`; qps not taken.
 4. Decisions (agent, 2026-11-17):
    1. The robot goes before a bot name wherever a line names it: `namePieces` finds the names in the finished text, so no translated line changes.
@@ -325,7 +330,7 @@ Not [x] (2026-11-17): it waits for the WebKit e2e, as 23.11; Chromium passed in 
 
 ### [~] 23.14 Docs and review
 
-Not [x] (2026-11-17): task 6 (`wails build -m -tags embed` needs libgtk-3-dev and libwebkit2gtk-4.0-dev; owner), the full gate run of task 5, and the owner's game.
+Not [x] (2026-11-18): the full gate run of task 5 (WebKit e2e did not pass: 23.11, 3.2) and the owner's game. Task 6 done.
 
 1. Goal: the step is ready for the owner.
 2. Tasks:
@@ -335,6 +340,7 @@ Not [x] (2026-11-17): task 6 (`wails build -m -tags embed` needs libgtk-3-dev an
    4. ADR 033 matches the code: every number that moved.
    5. `cardgen -report` unchanged; `make build vet test lint wasm frontend e2e bots`.
    6. `wails build -m -tags embed` without the private images.
+      1. Done (2026-11-17, libgtk-3-dev and libwebkit2gtk-4.0-dev installed with the owner's leave): wails v2.17.0, at b1546638; built in 26 s; `build/bin/FourSouls` 17 211 144 bytes (17M). It changed only file modes in `frontend/wailsjs`, reverted.
    7. Rule for new card sets in `Bots.md` and the developer wiki: after cards are added, `make bot-values`, then `make bots` (ADR 033, Decision 20).
 3. Done when:
    1. **Owner** plays a game against three hard bots and approves the merge.

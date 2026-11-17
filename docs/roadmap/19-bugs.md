@@ -42,7 +42,7 @@ This step never closes; new reports are appended.
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166, 19.198                          | 4     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194, 19.197, 19.217 | 45 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179, 19.189, 19.196, 19.202, 19.203 | 34 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179, 19.189, 19.196, 19.202, 19.203, 19.219, 19.220 | 36 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91, 19.201, 19.218             | 6     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63, 19.129                                          | 2     |
@@ -58,7 +58,7 @@ This step never closes; new reports are appended.
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 | X  | Bots: a bot or its driver wrong          | Bots       | 19.199, 19.204, 19.205, 19.206, 19.207, 19.208, 19.209, 19.210, 19.211, 19.212, 19.213, 19.214, 19.215, 19.216 | 14 |
 
-Totals by system (210 items):
+Totals by system (212 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -66,7 +66,7 @@ Totals by system (210 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 54 |
 | Server    | H, N    | 5     |
-| e2e       | I, J    | 79    |
+| e2e       | I, J    | 81    |
 | Release   | K       | 6     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
@@ -5991,7 +5991,7 @@ Totals by system (210 items):
 
 1. Goal: `rollback.spec.ts` "in Godmode each Undo undoes one move" passes whatever the deal.
 2. Report (23.11 `make e2e`, 2026-11-17)
-   1. Chromium; WebKit could not start on this machine (no `libavif13`).
+   1. Chromium; WebKit could not start on this machine then (no `libavif13`; installed later, see 6.4).
    2. `rollback.spec.ts:101`: after the first Undo, the title was "Undo: Hal's choice".
    3. The test expects "Undo: Hal declares an attack".
    4. Evidence: `.cache/e2e-evidence/21.11-full/` (not in git); record `g153_Gia_Hal` (port 4799).
@@ -6020,7 +6020,7 @@ Totals by system (210 items):
    1. The spec, Chromium, 5 workers, 10 repeats: 10 of 10 passed (was 7 of 10; `.cache/e2e-evidence/19.160-after/`).
    2. Every Chromium spec that uses `turn.ts`, 5 workers: 202 passed, 1 failed: `rooms.spec.ts:72`, the open 19.156, outside this change (`.cache/e2e-evidence/19.160-specs/`).
    3. `make frontend` passes.
-   4. WebKit not run: `libavif13` is missing on this machine.
+   4. WebKit (check phase, 2026-11-17, after `libavif13` was installed): this test (`rollback.spec.ts:71`) passed in both full WebKit runs (5 workers, 19.220).
 7. Owner notes (2026-11-17)
    1. Owner marks 19.197 solved.
 
@@ -6267,3 +6267,36 @@ Totals by system (210 items):
 4. Not a bot bug: any server log grows so; not fixed in step 23.
 5. Tasks:
    1. [ ] Docker and compose: `max-size` and `max-file` for the server's log; a line in wiki Server.md.
+
+### [ ] 19.219 e2e: WebKit's turn banner pass test fails every time
+
+1. Goal: `playback.spec.ts:1975` passes in WebKit.
+2. Report (step 23 check phase, WebKit `make e2e`, 2026-11-17)
+   1. Failed in both full WebKit runs (5 workers) and in every rerun: the failures of the first run with 1 worker, and alone with `--repeat-each 3` (3 of 3 failed, load about 5 – 9).
+   2. Line 2003: `page.waitForFunction: Timeout 5000ms exceeded`; the wait for Pass live while the turn banner shows.
+   3. Seed 114790418 in every run; Chromium, the same test alone, `--repeat-each 3`: 3 of 3 passed (10 – 11 s).
+   4. Page at the failure: turn 2, "Start of turn", Pass enabled, no turn banner left.
+   5. So in WebKit Pass does not become live before the banner is gone.
+   6. Evidence: `.cache/e2e-evidence/23-webkit/alone-1975-evidence/` and `alone-1975*.log` (not in git).
+3. Cause: not found yet.
+   1. 19.203 is the same line, Chromium, only under a full run; this one is WebKit, also alone.
+4. Tasks:
+   1. Find what keeps Pass disabled during the banner in WebKit: the server's priority, or the client's playback.
+   2. Wait for the exact state (5.16.10).
+
+### [ ] 19.220 e2e: WebKit table tests time out under a full run
+
+1. Goal: a full WebKit `make e2e` (5 workers) passes on this machine.
+2. Report (step 23 check phase, 2026-11-17), WebKit only
+   1. Run 1 (b1546638, 22:52 – 23:22): 218 passed, 92 failed, 12 skipped, 4 did not run, 30.6 min. Load average up to 50 on 12 cores: another session's `go test` and `tsc` ran at the same time.
+   2. Its failures again, 5 workers: 26 passed, 66 failed (11.0 min, load 18 – 35).
+   3. Those 70 (66 and the 4 that did not run), 1 worker: 69 passed, 1 failed, 19.219 (17.9 min, load 4 – 18).
+   4. Run 2 (about bb089e32, 23:55 – 00:19): 295 passed, 18 failed, 12 skipped, 1 did not run, 24.2 min; load 6 – 26, WebKit's own processes most of it.
+   5. Its 19 again, 1 worker: 18 passed, 1 failed, 19.219 (5.1 min).
+   6. Kinds: no `main "Turn …"` within 5 s after `startGame` (most of them), then the 30 s test timeout with the page closed; a few animation checks (`effect-fly`, `card-zoom`, a deep-equal of arrow points) missed under load.
+   7. A WebKit test takes 15 – 35 s at 5 workers; the same tests 10 – 15 s alone.
+   8. Evidence: `.cache/e2e-evidence/23-webkit/` (`run1-evidence`, `rerun1-evidence`, `rerun2-evidence`, `run2-evidence`, `rerun3-evidence`, logs and load logs; not in git).
+3. Cause: not found yet; most likely the machine: five WebKit workers with two to four pages each fill the cores (19.189 saw the same at game start).
+4. Tasks:
+   1. Measure a full WebKit run on a quiet machine; if it still fails, find what blocks the pages at game start.
+   2. Or give WebKit fewer workers in `make e2e`; decide with the owner.
