@@ -697,6 +697,11 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. Measured (23.10, 3 hard tables, one CPU): 50% of searches had at most 2 candidates and took 529 of 1066 s of search time.
    3. A shorter budget for such moves would free about half of the hard bots' CPU.
    4. Not done in step 23: the full budget stays.
+23. N-23. A bot's pause before its move: remove, shorten, or a setting (owner, 2026-11-17).
+   1. Now a bot waits before it moves (`internal/server/bots.go`): 0.7 s before a pass or an answer (`botAnswerPace`), 1 to 2 s before an action in its turn (`botActionPace`); ADR 033, Decision 13.
+   2. With the play animations on top, a bot's answer may feel slow. "Maybe we remove it later."
+   3. Options: remove the pause, shorten it, or make it a server or table setting.
+   4. Decide after the owner's games with bots.
 
 ## Learning
 
