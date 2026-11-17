@@ -214,7 +214,7 @@ Rules for this step (owner, 2026-11-16):
 3. Done when:
    1. 20 tables of 1 human and 3 hard bots: no room stall over 100 ms; every bot answers before the response timer.
 
-### [x] 21.11 Lobby screen
+### [~] 21.11 Lobby screen
 
 1. Goal: the host adds bots in the app (ADR 030, Decision 10).
 2. Tasks:
@@ -230,6 +230,8 @@ Rules for this step (owner, 2026-11-16):
 3. Done when:
    1. Use case "Play with bots" passes as an e2e test.
       1. UC-44; `e2e/tests/bots.spec.ts`: the host adds 3 bots, changes and removes one, starts alone, and the bots throw their first-player dice.
+   2. waits: WebKit e2e (libavif13, owner), 19.160.
+      1. Lead (2026-11-17): not closed, and the branch not merged, until a full `make e2e` passes, WebKit too.
 
 ### [ ] 21.12 Bots at the game table
 
