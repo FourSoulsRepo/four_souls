@@ -42,7 +42,10 @@ func botRoom(t *testing.T, opts protocol.Options, seats ...string) *Room {
 	if err != nil {
 		t.Fatal(err)
 	}
-	r.second, r.botThink = time.Millisecond, 2*time.Millisecond
+	// Hard thinks by playout count, not by time: a 2 ms budget gave it
+	// no playout under -race or a loaded machine, so it only passed and
+	// whole games ran out of time (check phase of step 21).
+	r.second, r.botThink, r.botPlayouts = time.Millisecond, 10*time.Second, 2
 	r.recInfo.game = "g1"
 	t.Cleanup(r.stopThinkers)
 	r.play(characters(setsOf(codes))[:len(seats)])
@@ -423,7 +426,9 @@ func TestBotsGame(t *testing.T) {
 		seeds[i] = uint64(1000 + i) //nolint:gosec // a small game number
 	}
 	if raceEnabled || testing.Short() {
-		seeds = []uint64{1012, 1013} // the race detector slows whole games ten times
+		// The race detector slows whole games ten times: the two
+		// shortest, one of each line-up (17 and 16 turns).
+		seeds = []uint64{1002, 1015}
 	}
 	games := len(seeds)
 	// A few games at a time: twenty at once load the machine so much
@@ -459,7 +464,10 @@ func TestBotsGame(t *testing.T) {
 func playBotsGame(t *testing.T, seed uint64, levels []string) (time.Duration, int) {
 	t.Helper()
 	h := NewHub()
-	h.second, h.seed, h.botThink = time.Millisecond, seed, 2*time.Millisecond
+	// Hard thinks by playout count, not by time: a 2 ms budget gave it
+	// no playout under -race or a loaded machine, so it only passed and
+	// whole games ran out of time (check phase of step 21).
+	h.second, h.seed, h.botThink, h.botPlayouts = time.Millisecond, seed, 10*time.Second, 2
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	go h.Run(ctx)

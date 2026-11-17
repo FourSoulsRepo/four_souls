@@ -465,7 +465,10 @@ func TestRestartVoteGrace(t *testing.T) {
 func botHub(t *testing.T, dir string, second time.Duration) (h *Hub, stop func()) {
 	t.Helper()
 	h = NewHub()
-	h.second, h.seed, h.botThink = second, 21, 2*time.Millisecond
+	// Hard thinks by playout count, not by time: a 2 ms budget gave it
+	// no playout under -race or a loaded machine, so it only passed and
+	// whole games ran out of time (check phase of step 21).
+	h.second, h.seed, h.botThink, h.botPlayouts = second, 21, 10*time.Second, 2
 	h.restart, h.records, h.saves = filepath.Join(dir, restartFolder), filepath.Join(dir, "records"), filepath.Join(dir, "saves")
 	ctx, cancel := context.WithCancel(context.Background())
 	stopped := make(chan struct{})

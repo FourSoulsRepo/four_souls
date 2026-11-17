@@ -163,6 +163,9 @@ type Hub struct {
 	// botThink is the hard bot's time budget per move (Decision 9.8);
 	// tests shorten it.
 	botThink time.Duration
+	// botPlayouts caps a hard move's playouts in every room (0: none);
+	// tests set it (Room.botPlayouts).
+	botPlayouts int
 	// thinkSlots holds one token per hard bot thinking now, in every
 	// room: at most thinkLimit at once (Decision 17.2).
 	thinkSlots chan struct{}
@@ -639,6 +642,7 @@ func (h *Hub) start(t *table) {
 // setUpRoom gives a new room the server's settings.
 func (h *Hub) setUpRoom(room *Room, n int, id, host string, sets []string) {
 	room.second, room.hub, room.saves, room.botThink, room.thinkSlots = h.second, h, h.saves, h.botThink, h.thinkSlots
+	room.botPlayouts = h.botPlayouts
 	room.presenceOn = h.presence
 	room.recDir = h.records
 	room.recInfo = recordInfo{game: id, server: h.name, sets: sets, cards: h.cards}
