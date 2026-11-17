@@ -40,7 +40,7 @@ This step never closes; new reports are appended.
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141 | 15 |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
-| H  | Lobby and rejoin                         | Server     | 19.32, 19.148                                          | 2     |
+| H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.161                                  | 3     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154 | 37 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.158, 19.159 | 24 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
@@ -56,14 +56,14 @@ This step never closes; new reports are appended.
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 
-Totals by system (151 items):
+Totals by system (152 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B, T, U | 33 |
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 42 |
-| Server    | H, N    | 3     |
+| Server    | H, N    | 4     |
 | e2e       | I, J    | 61    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
@@ -4998,3 +4998,20 @@ Totals by system (151 items):
 4. Tasks:
    1. Find whether hover-off is sent, and when, under load.
    2. Check: the spec, webkit, 5 workers, 10 repeats.
+
+### [ ] 19.161 A load right after "saved" goes to the old room
+
+1. Goal: `TestChallengeSaveAndLoad` passes under any load; a host may load a save at once.
+2. Report (step 21 check phase, 2026-11-17)
+   1. `go test -race ./internal/server`, run 17 of 30, 4 runs side by side (load about 24 on 12 cores).
+   2. `challenge_test.go:292: no table message`; the test took 5.07 s, the wait of `next`.
+   3. The other 29 race runs and the plain runs passed.
+   4. Evidence: the step-21 check scratchpad, `flaky/server-race-17.log` (not in git).
+3. Cause (code, since 6.11, `f4545f9`):
+   1. `Room.save` sends `saved` to every client, then sets `r.stopped`.
+   2. Only when `Run` ends does `backToLobby` clear each client's `room`.
+   3. A `load` sent at once can reach `Client.Receive` while `room` is still set: it goes to the stopped room and gets no table.
+   4. The test sends `load` right after `saved`; so could a fast client.
+4. Tasks:
+   1. Hand the clients back (`c.room.Store(nil)`) before `saved` goes out, or answer a message a stopped room gets.
+   2. Test: a `load` sent the moment `saved` arrives gets its table.
