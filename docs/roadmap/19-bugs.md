@@ -6234,16 +6234,20 @@ Totals by system (212 items):
    2. Not marks in the events: the client builds each line from seat numbers, and an invisible mark would end up in titles, aria labels and the e2e texts.
    3. The cost: in a line, a bot whose name a player also took shows no robot; in a seat's own place (its area, the table screen, the pick screen) it keeps it, read from the seat.
 5. Tasks:
-   1. [ ] `namePieces` by seats, with the level; Vitest.
-   2. [ ] Seat places draw the name from the seat.
+   1. [x] `seatMarks` (every seat, a bot with its level) replaces `botNames`; `namePieces` takes them and gives each bot piece its level. Vitest in `lobby.test.ts`.
+   2. [x] Seat places draw the name from the seat: `SeatName` and `PlayerName` (`BotIcon.tsx`) in the player areas, the first-roll list, the pick screen; the table screen already did.
 
 ### [ ] 19.215 A bot's name with no robot in some places
 
 1. Goal: every place that prints a player's name gives a bot its robot (5.26).
 2. Report (owner's review): `StackPanel.tsx:123` (first roll), `Effects.tsx:548` (another player's loot play), `CardZoom.tsx:139` (a stack card's owner).
 3. Cause: those print the name as plain text, not through `BotText`.
-4. Tasks:
-   1. [ ] Those three, and every other place found; the list here.
+4. Fix: those three, and every other place found:
+   1. `StackPanel` first-roll row (`PlayerName`), the last roll's tooltip, a line part with no role (a history line in the card zoom).
+   2. `Effects` "plays" label; `CardZoom` owner; the challenge end's reason (`Overlays`); the own area in a replay (`PlayerArea`).
+   3. The replay bar's seat line and the records list (19.216).
+5. Checked, already right: the turn badge, the history panel, the stack rows, the action bar, the throw window, the vote and pause windows, the game end title, the choice dialog, the start wait, the opponent areas, the turn banner.
+6. Checked, not drawn as text (title or aria label only): the history strip tiles, a deck's look, a present's label, Undo's title, a replay seat's hint. The rules website names no bot.
 
 ### [ ] 19.216 A replay of a game with bots shows "Bot N"
 
@@ -6251,14 +6255,16 @@ Totals by system (212 items):
 2. Report (owner's review): `bindings/records` and `replay.ts:45` drop the record seats' `bot` and `bot_n`.
 3. Cause: the binding's `Seat` has only seat and name; the record header has both (ADR 033, 16.5).
 4. Tasks:
-   1. [ ] Carry `bot` and `bot_n` through the binding, the bridge and `replayUpdate`; the records list too. Go test and Vitest.
+   1. [x] `records.Seat` gets `bot` and `bot_n`; the list's `players` are seats and its `winners` seat numbers, so the list names a bot as the game did. The bridge, `replayUpdate` and the replay bar carry them. `pkg/record` already had both.
+   2. [x] Tests: `TestBotSeats` (Go), `records.test.ts`, and `replay.spec.ts` (a bot's name and robot in a replay).
 
 ### [ ] 19.217 e2e: the bot table test waits for icons, not for state
 
 1. Goal: `bots.spec.ts` waits for the game state (5.16.10, TS-08).
 2. Report (owner's review): `bots.spec.ts:170` polls the badge and stack for robot icons.
 3. Tasks:
-   1. [ ] A named store wait: a bot's turn with its item on the stack.
+   1. [x] A store check `botItemWaits`: a bot's turn, its item on the stack, waiting for the page's player; the bot seats read from the store. Then the DOM checks.
+   2. [x] Same fault in the Krampus test (a bot's turn by the badge's icon): now the store's active seat.
 
 ### [ ] 19.218 Docker deploys keep the server log without a size limit
 
