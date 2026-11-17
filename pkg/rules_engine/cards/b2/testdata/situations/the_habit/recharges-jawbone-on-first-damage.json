@@ -1,0 +1,16 @@
+{
+  "title": "The Habit: a fly hits Isaac on a roll of 1, and he recharges his Jawbone",
+  "source": ["card the_habit", "card fly"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["the_habit", "jawbone"], "deactivated": ["jawbone"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly"],
+    "rolls": [1, 6]
+  },
+  "action": {"player": 0, "kind": "attack", "choices": ["fly", "jawbone"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "deactivated": []}]}
+}

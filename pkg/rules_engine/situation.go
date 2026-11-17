@@ -108,14 +108,33 @@ type SituationStep struct {
 	Expect *Expectation `json:"expect,omitempty"`
 }
 
-// Expectation is what should happen (LR-04).
+// Expectation is what should happen (LR-04). A field left out is not
+// checked. A list of cards names every card there, in any order; an
+// empty list expects none (23.5).
 type Expectation struct {
 	Allowed bool             `json:"allowed"`
 	Rule    string           `json:"rule,omitempty"` // the refusal's rule, when not allowed
 	After   []ExpectedPlayer `json:"after,omitempty"`
+	// Monsters check cards in slots.
+	Monsters []ExpectedMonster `json:"monsters,omitempty"`
+	// Counters on cards no player controls, as setup.counters; a count
+	// of 0 expects none.
+	Counters []SituationCounter `json:"counters,omitempty"`
+	// Decks are the cards on top of decks by name, top first, as
+	// setup.decks; Discards the whole discard piles, any order.
+	Decks    map[string][]CardRef `json:"decks,omitempty"`
+	Discards map[string][]CardRef `json:"discards,omitempty"`
+	// Active, LootPlays and Attacks check the turn, as in setup.
+	Active    *int `json:"active,omitempty"`
+	LootPlays *int `json:"loot_plays,omitempty"`
+	Attacks   *int `json:"attacks,omitempty"`
+	// Over and Winners check the game's end; Winners are seats.
+	Over    *bool `json:"over,omitempty"`
+	Winners []int `json:"winners,omitempty"`
 }
 
-// ExpectedPlayer checks one player after everything resolved.
+// ExpectedPlayer checks one player after everything resolved. Hand and
+// Souls are counts (soul value); HandCards and SoulCards the cards.
 type ExpectedPlayer struct {
 	Player int   `json:"player"`
 	Cents  *int  `json:"cents,omitempty"`
@@ -123,6 +142,17 @@ type ExpectedPlayer struct {
 	Damage *int  `json:"damage,omitempty"`
 	Souls  *int  `json:"souls,omitempty"`
 	Dead   *bool `json:"dead,omitempty"`
+	// HP is what is left: max HP minus damage (Game.PlayerHP).
+	HP  *int `json:"hp,omitempty"`
+	ATK *int `json:"atk,omitempty"`
+	// Items, HandCards, SoulCards: every such card, any order.
+	Items     []CardRef `json:"items,omitempty"`
+	HandCards []CardRef `json:"hand_cards,omitempty"`
+	SoulCards []CardRef `json:"soul_cards,omitempty"`
+	// Deactivated: every deactivated item, and "character", as setup.
+	Deactivated []CardRef `json:"deactivated,omitempty"`
+	// Counters on the player's cards, as setup; a count of 0 expects none.
+	Counters []SituationCounter `json:"counters,omitempty"`
 }
 
 // Answer is the engine's answer to a situation.
@@ -582,26 +612,16 @@ func (g *Game) mismatches(allowed bool, rule string, e Expectation) []string {
 	if !e.Allowed && e.Rule != "" && rule != e.Rule {
 		out = append(out, fmt.Sprintf("refused by %s, expected %s", rule, e.Rule))
 	}
+	c := checks(out)
 	for _, x := range e.After {
-		if x.Player < 0 || x.Player >= len(g.Players) {
-			out = append(out, fmt.Sprintf("no player %d", x.Player))
-			continue
-		}
-		pl := g.Players[x.Player]
-		checkInt := func(name string, want *int, got int) {
-			if want != nil && *want != got {
-				out = append(out, fmt.Sprintf("player %d %s is %d, expected %d", x.Player, name, got, *want))
-			}
-		}
-		checkInt("cents", x.Cents, pl.Cents)
-		checkInt("hand", x.Hand, len(pl.Hand))
-		checkInt("damage", x.Damage, pl.Damage)
-		checkInt("souls", x.Souls, g.SoulValue(pl.ID))
-		if x.Dead != nil && *x.Dead != pl.Dead {
-			out = append(out, fmt.Sprintf("player %d dead is %v, expected %v", x.Player, pl.Dead, *x.Dead))
-		}
+		g.checkPlayer(&c, x)
 	}
-	return out
+	for _, x := range e.Monsters {
+		g.checkMonster(&c, x)
+	}
+	g.checkDecks(&c, e.Decks, e.Discards)
+	g.checkGame(&c, e)
+	return c
 }
 
 func containsRef(list []CardRef, r CardRef) bool {

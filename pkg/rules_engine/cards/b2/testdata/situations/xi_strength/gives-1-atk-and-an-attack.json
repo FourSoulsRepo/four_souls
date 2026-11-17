@@ -1,0 +1,15 @@
+{
+  "title": "XI. Strength on Isaac: ATK 1 + 1, and one attack + 1",
+  "source": ["card xi_strength", "card isaac", "R-TURN-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["xi_strength"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "xi_strength", "choices": ["player 1 (isaac)"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "atk": 2}], "attacks": 2}
+}

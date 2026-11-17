@@ -104,19 +104,7 @@ func (g *Game) setUpDecks(decks map[string][]CardRef) error {
 // setUpSlots puts damage and counters on cards in slots and on bonus
 // souls. A ref names the first such card, in slot order.
 func (g *Game) setUpSlots(s SituationSetup) error {
-	var refs []CardRef
-	var ids []ObjectID
-	for _, rows := range append(g.MonsterRows(), g.Rooms) {
-		for _, slot := range rows {
-			if id, ok := slot.TopOf(); ok {
-				refs, ids = append(refs, g.Object(id).Card), append(ids, id)
-			}
-		}
-	}
-	slotted := len(refs) // bonus souls take counters, not damage
-	for _, id := range g.BonusSouls {
-		refs, ids = append(refs, g.Object(id).Card), append(ids, id)
-	}
+	refs, ids, slotted := g.slotCards() // bonus souls take counters, not damage
 	damaged := make([]CardRef, 0, len(s.MonsterDamage))
 	for ref := range s.MonsterDamage {
 		damaged = append(damaged, ref)

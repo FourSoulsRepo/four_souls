@@ -40,12 +40,50 @@ A situation is a small JSON document: a table position, one action or several [s
 * `action.kind` — `play`, `activate`, `attack`, `purchase`, `end_turn` or `pass`; `card` and `ability` pick the card. Also `throw`, `choose` and `reveal`, which mostly make sense as [steps](#steps).
 * `action.choices` — answers to the prompts that follow, by option label: an option's plain form, with no language (`Game.Plain`, 16.4). A card is its ref (`"bomb"`), a player `"player 2 (hero_b)"`, a number its digits, a card's own words (a "choose one-" option) the words; any other option is its key, then its values (`"ask.deck.monster"`, `"ask.cancel"`, `"ask.yes"`, `"ask.slot_card 1 fly"`).
 * `steps` — several actions in a row, each with its own `choices` and an optional `expect`; a situation has `action` or `steps`, never both. See [Steps](#steps).
-* `expect` — optional: `allowed`, the refusal `rule`, and `after` checks per player (`cents`, `hand`, `damage`, `souls`, `dead`). `allowed` is a plain boolean: leaving it out expects a refusal.
+* `expect` — optional: `allowed`, the refusal `rule`, `after` checks per player, and checks of monsters, decks, the turn and the game's end; see [Checks](#checks). `allowed` is a plain boolean: leaving it out expects a refusal.
 * `source` — optional for a payload, required in a test file: a list of what the `expect` values come from (ADR 033, CLAUDE.md 5.25); see [As tests](#as-tests). The engine does not read it.
 
 ## Counters
 
 A counter entry is `{"card": …, "name": …, "count": …}`; `count` is 1 or more and `name` is optional. A ref names the first such card: in seat order for a player's cards, then in slot order (monster, final boss, minion, room slots) and the bonus souls for `setup.counters`. An unknown field, a card the player has not in play, or a card in no slot is an error that lists the options.
+
+## Checks
+
+`expect` checks what is true once the action, or the step it sits on, has settled (23.5). A field left out is not checked, so old payloads keep their meaning. Names follow `setup`, so a setup and an expect read alike.
+
+| Field | Checks | Example |
+|-------|--------|---------|
+| `after[].cents`, `damage`, `dead` | the player's cents, damage, dead | `{"player": 1, "damage": 1}` |
+| `after[].hand`, `souls` | counts: cards in hand, soul value | `{"player": 0, "hand": 2, "souls": 1}` |
+| `after[].hp`, `atk` | HP left (max HP minus damage), ATK | `{"player": 0, "hp": 1, "atk": 2}` |
+| `after[].items` | every item the player has in play | `{"player": 1, "items": []}` |
+| `after[].hand_cards` | every card in hand | `{"player": 0, "hand_cards": ["bomb"]}` |
+| `after[].soul_cards` | every soul card in play | `{"player": 0, "soul_cards": ["soul_of_wrath"]}` |
+| `after[].deactivated` | every deactivated item, and `"character"` | `{"player": 0, "deactivated": ["jawbone"]}` |
+| `after[].counters` | counters on the player's cards, as in setup | `{"player": 0, "counters": [{"card": "sumptorium", "count": 0}]}` |
+| `monsters[]` | a card in a slot: `card`, and `slot`, `damage`, `hp`, `atk`, `evasion`, `dead` | `{"slot": 1, "card": "fly", "damage": 1, "hp": 1}` |
+| `counters` | counters on cards no player controls, as `setup.counters` | `[{"card": "gaper", "name": "level", "count": 1}]` |
+| `decks` | the cards on top of a deck, top first, as `setup.decks` | `{"monster": ["fly"]}` |
+| `discards` | every card in a discard pile | `{"loot": ["a_dime"]}` |
+| `active`, `loot_plays`, `attacks` | the active seat, its loot plays and attacks left | `"attacks": 2` |
+| `over`, `winners` | the game has ended; the winning seats | `"over": true, "winners": [0]` |
+
+* A list of cards (`items`, `hand_cards`, `soul_cards`, `deactivated`, `discards`, `winners`) names every card there, in any order: a card more or less is a mismatch, and `[]` expects none. The deck in `decks` is the exception: it holds the rest of the sets, so only its top cards are compared, in order.
+* `hand` and `souls` stay counts, as before 23.5; the cards are `hand_cards` and `soul_cards`.
+* A counter check names its card as in setup (`"character"` for the character); a `count` of 0 expects none.
+* A `monsters` check needs `card`. Without `slot`, `card` names the first such card in slot order (monster, final boss, minion, room slots), as `setup.monster_damage` does. With `slot` (from 1, a monster slot), that slot's top card must be `card`. `dead: true` means no slot holds the card and it is in a discard or a player's souls; `dead: false` that a slot holds it.
+* `hp` is what is left: max HP minus damage, for players and monsters.
+
+Each mismatch says what it found and what was expected:
+
+```
+player 0 items are [razor sword coin_bag], expected [razor sword]
+monster slot 1 is "gaper", expected "boss"
+monster gaper evasion is 3, expected 4
+player 0 counters on razor are 2, expected 3
+monster deck top is [gaper], expected [boss]
+winners are [], expected [0]
+```
 
 ## Stacked items
 

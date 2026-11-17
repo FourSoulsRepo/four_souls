@@ -1,0 +1,15 @@
+{
+  "title": "Tarot Cloth: Cain rolls a 4 for Mystery Sack and must give Isaac his Bomb!",
+  "source": ["card tarot_cloth", "card mystery_sack"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["tarot_cloth"]},
+      {"character": "cain", "items": ["mystery_sack"], "hand": ["bomb"]}
+    ],
+    "active": 1,
+    "rolls": [4]
+  },
+  "action": {"player": 1, "kind": "activate", "card": "mystery_sack", "choices": ["bomb"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "hand_cards": ["bomb"]}]}
+}

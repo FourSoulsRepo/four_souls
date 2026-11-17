@@ -13,5 +13,5 @@
     "counters": [{"card": "soul_of_wrath", "count": 5}]
   },
   "action": {"player": 0, "kind": "play", "card": "xiii_death", "choices": ["player 2 (cain)"]},
-  "expect": {"allowed": true, "after": [{"player": 0, "souls": 1}, {"player": 1, "dead": true}]}
+  "expect": {"allowed": true, "after": [{"player": 0, "souls": 1, "soul_cards": ["soul_of_wrath"]}, {"player": 1, "dead": true}]}
 }

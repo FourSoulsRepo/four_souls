@@ -167,7 +167,7 @@ Ideas: TS-13, LR-04, R-03.
    5. Moved: TestBlankCard, TestGoldenRazorBlade.
    6. New: Eden's Blessing after a fly: attack, throw, end turn.
 
-### [ ] 23.5 Richer checks
+### [x] 23.5 Richer checks
 
 1. Goal: the checks Go card tests use most.
 2. Tasks:
@@ -179,6 +179,36 @@ Ideas: TS-13, LR-04, R-03.
    6. A missing field means "not checked", as today.
 3. Done when:
    1. Each check has a passing and a failing test.
+4. Added (count: lines in `cards/**/*_test.go`, 2026-11-17):
+   1. Player `hp`: `PlayerHP` 35; `atk`: `PlayerATK` 33.
+   2. `items`: `hasItem` 89, `InPlay` 115.
+   3. `hand_cards`: `handCards` 11, `Hand[` 5.
+   4. `deactivated`: `.Charged` 76.
+   5. Player `counters`: `CountersOf` 39.
+   6. `soul_cards`: souls by card; `SoulValue` 56 stays `souls`.
+   7. `monsters`: `Monsters[` 86, monster `.Damage` 52.
+   8. Also monster `hp`, `atk`, `evasion`: `Evasion` 38, `MonsterATK` 15, `HP` 9.
+   9. Top-level `counters`, as `setup.counters`: slots and bonus souls.
+   10. `decks`: `DeckTop` 48; `discards`: `inDiscard` 39, `Discards[` 21.
+   11. `active` 26, `loot_plays` 23, `attacks` 33 (`Turn.…` reads).
+   12. `over` 29, `winners` 13.
+5. Shape:
+   1. Names follow `setup`; `hand` and `souls` stay counts.
+   2. Card lists: every card, any order; `[]` expects none.
+   3. `decks`: only the top cards, top first.
+   4. `monsters[]`: `card`, optional `slot` from 1; `dead` means it left play.
+   5. A counter check with `count` 0 expects none.
+6. Rejected:
+   1. `purchases`: no card test compares `Turn.Purchases`.
+   2. `extra_loot_plays`: 4 compares.
+   3. `MustAttacks` 15, `AttackRolls` 18: mid-attack state; Go for now.
+   4. No own check for `.Character` (17): mostly its `.Charged`, now `deactivated`.
+   5. Curses 6, `Eternal` 5, shields 3, shop slots 4: too few.
+7. Files:
+   1. Moved: TestXIStrength, TestTheHabit, TestTheShovel, TestTarotCloth.
+   2. Moved: TestGlassCannon (2 files), TestSmelter.
+   3. Moved in `r`: TestMegaSatanWins, TestRedChampions, TestSumptorium.
+   4. Soul of Wrath's file also checks `soul_cards`.
 
 ### [ ] 23.6 Checks on prompts and order
 

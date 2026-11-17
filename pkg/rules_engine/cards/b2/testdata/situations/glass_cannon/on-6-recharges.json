@@ -1,0 +1,15 @@
+{
+  "title": "Glass Cannon destroys Cain's Breakfast, then a 6 recharges it",
+  "source": ["card glass_cannon"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["glass_cannon"]},
+      {"character": "cain", "items": ["breakfast"]}
+    ],
+    "active": 0,
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "glass_cannon", "choices": ["breakfast"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "deactivated": []}, {"player": 1, "items": []}]}
+}

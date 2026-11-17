@@ -1,0 +1,19 @@
+{
+  "title": "Smelter: Isaac discards A Dime!! for 3¢, then can't pay again with an empty hand",
+  "source": ["card smelter", "R-ABIL-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["smelter"], "hand": ["a_dime"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "smelter", "choices": ["a_dime"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 3}], "discards": {"loot": ["a_dime"]}}},
+    {"player": 0, "kind": "activate", "card": "smelter", "expect": {"allowed": false}}
+  ],
+  "expect": {"allowed": false}
+}

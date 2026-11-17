@@ -97,6 +97,9 @@ Use option 1.
    3. Every new field is optional for a payload.
    4. A file has `action` or `steps`, never both.
    5. A step may carry its own `expect`; the top one is checked at the end.
+   6. `expect` checks are named as in `setup`; one left out is not checked (23.5).
+   7. A card list in `expect` names every card, in any order.
+   8. A deck in `expect.decks` compares only its top cards, top first.
 11. `expect` comes from the rules, never from a run (5.25).
    1. A tool may write `setup` and `steps`; never `expect` (23.7).
 12. Runner

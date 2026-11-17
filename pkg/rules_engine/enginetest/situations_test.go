@@ -213,3 +213,25 @@ func TestCheckSituationStepUnknownField(t *testing.T) {
 		}
 	}
 }
+
+// The strict reader covers the 23.5 checks: a typo in a player, a
+// monster or a counter check names its place and the nearest field.
+func TestCheckSituationExpectUnknownField(t *testing.T) {
+	expect := `, "expect": {"allowed": true, "after": [{"player": 1, "hand_card": []}],
+		"monsters": [{"card": "fly", "evasoin": 2}], "counters": [{"card": "fly", "cont": 1}], "winer": [0]}`
+	got := check(enginetest.CardTree, "razor_blade/hits-cain.json", razorFile(cardSource, expect))
+	want := []string{
+		`expect.after[0]: unknown field "hand_card"; did you mean "hand_cards"?`,
+		`expect.monsters[0]: unknown field "evasoin"; did you mean "evasion"?`,
+		`expect.counters[0]: unknown field "cont"; did you mean "count"?`,
+		`expect: unknown field "winer"; did you mean "winners"?`,
+	}
+	if len(got) != len(want)+1 {
+		t.Fatalf("problems %q; want %d fields and the field list", got, len(want))
+	}
+	for i, w := range want {
+		if !strings.HasSuffix(got[i], w) {
+			t.Errorf("problem %q; want it to end with %q", got[i], w)
+		}
+	}
+}
