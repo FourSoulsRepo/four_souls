@@ -140,7 +140,7 @@ Ideas: TS-07, TS-08, TS-09, TS-10, TS-11, TS-12.
    1. No game-state wait checks a DOM sign alone.
    2. `make e2e` passes, both browsers.
 
-### [ ] 22.9 Long games stay fast
+### [x] 22.9 Long games stay fast
 
 1. Goal: a whole game fails if a page grows or slows with its length (TS-12).
 2. Tasks:

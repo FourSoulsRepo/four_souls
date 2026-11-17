@@ -37,7 +37,7 @@ This step never closes; new reports are appended.
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188 | 16 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
-| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141 | 15 |
+| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141, 19.191 | 16 |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119, 19.167 | 12 |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166                                  | 3     |
@@ -57,13 +57,13 @@ This step never closes; new reports are appended.
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 
-Totals by system (181 items):
+Totals by system (182 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B, T, U, W | 40 |
 | Card data | C       | 2     |
-| Client    | D–G, O, P, S, V | 52 |
+| Client    | D–G, O, P, S, V | 53 |
 | Server    | H, N    | 4     |
 | e2e       | I, J    | 73    |
 | Release   | K       | 4     |
@@ -5798,3 +5798,24 @@ Totals by system (181 items):
    1. A test: `send` while connecting throws nothing.
    2. Decide: drop presence then, or queue lobby messages.
    3. Check every `send` caller for the same race.
+
+### [ ] 19.191 Animation clash: a card seen on the deck, then revealed into a slot
+
+1. Goal: a card revealed on top of a deck may then be revealed into a slot.
+2. Report (22.9 subagent, 2026-11-17)
+   1. `make e2e-games`, 2 players, every set, seed 780402.
+   2. Both pages logged "animation clash: reveal shows chest after reveal".
+   3. The game itself ended with a winner: 35 turns, 1926 steps.
+   4. Evidence: `.cache/e2e-evidence/22.9-games-780402/` (not in git).
+3. Cause (the record; not confirmed in the code yet)
+   1. Step 1515: Bob reveals the top monster card, Chest (object 54).
+   2. Its event: `card_revealed`, text "monster deck".
+   3. Step 1523: Tumor dies; Chest is revealed into the slot (object 684).
+   4. The steps between are auto passes: likely two updates in a row.
+   5. A `reveal` claim carries no object (19.136), so one card name clashes.
+   6. Close to 19.136 and 19.139: the playback may be right, the rule wrong.
+4. Tasks:
+   1. [ ] Confirm the cause in `animations.ts` and the playback.
+   2. [ ] Fix it game-wide: every reveal of a card seen just before.
+   3. [ ] Vitest for the pair; rerun `GAME_SEED=780402 make e2e-games`.
+

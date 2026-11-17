@@ -126,7 +126,8 @@ A spec may add its own small store check next to these, for state only it needs:
 * any page logs a console error or warning, or throws;
 * the server sends an `error` message or closes a socket;
 * a page reloads, which drops its game;
-* one round of moves takes over 30 seconds.
+* one round of moves takes over 30 seconds;
+* a page grows or slows with the game's length (below, 22.9).
 
 It also plays the Krampus (14.26) and Trick or Treat (14.34) challenges ([Challenges](Challenges)) once each at each difficulty, Normal, Hard and Ultra Hard, for 2 players with every card set. Random play rarely wins one: the timer runs out or the presents are destroyed in a few minutes. The random moves answer the challenges' own dialogs like any other: the forgo and flip questions, the fear pick, the attack-start throws and the trigger order. That is a valid end. The game must reach game over with "Challenge won!" or "Challenge lost" and its reason on both pages; the test logs the result and the timer left. Each test logs its seed when it starts, so a game that never ends still names it.
 
@@ -137,6 +138,29 @@ The host bans the cards the load tool bans by default (`-ban` in `cmd/server_loa
 A failed game leaves what is needed to find the cause. Its match record (the deal and every move) is copied to `.cache/e2e-games/`, since the next run deletes the test servers' folders. Each page gets a screenshot and its store in the test's report; a page that stops answering gives the script stack it is stuck in, through a DevTools session opened with the page (19.12).
 
 The Vite server that Playwright starts watches no files (`FOUR_SOULS_E2E=1`, `frontend/vite.config.ts`). Otherwise a Wails build or an edit elsewhere would reload every test page in the middle of a game.
+
+### Long games stay fast (22.9)
+
+Some bugs showed only after thousands of steps: sounds that kept a media player each (19.135), and a history strip that drew every tile of the game (19.138). So each game measures every page as it plays (`e2e/tests/growth.ts`) and fails a page over a limit. The failure names the page, the value, the limit and the game with its seed, e.g. `Rnd4r0Bob: elements at the end 1850, limit 1700; 4 players finish a game with every card set, seed 856041`. Each test also logs one line per page with its values.
+
+A page is read every 100 steps and at the game's end:
+
+* **Elements**: `document.getElementsByTagName('*').length` at the end, game-over dialog open.
+* **Script time per step**: Chromium's own `ScriptDuration` counter (DevTools `Performance.getMetrics`), through the DevTools session each page already opens. Its change over a window, divided by the steps in that window, is the page's script time per step. It counts the page's own tasks: updates, renders, animation frames. It does not count the test's `page.evaluate` reads, so the bot's own polling does not show in it. The early window is steps 200–500, after the deal; the late one is the game's last 300 steps. A game too short for two windows apart (under about 800 steps) gets only the early one.
+* **Live sounds**: the most Audio elements that held a media player at once (`fourSouls.sounds.live()`, 19.135). The test build has no sound files, so each play fails and is released at once; it reads 0 or 1. It catches a release that stops working.
+
+Limits, about twice the values measured on 2026-11-17: 15 games over every set, 2–4 players and the challenges, up to 10547 steps; one Mac, Chromium, one game at a time, "fast":
+
+| Measure | Measured | Limit |
+|---|---|---|
+| Elements at the end | 580–869 | 1700 |
+| Script ms a step, early or late | 5.6–12.9 | 25 |
+| Growth: late / early | 0.64–1.19 | 2 |
+| Live sounds | 0–1 | 4 |
+
+The growth ratio is the main check for "slows with its length": machine load moves both windows alike, so it holds on a slower or busier machine. The absolute limit is a backstop for a page slow from the start; it depends on the machine, so raise it there rather than chase a slow laptop. 19.138 was a growth of about 5 (12 ms a step early, 60 late) at 4700 elements.
+
+`e2e/tests/growth.spec.ts` checks the check (in `make e2e`, Chromium): a plain page whose list grows each step fails both the element and the growth limit; one that stays flat passes.
 
 ### Results so far (2026-10-15)
 

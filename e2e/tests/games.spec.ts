@@ -10,11 +10,14 @@
 // is random too (seed 0, ADR 032).
 // GAME_TURNS caps a game (default 300 turns).
 // GAME_SPEED sets the pages' animation speed (default fast, 19.137).
+// Each page must also stay small and fast to the end: element count,
+// script time per step, live sounds (growth.ts, 22.9).
 import { copyFileSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { CDPSession, Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { setSpeed, startGame } from './game';
+import { describe, measured, openMetrics, overLimits, sample, sampleEvery, type Sample } from './growth';
 import { serverPort } from './server';
 import { enabled, endTurnButton, endTurnQuestion, passButton, playSpot, reachable, seen, tablePicks, throwButton, turnAction, type Seen } from './turn';
 import { tr, trRe } from './locale';
@@ -296,6 +299,7 @@ const debuggers = new WeakMap<Page, CDPSession>();
 async function attachDebugger(page: Page): Promise<void> {
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Debugger.enable');
+  await openMetrics(cdp);
   debuggers.set(page, cdp);
 }
 
@@ -363,8 +367,25 @@ async function diagnose(pages: Page[], names: string[]): Promise<void> {
   }
 }
 
-// play makes random moves until the game ends.
-async function play(pages: Page[], names: string[], problems: string[], rnd: Rnd): Promise<Result> {
+// measure reads each page whose step has moved sampleEvery steps past
+// its last sample (growth.ts); last forces a reading of every page.
+async function measure(pages: Page[], steps: number[], samples: Sample[][], last = false): Promise<void> {
+  for (const [i, page] of pages.entries()) {
+    const step = steps[i] ?? -1;
+    const had = samples[i] ?? [];
+    samples[i] = had;
+    const prev = had[had.length - 1];
+    const cdp = debuggers.get(page);
+    if (!cdp || step < 0 || (prev && step <= prev.step) || (!last && prev && step < prev.step + sampleEvery)) {
+      continue;
+    }
+    had.push(await sample(page, cdp, step));
+  }
+}
+
+// play makes random moves until the game ends. It fills samples with
+// each page's readings, for the long-game check (22.9).
+async function play(pages: Page[], names: string[], problems: string[], rnd: Rnd, samples: Sample[][]): Promise<Result> {
   const start = Date.now();
   let moves = 0;
   let last = { step: -1, at: Date.now() };
@@ -381,6 +402,7 @@ async function play(pages: Page[], names: string[], problems: string[], rnd: Rnd
     if (!first) {
       throw new Error('no pages');
     }
+    await measure(pages, states.map((x) => x.step), samples, first.over);
     if (first.over) {
       return { seconds: (Date.now() - start) / 1000, turns: first.turn, steps: first.step, moves };
     }
@@ -580,7 +602,13 @@ test.describe('whole random games', () => {
       console.log(`${label}, speed ${speed}: started`);
       let passed = false;
       try {
-        const r = await play(pages, names, problems, mulberry32(seed));
+        const samples: Sample[][] = [];
+        const r = await play(pages, names, problems, mulberry32(seed), samples);
+        for (const [i, name] of names.entries()) {
+          const m = measured(name, samples[i] ?? []);
+          console.log(`  ${describe(m)}`);
+          problems.push(...overLimits(m, label));
+        }
         const ends: string[] = [];
         for (const page of pages) {
           ends.push(await game.over(page));
