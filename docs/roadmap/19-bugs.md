@@ -5092,7 +5092,7 @@ Totals by system (155 items):
    2. `measure.go` (the card values) uses `try` too; its table is not regenerated here (no number changes); its stack positions are few.
    3. Hard plays out to the end of the turn (cap 120): every candidate is cut by design there; not changed, reported to the lead.
 
-### [ ] 19.163 The corner Menu covers a long right-hand seat name
+### [x] 19.163 The corner Menu covers a long right-hand seat name
 
 1. Goal: the right column's seat name is never under the corner Menu, in any language.
 2. Report (step 21 check phase, part 2, 2026-11-17)
@@ -5103,7 +5103,11 @@ Totals by system (155 items):
    1. The float that keeps the name clear of the Menu is 5.25rem wide, fit to the English "Menu".
    2. A longer label (qps, a translation) makes the button wider than the float.
 4. Tasks:
-   1. The Menu button gives its width to the page: `--game-menu-width` on the root, kept current by a `ResizeObserver` (`GameMenu.tsx`).
-   2. The float takes that width plus the gap; English looks as before.
-   3. Vitest: the button sets the variable.
-   4. Screenshots: `bots.spec.ts`, English and qps.
+   1. [x] The Menu button gives its width to the page: `--game-menu-width` on the root, kept current by a `ResizeObserver` (`GameMenu.tsx`).
+   2. [x] The float takes that width plus the gap; English looks as before.
+   3. [x] Test: components have no Vitest tests (wiki Frontend-tests, rule 2), so `bots.spec.ts` checks that the right bot's robot is clear of the Menu.
+   4. [x] Screenshots: `bots.spec.ts`, English and qps.
+5. Fix (2026-11-17)
+   1. English Menu: 68 px; the float is that plus 1rem, 84 px, the old 5.25rem: English draws as before.
+   2. The e2e check fails with the old float in qps and passes with the new one; `bots`, `layers` and `table` specs: 34 of 34 (English), `bots` 5 of 5 (qps).
+   3. Screenshots: `screenshots/{en,qps}-after2-19.163/` in the check phase's scratchpad (not in git).

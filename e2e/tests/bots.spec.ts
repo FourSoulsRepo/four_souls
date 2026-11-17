@@ -180,6 +180,11 @@ test('the game table names each bot with its level after the robot (21.12)', asy
   await expect(badge).toContainText(anyOf(...bots.map((b) => lineRe(b))));
   await expect(stack.getByTestId('bot-icon').first()).toBeVisible();
   await shot(ann, 'bots-table');
+  // The right column's name starts clear of the corner Menu, whatever
+  // its language makes the button's width (19.163).
+  const menu = await ann.getByRole('button', { name: tr('game_menu.button'), exact: true }).boundingBox();
+  const robot = await ann.getByRole('region', { name: bots[2], exact: true }).locator('.opp-name').getByTestId('bot-icon').boundingBox();
+  expect(menu && robot && (robot.x + robot.width <= menu.x || robot.y >= menu.y + menu.height)).toBe(true);
   // A bot has no connection, yet the game never waits for it as for a
   // player who left (21.12 task 2).
   await expect(ann.getByRole('dialog', { name: tr('pause.label') })).toHaveCount(0);

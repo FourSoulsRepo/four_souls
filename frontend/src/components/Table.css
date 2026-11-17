@@ -718,11 +718,13 @@
 
 /* On the right the name's lines end before the corner menu, down to
    its foot: a longer name, as a bot's "Bot N (level)", wraps beside it
-   and under it (21.12). A short name fits beside it, as before. */
+   and under it (21.12). A short name fits beside it, as before. The
+   width is the button's own (GameMenu.tsx), so a longer translation of
+   "Menu" moves the name too (19.163); 1rem is the corner gap. */
 .player-right .opp-name::before {
   content: '';
   float: right;
-  width: 5.25rem;
+  width: calc(var(--game-menu-width, 4.25rem) + 1rem);
   height: 2rem;
 }
 
