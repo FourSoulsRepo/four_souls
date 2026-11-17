@@ -19,22 +19,23 @@ func (g *Game) AddToDeck(d DeckKind, cards ...CardRef) {
 	}
 }
 
-// ShuffleDeck puts a deck in random order, in sight of everyone
-// (deck_order).
+// ShuffleDeck puts a deck in random order. Every shuffle of a deck
+// with cards has its shuffled event, which names the deck (19.178).
+// Who remembers where its cards lie forgets them (ADR 033, Decision
+// 19.8); other reorders out of sight tell deck_order.
 func (g *Game) ShuffleDeck(d DeckKind) {
-	g.shuffleDeck(d)
-	g.emitDeckOrder(d)
-}
-
-// shuffleDeck puts a deck in random order with no event: for setup,
-// before anyone remembers a card.
-func (g *Game) shuffleDeck(d DeckKind) {
 	deck := g.Decks[d]
 	g.RNG.Shuffle(len(deck), func(i, j int) { deck[i], deck[j] = deck[j], deck[i] })
+	if g.changes != nil {
+		g.changes.shuffled[d] = true
+	}
+	if len(deck) > 0 {
+		g.emit(Event{Kind: EvShuffled, Player: NoPlayer, Text: DeckText(d, "")})
+	}
 }
 
 // emitDeckOrder tells that deck d's cards changed places out of sight
-// (ADR 030, Decision 19.8).
+// (ADR 033, Decision 19.8).
 func (g *Game) emitDeckOrder(d DeckKind) {
 	g.emit(Event{Kind: EvDeckOrder, Player: NoPlayer, Text: DeckText(d, "")})
 }
@@ -56,11 +57,18 @@ func (g *Game) drawTop(d DeckKind) (id ObjectID, ok bool) {
 }
 
 // refillDeck shuffles the discard pile into the empty deck (R-ZONE-05).
+// One moved_to_deck with no object tells it: Amount cards, Text
+// "<deck> deck". It names no card, so no deck card's object shows
+// (19.174).
 func (g *Game) refillDeck(d DeckKind) {
+	n := len(g.Discards[d])
 	for _, id := range g.Discards[d] {
 		g.Decks[d] = append(g.Decks[d], g.move(id, DeckZone(d), NoPlayer))
 	}
 	g.Discards[d] = nil
+	if n > 0 {
+		g.emit(Event{Kind: EvMovedToDeck, Player: NoPlayer, Amount: n, Text: d.String() + " deck"})
+	}
 	g.ShuffleDeck(d)
 }
 
@@ -336,8 +344,9 @@ func (g *Game) DestroyObject(p PlayerID, id ObjectID) bool {
 }
 
 // GainControl moves an item in play to p: "steal an item". It stays the
-// same object; only its controller changes (R-MECH-38). A shop item
-// leaves its slot, which is refilled.
+// same object; only its controller changes (R-MECH-38); the event's By
+// names the old controller (19.193). A shop item leaves its slot, which
+// is refilled.
 func (g *Game) GainControl(p PlayerID, id ObjectID) {
 	o := g.Object(id)
 	if o.Zone.Kind != ZoneInPlay || o.Controller == p {
@@ -355,7 +364,7 @@ func (g *Game) GainControl(p PlayerID, id ObjectID) {
 	g.Players[from].InPlay = remove(g.Players[from].InPlay, id)
 	o.Controller = p
 	g.Players[p].InPlay = append(g.Players[p].InPlay, id)
-	g.emit(Event{Kind: EvGainedTreasure, Player: p, Object: id, Card: o.Card, Text: "stolen"})
+	g.emit(Event{Kind: EvGainedTreasure, Player: p, Object: id, Card: o.Card, Text: "stolen", By: int(from) + 1}) // 19.193
 }
 
 // ShopItems lists the items on top of the shop slots.

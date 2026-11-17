@@ -8,7 +8,7 @@
   fill: currentColor;
 }
 
-/* A bot's name keeps its robot with its first word (21.12); the rest
+/* A bot's name keeps its robot with its first word (23.12); the rest
    may wrap in a narrow place. */
 .bot-lead {
   white-space: nowrap;

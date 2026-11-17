@@ -1,6 +1,6 @@
 import { createContext, use, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
-import { discardIntent, modeLines, orderIntent, outcomeLines, type Actions } from '../actions';
-import { claim } from '../animations';
+import { discardIntent, modeLines, orderIntent, outcomeLines, type Actions, type Pile } from '../actions';
+import { claimDeal, dealKey } from '../animations';
 import { deckKinds, type Kind } from '../cards';
 import { choiceRow, confirmFirst, dealDelays, dealPose, keptZone, pickToggle } from '../choice';
 import { feel } from '../feel';
@@ -45,24 +45,6 @@ function useLook(): Kind | undefined {
   });
 }
 
-// dealt keeps, per prompt step, the cards a deal claimed, so a second
-// mount of the same choice (React's StrictMode) does not claim again.
-const dealt = new Map<number, Set<string>>();
-
-// claimDeal claims each card a deal shows (ADR 012): it returns the
-// cards that may fly; a card another animation showed just now comes at
-// once instead. A card's object, when known, tells copies apart (19.141).
-function claimDeal(step: number, cards: { card: string; object?: number | undefined }[]): Set<string> {
-  let ok = dealt.get(step);
-  if (!ok) {
-    const seen = new Map(cards.map((c) => [c.card, c.object]));
-    ok = new Set([...seen].filter(([card, object]) => claim(card, 'show', 'choice-deal', { object })).map(([card]) => card));
-    dealt.clear();
-    dealt.set(step, ok);
-  }
-  return ok;
-}
-
 const ms = (s: number) => s * 1000;
 
 // sample is a motion as WAAPI keyframes, one per frame of 1/30 s.
@@ -89,14 +71,15 @@ function enter(root: HTMLElement, entry: Entry, deck: Kind | undefined, scale: n
   if (entry === 'grow' || (entry === 'deal' && !box)) {
     parts.push(...els.map(grow));
   } else if (entry === 'deal' && box) {
+    const objectOf = (el: HTMLElement) => (el.dataset.object ? Number(el.dataset.object) : undefined);
     const may = claimDeal(
       step,
-      els.map((el) => ({ card: el.dataset.deal ?? '', ...(el.dataset.object ? { object: Number(el.dataset.object) } : {}) })),
+      els.map((el) => ({ card: el.dataset.deal ?? '', object: objectOf(el) })),
     );
     const delays = dealDelays(els.length);
     root.classList.add('dealing');
     els.forEach((el, i) => {
-      if (!may.has(el.dataset.deal ?? '')) {
+      if (!may.has(dealKey(el.dataset.deal ?? '', objectOf(el)))) {
         return;
       }
       const r = el.getBoundingClientRect();
@@ -180,7 +163,7 @@ export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions[
   const confirm = confirmFirst(choice.purpose);
   const [picked, setPicked] = useState<number | null>(null);
   const character = useApp((s) => s.game?.view.players.find((p) => p.id === seatOf(s))?.character.card);
-  const cards = choice.options.filter((o) => o.card).length;
+  const cards = choice.options.filter((o) => o.card ?? o.pile).length;
   const row = rowStyle(cards);
   const banner = confirm ? <StartBanner caption={t('start.caption', { card: character ? cardName(character) : '' })} /> : undefined;
   const send = picked === null ? undefined : choice.options.find((o) => (o.intent.choice ?? 0) === picked)?.intent;
@@ -220,6 +203,14 @@ export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions[
                       },
                     }
                   : {})}
+              />
+            ) : o.pile ? (
+              <OptionPile
+                pile={o.pile}
+                name={o.label}
+                pick={() => {
+                  act(o.intent);
+                }}
               />
             ) : (
               <button
@@ -357,6 +348,30 @@ function OptionCard({
       <DealCard kind={deck}>
         <Card cardRef={card} size="choice" highlight="pick" />
       </DealCard>
+    </button>
+  );
+}
+
+// OptionPile is a deck or discard pile option, as The Curse asks
+// (20.26): a deck shows its back, a discard pile its top card, with the
+// pile's name under it; no card count. It grows in like other card
+// options and picks like one; the pile itself stays on the board.
+function OptionPile({ pile, name, pick }: { pile: Pile; name: string; pick: () => void }) {
+  return (
+    <button
+      type="button"
+      className="choice-card choice-pile"
+      aria-label={name}
+      data-deal={pile.top ?? `${pile.discard ? 'discard' : 'deck'}-${pile.kind}`}
+      onClick={() => {
+        playSound('choicePick');
+        pick();
+      }}
+    >
+      {pile.top ? <Card cardRef={pile.top} size="choice" highlight="pick" /> : <Card back={pile.kind} size="choice" highlight="pick" />}
+      <span className="choice-pile-name" aria-hidden="true">
+        {name}
+      </span>
     </button>
   );
 }

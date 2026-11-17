@@ -32,6 +32,10 @@ type Config struct {
 	// Seed makes game seeds reproducible: game n gets Seed+n. 0 seeds
 	// from the clock. For tests and bug reports.
 	Seed uint64 `json:"seed,omitempty"`
+	// TestSeeds lets a create choose its game's seed (options.seed,
+	// ADR 032). Only the e2e test server sets it, by flag or ENV: a
+	// player on a real server could rig their own deal.
+	TestSeeds bool `json:"-"`
 	// Discovery answers LAN probes while a game waits (N-13, ADR 009).
 	// Only the app's host sets it; a dedicated server never announces.
 	Discovery bool `json:"-"`
@@ -53,10 +57,10 @@ type Config struct {
 	// folder (N-20). The dedicated server sets it; an app's host does not.
 	KeepGames bool `json:"-"`
 	// Bots is which bot levels a host may seat: BotsOff, BotsStandard or
-	// BotsAll (ADR 030, Decision 17). An app's own host keeps BotsAll.
+	// BotsAll (ADR 033, Decision 17). An app's own host keeps BotsAll.
 	Bots string `json:"bots"`
 	// BotThink is the hard bot's time budget per move, a Go duration
-	// such as "1.5s" (ADR 030, Decision 17.2.1): minBotThink to
+	// such as "1.5s" (ADR 033, Decision 17.2.1): minBotThink to
 	// maxBotThink. An app's own host keeps the default.
 	BotThink string `json:"bot_think"`
 }
@@ -166,7 +170,7 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 	s := &Server{cfg: cfg, ln: ln, cancel: cancel}
 	hub := NewHub()
 	hub.records, hub.cards, hub.seed, hub.saves = cfg.Records, cardTexts(), cfg.Seed, cfg.Saves
-	hub.hostOnly, hub.presence = cfg.HostOnly, cfg.Presence
+	hub.hostOnly, hub.presence, hub.testSeeds = cfg.HostOnly, cfg.Presence, cfg.TestSeeds
 	hub.bots, _ = botLevels(cfg.Bots)
 	hub.botThink, _ = botThink(cfg.BotThink)
 	hub.name, _ = protocol.CleanServerName(cfg.Name)
@@ -285,15 +289,9 @@ func lanGames(hub *Hub, port int) func() (lan.Answer, bool) {
 	return func() (lan.Answer, bool) {
 		reply := make(chan []lan.Game, 1)
 		hub.send(hubRequest{run: func(h *Hub) {
-			over := map[string]bool{}
-			for _, g := range h.games {
-				over[g.info.ID] = g.room.over.Load()
-			}
 			var out []lan.Game
-			for _, g := range h.list().Games {
-				if !over[g.ID] {
-					out = append(out, lan.Game{ID: g.ID, Host: g.Host, Seats: g.Seats, Taken: g.Taken, Locked: g.Locked, Started: g.Started})
-				}
+			for _, g := range h.list().Games { // a finished game is not listed
+				out = append(out, lan.Game{ID: g.ID, Host: g.Host, Seats: g.Seats, Taken: g.Taken, Locked: g.Locked, Started: g.Started})
 			}
 			reply <- out
 		}})

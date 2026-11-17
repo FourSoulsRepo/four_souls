@@ -44,6 +44,10 @@ Rules for this step (owner, 2026-11-06):
 15. Order: 20.21 runs before the step review too (owner, 2026-11-08).
 16. Order: 20.22 runs after 20.18 and before the step review (owner, 2026-11-08).
 17. Order: 20.23 runs after 20.20 and before the step review (owner, 2026-11-08).
+18. 20.24 and 20.25 reopen the step after its review (owner, 2026-11-17).
+    1. Only 20.24 is built; 20.25 is dropped.
+    2. The owner's picks: ADR 027 "Credits" 12.
+    3. Branch: the current one, `step-18-play-test` (owner); not rule 7's.
 
 Owner notes (2026-11-06):
 
@@ -531,3 +535,89 @@ Swapping it is the owner's call; not part of this step.
    2. The owner's picks are built, with before and after screenshots.
    3. UC-13 2e matches the new arrow.
    4. e2e: aiming with the new arrow, set up so it never depends on the deal.
+
+### [x] 20.24 The artist with the card, compared with the reference
+
+1. Goal: a card names who drew it, where the reference does (CD-14).
+   1. Owner, 2026-11-17.
+   2. Ours: card data has artists; the client never gets them.
+   3. Ours: the zoom credits translators (16.5).
+2. Findings (checked 2026-11-17, main conversation).
+   1. In ADR 027 "Credits" 1–9.
+   2. The reference shows "Artist: <name>" only in the collection.
+   3. Never in a match.
+3. Tasks:
+   1. The owner picks from ADR 027 "Credits" 10.1–10.6.
+      1. Picked (2026-11-17): in matches too; see "Credits" 12.
+   2. `internal/cardinfo`: send each face's artist names.
+      1. Front roles for a front, back roles for a back face.
+      2. Drop "Private" and repeats; never the card back artist.
+   3. The bridge, `fakeBridge.ts` and `cards.ts` get the list.
+   4. The zoom: one "Art: <names>" line over the translators line.
+      1. A new string `zoom.artists`, with a note, in every locale file.
+      2. Its look: ADR 027 "Credits" 13, from the reference's (11).
+      3. The translators line takes the same look.
+   5. ADR 004 and ADR 021 note what the client gets.
+   6. Wiki `Client.md`: the zoom's credit lines.
+   7. A use case for the zoom's credits, or the existing one extended.
+4. Done when:
+   1. Go test: a card's artists, without "Private", repeats or the back artist.
+   2. Go test: a two-sided card's back face gets its own artists.
+   3. Vitest: the line hides with no names.
+   4. e2e: a zoom shows the artist line; screenshots before and after.
+   5. `wails build -m -tags embed` and `make e2e` pass without images.
+5. Owner notes (2026-11-17)
+   1. Owner marks 20.24 solved; step 20 done again.
+
+### [-] 20.25 Credits screen, compared with the reference
+
+1. Dropped (owner, 2026-11-17): no Credits button, no credits screen.
+2. Findings stay in ADR 027 "Credits" 6 and 10.7–10.13.
+
+### [x] 20.26 Deck choices show the decks
+
+1. Goal: a card that asks for a deck shows the decks, not buttons (V-56).
+   1. Owner, 2026-11-17.
+   2. Example: The Curse, "put the top card of a deck into discard".
+   3. Ours: the choice dialog shows one text button per deck.
+2. Where it comes from today:
+   1. `engine.DeckQuestion`: options are `DeckOption` keys (`ask.deck.*`).
+   2. `DiscardOption` keys (`ask.discard.*`): The Curse's ↷ ability.
+   3. The client gets only text; it cannot tell a deck option apart.
+3. Cards to check (5.24, all sets):
+   1. b2: The Curse, Cheese Grater, Sleight of Hand, Sack Head, Forever Alone.
+   2. r: rooms, Spelunker Hat (a "may" question with a no option).
+   3. Shared helpers: `cardkit` (`AskLookTop`), `g2`, `fsp2`.
+4. Tasks:
+   1. Check how the reference shows such a choice (rule 10).
+      1. Write the findings into ADR 027.
+   2. The prompt marks an option as a deck or a discard, with its kind.
+      1. One shared place in the engine; no per-card change.
+      2. Found: the option keys already do (`ask.deck.<kind>`, `ask.discard.<kind>`).
+      3. The client reads them; a Go test keeps the keys.
+   3. The dialog shows each deck's back image for a deck option.
+      1. The deck's name stays under it, for text and screen readers.
+   4. A discard option shows its top card.
+   5. Other options (e.g. "No") stay buttons.
+   6. Without private images: plain backs with the deck name (6.9).
+   7. Hover and pick look as in 20.18 "Choosing cards".
+   8. UC-13 5a (choice dialog) gets the new look.
+5. Owner picks (2026-11-17):
+   1. The pick stays in the dialog; no table pick.
+   2. A deck option shows no card count.
+6. Done when:
+   1. Go test: deck and discard options carry their kind.
+   2. Vitest: a deck option draws a back; other options stay buttons.
+   3. e2e: The Curse's choice shows deck backs, with a fixed deal.
+   4. Screenshots before and after.
+   5. `wails build -m -tags embed` and `make e2e` pass without images.
+7. Built (2026-11-17, main conversation):
+   1. ADR 027 "Deck choices": the reference has no deck option.
+   2. `optionPile` in `actions.ts`; `OptionPile` in `ChoiceDialog.tsx`.
+   3. Every `DeckQuestion` and `DiscardOption` card gets it at once.
+   4. The monster deck as an attack option in the dialog too.
+   5. UC-13 5r; wiki `Client.md`, `Animations.md` (`choice-grow`).
+   6. Found: The Curse's ↷ question reuses the trigger's words.
+      1. It asks "which deck into discard?"; logged as a bug in step 19.
+8. Owner notes (2026-11-17)
+   1. Owner marks 20.26 solved; step 20 done again.

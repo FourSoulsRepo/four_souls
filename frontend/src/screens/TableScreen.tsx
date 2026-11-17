@@ -86,7 +86,7 @@ export function TableScreen() {
 }
 
 // AddBot is a free seat's buttons for the host: one per bot level the
-// server allows (ADR 030, Decision 10.10).
+// server allows (ADR 033, Decision 10.10).
 function AddBot({ seat, levels }: { seat: number; levels: string[] }) {
   const seatBot = useApp((s) => s.seatBot);
   return (

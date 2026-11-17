@@ -30,11 +30,12 @@ Players see the lobby as the Games list. Each row is one table or game:
 4. Play starts with the first-player roll; the first update carries only `first_player` and `game_started` of the setup events, for Cain (`startEvents`, 15.43). Each intent is applied for the client's own seat; then `after` runs automatic passes, restarts the response timer, sends every client its update and records the steps.
 5. Disconnects pause the game; a vote can kick; a token brings a player back. A finished game never takes a token back: the hello goes to the lobby, so the player can start a new game (19.32).
 6. The host may save: the game stops and can be loaded again from the lobby.
-7. At the end the record is closed and its players may download it.
+7. At the end the record is closed and its players may download it. A finished game leaves the game list at once; the lobby hears it. Its room stays while a player is still connected (the end screen offers the download), then closes on the next limit check; it also closes at the game limit. The record stays on disk, but `/record` then answers 404 (19.166).
 8. A dedicated server that stops keeps every table and game in `<saves>/restart/`; the next start brings them back (`restart.go`, ADR 019). A game from another engine must load and save back to the same bytes (`engine.Resume`); else it ends and its players hear why when they return.
 9. Idle limits end a game nobody is connected to, or one past its longest time (`limits.go`, 8.25). Each room checks once a minute on the hub's clock; tests pass a fake one.
 10. The host may end the game at any moment before it is over (`end`, 19.84). `Room.end` refuses any other seat with `not_host`, then stops the room like an idle limit (`endWith`): connected players get the `game_ended` notice, the others when they come back, and the record ends unfinished. On a dedicated server this is the only way to stop a game at once; leaving only pauses it.
-11. A challenge game (ADR 028, 14.23) sets `Options.challenge` (e.g. `krampus`) and `Options.difficulty` (`normal`, `hard`, `ultra`). `checkChallenge` refuses an unknown challenge (`error.no_challenge`), a difficulty it lacks or one without a challenge (`error.no_difficulty`), and any seat count but 2 (`error.challenge_seats`), all as `bad_setup`; it turns bonus souls off. The table, the game list (`GameInfo.challenge`, `difficulty`), saves and restart files keep only the playable set codes; `gameSets` adds the challenge's own set (`cards.ChallengeSet`) last, and `engineSetup` builds every engine setup from the options (start, restart, the option checks). A host ban of a challenge card is refused. A lost challenge is over with no winners: the record ends finished, with no `winners`. The host screen learns the challenges from the app (`App.Challenges`), as it learns the card sets.
+11. A challenge game (ADR 028, 14.23) sets `Options.challenge` (e.g. `krampus`) and `Options.difficulty` (`normal`, `hard`, `ultra`). `checkChallenge` refuses an unknown challenge (`error.no_challenge`), a difficulty it lacks or one without a challenge (`error.no_difficulty`), and any seat count but 2 (`error.challenge_seats`), all as `bad_setup`; it turns bonus souls off. The table, the game list (`GameInfo.challenge`, `difficulty`), saves and restart files keep only the playable set codes; `gameSets` adds the challenge's own set (`cards.ChallengeSet`) last, and `engineSetup` builds every engine setup from the options (start, restart, the option checks). A host ban of a challenge card is refused. A lost challenge is over with no winners: the record ends finished, with no `winners`. The host screen learns the challenges from the app (`Setup.Challenges`), as it learns the card sets.
+12. A test server (`-test_seeds`, `Config.TestSeeds`) takes `Options.seed`: a non-zero seed is the game's seed, over the clock and over `Config.Seed` (ADR 032, 22.7). The e2e tests send one per test, so each test gets the same deal every run. Any other server refuses such a create with `error.test_seed` (`bad_setup`): a player could rig their own deal. The app's host never sets it. The seed stays in the table's options, so a restart file, a save and its continued game keep it; the record header names it, as it names any game's seed.
 
 ## Automatic answers
 
@@ -66,7 +67,7 @@ Any client of a dedicated server may create a game or load a saved one. A server
 
 ## Bots in the lobby
 
-ADR 030, Decision 10 (21.7). The host seats bots at a table with `bot` `{seat, level}`; an empty level takes the bot away. `Hub.bot` refuses, each with a translated message: a client at no table (`not_seated`), anyone but the host (`not_host`, `error.host_bots`), a loaded save's table (`error.bot_saved`), seat 0, a player's seat or no seat (`error.bot_seat`), and a level the server does not allow (`error.bot_level`; `error.bots_off` when it allows none); the last four are `bad_setup`. Taking away a bot that is not there does nothing.
+ADR 033, Decision 10 (23.7). The host seats bots at a table with `bot` `{seat, level}`; an empty level takes the bot away. `Hub.bot` refuses, each with a translated message: a client at no table (`not_seated`), anyone but the host (`not_host`, `error.host_bots`), a loaded save's table (`error.bot_saved`), seat 0, a player's seat or no seat (`error.bot_seat`), and a level the server does not allow (`error.bot_level`; `error.bots_off` when it allows none); the last four are `bad_setup`. Taking away a bot that is not there does nothing.
 
 A bot seat (`tableSeat.bot`, `botN`) has no token and no client, and is always ready. It is named `Bot N` in English for records and logs, N being the smallest number no seat uses as a number or as a name; a new level keeps the number. `taken` counts it, so the game list, `/status` and a join see it as taken: a joining player gets a free seat only. `startIfReady` starts a table when every seat is taken and every human is ready; the room then plays the bots (below).
 
@@ -76,7 +77,7 @@ The levels a host may seat come from `Config.Bots`, the dedicated server's `-bot
 
 ## Bots in the room
 
-ADR 030, Decisions 11 – 14 (21.8). `roomSeat.bot` and `botN` carry the seat's level and number into the room, and every update's seats name them. A bot seat has no client and no token. It is never away, so it never pauses the game; kick votes and Soft rollback votes count clients, so bots never vote.
+ADR 033, Decisions 11 – 14 (23.8). `roomSeat.bot` and `botN` carry the seat's level and number into the room, and every update's seats name them. A bot seat has no client and no token. It is never away, so it never pauses the game; kick votes and Soft rollback votes count clients, so bots never vote.
 
 The driver is `internal/server/bots.go`. After every broadcast of a running game, `drive` looks at the seats the prompt waits for. It notes each such bot seat with something allowed, unless a thinker is open for the same step; once the request is handled, `Run` starts one thinker for each (`startThinkers`), under its own `ctx`, so the room's end ends them too. `think` copies the game on the room goroutine with `world.For` (the seat's `known` goes in) and hands the thinker only the worlds, a random source of its own and the budget: hard thinks for `Room.botThink` (`-bot_think`, `Config.BotThink`, 1.5 s by default, 100 ms to 10 s), standard needs none. Hard thinkers of every room share the hub's `thinkSlots`, `max(1, GOMAXPROCS/2)` of them (`thinkLimit`, Decision 17.2): a hard thinker takes a slot before `bot.Choose` and gives it back after; one that gets none within `botThink` plays that move as standard, which needs no slot, so it still answers in about twice the budget (`thinkSlot`, `TestThinkSlot`). The thinker runs `bot.Choose` on its own goroutine, waits out the pace, and sends its answer as a room request with its number and the step it was for.
 
@@ -88,9 +89,9 @@ Bans and picks (Decision 14): on a bot's ban turn the room bans a random charact
 
 `Room.botWork` keeps the longest time the driver, with its copies for the thinkers, held the room: the work only bots cost it. A bot's move then costs the room what a player's intent does; one that holds it over the stall limit is logged as "a bot's move". `TestBotsGame` plays 20 seeded games of one player and three bots, standard and hard, four at a time, to their end, and checks the driver stays under the limit.
 
-Saves and restarts (Decision 16, 21.9): `savedSeat` keeps a bot's `bot` and `bot_n`, with no token, in a save and in a game's restart file. A loaded save's table seats its bots at once, ready; `claim` never gives a player a bot's seat, not even one called "Bot 1", so the game starts when its players are back. A save with a level the server does not allow is not loaded (`error.bot_level`, `error.bots_off`, `bad_setup`). A kept game keeps its bots whatever `-bots` says now; it waits paused for its players, and once they are back the bots think again from the kept step, with no notice on the same engine (`TestBotsRestartMidTurn`). Memory is not saved. The idle limit's "no player connected" counts players only, and an idle end or a lost game tells only players. Each match record's seat names a bot's `bot` and `bot_n` (ADR 007, item 2.20).
+Saves and restarts (Decision 16, 23.9): `savedSeat` keeps a bot's `bot` and `bot_n`, with no token, in a save and in a game's restart file. A loaded save's table seats its bots at once, ready; `claim` never gives a player a bot's seat, not even one called "Bot 1", so the game starts when its players are back. A save with a level the server does not allow is not loaded (`error.bot_level`, `error.bots_off`, `bad_setup`). A kept game keeps its bots whatever `-bots` says now; it waits paused for its players, and once they are back the bots think again from the kept step, with no notice on the same engine (`TestBotsRestartMidTurn`). Memory is not saved. The idle limit's "no player connected" counts players only, and an idle end or a lost game tells only players. Each match record's seat names a bot's `bot` and `bot_n` (ADR 007, item 2.20).
 
-`botLevel` maps the protocol's levels to `internal/bot`'s; any other level is an error, so the seat gets its fallback move. `remember` feeds each hard seat's memory after every applied step (ADR 030, Decision 12.13); `known` hands it to `world.For`. The levels, the arena and the card values are in [Bots](Bots).
+`botLevel` maps the protocol's levels to `internal/bot`'s; any other level is an error, so the seat gets its fallback move. `remember` feeds each hard seat's memory after every applied step (ADR 033, Decision 12.13); `known` hands it to `world.For`. The levels, the arena and the card values are in [Bots](Bots).
 
 ## Server name
 
@@ -115,7 +116,7 @@ Step 8.12 checked every message the server sends for hidden cards. Hidden means:
 | `error` | code, message, rule | Engine refusals name only cards in play; an activation checks the zone before it names the card. |
 | `/seat` | whether a token holds a live seat, its game and host (15.99) | Only the token's holder knows the token; any other token is "not live". |
 | `/status` | how many tables have a free seat (15.100) | A number only; any lobby client sees the games themselves. |
-| `/record` | the match record (all hidden info) | Only to the game's players, only after the game is over (RP-05); `TestDownloadRecord`. |
+| `/record` | the match record (all hidden info) | Only to the game's players, only after the game is over (RP-05), and only until its room closes (19.166); `TestDownloadRecord`. |
 
 Rules that keep it so:
 
@@ -127,9 +128,13 @@ Rules that keep it so:
 
 Found and fixed: an `activate` intent with an unknown object ID made the engine panic, which stopped the whole server. It is now refused (`TestUnknownObjectsAreRefused`).
 
+## Records
+
+`records.go` (ADR 007, ADR 031). `openRecord` starts a game's `.fsrec` with the header; `apply` writes one `step` line per applied intent: the intent, every event, the checksum and, from record format 2, `view`, the judge view after the step (`engine.ViewJudge`: every hand, never deck order). The view is the protocol's hand-written encoder (`protocol.ViewJSON`), the same JSON clients read, so the record needs no second `json.Marshal`. It costs one more view per applied step. A saved or restarted game appends a new part (`record.Append`) through the same `apply`, so its steps have views too. `internal/replay` reads such a record for the replay player without the engine: the header and the live steps with their views; it refuses format 1 (`ErrBeforeReplays`) and newer formats (`ErrNewer`). `Replay.Turns` lists where each turn starts, read from the views' `turn.number`. `record.ReadBrief` reads a record without decoding its steps (only each step's number), for the Records screen's list ([Client](Client#records)).
+
 ## Rollback
 
-`rollback.go` (ADR 020, 17.3). A game whose `Options.Rollback` is set keeps a base state (`Room.base`, the engine's `Save`) and the live steps since it (`Room.live`: step number, intent and checksum; no events). The base is the game's start, a loaded save, or the state a restart kept when the history did not survive it (`setBase`, below). A game without the mode keeps nothing.
+`rollback.go` (ADR 020, 17.3). A game whose `Options.Rollback` is set keeps a base state (`Room.base`, the engine's `Save`; at a nested question, the last clean state and the steps to replay, 19.177) and the live steps since it (`Room.live`: step number, intent and checksum; no events). The base is the game's start, a loaded save, or the state a restart kept when the history did not survive it (`setBase`, below). A game without the mode keeps nothing.
 
 A seated player sends `rollback` with a step number. In Godmode (`god`) any player may, the author too, for any live step, until the game is over; not while the game is paused. The room rebuilds the game with `engine.ReplayFrom(base, steps before the target)`; a checksum that differs refuses the rollback and the game goes on. The steps from the target on leave the live list. Refusals are error `rollback`.
 
@@ -144,6 +149,6 @@ A server restart (17.5, ADR 020, item 10) keeps the history when it can. `keepHi
 ## Tests
 
 * `hub_test.go`, `setup_test.go`, `challenge_test.go`, `flow_test.go`, `pause_test.go`, `records_test.go`, `saves_test.go`, `presence_test.go`, `rollback_test.go`, `soft_test.go`, `restart_rollback_test.go`: in-memory connections.
-* `integration_test.go`: whole games of bots over real WebSockets, a drop and a reconnect, a save and a load; every record must replay in the engine. Under `-race` only the 2-player game runs.
+* `integration_test.go`: whole games of bots over real WebSockets, a drop and a reconnect, a save and a load; every record must replay in the engine, and each step's view must equal the engine's judge view after it (`replayViews`). Under `-race` only the 2-player game runs.
 * `internal/protocol/testdata/golden.jsonl` pins the JSON of every message: rename or remove a field, bump `protocol.Version`; then `go test ./internal/protocol -update`.
 * Timers count `Hub.second`, so tests make a second one millisecond.

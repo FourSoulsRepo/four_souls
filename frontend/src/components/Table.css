@@ -489,7 +489,10 @@
   border-radius: 0.5rem;
 }
 
-.player.dead {
+/* A kicked seat stays empty for good (N-08, 19.187): it fades as a
+   dead player does. */
+.player.dead,
+.player.kicked {
   opacity: 0.6;
 }
 
@@ -585,8 +588,9 @@
   color: var(--muted);
 }
 
-/* Counters on a player (14.33): fear in Trick or Treat. A dot in the
-   kind's colour, the number, the kind's word; the tooltip says more. */
+/* Counters on a player (14.31): a dot in the kind's colour, the number,
+   the kind's word; the tooltip says more. Fear is on the character card
+   (18.26). */
 .player-counters {
   display: flex;
   flex-wrap: wrap;
@@ -718,9 +722,9 @@
 
 /* On the right the name's lines end before the corner menu, down to
    its foot: a longer name, as a bot's "Bot N (level)", wraps beside it
-   and under it (21.12). A short name fits beside it, as before. The
+   and under it (23.12). A short name fits beside it, as before. The
    width is the button's own (GameMenu.tsx), so a longer translation of
-   "Menu" moves the name too (19.163); 1rem is the corner gap. */
+   "Menu" moves the name too (19.200); 1rem is the corner gap. */
 .player-right .opp-name::before {
   content: '';
   float: right;

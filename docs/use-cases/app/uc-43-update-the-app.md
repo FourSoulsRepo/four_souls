@@ -1,6 +1,6 @@
 # UC-43: Update the app
 
-**Module:** `internal/update`, `updater.go`, `frontend`
+**Module:** `internal/update`, `bindings/updater`, `frontend`
 **Status:** Implemented
 **Actors:** Player
 **Goal:** The app installs the newest release of its own build and restarts

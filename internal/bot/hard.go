@@ -11,7 +11,7 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-// The hard level (ADR 030, Decision 9): many imagined worlds; each
+// The hard level (ADR 033, Decision 9): many imagined worlds; each
 // candidate is played out on copies of them to the end of the turn,
 // every seat by the policy, and scored by settledScore with the
 // opponents weighted by strength (Decision 7.6). Rounds of playouts

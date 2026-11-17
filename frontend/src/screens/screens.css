@@ -90,10 +90,38 @@
   color: #f7de8f;
 }
 
+/* The host's detailed setup: a line under the simple part, then
+   options in titled groups (18.25). */
+.divider {
+  width: 100%;
+  margin: 0.25rem 0;
+  border: 0;
+  border-top: 1px solid var(--muted);
+  opacity: 0.6;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem 0.75rem;
+  border: 1px solid rgb(201 191 166 / 35%);
+  border-radius: 0.5rem;
+}
+
+.group legend {
+  padding: 0 0.375rem;
+  font-family: var(--font-game);
+  letter-spacing: 0.03em;
+  color: #f7de8f;
+}
+
 /* Inputs are parchment slips with an ink outline; what the player
    types stays in the plain UI font, so it reads exactly. */
 .screen input:not([type="checkbox"]),
-.screen select {
+.screen select,
+.replay-bar select {
   padding: 0.4375rem 0.625rem;
   border: 0.1562rem solid var(--ink);
   border-radius: 0.5rem 0.625rem 0.5625rem 0.4375rem;
@@ -106,7 +134,8 @@
 }
 
 /* The select's arrow is drawn in ink. */
-.screen select {
+.screen select,
+.replay-bar select {
   appearance: none;
   padding-right: 1.875rem;
   background:
@@ -117,7 +146,8 @@
 }
 
 .screen input:focus-visible,
-.screen select:focus-visible {
+.screen select:focus-visible,
+.replay-bar select:focus-visible {
   outline: 0.1875rem solid #f7de8f;
   outline-offset: 1px;
 }
@@ -438,7 +468,7 @@
   margin-left: auto;
 }
 
-/* A bot seat for the host (ADR 030): its level and a remove button; a
+/* A bot seat for the host (ADR 033): its level and a remove button; a
    free seat's Add bot buttons. Small, so a seat stays one line. */
 .seat-bot {
   display: inline-flex;
@@ -460,4 +490,27 @@
 .screen .seat-bot select {
   padding-top: 0.1875rem;
   padding-bottom: 0.1875rem;
+}
+
+/* The Records screen (M-01): a wider panel, each match on its own
+   line with its buttons. */
+.records-panel {
+  width: min(46rem, 100%);
+  max-height: 60vh;
+}
+
+.records-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.records-buttons {
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.records-line {
+  margin: 0;
 }

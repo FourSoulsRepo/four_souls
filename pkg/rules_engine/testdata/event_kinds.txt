@@ -73,6 +73,7 @@ roll_repeated
 roll_resolved
 roll_would_resolve
 shielded
+shuffled
 stack_added
 stack_resolved
 start_of_turn

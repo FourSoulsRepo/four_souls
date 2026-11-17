@@ -16,7 +16,7 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-// The bot driver (ADR 030, Decisions 11 – 14): after every broadcast it
+// The bot driver (ADR 033, Decisions 11 – 14): after every broadcast it
 // notes each bot seat the game waits for, and Run starts one thinker
 // for it under the room's context once the request is handled. A thinker
 // runs bot.Choose on its own goroutine, on worlds the room copied for
@@ -130,7 +130,7 @@ func (r *Room) botSecond(f float64) time.Duration {
 }
 
 // resetMemory starts each hard seat's memory over from the game as it
-// is now (ADR 030, Decision 19): at the game start, and after a load, a
+// is now (ADR 033, Decision 19): at the game start, and after a load, a
 // server restart or a rollback, whose steps in between no memory saw
 // (Decision 19.12). Standard and the other seats get none (19.1).
 func (r *Room) resetMemory() {
@@ -397,7 +397,7 @@ func (r *Room) botFallbacks(p engine.PlayerID) []engine.Intent {
 }
 
 // noteBotWork keeps the longest time the driver held the room: the
-// work only bots cost it, the copies for the thinkers among it (21.8).
+// work only bots cost it, the copies for the thinkers among it (23.8).
 // A bot's move then costs the room what a player's intent does; Run
 // logs a slow one as "a bot's move".
 func (r *Room) noteBotWork(start time.Time) {

@@ -1,4 +1,4 @@
-// Package bot picks the moves of a bot seat (ADR 030, Decision 4).
+// Package bot picks the moves of a bot seat (ADR 033, Decision 4).
 //
 // A bot never holds the real game. Choose gets an Input whose World
 // returns games as the seat may imagine them (Game.Imagine, built by

@@ -12,7 +12,7 @@ import (
 )
 
 // TestBotsMemoryLikeArena: a hard seat's memory in the room is the
-// memory the arena builds on the same game (ADR 030, Decisions 19.13
+// memory the arena builds on the same game (ADR 033, Decisions 19.13
 // and 19.17). The room plays a game of a player, two hard bots and a
 // standard one on every set; after each request a reference game
 // replays the room's new steps one by one, from the start, and feeds
@@ -141,7 +141,7 @@ func memoryRoom(t *testing.T, seed uint64, seats []string) *Room {
 	}
 	// A playout count, not a time: with 2 ms a loaded machine gave hard
 	// no playout at all, so it only passed, and no game remembered a
-	// card (check phase of step 21).
+	// card (check phase of step 23).
 	r.second, r.botThink, r.botPlayouts = time.Millisecond, time.Minute, 8
 	r.recInfo.game = "g1"
 	t.Cleanup(r.stopThinkers)
@@ -153,7 +153,7 @@ func memoryRoom(t *testing.T, seed uint64, seats []string) *Room {
 }
 
 // TestBotsMemoryReset: a rollback starts each hard seat's memory over
-// from the restored game, as after a load or a restart (ADR 030,
+// from the restored game, as after a load or a restart (ADR 033,
 // Decision 19.12): its undone steps stay in no memory.
 func TestBotsMemoryReset(t *testing.T) {
 	r := memoryRoom(t, 3, memorySeats)

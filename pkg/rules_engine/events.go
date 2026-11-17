@@ -83,12 +83,15 @@ const (
 	// EvMinionArrived: Card came from the monster deck into a new minion
 	// slot (R-CHAL-09).
 	EvMinionArrived EventKind = "minion_arrived"
-	// EvDeckOrder: the cards of a deck changed places out of sight: it
-	// was shuffled (a search, a discard shuffled in), its top cards put
-	// back in an order, or a card moved within it. Text is "<deck>
-	// deck"; public, no card. Who remembers where its cards lie forgets
-	// them (ADR 030, Decision 19.8).
+	// EvDeckOrder: the cards of a deck changed places out of sight, not
+	// by a shuffle (that is EvShuffled): its top cards put back in an
+	// order, or a card moved within it. Text is "<deck> deck"; public,
+	// no card. Who remembers where its cards lie forgets them (ADR 033,
+	// Decision 19.8), as after a shuffle.
 	EvDeckOrder EventKind = "deck_order"
+	// EvShuffled: the deck Text, "<deck> deck", was shuffled; public, no
+	// card, Player NoPlayer (19.178).
+	EvShuffled EventKind = "shuffled"
 )
 
 // Event is one thing that happened, in order. Hidden cards (e.g. a looted
@@ -122,7 +125,8 @@ type Event struct {
 	// By is the player who dealt damage, plus 1 (0: a monster or nobody).
 	// On a death it is the killer, for the history (15.88). On a look
 	// it is the owner of the hand the card is in; 0 for a deck card
-	// (19.71).
+	// (19.71). On a stolen gained_treasure, or a passed curse's cursed,
+	// it is the player the card was taken from (19.193).
 	By int `json:"by,omitempty"`
 	// Item is the stack item that resolved, with its used ability's
 	// words, for the history strip (15.22, S-10).
@@ -130,7 +134,7 @@ type Event struct {
 	// Sources are what changed a resolved roll, for the history (15.94).
 	Sources []StatSourceView `json:"sources,omitempty"`
 	// Deck places a deck card a look shows: its deck and its depth, 0
-	// the top. A seat's memory reads it (ADR 030, Decision 19.11); it is
+	// the top. A seat's memory reads it (ADR 033, Decision 19.11); it is
 	// hidden with Card from those who do not see the card.
 	Deck *DeckPlace `json:"deck,omitempty"`
 }

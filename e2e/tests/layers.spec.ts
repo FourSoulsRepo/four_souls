@@ -6,7 +6,7 @@ import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL, serverPort } from './server';
 import { shot } from './shot';
-import { tr } from './locale';
+import { tr, trRe } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -225,4 +225,34 @@ test('the board dims under a hovered history strip; the strip and the zoom stay 
   await expect(zoom).toBeVisible();
   expect(await drawn(zoom)).toBe('zoom');
   await shot(page, 'layers-strip-dim');
+});
+
+test('a zoomed card shows above the replay bar (10.2)', async ({ page }) => {
+  await page.goto('/?fake&nosplash');
+  await page.getByRole('button', { name: tr('menu.records'), exact: true }).click();
+  await page
+    .getByRole('list', { name: tr('records.list_label') })
+    .getByRole('listitem')
+    .filter({ hasText: /Ann, Bo(?!,)/ })
+    .getByRole('button', { name: trRe('records.watch_label') })
+    .click();
+  const bar = page.getByRole('region', { name: tr('replay.label') });
+  await expect(bar).toBeVisible();
+  // A hand card's zoom rises from it, standing on the window's bottom
+  // edge: here from the middle of the bar, as from a hand card there.
+  // The pointer rests on the bar, so no table card it was left over
+  // (the Watch click's place) opens its own zoom meanwhile.
+  const b = await box(bar);
+  await page.mouse.move(b.x + 4, b.y + 4);
+  await page.evaluate((at) => {
+    interface S {
+      setZoom: (z: unknown) => void;
+    }
+    const store = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store;
+    store.getState().setZoom({ ref: 'isaac', touch: false, rise: true, at });
+  }, { left: b.x + b.width / 2 - 30, right: b.x + b.width / 2 + 30, top: b.y + b.height - 80, bottom: b.y + b.height });
+  const zoom = page.getByTestId('card-zoom').locator('.card-zoom-body');
+  await expect(zoom).toBeVisible();
+  await shot(page, 'layers-replay-zoom');
+  expect(await onTop(zoom, bar)).toBe(true);
 });

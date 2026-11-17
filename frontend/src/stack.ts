@@ -51,7 +51,7 @@ export interface Names {
 }
 
 // seatNames names players by their seats (seatName: a nickname, or a
-// bot's translated "Bot N (level)", 21.12) and cards by card.
+// bot's translated "Bot N (level)", 23.12) and cards by card.
 export function seatNames(seats: readonly Seat[] | null | undefined, card: (ref: string) => string): Names {
   return {
     player: (p) => seatNameOf(seats, p),
@@ -121,7 +121,8 @@ export function stackParts(it: StackItem, view: GameView, n: Names, rolled?: str
     case StackKind.ability:
       return partsOf(t('stack.ability'), { card, player: who });
     case StackKind.trigger:
-      return partsOf(t('stack.trigger'), { card });
+      // A roll's result trigger names the number it acts on (19.186).
+      return it.roll_result ? partsOf(t('stack.trigger_roll', { n: it.roll_result }), { card }) : partsOf(t('stack.trigger'), { card });
     case StackKind.roll: {
       // A thrown roll names what will change it, and the result (15.94).
       const changes = rollChanges(it.sources, sourceName(n));
@@ -229,7 +230,7 @@ export function declaration(view: GameView, n: Names): LinePart[] | null {
 // StackRowData is one row of the stack panel: the open declaration, or
 // a stack item. key is stable while the row stays, so the row moves
 // instead of being drawn again (15.51).
-export type StackRowData = { key: string; declared: LinePart[]; odds?: string } | { key: string; item: StackItem };
+export type StackRowData = { key: string; declared: LinePart[]; odds?: string; help?: string } | { key: string; item: StackItem };
 
 // stackRows are the stack panel's rows, top first: the open
 // declaration (15.91), then the items, newest first (S-01).
@@ -240,7 +241,21 @@ export function stackRows(view: GameView, n: Names): StackRowData[] {
     return items;
   }
   const odds = attackOdds(view, n);
-  return [{ key: 'declared', declared, ...(odds ? { odds } : {}) }, ...items];
+  const help = view.attack ? helpLine(view.attack.helpers, view.attack.share, n) : undefined;
+  return [{ key: 'declared', declared, ...(odds ? { odds } : {}), ...(help ? { help } : {}) }, ...items];
+}
+
+// helpLine says who helps an attack and who shares its rewards, for
+// everyone (R-ATK-21, Sibling Rivalry): "Helped by Bo · Rewards shared
+// with Bo". The open attack's (19.188) and the next one's (19.184,
+// 19.185); none when nobody joins.
+export function helpLine(helpers: readonly number[] | undefined, share: readonly number[] | undefined, n: Names): string | undefined {
+  const names = (ps: readonly number[]) => ps.map((p) => n.player(p)).join(', ');
+  const parts = [
+    helpers && helpers.length > 0 ? t('attack.helped_by', { players: names(helpers) }) : '',
+    share && share.length > 0 ? t('attack.shared_with', { players: names(share) }) : '',
+  ].filter(Boolean);
+  return parts.length > 0 ? parts.join(' · ') : undefined;
 }
 
 // attackOdds is the open attack's fight line, once aimed (15.94): what

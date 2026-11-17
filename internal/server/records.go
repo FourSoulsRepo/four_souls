@@ -21,7 +21,8 @@ type recordInfo struct {
 	cards  []record.Card
 }
 
-// apply applies an intent and appends it to the record (RP-01, RP-03).
+// apply applies an intent and appends it to the record (RP-01, RP-03),
+// with the judge view after it (ADR 031).
 func (r *Room) apply(in engine.Intent) ([]engine.Event, error) {
 	st, err := r.game.Step(in)
 	if err != nil {
@@ -29,9 +30,10 @@ func (r *Room) apply(in engine.Intent) ([]engine.Event, error) {
 	}
 	r.steps++
 	r.keepLive(st)
-	r.remember(st.Events) // a hard bot's memory sees every step (ADR 030, Decision 19.17)
+	r.remember(st.Events) // a hard bot's memory sees every step (ADR 033, Decision 19.17)
 	if r.rec != nil {
-		if err := r.rec.Step(st.Intent, st.Events, st.Checksum); err != nil {
+		view := protocol.ViewJSON(r.game.View(engine.Viewer{Kind: engine.ViewJudge}))
+		if err := r.rec.Step(st.Intent, st.Events, view, st.Checksum); err != nil {
 			log.Printf("server: record %s: %v; recording stops", r.path, err)
 			r.rec = nil
 		}
@@ -54,7 +56,7 @@ func (r *Room) openRecord(s engine.Setup) {
 	}
 	seats := make([]record.Seat, len(r.seats))
 	for i, st := range r.seats {
-		seats[i] = record.Seat{Seat: i, Name: st.name, Bot: st.bot, BotN: st.botN} // a bot's level and number (ADR 030, Decision 16.5)
+		seats[i] = record.Seat{Seat: i, Name: st.name, Bot: st.bot, BotN: st.botN} // a bot's level and number (ADR 033, Decision 16.5)
 	}
 	v := version.Get()
 	now := time.Now()

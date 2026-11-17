@@ -46,9 +46,9 @@ type savedSeat struct {
 	Token  string `json:"token"`
 	Kicked bool   `json:"kicked,omitempty"` // kept over a restart (N-20)
 	Dice   string `json:"dice,omitempty"`   // kept over a restart (N-20)
-	// Bot and BotN are a bot seat's level and number (ADR 030,
+	// Bot and BotN are a bot seat's level and number (ADR 033,
 	// Decision 16.1): a lobby table and a game keep them over a restart,
-	// a saved game until it is loaded (21.7, 21.9). A bot seat has no
+	// a saved game until it is loaded (23.7, 23.9). A bot seat has no
 	// token.
 	Bot  string `json:"bot,omitempty"`
 	BotN int    `json:"bot_n,omitempty"`
@@ -248,7 +248,7 @@ func (t *table) claim(c *Client) int {
 }
 
 // botsAllowed checks a save's bots against the levels this server
-// allows (ADR 030, Decision 17.1): loading seats them, as a host would.
+// allows (ADR 033, Decision 17.1): loading seats them, as a host would.
 // Else it gives the refusal.
 func (h *Hub) botsAllowed(seats []savedSeat) (engine.Key, bool) {
 	for _, s := range seats {

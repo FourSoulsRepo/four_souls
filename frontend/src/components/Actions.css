@@ -1266,6 +1266,25 @@
   box-shadow: 0 0 0 0.1875rem #b3e9ff, 0 0 1.625rem 0.5rem rgb(79 195 247 / 95%);
 }
 
+/* A deck or discard pile option (20.26): the pile's card, its name
+   under it in the zoom's credit look (ADR 027 "Credits" 13). */
+.choice button.choice-pile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.choice-pile-name {
+  font-family: var(--font-title);
+  font-size: 1.125rem;
+  line-height: 1.25;
+  color: #fff;
+  text-align: center;
+  -webkit-text-stroke: 0.1875rem #000;
+  paint-order: stroke fill;
+}
+
 /* A dealt card turns face up on its way (20.18): its back lies
    behind its face. */
 .deal-turn {

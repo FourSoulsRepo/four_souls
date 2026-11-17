@@ -18,32 +18,46 @@ export function repeatNames(names: string[]): string[] {
 // a fresh monster bans them, or a lucky deal puts a badge on it.
 export const statMonsters = ['delirium', 'stoney'];
 
-// hostBans adds the cards to the host's create message on its way to
-// the server: the host screen has no ban list yet (14.9). It adds the
-// other options too: the rollback mode has no control yet (17.4). The
-// getter it resolves to returns the bans the server's table names, as
-// a check.
-function hostBans(page: Page, bans: string[], port: number, options: Record<string, unknown> = {}): Promise<() => string[]> {
-  let echoed: string[] = [];
-  return page
-    .routeWebSocket(`ws://127.0.0.1:${String(port)}/ws`, (ws) => {
-      const server = ws.connectToServer();
-      ws.onMessage((msg) => {
-        const env = JSON.parse(String(msg)) as { type: string; data?: { options?: Record<string, unknown> } };
-        if (env.type === 'create' && env.data) {
-          env.data.options = { ...env.data.options, ...options, ...(bans.length > 0 ? { host_bans: bans } : {}) };
+// createOptions adds options to every create message the page sends:
+// the host screen has no ban list (14.9), rollback control (17.4) or
+// seed. It wraps the page's own WebSocket send, so the socket is not
+// routed through the test runner: every message keeps its timing.
+function createOptions(page: Page, options: Record<string, unknown>): Promise<void> {
+  return page.addInitScript((options) => {
+    const send = WebSocket.prototype.send;
+    WebSocket.prototype.send = function (this: WebSocket, data: Parameters<WebSocket['send']>[0]) {
+      if (typeof data === 'string' && data.startsWith('{"type":"create"')) {
+        const env = JSON.parse(data) as { data?: { options?: Record<string, unknown> } };
+        if (env.data) {
+          env.data.options = { ...env.data.options, ...options };
+          data = JSON.stringify(env);
         }
-        server.send(JSON.stringify(env));
-      });
-      server.onMessage((msg) => {
-        const env = JSON.parse(String(msg)) as { type: string; data?: { options?: { host_bans?: string[] } } };
-        if (env.type === 'table') {
-          echoed = env.data?.options?.host_bans ?? [];
-        }
-        ws.send(msg);
-      });
-    })
-    .then(() => () => echoed);
+      }
+      send.call(this, data);
+    };
+  }, options);
+}
+
+// tableOptions are the options of the table the page sits at, as the
+// server names them.
+function tableOptions(page: Page): Promise<{ host_bans?: string[]; seed?: number }> {
+  return page.evaluate(() => {
+    interface S {
+      lobby: { table?: { options?: { host_bans?: string[]; seed?: number } } };
+    }
+    return (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState().lobby.table?.options ?? {};
+  });
+}
+
+// testSeed is the test's own deal (ADR 032): a hash (FNV-1a) of its
+// title path, so it is the same on every run and every repeat, and in
+// both browsers. Never 0, which asks the server for a clock seed.
+export function testSeed(): number {
+  let h = 0x811c9dc5;
+  for (const c of new TextEncoder().encode(test.info().titlePath.join(' › '))) {
+    h = Math.imul(h ^ c, 0x01000193) >>> 0;
+  }
+  return h === 0 ? 1 : h;
 }
 
 // gameId is the id of the game page sits at, as the server named it.
@@ -73,7 +87,7 @@ export function tableSeat(page: Page, i: number): Locator {
 }
 
 // addBot presses a free seat's Add bot button for the level, as the
-// host (21.11, ADR 030 Decision 10); level is its translated name.
+// host (23.11, ADR 033 Decision 10); level is its translated name.
 export async function addBot(page: Page, i: number, level: string): Promise<void> {
   await tableSeat(page, i).getByRole('button', { name: tr('lobby.bots.add_level', { level }) }).click();
 }
@@ -99,6 +113,9 @@ export async function startGame(
     bans = [] as string[],
     // options are more create options, e.g. the rollback mode (ADR 020).
     options = {} as Record<string, unknown>,
+    // seed fixes the deal (ADR 032): the test's own by default, the
+    // same on every run; 0 asks for a random deal (a clock seed).
+    seed = testSeed(),
     // roll throws every first-player die (15.43), so the test starts in
     // turn 1; false leaves the roll to the test.
     roll = true,
@@ -111,8 +128,12 @@ export async function startGame(
     // seated runs on each guest page at the table, before Ready.
     seated = (_: Page) => Promise.resolve(),
     // bots are the levels of bots the host seats after the players
-    // (21.12): 'standard' or 'hard', one more seat each.
+    // (23.12): 'standard' or 'hard', one more seat each.
     bots = [] as string[],
+    // animations keeps each page's own speed: its saved setting, or the
+    // url's anim flag. By default every page plays at "off" from Ready
+    // on (TS-10, 22.6): a test that checks a motion or sound sets it.
+    animations = false,
   } = {},
 ): Promise<Page[]> {
   const pages: Page[] = [];
@@ -127,7 +148,14 @@ export async function startGame(
   if (!host) {
     throw new Error('no players');
   }
-  const banned = bans.length > 0 || Object.keys(options).length > 0 ? await hostBans(host, bans, port, options) : () => [];
+  // The seed shows when the test starts (CLAUDE.md 5.19.3).
+  const seedText = seed === 0 ? 'random' : String(seed);
+  console.log(`${test.info().titlePath.join(' › ')}: seed ${seedText}`);
+  test.info().annotations.push({ type: 'seed', description: seedText });
+  const create = { ...options, ...(bans.length > 0 ? { host_bans: bans } : {}), ...(seed === 0 ? {} : { seed }) };
+  if (Object.keys(create).length > 0) {
+    await createOptions(host, create);
+  }
   await host.goto(url);
   await openHost(host);
   await host.getByLabel(tr('lobby.nickname')).fill(names[0] ?? '');
@@ -141,7 +169,9 @@ export async function startGame(
   await setup(host);
   await host.getByRole('button', { name: tr('host.host'), exact: true }).click();
   await expect(host.getByRole('list', { name: tr('lobby.seats.seats') })).toBeVisible();
-  expect(banned()).toEqual(bans);
+  const echoed = await tableOptions(host);
+  expect(echoed.host_bans ?? []).toEqual(bans);
+  expect(echoed.seed ?? 0).toBe(seed);
   const id = await gameId(host);
 
   for (const [i, page] of guests.entries()) {
@@ -166,6 +196,9 @@ export async function startGame(
     await addBot(host, at, tr(`bot.level.${level}`));
     await expect(tableSeat(host, at)).toContainText(tr('bot.number', { n: i + 1 }));
   }
+  if (!animations) {
+    await Promise.all(pages.map((page) => setSpeed(page, 'off')));
+  }
   for (const page of pages) {
     await page.getByRole('button', { name: tr('lobby.seats.ready'), exact: true }).click();
   }
@@ -180,7 +213,8 @@ export async function startGame(
     // with roll: false. Animated, each throw waits for the dice before
     // it, and a tie throws again: 6 s, 12 s after a tie, 17 to 25 s with
     // ties under a full run, which used up a 30 s test (19.120). So it
-    // plays with animations off; each page's speed comes back after.
+    // plays with animations off; each page's speed comes back after:
+    // "off" too, unless the test asked for animations.
     const speeds = await Promise.all(pages.map((page) => setSpeed(page, 'off')));
     await throwFirstRoll(pages);
     await Promise.all(pages.map((page, i) => setSpeed(page, speeds[i] ?? 'normal')));

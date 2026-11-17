@@ -7,7 +7,7 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-// The score's weights (ADR 030, Decision 7): what a table is worth to a
+// The score's weights (ADR 033, Decision 7): what a table is worth to a
 // seat. Every weight is here; the arena tunes them (Decision 7.7).
 const (
 	// scoreWin is a won game; a lost one is -scoreWin. Far above any
@@ -17,14 +17,14 @@ const (
 	// A soul is worth far more than everything else together.
 	wSoul = 100.0
 	// An item costs 10¢ (shopPrice) and stays; a cent is worth one.
-	// An average item is worth clearly more than its price (21.16
+	// An average item is worth clearly more than its price (23.16
 	// tuning, 12 before): cents are spent almost only on items.
 	wItem  = 15.0
 	wCent  = 1.0
 	wLoot  = 0.75
 	wCurse = -8.0
 	// wItemFlat and wLootFlat are the flat values (Decision 20.6): every
-	// item and every loot card alike, as before the card values (21.16).
+	// item and every loot card alike, as before the card values (23.16).
 	// The flat level and the measure of the table score with them; they
 	// are their own, so a tuning of wItem or wLoot moves neither.
 	wItemFlat = 12.0
@@ -64,7 +64,7 @@ const (
 	// (Decision 8.6.2). The spread of its settles is the attack's real
 	// risk, not a measuring error: an attack that wins a soul in one
 	// settle of six beats ending the turn on the mean, and one standard
-	// error cut every such attack (21.5 tuning). Other moves keep
+	// error cut every such attack (23.5 tuning). Other moves keep
 	// noiseOpen: with no bar, standard used items in a loop.
 	noiseAttack = 0.0
 	// noiseClip: in the hard level's noise a gain counts at most four

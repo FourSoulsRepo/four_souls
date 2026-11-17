@@ -1,6 +1,6 @@
 # UC-17: Join a game found on the LAN
 
-**Module:** `internal/lan`, `internal/server`, `lan.go`, `frontend/src/screens/JoinScreen.tsx`
+**Module:** `internal/lan`, `internal/server`, `bindings/join`, `frontend/src/screens/JoinScreen.tsx`
 **Status:** Implemented
 **Actors:** Player
 **Goal:** The player joins a friend's game without typing an address (N-13)

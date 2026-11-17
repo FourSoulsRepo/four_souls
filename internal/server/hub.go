@@ -107,7 +107,7 @@ type tableSeat struct {
 	client *Client
 	ready  bool
 	// bot is the level of a bot's seat, "" for a human's or a free one;
-	// botN is its number, from 1 (ADR 030, Decision 10.1). A bot seat
+	// botN is its number, from 1 (ADR 033, Decision 10.1). A bot seat
 	// has no token and no client, and is always ready.
 	bot  string
 	botN int
@@ -152,13 +152,15 @@ type Hub struct {
 	cards []record.Card
 	// seed, if not 0, makes game n's seed seed+n.
 	seed uint64
+	// testSeeds lets a create choose its game's seed (ADR 032).
+	testSeeds bool
 	// saves is the folder for saved games (N-11); "" keeps none.
 	saves string
 	// hostOnly lets only local clients create or load games (N-17).
 	hostOnly bool
 	// presence relays live aiming and hover (15.35); off drops it.
 	presence bool
-	// bots are the bot levels a host may seat (ADR 030, Decision 17).
+	// bots are the bot levels a host may seat (ADR 033, Decision 17).
 	bots []string
 	// botThink is the hard bot's time budget per move (Decision 9.8);
 	// tests shorten it.
@@ -404,6 +406,10 @@ func (h *Hub) create(c *Client, env protocol.Envelope) {
 	if m.Options != nil {
 		opts = *m.Options
 	}
+	if opts.Seed != 0 && !h.testSeeds {
+		c.fail(env.ID, protocol.ErrBadSetup, errTestSeed.Msg())
+		return
+	}
 	if msg := checkChallenge(&opts, m.Seats); !msg.IsZero() {
 		c.fail(env.ID, protocol.ErrBadSetup, msg)
 		return
@@ -504,7 +510,7 @@ func (h *Hub) ready(c *Client, env protocol.Envelope) {
 }
 
 // startIfReady starts a table whose every seat is taken and whose every
-// human is ready (ADR 030, Decision 10.7); else it sends the table.
+// human is ready (ADR 033, Decision 10.7); else it sends the table.
 func (h *Hub) startIfReady(t *table) {
 	for _, s := range t.seats {
 		if s.bot == "" && (s.client == nil || !s.ready) {
@@ -515,7 +521,7 @@ func (h *Hub) startIfReady(t *table) {
 	h.start(t)
 }
 
-// bot seats, changes or takes away a bot (ADR 030, Decision 10.4):
+// bot seats, changes or takes away a bot (ADR 033, Decision 10.4):
 // only the host, only at a free seat or a bot's seat, only a level this
 // server allows.
 func (h *Hub) bot(c *Client, env protocol.Envelope) {
@@ -566,7 +572,7 @@ func (h *Hub) bot(c *Client, env protocol.Envelope) {
 }
 
 // botName is a bot seat's name in records and logs; the app shows a
-// translated one (ADR 030, Decision 10.2).
+// translated one (ADR 033, Decision 10.2).
 func botName(n int) string { return "Bot " + strconv.Itoa(n) }
 
 // freeBotN is the smallest bot number no seat of t uses, by number or
@@ -580,7 +586,7 @@ func freeBotN(t *table) int {
 }
 
 // promoteHost moves the next human into seat 0, the host's, when it has
-// none: the host left (ADR 030, Decision 10.12). Bots keep their seats.
+// none: the host left (ADR 033, Decision 10.12). Bots keep their seats.
 // It reports whether it moved anyone.
 func (t *table) promoteHost() bool {
 	if t.seats[0].token != "" {
@@ -612,6 +618,9 @@ func (h *Hub) start(t *table) {
 	gameSeed := seed()
 	if h.seed != 0 {
 		gameSeed = h.seed + uint64(t.n) //nolint:gosec // n is positive
+	}
+	if t.opts.Seed != 0 {
+		gameSeed = t.opts.Seed // a test server's chosen deal (ADR 032)
 	}
 	if t.opts.RandomSeats {
 		shuffleSeats(seats, gameSeed)
@@ -743,7 +752,9 @@ func (h *Hub) list() protocol.Games {
 		out.Games = append(out.Games, info)
 	}
 	for _, g := range h.games {
-		out.Games = append(out.Games, g.info)
+		if !g.room.over.Load() { // a finished game is not joinable (19.166)
+			out.Games = append(out.Games, g.info)
+		}
 	}
 	out.Saves = listSaves(h.saves)
 	return out

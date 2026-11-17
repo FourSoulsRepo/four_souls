@@ -5,6 +5,7 @@ import {
   beforeStart,
   declaration,
   findCard,
+  helpLine,
   playedCard,
   seatNames,
   secondsLeft,
@@ -285,7 +286,7 @@ describe('stackRows', () => {
 });
 
 describe('seatNames', () => {
-  it("names a bot seat by its translated name and level, as the lobby does (21.12)", () => {
+  it("names a bot seat by its translated name and level, as the lobby does (23.12)", () => {
     const n = seatNames(
       [
         { seat: 0, name: 'Ann', connected: true },
@@ -296,5 +297,29 @@ describe('seatNames', () => {
     expect(n.player(0)).toBe('Ann');
     expect(n.player(1)).toBe('Bot 1 (Hard)');
     expect(n.player(2)).toBe('Player 3');
+  });
+});
+
+describe('helpLine', () => {
+  it('names who helps an attack and who shares its rewards (19.184, 19.185, 19.188)', () => {
+    expect(helpLine(undefined, undefined, names)).toBeUndefined();
+    expect(helpLine([], [], names)).toBeUndefined();
+    expect(helpLine([1], undefined, names)).toBe('Helped by Bo');
+    expect(helpLine([1, 0], [1], names)).toBe('Helped by Bo, Ann · Rewards shared with Bo');
+  });
+
+  it("adds the open attack's helpers to its row (19.188)", () => {
+    const [top] = stackRows({ ...view, attack: { target: 9, helpers: [1], share: [1] } }, names);
+    expect(top).toMatchObject({ key: 'declared', help: 'Helped by Bo · Rewards shared with Bo' });
+    const [plain] = stackRows({ ...view, attack: { target: 9 } }, names);
+    expect(plain).not.toHaveProperty('help');
+  });
+});
+
+describe('a roll result on the stack', () => {
+  it('names the number it acts on (19.186)', () => {
+    const result = item({ kind: StackKind.trigger, card: 'book_of_sin', roll_result: 4 });
+    expect(stackLine(result, view, names)).toBe('BOOK_OF_SIN: roll result 4');
+    expect(stackLine(item({ kind: StackKind.trigger, card: 'book_of_sin' }), view, names)).toBe('BOOK_OF_SIN triggers');
   });
 });

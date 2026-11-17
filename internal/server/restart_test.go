@@ -467,7 +467,7 @@ func botHub(t *testing.T, dir string, second time.Duration) (h *Hub, stop func()
 	h = NewHub()
 	// Hard thinks by playout count, not by time: a 2 ms budget gave it
 	// no playout under -race or a loaded machine, so it only passed and
-	// whole games ran out of time (check phase of step 21).
+	// whole games ran out of time (check phase of step 23).
 	h.second, h.seed, h.botThink, h.botPlayouts = second, 21, 10*time.Second, 2
 	h.restart, h.records, h.saves = filepath.Join(dir, restartFolder), filepath.Join(dir, "records"), filepath.Join(dir, "saves")
 	ctx, cancel := context.WithCancel(context.Background())
@@ -482,7 +482,7 @@ func botHub(t *testing.T, dir string, second time.Duration) (h *Hub, stop func()
 // TestBotsRestartMidTurn: a server restart in the middle of a bot's
 // turn, with its thinker open. The restart file keeps the bot seats;
 // the player comes back with no notice, the game goes on at the same
-// step, and the bot thinks again and moves (21.9, Done when; ADR 030,
+// step, and the bot thinks again and moves (23.9, Done when; ADR 033,
 // Decision 16.3, 16.4).
 func TestBotsRestartMidTurn(t *testing.T) {
 	dir := t.TempDir()

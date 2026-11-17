@@ -1,0 +1,70 @@
+package join
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/FourSoulsRepo/four_souls/internal/protocol"
+)
+
+// CheckSeat tries each base in order and asks /seat with the token
+// (15.99); anything but an http(s) server address is refused.
+func TestCheckSeat(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/seat" {
+			http.NotFound(w, r)
+			return
+		}
+		_ = json.NewEncoder(w).Encode(protocol.SeatInfo{Live: r.URL.Query().Get("token") == "t0k3n", Host: "Ann"}) //nolint:errcheck // test
+	}))
+	defer srv.Close()
+	j := New(background{})
+	// A base that does not answer is skipped, as wss before ws.
+	got, err := j.CheckSeat([]string{"http://127.0.0.1:1", srv.URL}, "t0k3n")
+	if err != nil || !got.Live || got.Host != "Ann" {
+		t.Fatalf("got %+v, %v; want Ann's live seat", got, err)
+	}
+	if got, err := j.CheckSeat([]string{srv.URL + "/"}, "other"); err != nil || got.Live {
+		t.Errorf("another token: %+v, %v", got, err)
+	}
+	if _, err := j.CheckSeat([]string{"http://127.0.0.1:1"}, "t0k3n"); err == nil {
+		t.Error("no server answered, want an error")
+	}
+	for _, bad := range [][]string{nil, {"file:///etc/passwd"}, {"http://"}, {srv.URL + "/record"}, {srv.URL + "?x=1"}} {
+		if _, err := j.CheckSeat(bad, "t0k3n"); !errors.Is(err, ErrServerURL) {
+			t.Errorf("%q: err %v, want ErrServerURL", bad, err)
+		}
+	}
+}
+
+// ServerStatus reads a server's /status (15.100); no answer is an error,
+// so the Recent list shows the server down.
+func TestServerStatus(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/status" || r.URL.RawQuery != "" {
+			http.NotFound(w, r)
+			return
+		}
+		_ = json.NewEncoder(w).Encode(protocol.ServerStatus{Open: 2}) //nolint:errcheck // test
+	}))
+	defer srv.Close()
+	j := New(background{})
+	if got, err := j.ServerStatus([]string{"http://127.0.0.1:1", srv.URL}); err != nil || got.Open != 2 {
+		t.Fatalf("got %+v, %v; want 2 open", got, err)
+	}
+	if _, err := j.ServerStatus([]string{"http://127.0.0.1:1"}); err == nil {
+		t.Error("no server answered, want an error")
+	}
+	if _, err := j.ServerStatus([]string{"file:///etc/passwd"}); !errors.Is(err, ErrServerURL) {
+		t.Errorf("err %v, want ErrServerURL", err)
+	}
+}
+
+// background is the app before startup: its context never ends.
+type background struct{}
+
+func (background) Context() context.Context { return context.Background() }

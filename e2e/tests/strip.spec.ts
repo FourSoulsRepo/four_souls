@@ -257,7 +257,7 @@ test("an attack's popout: the attacker large, swords, the monster with its marks
 });
 
 test('a new tile slides in from the left while the rest move down; speed scales it (20.21)', async ({ browser }) => {
-  const pages = await startGame(browser, names(['Eli', 'Fay']), { url: appURL() });
+  const pages = await startGame(browser, names(['Eli', 'Fay']), { animations: true });
   const page = pages[0];
   if (!page) {
     throw new Error('no page');
@@ -288,7 +288,7 @@ test('a new tile slides in from the left while the rest move down; speed scales 
 });
 
 test('speed "fast" halves the slide and "off" places a tile at once (20.21)', async ({ browser }) => {
-  const fast = await startGame(browser, names(['Gus', 'Hal']), { url: `${appURL()}&anim=fast` });
+  const fast = await startGame(browser, names(['Gus', 'Hal']), { url: `${appURL()}&anim=fast`, animations: true });
   const page = fast[0];
   if (!page) {
     throw new Error('no page');
@@ -337,7 +337,7 @@ test('nothing moves while the pointer is on the strip; new tiles come in when it
 });
 
 test('the strip is one hit area: the nearest tile shows, sounds once, and the board dims (20.21)', async ({ browser }) => {
-  const pages = await startGame(browser, names(['Mia', 'Ned']), { url: appURL() });
+  const pages = await startGame(browser, names(['Mia', 'Ned']), { animations: true });
   const page = pages[0];
   if (!page) {
     throw new Error('no page');
@@ -396,7 +396,13 @@ test('a popout lays its targets in one row up to four, then in two rows (20.21)'
   const row = await Promise.all([0, 1, 2, 3].map(async (i) => (await box(results.nth(i))).y));
   expect(new Set(row.map(Math.round)).size).toBe(1);
   await page.mouse.move(900, 700);
+  // The strip holds its tiles while the pointer is on it (20.21); wait
+  // until it lets go, then for the new tile on top (19.194).
+  await expect(zoom).toBeHidden();
+  await expect(page.getByTestId('strip-dim')).not.toHaveClass(/on/);
+  const top = await tiles.first().getAttribute('data-key');
   await addTiles(page, 1, [...four, 'pills', 'a_nickel']);
+  await expect(tiles.first()).not.toHaveAttribute('data-key', top ?? '');
   await tiles.first().hover();
   await expect(results).toHaveCount(6);
   const ys = await Promise.all([0, 2, 3, 5].map(async (i) => (await box(results.nth(i))).y));

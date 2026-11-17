@@ -23,9 +23,9 @@ import (
 // table as if the undone steps still stood.
 // 6: texts are messages, a key and its values (ADR 021, 16.4): prompt
 // questions and options, stack labels, reasons, errors.
-// 7: bots (ADR 030, Decision 10): bot seats, the bot message and the
+// 7: bots (ADR 033, Decision 10): bot seats, the bot message and the
 // levels the server allows; an older client would take a bot's seat
-// for a free one. Also the event deck_order and Event.Deck (ADR 030,
+// for a free one. Also the event deck_order and Event.Deck (ADR 033,
 // Decision 19.16). v7: bot seats, deck_order.
 const Version = 7
 
@@ -87,11 +87,11 @@ const (
 	// The host ends a game for everyone (19.84). An older server refuses it.
 	TypeEnd = "end" // client → server: the game stops unfinished
 
-	// Bots (ADR 030, Decision 10).
+	// Bots (ADR 033, Decision 10).
 	TypeBot = "bot" // client → server: the host seats, changes or removes a bot
 )
 
-// Bot levels a player meets (ADR 030, Decision 1). The server allows
+// Bot levels a player meets (ADR 033, Decision 1). The server allows
 // some or all of them (Welcome.Bots); internal/bot names the same
 // strings.
 const (
@@ -103,7 +103,7 @@ const (
 func BotLevels() []string { return []string{BotStandard, BotHard} }
 
 // Bot seats a bot of Level at Seat, changes its level, or takes it away
-// when Level is "" (ADR 030, Decision 10.4). Only the host sends it,
+// when Level is "" (ADR 033, Decision 10.4). Only the host sends it,
 // only for a free seat or a bot's seat.
 type Bot struct {
 	Seat  int    `json:"seat"`
@@ -155,7 +155,7 @@ type Welcome struct {
 	// Name is the server's name, set by its operator; the app shows it
 	// instead of the address (N-18). Empty on an app's own host.
 	Name string `json:"name,omitempty"`
-	// Bots lists the bot levels a host may seat here (ADR 030,
+	// Bots lists the bot levels a host may seat here (ADR 033,
 	// Decision 17); empty: none. The app hides the others.
 	Bots []string `json:"bots,omitempty"`
 }
@@ -324,7 +324,7 @@ type Seat struct {
 	// Dice is the seat's dice look (V-19); "" draws the default one.
 	Dice string `json:"dice,omitempty"`
 	// Bot is the level of a bot's seat; "": a human's or a free one
-	// (ADR 030, Decision 10.1). Name is then "Bot N", N being BotN.
+	// (ADR 033, Decision 10.1). Name is then "Bot N", N being BotN.
 	Bot  string `json:"bot,omitempty"`
 	BotN int    `json:"bot_n,omitempty"`
 }
@@ -504,6 +504,10 @@ type Options struct {
 	// Difficulty is the challenge's difficulty: "normal", "hard" or
 	// "ultra" (engine.DifficultyNormal …).
 	Difficulty string `json:"difficulty,omitempty"`
+	// Seed, if not 0, is the game's seed: the same seed deals the same
+	// game. Only a server started with -test_seeds takes it; others
+	// refuse the create (ADR 032).
+	Seed uint64 `json:"seed,omitempty"`
 }
 
 // Rollback modes (ADR 020, item 1).
@@ -563,7 +567,7 @@ type Ready struct {
 // Table is the table a player sits at, before the game starts. The
 // game starts by itself when every seat is taken and every human is
 // ready. Seat 0 is the host's; when the host leaves, the next human
-// moves there (ADR 030, Decision 10).
+// moves there (ADR 033, Decision 10).
 type Table struct {
 	Game    string   `json:"game"`
 	You     int      `json:"you"` // your seat

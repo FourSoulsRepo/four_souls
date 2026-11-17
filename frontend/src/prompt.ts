@@ -3,6 +3,7 @@
 import { choiceTitle, PromptKind, Purpose, type Actions } from './actions';
 import { say, t } from './i18n';
 import type { GameView } from './protocol';
+import { monsterRows } from './challenge';
 import { attackTarget, beforeStart, findCard, partsOf, StackKind, stackLine, type LinePart, type Names } from './stack';
 import type { Aiming } from './store';
 
@@ -48,7 +49,7 @@ export function promptBanner(
     return null;
   }
   if (w.player === you) {
-    const hint = ask.kind === 'turn' ? turnHint(actions) : tablePick(actions.choice) ? t('banner.pick_table') : ask.hint;
+    const hint = ask.kind === 'turn' ? (mustAttackLine(view, n) ?? turnHint(actions)) : tablePick(actions.choice) ? t('banner.pick_table') : ask.hint;
     return { kind: ask.kind, mine: true, player: w.player, title: ask.title, ...(hint ? { hint } : {}) };
   }
   return { kind: ask.kind, mine: false, player: w.player, title: t('banner.waiting_for', { player: n.player(w.player) }), hint: ask.other };
@@ -208,4 +209,57 @@ export function fighters(view: GameView): number[] {
     return [];
   }
   return [attacker, target];
+}
+
+// Forced is an attack the active player still owes this turn (19.180 –
+// 19.182): on a monster (Monster Manual, Friendly Ball), on the monster
+// deck (Ambush, I Am Error), or on anything (Envy); left is how many
+// attacks they owe, deck ones too.
+export interface Forced {
+  target: number;
+  deck: boolean;
+  left: number;
+}
+
+// forcedAttack is what the turn owes, or null. A named monster counts
+// only while it is on the table: once it leaves, the duty is gone, as
+// the engine says (R-ABIL-12).
+export function forcedAttack(view: GameView): Forced | null {
+  if (view.over || beforeStart(view)) {
+    return null;
+  }
+  const { turn } = view;
+  const m = turn.must_attack ?? 0;
+  const target = m !== 0 && onTable(view, m) ? m : 0;
+  const deck = (turn.must_attack_deck ?? 0) > 0;
+  const left = turn.must_attacks ?? 0;
+  return target !== 0 || deck || left > 0 ? { target, deck, left } : null;
+}
+
+// onTable: an object is a monster in a slot or a player's character,
+// what a forced attack may name (Lust for Blood names a character).
+function onTable(view: GameView, id: number): boolean {
+  return monsterRows(view).some((s) => s.top?.id === id) || view.players.some((p) => p.character.id === id);
+}
+
+// mustTargets are the cards marked as owed an attack, for everyone.
+export function mustTargets(view: GameView): number[] {
+  const f = forcedAttack(view);
+  return f && f.target !== 0 ? [f.target] : [];
+}
+
+// mustAttackLine is the turn banner's line for a forced attack: "You
+// must attack: Gaper (2 left)". The deck comes first, as the engine
+// asks for it first. None while an attack is open: its target is
+// being picked or fought.
+export function mustAttackLine(view: GameView, n: Names): string | undefined {
+  const f = forcedAttack(view);
+  if (!f || view.attack) {
+    return undefined;
+  }
+  const target = f.deck ? t('banner.monster_deck') : f.target !== 0 ? attackTarget(view, f.target, n).text : '';
+  if (!target) {
+    return t('banner.must_attack_any', { n: f.left });
+  }
+  return f.left > 0 ? t('banner.must_attack_left', { target, n: f.left }) : t('banner.must_attack', { target });
 }

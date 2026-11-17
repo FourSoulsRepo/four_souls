@@ -14,13 +14,20 @@ import (
 
 // checkLimits ends the game when it ran into an idle limit.
 func (r *Room) checkLimits() {
-	if r.over.Load() {
-		return // a finished game stays for its record download
-	}
 	now := r.now()
 	// Only players count: a bot has no client, so a game of bots alone
-	// is empty (ADR 030, Decision 11.7).
-	if slices.ContainsFunc(r.seats, func(s roomSeat) bool { return s.client != nil }) {
+	// is empty (ADR 033, Decision 11.7).
+	connected := slices.ContainsFunc(r.seats, func(s roomSeat) bool { return s.client != nil })
+	if r.over.Load() {
+		// A finished game stays while a player is on its end screen,
+		// for the record download; then it closes (19.166).
+		if !connected || r.gameLimit > 0 && !r.born.IsZero() && now.Sub(r.born) >= r.gameLimit {
+			log.Printf("server: finished game %s closed", r.recInfo.game)
+			r.stopped = true // the record stays on disk; Run sends everyone to the lobby
+		}
+		return
+	}
+	if connected {
 		r.emptySince = time.Time{}
 	} else if r.emptySince.IsZero() {
 		r.emptySince = now

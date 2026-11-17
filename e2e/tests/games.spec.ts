@@ -1,19 +1,23 @@
 // Whole games with every card set, played by random moves through the
 // UI, for 2, 3 and 4 players (owner request, 2026-10-15), one player
-// with three bots (21.12), and the Krampus (14.26) and Trick or Treat
+// with three bots (23.12), and the Krampus (14.26) and Trick or Treat
 // (14.34) challenges for 2 at each difficulty. A game must end
 // with a winner, or a challenge won or lost, with no server error, no page error and no console
 // error or warning on any page. Each test logs how long its game took.
 //
 // Slow, so opt-in: FULL_GAMES=1, or `make e2e-games`.
-// GAME_SEED repeats the moves' choices; the server's deal stays random.
+// GAME_SEED repeats the deal and the moves' choices; without it the deal
+// is random too (seed 0, ADR 032).
 // GAME_TURNS caps a game (default 300 turns).
 // GAME_SPEED sets the pages' animation speed (default fast, 19.137).
+// Each page must also stay small and fast to the end: element count,
+// script time per step, live sounds (growth.ts, 22.9).
 import { copyFileSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { CDPSession, Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { setSpeed, startGame } from './game';
+import { describe, measured, openMetrics, overLimits, sample, sampleEvery, type Sample } from './growth';
 import { serverPort } from './server';
 import { enabled, endTurnButton, endTurnQuestion, passButton, playSpot, reachable, seen, tablePicks, throwButton, turnAction, type Seen } from './turn';
 import { tr, trRe } from './locale';
@@ -295,6 +299,7 @@ const debuggers = new WeakMap<Page, CDPSession>();
 async function attachDebugger(page: Page): Promise<void> {
   const cdp = await page.context().newCDPSession(page);
   await cdp.send('Debugger.enable');
+  await openMetrics(cdp);
   debuggers.set(page, cdp);
 }
 
@@ -362,8 +367,25 @@ async function diagnose(pages: Page[], names: string[]): Promise<void> {
   }
 }
 
-// play makes random moves until the game ends.
-async function play(pages: Page[], names: string[], problems: string[], rnd: Rnd): Promise<Result> {
+// measure reads each page whose step has moved sampleEvery steps past
+// its last sample (growth.ts); last forces a reading of every page.
+async function measure(pages: Page[], steps: number[], samples: Sample[][], last = false): Promise<void> {
+  for (const [i, page] of pages.entries()) {
+    const step = steps[i] ?? -1;
+    const had = samples[i] ?? [];
+    samples[i] = had;
+    const prev = had[had.length - 1];
+    const cdp = debuggers.get(page);
+    if (!cdp || step < 0 || (prev && step <= prev.step) || (!last && prev && step < prev.step + sampleEvery)) {
+      continue;
+    }
+    had.push(await sample(page, cdp, step));
+  }
+}
+
+// play makes random moves until the game ends. It fills samples with
+// each page's readings, for the long-game check (22.9).
+async function play(pages: Page[], names: string[], problems: string[], rnd: Rnd, samples: Sample[][]): Promise<Result> {
   const start = Date.now();
   let moves = 0;
   let last = { step: -1, at: Date.now() };
@@ -380,6 +402,7 @@ async function play(pages: Page[], names: string[], problems: string[], rnd: Rnd
     if (!first) {
       throw new Error('no pages');
     }
+    await measure(pages, states.map((x) => x.step), samples, first.over);
     if (first.over) {
       return { seconds: (Date.now() - start) / 1000, turns: first.turn, steps: first.step, moves };
     }
@@ -388,7 +411,7 @@ async function play(pages: Page[], names: string[], problems: string[], rnd: Rnd
       const seconds = ((Date.now() - start) / 1000).toFixed(0);
       console.log(`  ${names[0] ?? ''}: turn ${String(first.turn)}, step ${String(first.step)}, ${seconds} s, souls ${await souls(pages[0] as Page)}`);
     }
-    // Nobody leaves these games, and a bot is never away (21.12): the
+    // Nobody leaves these games, and a bot is never away (23.12): the
     // game never pauses.
     for (const [i, page] of pages.entries()) {
       if (await page.getByRole('dialog', { name: tr('pause.label') }).isVisible()) {
@@ -495,7 +518,7 @@ interface Game {
   run: string;
   players: number;
   // bots are the levels of the bots that fill the seats after the
-  // players (21.12); none by default.
+  // players (23.12); none by default.
   bots?: string[];
   setup: (host: Page) => Promise<void>;
   over: (page: Page) => Promise<string>;
@@ -508,7 +531,7 @@ async function regularOver(page: Page): Promise<string> {
 }
 
 // botsOver: a game with bots ends with a winner too; a bot that won is
-// named with its robot (21.12).
+// named with its robot (23.12).
 async function botsOver(page: Page): Promise<string> {
   const over = page.getByRole('dialog', { name: tr('over.title') });
   await expect(over).toBeVisible();
@@ -549,8 +572,8 @@ const games: Game[] = [
     setup: everySet,
     over: regularOver,
   })),
-  // One player and three bots (21.12): the bots play at their real
-  // pace (ADR 030 Decision 13), a hard one among two standard.
+  // One player and three bots (23.12): the bots play at their real
+  // pace (ADR 033 Decision 13), a hard one among two standard.
   {
     title: '1 player and 3 bots finish a game with every card set',
     run: 'b',
@@ -597,10 +620,15 @@ test.describe('whole random games', () => {
       const problems: string[] = [];
       let opened = 0;
       test.info().annotations.push({ type: 'seed', description: String(seed) });
+      // animations: true keeps the start at its saved speed, as
+      // before 22.6; GAME_SPEED takes over once the game runs.
       const pages = await startGame(browser, names, {
+        animations: true,
         setup: game.setup,
         bans,
         bots: game.bots ?? [],
+        // Random deals find surprises here (ADR 032, 3.).
+        seed: process.env.GAME_SEED ? seed : 0,
         open: (page) => {
           // A click that never lands fails fast: the next round looks
           // again, and the stall check sees a game that stops moving.
@@ -613,7 +641,13 @@ test.describe('whole random games', () => {
       console.log(`${label}, speed ${speed}: started`);
       let passed = false;
       try {
-        const r = await play(pages, names, problems, mulberry32(seed));
+        const samples: Sample[][] = [];
+        const r = await play(pages, names, problems, mulberry32(seed), samples);
+        for (const [i, name] of names.entries()) {
+          const m = measured(name, samples[i] ?? []);
+          console.log(`  ${describe(m)}`);
+          problems.push(...overLimits(m, label));
+        }
         const ends: string[] = [];
         for (const page of pages) {
           ends.push(await game.over(page));

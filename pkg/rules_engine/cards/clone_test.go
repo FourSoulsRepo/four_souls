@@ -62,7 +62,7 @@ func cloneSetups() map[string]engine.Setup {
 
 // TestCloneSavesTheSame: a copy has the game's checksum and save bytes,
 // and shares no list, map or pointer with it, every 10 steps of
-// simulated games (ADR 030, Decision 3.2).
+// simulated games (ADR 033, Decision 3.2).
 func TestCloneSavesTheSame(t *testing.T) {
 	for name, s := range cloneSetups() {
 		t.Run(name, func(t *testing.T) {
@@ -164,7 +164,7 @@ func sameGame(g, c *engine.Game) error {
 }
 
 // BenchmarkClone copies a 4-player game with every set after 300
-// random steps: the copy a bot makes for each try (ADR 030, Decision 3).
+// random steps: the copy a bot makes for each try (ADR 033, Decision 3).
 func BenchmarkClone(b *testing.B) {
 	s := engine.Setup{Seed: 7, Players: 4, Sets: Sets(), BonusSouls: true, Rooms: true}
 	g, _, err := engine.NewGame(s)

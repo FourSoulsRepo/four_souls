@@ -1525,6 +1525,154 @@ Each sub-step of step 20 takes the part it needs.
     37. Speed "off" and reduced motion: no march, no glide; it still shows.
     38. No new sound.
 
+### Credits
+
+1. Checked 2026-11-17 for CD-14 (owner).
+   1. `CardInfoPane`, `CraftingManager`, `EntityDef`, `CardDbfRecord`.
+   2. `BaseHeroSkinInfoManager`, `CosmeticCoinManager`, `CollectibleCardFilter`.
+   3. `CreditsDisplay`, `CreditsYearDbfRecord`, `MiscellaneousMenu`.
+   4. Prefab data via UnityPy: `CardInfoPane`, its fonts; not the credits files.
+2. Artist data.
+   1. One artist name per card: `ARTIST_NAME`.
+   2. A second one for the signature look: `SIGNATURE_ARTIST_NAME`.
+   3. Name only; no role, no link.
+3. Where the artist shows.
+   1. Only in the collection, when a card is opened large.
+   2. A small pane beside the big card: rarity, set, artist, flavor text.
+   3. The line reads "Artist: <name>", one localized string.
+   4. The pane flies in from under the card: 0.5 s, from 0.1 scale.
+   5. Phone layout: no pane, so no artist.
+   6. Hero skin and coin previews show the same line.
+   7. There an empty name hides the line.
+4. Where it never shows.
+   1. Not in a match: not on hover, not in the big card, not in history.
+   2. Not on the card face.
+5. Search.
+   1. The collection search takes an artist keyword.
+   2. It matches the name with or without its spaces.
+6. Credits screen.
+   1. Options, then "Credits"; also a deep link.
+   2. Not from a login screen or during a blocking dialog.
+   3. Its own scene; credits music plays.
+   4. A localized text file per year; two buttons switch the year.
+   5. The text rolls up: 3.5 units/s.
+   6. Faster and slower buttons: steps of 0.75, three each way.
+   7. Read in chunks of 70 lines; a long line counts as more.
+   8. Cards named in the text fly in beside it, one at a time.
+   9. First after 4 s, then one every 5 s.
+   10. Each card burns away when the next comes.
+   11. Only cards before a marker line show; the rest is text only.
+   12. Done, or the back key, leaves it.
+   13. A hidden button plays a joke.
+7. Translators.
+   1. The reference has no fan translators; nothing to compare.
+8. Ours today.
+   1. Card data has artists with a role (ADR 004 8).
+   2. The client gets no artist at all (`internal/cardinfo`).
+   3. The zoom credits translators of the shown language (16.5).
+   4. No credits screen; the Splash shows the fan notice.
+9. Our data (2026-11-17, 702 cards).
+   1. Front character artist: 622 cards, 9 names.
+   2. Front background artist: 622 cards, all "Private".
+   3. Card front artist: 52 cards, 51 "Private".
+   4. Card back artist: 671 cards, one name.
+   5. Back character artist: 5 two-sided cards.
+   6. Russian translators: the same 5 names on 660 cards.
+10. Differences and recommendations.
+    1. Artist with the card.
+       1. Ours: none. Ref: only out of a match, in the collection.
+       2. Recommend: one line in the zoom, under the card.
+       3. We have no collection (CD-05); the zoom is our only large card.
+       4. Owner: in matches too, or only replays and the gallery.
+    2. The line.
+       1. Ref: "Artist: <name>". Ours for translators: "Translation: <names>".
+       2. Recommend: "Art: <names>", joined by commas, like translators.
+       3. Same look as the translators line; artists first.
+    3. Roles.
+       1. Ref: one name, no role. Ours: up to three roles a face.
+       2. Recommend: names only, no roles, each name once.
+       3. Front art roles for a front; back art roles for a back face.
+       4. The card back artist: never per card; credits screen only.
+    4. "Private".
+       1. It means the name is not public.
+       2. Recommend: never show it; a card with no other name gets no line.
+    5. Empty name.
+       1. Ref: the line hides. Recommend: the same.
+    6. Touch.
+       1. Ref: phone has no pane. Ours: the touch zoom shows translators.
+       2. Recommend: keep ours; the line shows on touch too.
+    7. Credits screen.
+       1. Ours: none. Ref: a rolling credits scene.
+       2. Recommend: build, opened from the main menu.
+       3. Built from card data and the notice; no hand-kept text.
+       4. Sections: the game's authors (notice), artists, translators.
+       5. Artists: by name, with their card count.
+       6. Translators: by language, then name.
+       7. The card back artist gets a line of their own.
+    8. The roll.
+       1. Ref: rolls on its own, speed buttons.
+       2. Recommend: roll on its own; wheel, drag or keys scroll it.
+       3. Speed buttons: later.
+       4. Speed "off" or reduced motion: a still, scrollable list.
+    9. Cards beside it.
+       1. Ref: cards named in the text fly in, one every 5 s.
+       2. Recommend: build; one card by the artist in view, every 5 s.
+       3. No burn: it fades, as other cards leave in our game.
+       4. Without the private images: the text card, as everywhere.
+    10. Year buttons.
+        1. Recommend: skip; we have one list.
+    11. Music.
+        1. Ref: credits music. Recommend: skip; we have no music (AU-01).
+    12. Search by artist.
+        1. Ref: in the collection. Recommend: later, with CD-05.
+    13. Hidden joke button.
+        1. Recommend: skip.
+11. The artist line's look (prefab `CardInfoPane`, `ArtistName`).
+    1. Font: the reference's bold title serif, its outlined variant.
+    2. The flavor text uses the same font, without the outline.
+    3. Set name and rarity: the same serif, not outlined.
+    4. Fill white; outline black, size 2.9 in its text units.
+    5. No shadow, no gradient.
+    6. Centered; one line, no wrap; it shrinks to fit its box.
+    7. Box: 7.15 × 1.18; the set name's is 6 × 0.56.
+    8. Letter size 16.9; set name 13, flavor text 20.6.
+    9. So the artist reads a third larger than the set name.
+    10. It sits under the set name; the flavor text under both.
+    11. The English line: "Artist: {0}".
+12. Owner picks (2026-11-17).
+    1. 10.1: the artist line shows in matches too.
+    2. 10.7–10.13: no credits screen, no Credits button.
+    3. The line looks like the reference's (11), in our own font.
+    4. The rest of 10.1–10.6: as recommended.
+13. Our look, from 11 (planned in 20.24).
+    1. Font: `--font-title`, our mixed-case card font; never the reference's.
+    2. White fill, a dark outline: `-webkit-text-stroke`, `paint-order`.
+    3. As the hit burst number already draws it.
+    4. No dark box behind it; centered; a long list wraps, never cut.
+    5. Its size: a third larger than today's 0.75rem credit; by eye.
+    6. The translators line takes the same look, under the artist line.
+    7. Built in 20.24, by eye: 1rem letters, a 0.1875rem stroke.
+    8. Not `--font-game`: capitals only, so "d0m1n1c132" read as "DØM1N…".
+    9. Not one line: five translators did not fit the card's width.
+
+### Deck choices
+
+1. Checked 2026-11-17 for V-56 (owner), 20.26.
+   1. `ChoiceCardMgr`, `CustomChoiceConcealSpell`, `HiddenChoiceCardTextBuilder`.
+2. The reference has no deck option in a match.
+   1. Every choice option is a card object, as in "Choosing cards" 1.
+   2. "Choose One" sub-options are cards too.
+   3. Deck pickers (`DeckPickerTrayDisplay`) are menus, not match choices.
+3. So nothing to copy; ours follows "Choosing cards".
+   1. A deck option is its back at choice size.
+   2. A discard pile option is its top card.
+   3. The pile's name under it, in the "Credits" 13 look.
+   4. It grows in as other card options; no deal, no fly back.
+   5. Hover and pick as "Choosing cards" 6; the pick sound.
+4. Owner picks (2026-11-17).
+   1. The pick stays in the dialog, not on the table.
+   2. No card count on a deck option.
+
 ## Consequences
 
 ### Positive

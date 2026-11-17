@@ -14,7 +14,8 @@ import (
 const maxSimSteps = 6000
 
 // TestSimulations plays whole seeded games with random legal moves for
-// 2, 3 and 4 players and checks the invariants after every step (5.9).
+// 2, 3 and 4 players and checks the invariants after every step (5.9),
+// and that every change has its event (CheckEvents, 22.10).
 // Replays are checked by FuzzSets. CI plays a few; locally:
 //
 //	FOUR_SOULS_SIMS=3000 go test -run TestSimulations ./cards/
@@ -24,11 +25,12 @@ func TestSimulations(t *testing.T) {
 		games = n
 	}
 	finished, steps := 0, 0
+	loads := newLoadCheck(nil)
 	for i := range games {
 		seed := uint64(i + 1)
 		players := 2 + i%3
 		s := engine.Setup{Seed: seed, Players: players, Sets: Sets(), BonusSouls: true, Rooms: seed%2 == 1, DeckRatios: seed%3 == 0}
-		g, n := simulate(t, s)
+		g, n := simulate(t, s, loads)
 		steps += n
 		if g.Over {
 			finished++
@@ -38,7 +40,7 @@ func TestSimulations(t *testing.T) {
 	// Krampus at every difficulty (14.22): a quarter as many games.
 	won, lost := 0, 0
 	for i := range max(games/4, 3) {
-		g, n := simulate(t, krampusSetup(uint64(i+1), krampusLevels[i%3]))
+		g, n := simulate(t, krampusSetup(uint64(i+1), krampusLevels[i%3]), loads)
 		steps += n
 		switch {
 		case g.Over && g.Challenge.Lost:
@@ -51,7 +53,7 @@ func TestSimulations(t *testing.T) {
 	// Trick or Treat at every difficulty (14.32): as many as Krampus.
 	won, lost = 0, 0
 	for i := range max(games/4, 3) {
-		g, n := simulate(t, trickSetup(uint64(i+1), krampusLevels[i%3]))
+		g, n := simulate(t, trickSetup(uint64(i+1), krampusLevels[i%3]), loads)
 		steps += n
 		switch {
 		case g.Over && g.Challenge.Lost:
@@ -61,6 +63,7 @@ func TestSimulations(t *testing.T) {
 		}
 	}
 	t.Logf("Trick or Treat: %d won, %d lost", won, lost)
+	t.Logf("saved and loaded at %d nested asks of %d cards (19.177)", loads.saves, len(loads.cards))
 }
 
 // krampusLevels are the Krampus difficulties (R-KRAMPUS-02).
@@ -82,10 +85,12 @@ func trickSetup(seed uint64, difficulty string) engine.Setup {
 	return s
 }
 
-// simulate plays one game; it returns the game and its length.
-func simulate(t *testing.T, s engine.Setup) (*engine.Game, int) {
+// simulate plays one game; it returns the game and its length. At each
+// nested ask it saves and loads the game (loadCheck, 19.177).
+func simulate(t *testing.T, s engine.Setup, loads *loadCheck) (*engine.Game, int) {
 	t.Helper()
 	seed := s.Seed
+	loads.sets, loads.twin = s.Sets, nil
 	g, _, err := engine.NewGame(s)
 	if err != nil {
 		t.Fatal(err)
@@ -105,12 +110,18 @@ func simulate(t *testing.T, s engine.Setup) (*engine.Game, int) {
 		if in.Kind == engine.IntentDiscard {
 			in.Objects = in.Objects[:p.Count]
 		}
-		if _, err := g.Apply(in); err != nil {
+		snap := g.TakeSnapshot()
+		events, err := g.Apply(in)
+		if err != nil {
 			t.Fatalf("seed %d step %d: allowed %+v refused: %v", seed, step, in, err)
 		}
 		if err := g.CheckInvariants(); err != nil {
 			t.Fatalf("seed %d step %d after %+v: %v", seed, step, in, err)
 		}
+		if err := g.CheckEvents(snap, events); err != nil {
+			t.Fatalf("seed %d step %d after %+v: %v", seed, step, in, err)
+		}
+		loads.after(t, g, in, false)
 	}
 	return g, step
 }

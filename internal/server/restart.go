@@ -222,7 +222,7 @@ func (h *Hub) restoreRoom(f *restartFile) {
 	for i, s := range f.Seats {
 		// A game keeps its bots whatever -bots says now: the flag is for
 		// seating new ones, and the game cannot go on without them. They
-		// think again once the players are back (ADR 030, Decision 16.4).
+		// think again once the players are back (ADR 033, Decision 16.4).
 		seats[i] = roomSeat{name: s.Name, token: s.Token, kicked: s.Kicked, dice: s.Dice, bot: s.Bot, botN: s.BotN}
 	}
 	setup := engineSetup(f.Seed, len(seats), f.Sets, f.Options)
@@ -292,7 +292,7 @@ func (r *Room) resumeKept() {
 	}
 	r.step, r.steps = f.Step, f.Steps
 	r.restoreHistory(f)
-	r.resetMemory() // no memory is kept over a restart (ADR 030, Decision 19.12)
+	r.resetMemory() // no memory is kept over a restart (ADR 033, Decision 19.12)
 	r.grace = time.Now().Add(voteGrace * r.second)
 	if r.recDir != "" && f.Record != "" {
 		if w, err := record.Append(f.Record, f.Steps, time.Now().UTC()); err == nil {

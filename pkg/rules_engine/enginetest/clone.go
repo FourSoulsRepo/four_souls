@@ -9,7 +9,7 @@ import (
 )
 
 // CloneRules lists every field of Game and of each type inside it, in
-// order, with how Game.Clone copies it (ADR 030, Decision 3.3):
+// order, with how Game.Clone copies it (ADR 033, Decision 3.3):
 //
 //	Name   a plain value, copied with its struct; it holds no list, map
 //	       or pointer
@@ -26,8 +26,11 @@ var CloneRules = map[string]string{
 		"FreeLoot PendingTriggers* Compost ExtraTurn Boosts* Shields* " +
 		"Lingering* Markers* RewardChanges* ManyDice* Stack* StackSeq Turn* " +
 		"Priority Waiting* MaxHand WinSouls Over Winners* Challenge* Sets* " +
-		"Banned* AskSeq asks! maxHP* cards! events! forcedRolls!",
-	"RNG": "State Inc",
+		"Banned* AskSeq asks! saved* maxHP* cards! events! forcedRolls! changes!",
+	"tracking":   "origin! since* cleanAt off",
+	"ReplayStep": "Intent* Apply",
+	"Intent":     "Player Kind Objects* Choice",
+	"RNG":        "State Inc",
 	"Player": "ID Character Cents Hand* InPlay* Damage Dead CopyNextLoot " +
 		"SkipTurns Activations LootPlayed TimesDamaged ExtraLootPlays Rolls " +
 		"LastRoll LastAttack KilledBy Counters*",

@@ -36,7 +36,7 @@ func liveCards(g *engine.Game) []engine.CardRef {
 
 // checkImagined imagines g for every seat and checks the copy: the seat's
 // view and, when it must answer, its allowed intents are the game's; the
-// copy holds the same cards and its invariants hold (ADR 030, Decision
+// copy holds the same cards and its invariants hold (ADR 033, Decision
 // 2.10).
 func checkImagined(g *engine.Game, seed uint64) error {
 	for p := range engine.PlayerID(len(g.Players)) {
@@ -111,7 +111,7 @@ func TestImagineKeepsTheView(t *testing.T) {
 
 // forgetsTheDeal checks that the copy depends only on what seat p
 // knows: imagining g, and imagining an imagined g1 (same view for p,
-// other hidden layout), give the same game for one seed. The whole save
+// other hidden layout), give the same game for one seed. The whole state
 // is compared: every object's card by ID (past objects too), the other
 // players' option labels, the RNG.
 func forgetsTheDeal(g *engine.Game, p engine.PlayerID, s1, s2 uint64, known engine.Known) error {
@@ -133,11 +133,13 @@ func forgetsTheDeal(g *engine.Game, p engine.PlayerID, s1, s2 uint64, known engi
 	if ia, ib := a.Allowed(p), b.Allowed(p); !reflect.DeepEqual(ia, ib) {
 		return fmt.Errorf("seat %d: allowed differs:\n%+v\n%+v", p, ia, ib)
 	}
-	sa, err := a.Save()
+	// The state's JSON, not Save: a world keeps no clean state, so it
+	// cannot save at a nested question.
+	sa, err := json.Marshal(a)
 	if err != nil {
 		return err
 	}
-	sb, err := b.Save()
+	sb, err := json.Marshal(b)
 	if err != nil {
 		return err
 	}
@@ -156,7 +158,7 @@ func forgetsTheDeal(g *engine.Game, p engine.PlayerID, s1, s2 uint64, known engi
 
 // TestImagineForgetsTheDeal: at every step of the games of
 // TestImagineKeepsTheView, for every seat, the imagined game does not
-// depend on where the real hidden cards lie (ADR 030, Decision 2.14).
+// depend on where the real hidden cards lie (ADR 033, Decision 2.14).
 func TestImagineForgetsTheDeal(t *testing.T) {
 	for name, s := range cloneSetups() {
 		t.Run(name, func(t *testing.T) {
@@ -255,7 +257,7 @@ func deckTop(g *engine.Game, d engine.DeckKind, n int) []engine.CardRef {
 }
 
 // TestImagineSeedsDiffer: two seeds deal other hands and deck tops
-// differently (ADR 030, Decision 2.11); the seat's own hand stays.
+// differently (ADR 033, Decision 2.11); the seat's own hand stays.
 func TestImagineSeedsDiffer(t *testing.T) {
 	g := fourAllSets(t, 0)
 	a, err := g.Imagine(0, 1, engine.Known{})
@@ -286,7 +288,7 @@ func TestImagineSeedsDiffer(t *testing.T) {
 
 // TestImagineKnown: a known card that is hidden is dealt where the seat
 // remembers it; one that is not hidden, or of another deck, is skipped
-// (ADR 030, Decision 2.7 – 2.9).
+// (ADR 033, Decision 2.7 – 2.9).
 func TestImagineKnown(t *testing.T) {
 	g := fourAllSets(t, 0)
 	hand1 := handCards(g, 1)

@@ -14,7 +14,7 @@ import (
 	"github.com/FourSoulsRepo/rules_engine/cards/challenge"
 )
 
-// memoryGames and memorySteps size test 6 of 21.15: games, and steps
+// memoryGames and memorySteps size test 6 of 23.15: games, and steps
 // each game plays at most.
 const (
 	memoryGames = 100
@@ -132,14 +132,14 @@ func wrongMemorySeen(g *engine.Game, k engine.Known, seen []bool) (int, error) {
 	return checked, nil
 }
 
-// TestMemoryIsTrue is test 6 of 21.15: in simulated games of every set,
+// TestMemoryIsTrue is test 6 of 23.15: in simulated games of every set,
 // every card each seat's memory holds is truly where it says, at every
 // step (Decision 19.9).
 func TestMemoryIsTrue(t *testing.T) {
 	memoryIsTrue(t, memoryGames, memorySteps)
 }
 
-// stressGames and stressSteps size the long memory run (21.15): eight
+// stressGames and stressSteps size the long memory run (23.15): eight
 // times the games of TestMemoryIsTrue, four times as long, so late-game
 // moves and rare cards come up.
 const (
@@ -248,7 +248,7 @@ func addStrings(t *testing.T, seen map[string]bool, v any) {
 	walk(x)
 }
 
-// TestMemoryNamesOnlyShownCards is test 7 of 21.15: a memory built from
+// TestMemoryNamesOnlyShownCards is test 7 of 23.15: a memory built from
 // seat A's feed never names a card that seat A's views and events did
 // not show (Decision 19.4).
 func TestMemoryNamesOnlyShownCards(t *testing.T) {
@@ -350,7 +350,7 @@ func toTurnOf(t *testing.T, g *engine.Game, m *Memory, p engine.PlayerID) {
 	t.Fatalf("no action phase of seat %d", p)
 }
 
-// TestMemoryLookedAtTop is test 9 of 21.15: the seat remembers a deck
+// TestMemoryLookedAtTop is test 9 of 23.15: the seat remembers a deck
 // top it looked at, and where it goes when another seat draws it; a
 // world deals it there.
 func TestMemoryLookedAtTop(t *testing.T) {
@@ -380,7 +380,7 @@ func TestMemoryLookedAtTop(t *testing.T) {
 	}
 }
 
-// TestMemoryShownHandCard is test 9 of 21.15: the seat remembers a card
+// TestMemoryShownHandCard is test 9 of 23.15: the seat remembers a card
 // it was shown from another hand, until that card leaves it; a card
 // given unseen makes it forget that hand.
 func TestMemoryShownHandCard(t *testing.T) {
@@ -419,7 +419,7 @@ func TestMemoryShownHandCard(t *testing.T) {
 	}
 }
 
-// TestMemoryDiscardTakenBack is test 9 of 21.15: a card taken from a
+// TestMemoryDiscardTakenBack is test 9 of 23.15: a card taken from a
 // discard pile into a hand is remembered there.
 func TestMemoryDiscardTakenBack(t *testing.T) {
 	g, m := table(t,
@@ -438,7 +438,7 @@ func TestMemoryDiscardTakenBack(t *testing.T) {
 	}
 }
 
-// TestMemoryForgetsShuffledDeck is test 8 of 21.15: a shuffle, a reorder
+// TestMemoryForgetsShuffledDeck is test 8 of 23.15: a shuffle, a reorder
 // of the top cards or a card moved within the deck empties that deck's
 // memory; the other decks keep theirs.
 func TestMemoryForgetsShuffledDeck(t *testing.T) {

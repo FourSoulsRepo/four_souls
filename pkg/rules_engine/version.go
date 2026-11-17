@@ -2,14 +2,17 @@ package rulesengine
 
 // Version is the rules engine version.
 // Bump it with every change to rules behavior; see docs/roadmap/08-first-release.md.
-const Version = "0.5.3"
+const Version = "0.5.4"
 
 // StateMeaning numbers what the saved state's fields mean (N-20). Raise
 // it when a field keeps its JSON name and type but means something new:
 // Resume cannot see that, and games kept over a server restart from
 // before the change then end instead of going on wrong.
 // 2: prompts, stack labels and reasons are messages, not English (16.4).
-const StateMeaning = 2
+// 3: a saved state holds no nested ask; a save made while one waits
+// keeps the last clean state and the steps to replay after it (19.177).
+// A state from before may hold one that loads as the wrong question.
+const StateMeaning = 3
 
 // throwVersion is the first engine version where every roll waits for
 // its roller's throw, the first-player roll too (15.43, ADR 014). Older
@@ -43,3 +46,11 @@ const horsemanVersion = "0.5.1"
 // such choices are open at the same time (20.22). Older records' checksums
 // differ: they cannot replay.
 const startVersion = "0.5.2"
+
+// eventVersion is the first engine version where every state change has
+// its event (22.3): a done event card's discard, a deck refill, a
+// recharge before its choice, a card's deactivation, and every shuffle.
+// 22.10 adds a card's ¢ change (Greed!, Auction Gavel) and the old
+// holder of a stolen item or passed curse; 0.5.4 is not released yet.
+// Older records' checksums differ: they cannot replay.
+const eventVersion = "0.5.4"

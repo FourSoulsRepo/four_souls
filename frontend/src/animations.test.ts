@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import doc from '../../docs/wiki/Animations.md?raw';
-import { arrivedBy, claim, claimEffect, claimed, clashes, nextBeat, resetClaims } from './animations';
+import { arrivedBy, claim, claimDeal, claimEffect, claimed, clashes, dealKey, nextBeat, resetClaims } from './animations';
+import type { Effect } from './playback';
 
 describe('claims', () => {
   beforeEach(() => {
@@ -128,6 +129,75 @@ describe('a deal of another copy after a play (19.141)', () => {
     claim('bomb', 'show', 'played', { object: 797 });
     nextBeat();
     expect(claim('bomb', 'show', 'choice-deal', { object: 797 })).toBe(false);
+  });
+});
+
+// Seed 780402: Chest is revealed on top of the monster deck (object
+// 54) and put back; in the same update Tumor dies and Chest is revealed
+// into the slot (object 684). Two public events, two objects: no clash.
+describe('one card revealed on its deck, then into a slot (19.191)', () => {
+  beforeEach(() => {
+    resetClaims();
+  });
+
+  const reveal = (object?: number): Effect => ({ kind: 'reveal', card: 'chest', deck: ['deck-monster'], ...(object === undefined ? {} : { object }) });
+
+  it('lets two objects of one card show in one update, or in two in a row', () => {
+    expect(claimEffect(reveal(54))).toBe(true);
+    expect(claimEffect(reveal(684))).toBe(true);
+    nextBeat();
+    expect(claimEffect(reveal(700))).toBe(true);
+    expect(clashes).toEqual([]);
+  });
+
+  it('still finds one object shown twice, or a reveal with no object (19.4)', () => {
+    expect(claimEffect(reveal(54))).toBe(true);
+    expect(claimEffect(reveal(54))).toBe(false);
+    nextBeat();
+    expect(claimEffect(reveal(54))).toBe(false);
+    expect(claimEffect(reveal())).toBe(false);
+    expect(clashes).toHaveLength(3);
+  });
+
+  it("keeps every claim: a later copy never hides an earlier copy's", () => {
+    expect(claim('chest', 'show', 'reveal', { object: 54 })).toBe(true);
+    expect(claim('chest', 'show', 'reveal', { object: 684 })).toBe(true);
+    expect(claim('chest', 'show', 'played', { object: 54 })).toBe(false);
+    expect(clashes).toEqual([{ card: 'chest', job: 'show', first: 'reveal', second: 'played' }]);
+  });
+
+  it('tells arrivals of two copies at one place apart by their objects', () => {
+    const fly = (object: number): Effect => ({ kind: 'fly', from: ['hand-1'], to: ['discard-loot'], card: 'bomb', back: 'loot', object });
+    const place = (object: number): Effect => ({ kind: 'place', from: ['deck-loot'], to: ['discard-loot'], card: 'bomb', back: 'loot', object });
+    const draw = (object: number): Effect => ({ kind: 'draw', from: ['deck-loot'], to: ['discard-loot'], card: 'bomb', own: true, pace: 1, object });
+    expect(claimEffect(fly(1))).toBe(true);
+    expect(claimEffect(place(2))).toBe(true);
+    expect(claimEffect(draw(3))).toBe(true);
+    expect(arrivedBy('bomb')).toBe('loot-draw');
+    expect(claimed('bomb', 'arrive')).toBe(true);
+    expect(clashes).toEqual([]);
+    expect(claimEffect(place(1))).toBe(false);
+    expect(claimEffect(draw(2))).toBe(false);
+    expect(clashes).toEqual([
+      { card: 'bomb', job: 'arrive', first: 'fly', second: 'place' },
+      { card: 'bomb', job: 'arrive', first: 'place', second: 'loot-draw' },
+    ]);
+  });
+
+  it('deals two copies in one choice as two cards, once per prompt', () => {
+    const cards = [
+      { card: 'chest', object: 54 },
+      { card: 'chest', object: 55 },
+      { card: 'fly', object: undefined },
+    ];
+    expect(claimDeal(9, cards)).toEqual(new Set([dealKey('chest', 54), dealKey('chest', 55), 'fly']));
+    expect(claimDeal(9, cards).size).toBe(3);
+    expect(clashes).toEqual([]);
+    // A deal right after another reveal of the same object holds it.
+    resetClaims();
+    claim('chest', 'show', 'reveal', { object: 54 });
+    nextBeat();
+    expect(claimDeal(10, cards)).toEqual(new Set([dealKey('chest', 55), 'fly']));
   });
 });
 

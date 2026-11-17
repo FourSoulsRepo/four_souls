@@ -13,7 +13,7 @@ import { cardName, tr } from './locale';
 import { saveAndContinue } from './saves';
 import { appURL, serverPort } from './server';
 import { shot } from './shot';
-import { activePage, click, settle, tablePicks, turnAction } from './turn';
+import { activePage, click, Purpose, turnAction, untilPick } from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 const monsters = ['fatty', 'pale_fatty'];
@@ -62,7 +62,7 @@ async function characterOf(page: Page, seat: 'you' | 'other'): Promise<Locator> 
 test('the own arrow bows up, marches, hides the pointer, and zooms a card only at rest (20.23)', async ({ browser }) => {
   // Animations on: the march and the zoom's wait are what this checks.
   const who = ['Jo', 'Kit'];
-  const pages = await startGame(browser, who, { url: appURL() });
+  const pages = await startGame(browser, who, { animations: true });
   await activePage(pages, click);
   await saveAndContinue(pages, who.join(', '), 'bomb', undefined, false, {}, undefined, monsters);
   const active = await activePage(pages, click);
@@ -155,7 +155,7 @@ test("an attack's pick aims an arrow from the character; the other player sees i
     throw new Error('no other page');
   }
   await turnAction(active, 'Attack').click();
-  await settle(pages, click, async () => tablePicks(active).first().isVisible());
+  await untilPick(pages, click, active, Purpose.attackTarget);
   const monster = active.getByRole('group', { name: tr('board.monsters') }).locator('.card').first();
   await expect(monster).toHaveClass(/hl-pick/);
   const zone = (await monster.getAttribute('data-zone')) ?? '';
@@ -220,7 +220,7 @@ function noPresence(page: Page): Promise<void> {
 
 test("another player's arrow glides out from its source and lingers when they stop (20.23)", async ({ browser }) => {
   // Animations on: the glide is a motion.
-  const [page] = await startGame(browser, ['Ned', 'Oda'], { url: appURL(), open: noPresence });
+  const [page] = await startGame(browser, ['Ned', 'Oda'], { animations: true, open: noPresence });
   if (!page) {
     throw new Error('no pages');
   }

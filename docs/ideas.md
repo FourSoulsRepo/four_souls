@@ -308,6 +308,19 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. Keep only numbers and rules; copy no code or assets.
    3. Reverse-engineering tools and output live in `FourSoulsRepo/tools`.
    4. Findings: ADR 027; tasks: step 20.
+55. V-55. A shuffle shows on the table (owner, 2026-11-16).
+   1. At a real table everyone sees a deck shuffled.
+   2. The engine sends a shuffle event since 22.3.
+   3. The deck plays a short shuffle animation.
+   4. A refilled deck (discard back into the deck) shows it too.
+   5. Follows ADR 012: an `anim:` tag and a row in `Animations.md`.
+   6. A sound may come with it (ADR 022 loudness).
+56. V-56. A deck choice shows the decks, not buttons (owner, 2026-11-17).
+   1. E.g. The Curse: "put the top card of a deck into discard".
+   2. Today the dialog shows one text button per deck.
+   3. Instead each option shows that deck's back image.
+   4. A discard pile option shows its top card.
+   5. Planned in 20.26.
 
 ## Rules
 
@@ -469,6 +482,11 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    5. With deck ratios (GS-07) the decks are a random subset.
    6. Sending that subset would tell players what is in the decks.
    7. Exception: cards the host banned are public and may be left out.
+17. A-17. Bindings grouped by domain (owner, 2026-11-15).
+   1. Today `App` binds most methods from `package main`.
+   2. One package per domain under `bindings/`, one struct each.
+   3. Model: `HardDie/ytmemchat_wails`, folder `bindings/`.
+   4. Planned in step 21.
 
 ## Network
 
@@ -673,12 +691,12 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    12. A bot waits 0.7 to 2 seconds before a move, so the game feels alive.
    13. Shown as "Bot 1 (hard)" with a robot icon; the name is translated.
    14. The hard bot remembers cards it saw; the standard one does not.
-   15. Details: ADR 030; work: step 21.
+   15. Details: ADR 033; work: step 23.
 22. N-22. A hard bot thinks less on a move with one or two candidates (lead, 2026-11-17).
-   1. Now every hard move uses its whole time budget, even a choice of two (ADR 030, Decision 9.8.2.1).
-   2. Measured (21.10, 3 hard tables, one CPU): 50% of searches had at most 2 candidates and took 529 of 1066 s of search time.
+   1. Now every hard move uses its whole time budget, even a choice of two (ADR 033, Decision 9.8.2.1).
+   2. Measured (23.10, 3 hard tables, one CPU): 50% of searches had at most 2 candidates and took 529 of 1066 s of search time.
    3. A shorter budget for such moves would free about half of the hard bots' CPU.
-   4. Not done in step 21: the full budget stays.
+   4. Not done in step 23: the full budget stays.
 
 ## Learning
 
@@ -794,6 +812,26 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    3. A named wait in `turn.ts` checks the exact state in the store.
    4. `settle` answers whatever comes on the way; no ban is needed.
    5. Later: run key tests with each card known to interrupt them.
+9. TS-09. Every state change is named in an event (owner, 2026-11-16).
+   1. 19.2, 19.39, 19.73, 19.90, 19.147: state changed with no event.
+   2. Each was seen only by eye in a play test.
+   3. Fuzz compares the state before and after every step.
+   4. A moved object, or one whose damage or charge changed, is in an event.
+   5. A change silent on purpose is listed with its reason.
+10. TS-10. e2e plays with animations off (owner, 2026-11-16).
+   1. Many e2e failures were checks made mid-animation (19.37, 19.122, 19.132).
+   2. Every page starts at speed "off".
+   3. A test that checks an animation turns it on itself.
+   4. A failed test is still investigated every time; no retry rule.
+11. TS-11. Each e2e test has a fixed deal (owner, 2026-11-16).
+   1. About 30 step 19 items: a random deal broke a test.
+   2. No card bug was found by a random e2e deal.
+   3. A seed per test, from its title; ADR 032.
+   4. Random deals stay in `make e2e-games`, fuzz and sims.
+12. TS-12. Long games stay fast (owner, 2026-11-16).
+   1. 19.135, 19.137, 19.138 showed only after thousands of steps.
+   2. `make e2e-games` checks each page at the game's end.
+   3. Page elements and script time per step stay under a limit.
 
 ## Localization
 
@@ -980,6 +1018,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. Goal: do not scare new players.
    3. Detailed setup: every extra option.
    4. Examples: Bonus Souls, Rooms, deck ratios, ban modes.
+   5. Owner, 2026-11-15: a line above Detailed; its options in titled groups (18.25).
 11. GS-11. Co-op and solitaire modes (future).
    1. Players together against the game, or one player alone.
    2. Official challenges, each against a boss (Rag Man, Mom, Greed, ...).
@@ -1101,6 +1140,11 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. Each card lists the numbers it may change.
    2. Until then only numbers in common blocks count (Q-14).
    3. Owner, 2026-10-19: a task for later.
+14. CD-14. Artists and translators shown like the reference (owner, 2026-11-17).
+   1. The reference: Fanstone, as in ADR 027.
+   2. The artist's name with the card; a credits screen.
+   3. Planned in 20.24 and 20.25.
+   4. Credits screen dropped (owner, 2026-11-17); the zoom line stays.
 
 ## Build
 
@@ -1162,6 +1206,8 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    3. It marks the moves that would not work there.
    4. This check is information only; steps are never rejected.
    5. The viewer can turn these marks off.
+   6. Owner, 2026-11-16: records play on later versions without the engine.
+   7. Owner, 2026-11-16: the engine check is dropped for now.
 3. RP-03. Record format.
    1. Stores only steps that really happened.
    2. Rejected attempts are not recorded.

@@ -1,6 +1,6 @@
 # UC-03: Host a game
 
-**Module:** `internal/server`, `host.go`, `frontend`
+**Module:** `internal/server`, `bindings/host`, `frontend`
 **Status:** In progress
 **Actors:** Host (a player)
 **Goal:** A game waits in the lobby for friends to join

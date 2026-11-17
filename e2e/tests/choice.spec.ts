@@ -5,10 +5,10 @@ import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { cardName, tr, trRe } from './locale';
-import { saveAndContinue } from './saves';
+import { editSave, saveAndContinue, saveEditContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, passButton, playLoot } from './turn';
+import { activePage, click, endTurn, holds, Intent, may, passButton, playLoot, question } from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -35,22 +35,23 @@ async function playMoon(pages: Page[], who: string[], before: (active: Page, oth
   await before(active, other);
   const moon = active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: cardName('xviii_the_moon') });
   await playLoot(active, moon.first(), click);
-  await passUntil(pages, active.getByRole('dialog', { name: tr('ask.one_on_top') }));
+  await passUntil(pages, active, 'ask.one_on_top');
+  await expect(active.getByRole('dialog', { name: tr('ask.one_on_top') })).toBeVisible();
   return { active, other };
 }
 
-// passUntil passes on every page until the locator shows.
-async function passUntil(pages: Page[], shown: ReturnType<Page['locator']>): Promise<void> {
+// passUntil passes on every page until the game asks the asked page's
+// player this question (its text key).
+async function passUntil(pages: Page[], asked: Page, key: string): Promise<void> {
   await expect
     .poll(
       async () => {
-        if (await shown.isVisible()) {
+        if (await holds(asked, question(key))) {
           return true;
         }
         for (const page of pages) {
-          const pass = passButton(page);
-          if ((await pass.isVisible()) && (await pass.isEnabled())) {
-            await pass.click().catch(() => undefined);
+          if (await holds(page, may(Intent.pass))) {
+            await passButton(page).click({ timeout: 1000 }).catch(() => undefined);
           }
         }
         return false;
@@ -89,7 +90,8 @@ async function watchDeal(page: Page, deck: string): Promise<void> {
       return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
     };
     new MutationObserver(() => {
-      const cards = [...document.querySelectorAll('.choice-card')];
+      // A deck option is no dealt card (20.26).
+      const cards = [...document.querySelectorAll('.choice-card:not(.choice-pile)')];
       const pile = document.querySelector(`[data-zone="deck-${deck}"]`);
       if (w.dealtAt.length === 0 && cards.length > 0 && pile) {
         const d = centre(pile);
@@ -148,7 +150,7 @@ test('after The Moon\'s pick no look window repeats the cards; the history keeps
 test('The Moon deals its cards from the loot deck; a pick sends them back; others see backs (20.18)', async ({ browser }) => {
   const who = names(['Cye', 'Dov']);
   // Animations on: the deal and the flight back are the test.
-  const pages = await startGame(browser, who, { url: appURL() });
+  const pages = await startGame(browser, who, { animations: true });
   const { active, other } = await playMoon(pages, who, async (a, o) => {
     await listenSounds(a);
     await listenSounds(o);
@@ -276,7 +278,7 @@ test('an order of more cards than one row holds keeps table size (20.18)', async
 
 test('Sleight of Hand deals the monster deck into the order and puts it back (20.18)', async ({ browser }) => {
   const who = names(['Tam', 'Uri']);
-  const pages = await startGame(browser, who, { url: appURL() });
+  const pages = await startGame(browser, who, { animations: true });
   await activePage(pages, click);
   await saveAndContinue(pages, who.join(', '), 'bomb', 'sleight_of_hand');
   const active = await activePage(pages, click);
@@ -289,7 +291,7 @@ test('Sleight of Hand deals the monster deck into the order and puts it back (20
   await click(active, item);
   await click(active, active.getByRole('menu').getByRole('menuitem', { name: tr('actions.use') }));
   const deck = active.getByRole('button', { name: tr('ask.deck.monster') });
-  await passUntil(pages, deck);
+  await passUntil(pages, active, 'card.sleight_of_hand.look_at_the_top_5');
   await shot(active, '20.18-sleight-deck');
   await deck.click();
   const dialog = active.getByRole('dialog', { name: tr('ask.put_back') });
@@ -353,7 +355,7 @@ async function feedCards(page: Page, refs: string[]): Promise<void> {
 
 for (const anim of ['on', 'off'] as const) {
   test(`a card choice with no deck grows in; speed ${anim} (20.18)`, async ({ browser }) => {
-    const [vic] = await startGame(browser, names(['Vic', 'Wes']), { url: anim === 'on' ? appURL() : fast() });
+    const [vic] = await startGame(browser, names(['Vic', 'Wes']), { url: anim === 'on' ? appURL() : fast(), animations: anim === 'on' });
     if (!vic) {
       throw new Error('no pages');
     }
@@ -408,7 +410,7 @@ function tucks(page: Page): Promise<Tuck[]> {
 test('XII. The Hanged Man: others see each look; the board shows each card go on top or under (19.147)', async ({ browser }) => {
   const who = names(['Gil', 'Hal']);
   // Animations on: the tuck is the test.
-  const pages = await startGame(browser, who, { url: appURL() });
+  const pages = await startGame(browser, who, { animations: true });
   await activePage(pages, click);
   await saveAndContinue(pages, who.join(', '), 'xii_the_hanged_man');
   const active = await activePage(pages, click);
@@ -423,7 +425,8 @@ test('XII. The Hanged Man: others see each look; the board shows each card go on
   await playLoot(active, card.first(), click);
   await active.mouse.move(5, 5);
   const dialog = active.getByRole('dialog', { name: tr('card.xii_the_hanged_man.put_this_card_on_the') });
-  await passUntil(pages, dialog);
+  await passUntil(pages, active, 'card.xii_the_hanged_man.put_this_card_on_the');
+  await expect(dialog).toBeVisible();
   // One question per deck: bottom, top, bottom. Others see one back
   // over the deck each question is about.
   const answers = [
@@ -463,7 +466,7 @@ test('XII. The Hanged Man: others see each look; the board shows each card go on
 
 test("The Moon: others see the rest go under the deck; the chooser's flight tucks them (19.147)", async ({ browser }) => {
   const who = names(['Ivo', 'Jem']);
-  const pages = await startGame(browser, who, { url: appURL() });
+  const pages = await startGame(browser, who, { animations: true });
   const { active, other } = await playMoon(pages, who, async (a, o) => {
     await watchTucks(a);
     await watchTucks(o);
@@ -486,4 +489,102 @@ test("The Moon: others see the rest go under the deck; the chooser's flight tuck
   await expect.poll(async () => (await tucks(active)).map(({ deck, tag, where }) => ({ deck, tag, where })), { timeout: 10_000 }).toEqual([{ deck: 'loot', tag, where: [] }]);
   // The kept card's back sinks into the deck as before.
   await expect(other.locator('.deck-look-back')).toHaveCount(0, { timeout: 5000 });
+});
+
+// CurseSave is the part of a save the Curse tests change (20.26).
+interface CurseSave {
+  state: {
+    turn: { active: number };
+    players: { in_play: number[] }[];
+    objects: { card: string; zone: { kind: number; deck?: number } }[];
+    decks: number[][];
+    discards: number[][];
+  };
+}
+
+// LOOT is the engine's LootDeck; DISCARD its ZoneDiscard (state.go).
+const LOOT = 1;
+const DISCARD = 2;
+
+// giveCurse makes the first card in play of the player `seat` seats
+// after the active one The Curse. With penny, the loot deck's top card
+// becomes A Penny! in the loot discard, so a discard has a card.
+function giveCurse(game: string, seat: number, penny: boolean): void {
+  editSave(game, (raw) => {
+    const { state } = raw as unknown as CurseSave;
+    const player = state.players[(state.turn.active + seat) % state.players.length];
+    const at = player?.in_play[0];
+    const item = at === undefined ? undefined : state.objects[at];
+    if (!item) {
+      throw new Error('the player has no card in play');
+    }
+    item.card = 'the_curse';
+    if (penny) {
+      const top = state.decks[LOOT]?.pop();
+      const card = top === undefined ? undefined : state.objects[top];
+      if (top === undefined || !card) {
+        throw new Error('the loot deck is empty');
+      }
+      card.card = 'a_penny';
+      card.zone = { kind: DISCARD, deck: LOOT };
+      state.discards[LOOT] = [...(state.discards[LOOT] ?? []), top];
+    }
+  });
+}
+
+test('The Curse asks for a deck with the decks\' backs, not buttons (20.26)', async ({ browser }) => {
+  const who = names(['Vic', 'Wren']);
+  const pages = await startGame(browser, who, { url: fast() });
+  const first = await activePage(pages, click);
+  // The other player holds The Curse; its trigger asks at their turn.
+  await saveEditContinue(pages, who.join(', '), (game) => {
+    giveCurse(game, 1, false);
+  });
+  const active = await activePage(pages, click);
+  expect(await nameOf(active)).toBe(await nameOf(first));
+  await endTurn(active);
+  const cursed = pages.find((p) => p !== active);
+  if (!cursed) {
+    throw new Error('no other page');
+  }
+  const text = 'card.the_curse.put_the_top_card_of';
+  await passUntil(pages, cursed, text);
+  const dialog = cursed.getByRole('dialog', { name: tr(text) });
+  await expect(dialog).toBeVisible();
+  // Card text: "put the top card of a deck into discard": every deck
+  // in play is an option; the Base Game deals no room deck.
+  for (const kind of ['treasure', 'loot', 'monster']) {
+    const option = dialog.getByRole('button', { name: tr(`ask.deck.${kind}`) });
+    await expect(option).toHaveClass(/\bchoice-pile\b/);
+    await expect(option.locator(`.card.kind-${kind}`)).toHaveCount(1);
+  }
+  await expect(dialog.locator('.choice-pile')).toHaveCount(3);
+  await shot(cursed, '20.26-curse-decks');
+  await dialog.getByRole('button', { name: tr('ask.deck.loot') }).click();
+  await expect(dialog).toHaveCount(0);
+});
+
+test('The Curse\'s ↷ shows a discard pile by its top card (20.26)', async ({ browser }) => {
+  const who = names(['Xan', 'Yul']);
+  const pages = await startGame(browser, who, { url: fast() });
+  await activePage(pages, click);
+  await saveEditContinue(pages, who.join(', '), (game) => {
+    giveCurse(game, 0, true);
+  });
+  const active = await activePage(pages, click);
+  const item = active.getByRole('button', { name: cardName('the_curse'), exact: true }).first();
+  await click(active, item);
+  await click(active, active.getByRole('menu').getByRole('menuitem', { name: tr('actions.use') }));
+  const text = 'card.the_curse.put_the_top_card_of';
+  await passUntil(pages, active, text);
+  const dialog = active.getByRole('dialog', { name: tr(text) });
+  // Card text: "put the top card of any discard on top of its deck":
+  // only the loot discard has a card, A Penny!, given by the save.
+  const option = dialog.getByRole('button', { name: tr('ask.discard.loot') });
+  await expect(option).toHaveClass(/\bchoice-pile\b/);
+  await expect(option.locator('.card')).toHaveAttribute('aria-label', cardName('a_penny'));
+  await expect(dialog.locator('.choice-pile')).toHaveCount(1);
+  await shot(active, '20.26-curse-discard');
+  await option.click();
+  await expect(dialog).toHaveCount(0);
 });

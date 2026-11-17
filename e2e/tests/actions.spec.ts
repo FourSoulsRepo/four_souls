@@ -7,6 +7,8 @@ import { appURL, serverPort } from './server';
 import { shot } from './shot';
 import {
   activePage,
+  Ask,
+  asked,
   canEndTurn,
   click,
   endTurn,
@@ -14,15 +16,21 @@ import {
   endTurnQuestion,
   expectNextTurn,
   gameOver,
+  holds,
+  Intent,
+  may,
   passButton,
   playLoot,
+  Purpose,
   settle,
   tablePicks,
   tap,
   throwButton,
   turnAction,
   turnNumber,
+  until,
   untilAttackRoll,
+  untilPick,
   type Tap,
 } from './turn';
 import { cardName, tr, trRe } from './locale';
@@ -40,11 +48,10 @@ function backToMe(active: Page, turn: number) {
 
 // attack declares an attack; settling picks the target on the table.
 async function attack(pages: Page[], active: Page, press: Tap, turn: number) {
-  const button = turnAction(active, 'Attack');
-  if (!(await canEndTurn(active)) || !(await button.isEnabled())) {
+  if (!(await canEndTurn(active)) || !(await holds(active, may(Intent.attack)))) {
     return;
   }
-  await press(active, button);
+  await press(active, turnAction(active, 'Attack'));
   await settle(pages, press, backToMe(active, turn));
 }
 
@@ -61,7 +68,7 @@ test('a full turn with the mouse: drag a loot card, attack, end the turn', async
   const turn = await turnNumber(active);
 
   const loot = active.locator('.hand .card.hl-act').first();
-  if (await loot.isVisible()) {
+  if (await holds(active, may(Intent.playLoot))) {
     await shot(active, 'actions');
     const from = await loot.boundingBox();
     const to = await active.getByRole('region', { name: tr('board.label') }).boundingBox();
@@ -85,7 +92,7 @@ test('a full turn with touch: tap a loot card to play it, attack, end the turn',
   const turn = await turnNumber(active);
 
   const loot = active.locator('.hand .card.hl-act').first();
-  if (await loot.isVisible()) {
+  if (await holds(active, may(Intent.playLoot))) {
     await playLoot(active, loot, tap);
     await settle(pages, tap, backToMe(active, turn));
   }
@@ -152,7 +159,8 @@ test('buy and attack icons are lit only when the engine allows them; B buys', as
   // B declares the purchase; once the others pass, the Buy icon stays
   // pressed while the player picks what to buy on the table (F-13, 18.11).
   await active.keyboard.press('b');
-  await settle(pages, click, async () => tablePicks(active).first().isVisible());
+  await untilPick(pages, click, active, Purpose.purchase);
+  await expect(tablePicks(active).first()).toBeVisible();
   await expect(active.locator('.choice')).toHaveCount(0);
   await expect(active.locator('.prompt-hint')).toHaveText(tr('banner.pick_table'));
   await expect(active.locator('[data-zone="deck-treasure"] .card')).toHaveClass(/hl-pick/);
@@ -192,7 +200,7 @@ test('settle never answers a pick its done check has not seen (19.7)', async ({ 
   await active.keyboard.press('b');
   // Back to the action phase without a pick: settle answered it.
   await settle(pages, click, async () => {
-    const done = (await tablePicks(active).first().isVisible()) || (await canEndTurn(active));
+    const done = (await holds(active, asked(Ask.choose, Purpose.purchase))) || (await canEndTurn(active));
     await active.waitForTimeout(300);
     return done;
   });
@@ -256,8 +264,7 @@ test('the big End turn button: E ends the turn, Space passes', async ({ browser 
   await active.keyboard.press('b');
   const passing = async () => {
     for (const page of pages) {
-      const pass = passButton(page);
-      if ((await pass.count()) > 0 && (await pass.isEnabled())) {
+      if (await holds(page, may(Intent.pass))) {
         return page;
       }
     }
@@ -268,6 +275,7 @@ test('the big End turn button: E ends the turn, Space passes', async ({ browser 
   if (!page) {
     throw new Error('nobody may pass');
   }
+  await expect(passButton(page)).toBeEnabled();
   await page.keyboard.press(' ');
   expect(await lastAct(page)).toBe(0);
   await settle(pages, click, backToMe(active, turn));
@@ -331,9 +339,11 @@ test('with the question off in the settings, End turn ends at once (V-46)', asyn
 });
 
 test('idle End turn glows softly and breathes, no ring (H-20, 19.76)', async ({ browser }) => {
-  const pages = await startGame(browser, ['Mo', 'Ned'], { url: appURL() });
+  // Animations on: the breath is an animation.
+  const pages = await startGame(browser, ['Mo', 'Ned'], { animations: true });
   const active = await activePage(pages, click);
   const button = endTurnButton(active);
+  await expect(button).toBeEnabled();
   // A turn starts with its attack left; the class stands in for the
   // state where nothing is left, as only the look is checked here.
   await button.evaluate((b) => {
@@ -678,13 +688,14 @@ async function rolls(page: Page): Promise<number[]> {
 }
 
 test('an attack waits for the roller to throw; the die shows the engine\'s value; the last roll stays (15.61, 15.63)', async ({ browser }) => {
-  const pages = await startGame(browser, ['Thea', 'Ruan']);
+  // Animations on: the thrown die is an effect.
+  const pages = await startGame(browser, ['Thea', 'Ruan'], { animations: true });
   const active = await activePage(pages, click);
   const other = pages.find((p) => p !== active);
   if (!other) {
     throw new Error('no other page');
   }
-  await expect(turnAction(active, 'Attack')).toBeEnabled();
+  await until(active, may(Intent.attack));
   await click(active, turnAction(active, 'Attack'));
   // Settle stops before the throw: the attack's target is picked first.
   await untilAttackRoll(pages, click, active);
@@ -767,7 +778,8 @@ async function giveLooks(page: Page, own: string): Promise<Record<string, string
 }
 
 test("every screen draws a roll with the roller's dice look (15.6)", async ({ browser }) => {
-  const pages = await startGame(browser, ['Odile', 'Pavo']);
+  // Animations on: the thrown die is an effect.
+  const pages = await startGame(browser, ['Odile', 'Pavo'], { animations: true });
   const active = await activePage(pages, click);
   const other = pages.find((p) => p !== active);
   if (!other) {
@@ -789,7 +801,7 @@ test("every screen draws a roll with the roller's dice look (15.6)", async ({ br
   await giveLooks(other, 'gold');
   const image = (die: ReturnType<Page['locator']>) => die.locator('img').getAttribute('src');
 
-  await expect(turnAction(active, 'Attack')).toBeEnabled();
+  await until(active, may(Intent.attack));
   await click(active, turnAction(active, 'Attack'));
   await untilAttackRoll(pages, click, active);
   const shaking = other.getByRole('region', { name: tr('throw.label') }).locator('.throw-shake .die');
@@ -797,6 +809,7 @@ test("every screen draws a roll with the roller's dice look (15.6)", async ({ br
   expect(await image(shaking)).toBe(images.tear);
   await shot(other, 'dice-roller-look');
 
+  await expect(throwButton(active)).toBeEnabled();
   await active.keyboard.press(' ');
   // A thrown die is a cube; its top face shows the roll (15.69, 15.82).
   const landed = active.getByTestId('effect-dice').locator('.die-top');

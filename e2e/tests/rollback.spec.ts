@@ -6,7 +6,7 @@ import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
 import { saveAndContinue } from './saves';
-import { activePage, answerPlay, canEndTurn, click, playLoot, settle, throwButton, turnAction, untilAttackRoll } from './turn';
+import { activePage, answerPlay, attackRoll, click, holds, Intent, may, playLoot, settle, throwButton, turnAction, turnFree, until, untilAttackRoll } from './turn';
 import { cardName, lineRe, tr, trRe } from './locale';
 
 test.setTimeout(120_000);
@@ -25,7 +25,7 @@ async function openHistory(page: Page) {
 // attackToThrow declares an attack and picks its target, until the
 // attacker's Throw button waits (as in fight.spec.ts).
 async function attackToThrow(pages: Page[], active: Page) {
-  await expect(turnAction(active, 'Attack')).toBeEnabled();
+  await until(active, may(Intent.attack));
   await click(active, turnAction(active, 'Attack'));
   await toThrow(pages, active);
 }
@@ -74,7 +74,7 @@ test('in Godmode each Undo undoes one move, by the author or another player (17.
   // Pride: its trigger's discard resolves before the first throw
   // (R-ATK-25), so the latest move is the discard, not the target pick
   // this test undoes.
-  const pages = await startGame(browser, names, { options: god, bans: ['pride'] });
+  const pages = await startGame(browser, names, { options: god, bans: ['pride'], animations: true });
   const active = await activePage(pages, click);
   const other = pages.find((p) => p !== active);
   if (!other) {
@@ -100,6 +100,7 @@ test('in Godmode each Undo undoes one move, by the author or another player (17.
   // A second press, by the other player, undoes the declaration too.
   await expect(undo(other)).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.attack_declared.other', { player: name }) }));
   await undo(other).click();
+  await until(active, may(Intent.attack));
   await expect(turnAction(active, 'Attack')).toBeEnabled();
   for (const page of pages) {
     await expect(row(page, declared).first()).toHaveClass(/undone/);
@@ -210,7 +211,10 @@ test('in Soft the author asks; another player opens a vote that passes (17.4, 17
 
 test('in Soft a declined ask leaves the move; the author may ask again (17.4)', async ({ browser }) => {
   const names = ['Pia', 'Quin'];
-  const pages = await startGame(browser, names, { url: `${appURL()}&anim=off`, setup: pickSoft });
+  // Pride: its trigger's discard resolves before the first throw
+  // (R-ATK-25), so the latest move is the discard, not the target pick
+  // this ask undoes (19.158, 19.169).
+  const pages = await startGame(browser, names, { url: `${appURL()}&anim=off`, setup: pickSoft, bans: ['pride'] });
   const active = await activePage(pages, click);
   const other = pages.find((p) => p !== active);
   if (!other) {
@@ -235,6 +239,7 @@ test('in Soft a declined ask leaves the move; the author may ask again (17.4)', 
     await expect(row(page, trRe('history.vote.declined'))).toBeVisible();
   }
   // Nothing was undone: the throw still waits.
+  await until(active, attackRoll);
   await expect(throwButton(active)).toBeVisible();
   await expect(row(active, aimed).first()).not.toHaveClass(/undone/);
   // Asked again, and cancelled by the asker.
@@ -242,12 +247,16 @@ test('in Soft a declined ask leaves the move; the author may ask again (17.4)', 
   await expect(votePanel(other)).toBeVisible();
   await votePanel(active).getByRole('button', { name: tr('rollback.cancel') }).click();
   await expect(row(other, trRe('history.vote.cancelled.other', { player: name }))).toBeVisible();
+  await until(active, attackRoll);
   await expect(throwButton(active)).toBeVisible();
 });
 
 test('in Soft with two players Undo rolls back at once; after a roll it is greyed (17.4, 17.7)', async ({ browser }) => {
   const names = ['Rex', 'Sia'];
-  const pages = await startGame(browser, names, { url: `${appURL()}&anim=off`, options: { rollback: 'soft' } });
+  // Pride: its trigger's discard resolves before the first throw
+  // (R-ATK-25), so the latest move is the discard, not the target pick
+  // this Undo rolls back (19.163).
+  const pages = await startGame(browser, names, { url: `${appURL()}&anim=off`, options: { rollback: 'soft' }, bans: ['pride'] });
   const active = await activePage(pages, click);
   const other = pages.find((p) => p !== active);
   if (!other) {
@@ -310,8 +319,7 @@ function stack(page: Page) {
 
 // resolve passes until the stack is empty and the turn goes on.
 async function resolve(pages: Page[], active: Page) {
-  const rows = stack(active).locator('.stack-row');
-  await settle(pages, click, async () => (await rows.count()) === 0 && (await canEndTurn(active)));
+  await settle(pages, click, () => holds(active, turnFree));
 }
 
 // expectPlayUndone: the card is back in the hand and the stack is empty
@@ -369,6 +377,7 @@ test('a played card that asks a target is undone by one Undo (17.7)', async ({ b
   // Back before the play, not at its target prompt.
   await expectPlayUndone(pages, hand, copies);
   await expect(active.locator('.card.hl-aim')).toHaveCount(0);
+  await until(active, may(Intent.attack));
   await expect(turnAction(active, 'Attack')).toBeEnabled();
 });
 
@@ -391,8 +400,10 @@ test("Bum Friend's put-back pick has no line of its own: Undo names it a choice 
   }
   await expect(undo(active)).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.move.use.you', { card: cardName('bum_friend') }) }));
   // The pick puts a card on the loot deck, which gives no line; the
-  // tooltip never borrows the next move's name.
-  await settle(pages, click, async () => (await undo(active).getAttribute('title')) === tr('history.undo.title', { move: tr('history.choice.you') }));
+  // tooltip never borrows the next move's name. The use resolves and
+  // settle answers the pick on the way.
+  await settle(pages, click, () => holds(active, turnFree));
+  await expect(undo(active)).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.choice.you') }));
   await expect(undo(other)).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.choice.other', { player: name }) }));
   await undo(active).hover();
   await shot(active, 'rollback-choice');

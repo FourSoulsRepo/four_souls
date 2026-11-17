@@ -754,3 +754,87 @@ Ideas: B-04, B-05, B-08.
    18. Gates: `make lint`, `make test`, `make frontend` exit 0.
    19. `make e2e`: 563 passed, 1 failed: `aim.spec.ts:406`, webkit.
    20. Alone it passed 3 of 3; logged as 19.159.
+
+### [x] 18.25 Host screen groups
+
+1. Goal: the host screen reads in parts, not one long list (GS-10, owner 2026-11-15).
+2. Tasks:
+   1. A line, like `---` in Markdown, above "Detailed setup".
+   2. Detailed options in titled groups:
+      1. Characters and seats: picking, characters offered, random seats.
+      2. Cards: bonus souls, deck ratios, room deck.
+      3. Turns and undo: response timer, rollback and its hint.
+   3. Each group: a `fieldset` with a `legend`, styled like "Card sets".
+   4. No option changes: same values, defaults, labels and order inside a group.
+   5. Strings for the group titles in `en.json`; `make i18n` passes.
+   6. Docs: UC-05, UC-03 if wording changes, `docs/wiki/Client.md`.
+   7. Gates: `make lint`, `make frontend e2e`.
+3. Done when:
+   1. Screenshots show the line and the three groups.
+   2. Existing host e2e tests pass unchanged.
+   3. **Owner** checks it.
+4. Result (2026-11-15)
+   1. `hr.divider` above "Detailed setup"; three `fieldset.group` boxes.
+   2. Titles: `host.group_characters`, `host.group_cards`, `host.group_turns`.
+   3. Random seats moved into the first group; nothing else moved between groups.
+   4. Docs: UC-05 item 18, `docs/wiki/Client.md`.
+   5. Gates: `make lint`, `make frontend`, `make e2e` (564 passed, 18 skipped).
+   6. **Owner** marks it solved (2026-11-15).
+
+### [x] 18.26 Fear on the character card
+
+1. Goal: a player sees fear at a glance, as on a real table (owner 2026-11-15).
+2. Why now:
+   1. Fear shows only by the player's name (14.33).
+   2. It has no colour yet (18.15), so it is a small grey dot.
+   3. Players look for it on the character card.
+3. Rules stay: fear is on the player, not the character (R-TRICK-08, Q-45).
+   1. Engine and protocol do not change.
+   2. The card badge is a picture of the player's fear.
+   3. A new character shows the same fear; a death keeps it.
+4. Tasks:
+   1. Colour (owner, 2026-11-15): ghost white, about `#e6ecf5`, dark outline.
+      1. Add `fear` to the colours in `frontend/src/counters.ts`.
+   2. Shape: a small ghost, not the round dot.
+      1. By the name and on the card alike.
+      2. Tells fear apart without colour.
+   3. Card badge: the character card shows the player's fear.
+      1. Own and opponents' characters alike.
+      2. Looks unlike the card's own counter badges, so they do not mix.
+      3. Card counters on the same character still show beside it.
+      4. Zoomed character names it: "Fear: N" and what it does.
+   4. Keep the counter by the name (owner, 2026-11-15).
+   5. A badge that appears or changes follows ADR 012 (`docs/wiki/Animations.md`).
+   6. Text: reuse `table.fear`, `table.fear_title`; new strings in `en.json`.
+   7. Tests: Vitest for the colour and shape; extend `challenge-trick.spec.ts`.
+   8. Docs: `docs/wiki/Client.md`, `docs/wiki/Challenges.md` (UI list), UC-42.
+   9. Gates: `make lint`, `make frontend e2e`.
+5. Done when:
+   1. Screenshots show fear on the card and by the name, own and opponent.
+   2. A character with card counters and fear shows both, told apart.
+   3. **Owner** checks it.
+6. Result (2026-11-15)
+   1. Fear is `#e6ecf5` in `counters.ts`; `ghostPath`, `fearOf` there too.
+   2. `Ghost.tsx`: a small ghost with eyes, in the zoom's fear line.
+   3. On the card: `Card`'s `fear` prop, a ghost badge with eyes and the number.
+      1. Bottom middle, its head above health and attack.
+      2. Card counters stay on the left of the art, apart from it.
+      3. The number counts with `count-flip`, as health does.
+   4. Zoom: "Fear: N — …" under the card's counters (`counterLine`).
+   5. New string: `badge.fear`, the badge's screen-reader name.
+   6. e2e: `challenge-trick.spec.ts` checks the badge, its absence on the other card, the zoom.
+   7. Screenshots: `trick-fear-card`, `trick-fear-opponent`, `trick-fear-gained`.
+   8. Docs: UC-42 13.4–13.5, `Client.md`, `Challenges.md`, `Animations.md`.
+   9. Gates: `make lint`, `make frontend`; `make e2e` 563 passed, 1 failed, 18 skipped.
+      1. The failure: `challenge-table.spec.ts:253`, a deal; logged as 19.160.
+      2. Rerun of both challenge specs: 8 of 8 passed.
+   10. Not covered by a screenshot: card counters and fear on one character.
+7. Owner change (2026-11-15): fear only on the character card.
+   1. Replaces task 4.4: the name line no longer shows fear.
+   2. `playerCounters` leaves fear out; other kinds still show by the name.
+   3. The badge's screen-reader name says what fear does (`table.fear_title`).
+   4. Removed: `table.fear`, `badge.fear`, the ghost dot by the name.
+   5. e2e: no `.player-counter` while fear is on; the badge as before.
+   6. Docs: UC-42 13.1–13.2, `Client.md`, `Challenges.md`, `Animations.md`.
+   7. Gates: `make lint`, `make frontend`; `challenge-trick.spec.ts` 4 of 4 passed.
+   8. **Owner** marks it solved (2026-11-15).

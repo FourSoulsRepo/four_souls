@@ -76,7 +76,7 @@ var barrierKinds = map[EventKind]bool{
 	EvDeactivated:      false,
 	EvDeathPending:     false, // on the stack; not dead yet
 	EvDeckBottom:       false, // public, no card; its look is the barrier
-	EvDeckOrder:        false, // public, no card: a shuffle or a reorder
+	EvDeckOrder:        false, // public, no card: a reorder out of sight
 	EvDestroyed:        false,
 	EvDiscarded:        false,
 	EvEndOfTurn:        false, // end-of-turn triggers; the turn goes on
@@ -119,6 +119,7 @@ var barrierKinds = map[EventKind]bool{
 	EvForgone:          false,
 	EvMinionArrived:    false, // its card_revealed is the barrier
 	EvPlayerCounters:   false,
+	EvShuffled:         false, // public, no card
 	EvAttackStart:      false, // a trigger moment; its rolls are barriers
 	EvRewardsChanged:   false,
 	EvAbilitiesGained:  false, // its card_revealed events are the barriers

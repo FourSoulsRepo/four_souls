@@ -237,7 +237,7 @@ const modeled: Record<string, Envelope | Envelope[]> = {
       } satisfies Table,
     },
   ],
-  // Bots (ADR 030).
+  // Bots (ADR 033).
   'welcome#26': {
     type: 'welcome',
     id: 26,

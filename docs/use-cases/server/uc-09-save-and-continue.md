@@ -1,6 +1,6 @@
 # UC-09: Save and continue a game
 
-**Module:** `internal/server`, `pkg/record`, `frontend`
+**Module:** `internal/server`, `pkg/record`, `bindings/host`, `frontend`
 **Status:** In progress
 **Actors:** Host; the other players
 **Goal:** Friends finish a game on another day (N-11)

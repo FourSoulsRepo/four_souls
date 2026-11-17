@@ -14,7 +14,7 @@ func deckGame() *Game {
 
 // TestLookPlacesDeckCard: a look at deck cards names each card's deck
 // and depth; FilterEvents hides them with the card from other players
-// and shows them to the looker and a judge (ADR 030, Decision 19.11).
+// and shows them to the looker and a judge (ADR 033, Decision 19.11).
 func TestLookPlacesDeckCard(t *testing.T) {
 	g := deckGame()
 	g.LookAt(0, g.DeckTop(LootDeck, 2)...)
@@ -43,17 +43,18 @@ func TestLookPlacesDeckCard(t *testing.T) {
 	}
 }
 
-// TestDeckOrderEvents: a shuffle, a reorder of the top cards, a card
-// moved to the bottom and a refill from the discard tell deck_order; a
-// kept or bottomed top card and cards put under the deck tell only
-// their own event, and setup shuffles tell nothing.
+// TestDeckOrderEvents: a shuffle and a refill from the discard tell
+// shuffled; a reorder of the top cards and a card moved to the bottom
+// tell deck_order. Memory forgets the deck on either. A kept or
+// bottomed top card and cards put under the deck tell only their own
+// event, and a shuffle of an empty deck tells nothing.
 func TestDeckOrderEvents(t *testing.T) {
 	orders := func(events []Event) int {
 		n := 0
 		for _, e := range events {
-			if e.Kind == EvDeckOrder {
+			if e.Kind == EvDeckOrder || e.Kind == EvShuffled {
 				if e.Text != "loot deck" || e.Private || e.Card != "" {
-					t.Errorf("deck_order %+v", e)
+					t.Errorf("%s %+v", e.Kind, e)
 				}
 				n++
 			}
@@ -64,8 +65,11 @@ func TestDeckOrderEvents(t *testing.T) {
 		do   func(g *Game)
 		want int
 	}{
-		"shuffle":       {func(g *Game) { g.ShuffleDeck(LootDeck) }, 1},
-		"setup shuffle": {func(g *Game) { g.shuffleDeck(LootDeck) }, 0},
+		"shuffle": {func(g *Game) { g.ShuffleDeck(LootDeck) }, 1},
+		"empty shuffle": {func(g *Game) {
+			g.Decks[LootDeck] = nil
+			g.ShuffleDeck(LootDeck)
+		}, 0},
 		"reorder": {func(g *Game) {
 			top := g.DeckTop(LootDeck, 2)
 			g.SetDeckTop(LootDeck, []ObjectID{top[1], top[0]})
@@ -85,9 +89,9 @@ func TestDeckOrderEvents(t *testing.T) {
 			before := slices.Clone(g.Decks[LootDeck])
 			tc.do(g)
 			if got := orders(g.takeEvents()); got != tc.want {
-				t.Errorf("%d deck_order events, want %d", got, tc.want)
+				t.Errorf("%d deck_order or shuffled events, want %d", got, tc.want)
 			}
-			if name == "setup shuffle" && len(g.Decks[LootDeck]) != len(before) {
+			if name == "shuffle" && len(g.Decks[LootDeck]) != len(before) {
 				t.Error("the shuffle lost cards")
 			}
 		})
@@ -121,5 +125,25 @@ func TestDeckText(t *testing.T) {
 	}
 	if got := DeckText(LootDeck, DeckTextBottom); got != "loot deck bottom" {
 		t.Errorf("DeckText = %q: the client reads \"loot deck bottom\"", got)
+	}
+}
+
+// TestImagineKeepsNoSave: the real game's clean state and its steps,
+// kept to save at a nested ask, hold the hidden cards; an imagined world
+// drops them and logs no steps of its own (ADR 033, Decision 2).
+func TestImagineKeepsNoSave(t *testing.T) {
+	g := newTestGame(t, 2)
+	g.saved = tracking{origin: []byte(`{"real":true}`), since: []ReplayStep{{Intent: Intent{Kind: IntentPass}}}}
+	w, err := g.Imagine(0, 1, Known{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if w.saved.origin != nil || w.saved.since != nil || !w.saved.off {
+		t.Errorf("world keeps %+v", w.saved)
+	}
+	w.beforeApply()
+	w.afterApply(Intent{Kind: IntentPass})
+	if w.saved.origin != nil || len(w.saved.since) != 0 {
+		t.Errorf("world logs %+v", w.saved)
 	}
 }

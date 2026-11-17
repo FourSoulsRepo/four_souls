@@ -65,7 +65,7 @@ func TestParse(t *testing.T) {
 	if _, lerr := parse([]string{"-game_hours", "-1"}); lerr == nil {
 		t.Error("a negative limit accepted")
 	}
-	// Bots (ADR 030, Decision 17): every level by default; off, standard
+	// Bots (ADR 033, Decision 17): every level by default; off, standard
 	// or all; nothing else.
 	if b, berr := parse(nil); berr != nil || b.Bots != "all" {
 		t.Fatalf("bots default %+v, %v", b, berr)
@@ -102,6 +102,28 @@ func TestParse(t *testing.T) {
 	}
 	if b, berr := parse([]string{"-config", file}); berr != nil || b.BotThink != "3s" {
 		t.Fatalf("bot_think in the file: %+v, %v", b, berr)
+	}
+}
+
+// TestParseTestSeeds: test seeds are off unless the flag or ENV turns
+// them on; a config file cannot (ADR 032).
+func TestParseTestSeeds(t *testing.T) {
+	if cfg, err := parse(nil); err != nil || cfg.TestSeeds {
+		t.Fatalf("default %+v, %v", cfg, err)
+	}
+	if cfg, err := parse([]string{"-test_seeds"}); err != nil || !cfg.TestSeeds {
+		t.Fatalf("flag %+v, %v", cfg, err)
+	}
+	file := filepath.Join(t.TempDir(), "server.json")
+	if err := os.WriteFile(file, []byte(`{"test_seeds": true, "TestSeeds": true}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if cfg, err := parse([]string{"-config", file}); err != nil || cfg.TestSeeds {
+		t.Fatalf("file %+v, %v", cfg, err)
+	}
+	t.Setenv("FOUR_SOULS_TEST_SEEDS", "true")
+	if cfg, err := parse(nil); err != nil || !cfg.TestSeeds {
+		t.Fatalf("env %+v, %v", cfg, err)
 	}
 }
 

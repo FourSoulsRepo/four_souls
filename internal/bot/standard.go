@@ -10,7 +10,7 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-// The standard level (ADR 030, Decision 8): one imagined world; each
+// The standard level (ADR 033, Decision 8): one imagined world; each
 // candidate is tried on a copy, settled and scored; the best is played,
 // with one mistake in ten.
 const (
@@ -22,7 +22,7 @@ const (
 	// diceDraws is how often a candidate whose settle rolled dice is
 	// settled (Decision 8.5): the world's own dice, then the copy's dice
 	// reseeded, the same seeds for every candidate. One settle judges a
-	// fight by luck; 12 (21.5 tuning) judge a soul won in one settle
+	// fight by luck; 12 (23.5 tuning) judge a soul won in one settle
 	// of several on more than a draw or two.
 	diceDraws = 12
 	// mistakeOdds: one move in this many is picked by chance among the

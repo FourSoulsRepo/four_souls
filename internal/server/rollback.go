@@ -436,7 +436,7 @@ func (r *Room) rollBackTo(seat, i int) error {
 	}
 	undid := len(r.live) - i
 	r.game, r.live = g, r.live[:i]
-	r.resetMemory() // the undone steps stay in no memory (ADR 030, Decision 19.12)
+	r.resetMemory() // the undone steps stay in no memory (ADR 033, Decision 19.12)
 	// The rollback takes the next number: no step number repeats, and
 	// every client sees a new step (item 8.1).
 	r.steps++

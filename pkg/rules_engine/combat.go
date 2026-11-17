@@ -167,7 +167,13 @@ func (g *Game) HP(id ObjectID) int {
 	if p, ok := g.characterOf(id); ok {
 		return g.PlayerHP(p)
 	}
-	return max(g.def(id).HP+g.monsterBonus(StatMonsterHP, id)-g.Object(id).Damage, 0)
+	return max(g.objectMaxHP(id)-g.Object(id).Damage, 0)
+}
+
+// objectMaxHP is the max HP of an object that is not a player's
+// character: its card's HP and a monster's bonuses.
+func (g *Game) objectMaxHP(id ObjectID) int {
+	return g.def(id).HP + g.monsterBonus(StatMonsterHP, id)
 }
 
 // characterOf: id is a player's character; p is that player.
@@ -246,7 +252,7 @@ type hpKey struct {
 // (R-DEATH-01). The last max HP is not saved: between Apply calls it is
 // always the current max HP.
 //
-// It runs before every automatic step, so it is kept cheap (21.10): the
+// It runs before every automatic step, so it is kept cheap (23.10): the
 // cards in play and their HP statics are listed once per check, not
 // once per player and monster, and the last max HP is updated in place.
 func (g *Game) checkMaxHP() {
@@ -263,6 +269,7 @@ func (g *Game) checkMaxHP() {
 		g.maxHP[k] = m
 		if ok && m < was {
 			alive := !pl.Dead && was > pl.Damage
+			g.logHPFell(k, pl.Damage, max(pl.Damage-(was-m), 0))
 			pl.Damage = max(pl.Damage-(was-m), 0)
 			if alive && g.PlayerHP(p) == 0 {
 				g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: eventDeath.Msg(), Target: Target{Player: p, IsPlayer: true}})
@@ -286,6 +293,7 @@ func (g *Game) checkMaxHP() {
 		seen = append(seen, id)
 		if ok && m < was {
 			alive := was > o.Damage
+			g.logHPFell(k, o.Damage, max(o.Damage-(was-m), 0))
 			o.Damage = max(o.Damage-(was-m), 0)
 			if alive && g.HP(id) == 0 && !g.Eternal(id) {
 				g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: eventDeath.Msg(), Target: Target{Object: id}})

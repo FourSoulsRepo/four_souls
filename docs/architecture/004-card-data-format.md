@@ -55,6 +55,12 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
    11. `rebalanced`: true for cards changed by the Rebalance pack.
    12. `three_plus`: true for cards with the 3+ player only symbol.
    13. `reprint`: adds copies to an older set's card (ADR 010).
+   14. Artist roles say which art: front, back face, or the card back.
+       1. A two-sided card's back face: roles starting `Back `.
+       2. `Card back artist`: the shared card back, the same on most cards.
+       3. `Private`: a name that is not public.
+       4. `Card.ArtistNames` picks a face's names to credit (CD-14, 20.24).
+       5. It leaves out the card back's artist and `Private`.
 4. Card ref
    1. `id` for the first version, `id@N` for version N ≥ 2.
    2. The ref is unique across all loaded sets.

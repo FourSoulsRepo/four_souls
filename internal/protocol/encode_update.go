@@ -62,6 +62,12 @@ func appendUpdate(b []byte, u Update) []byte {
 	return append(b, '}')
 }
 
+// ViewJSON writes a game view as clients read it. The server keeps the
+// judge view of every step in the record with it (ADR 031, 1.4).
+func ViewJSON(v engine.GameView) []byte {
+	return appendView(make([]byte, 0, 4096), v)
+}
+
 // appendView writes the game view as encoding/json writes it. Its lists of
 // players, slots and cards are written by hand; the rest by encoding/json.
 func appendView(b []byte, v engine.GameView) []byte {

@@ -20,6 +20,9 @@ export interface Handle {
   // cost is what picking it costs: a purchase option's price, which the
   // cents counter previews while the pointer is on it (20.11).
   cost?: number;
+  // hint says what a click does, as the card's title: a replay's
+  // character card shows the table from that seat (ADR 031, 4.10).
+  hint?: string;
 }
 
 export interface Interact {

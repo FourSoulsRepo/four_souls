@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -63,7 +64,8 @@ type Card struct {
 }
 
 // Face is the back of a two-sided card (ADR 023). Its type, copies,
-// artists and translators are the front's.
+// artists and translators are the front's; ArtistNames picks its own
+// artists by role.
 type Face struct {
 	ID      string        `json:"id"` // its own ref, e.g. "the_revenant"
 	Text    map[Lang]Text `json:"text,omitempty"`
@@ -126,6 +128,35 @@ type Reward struct {
 type Artist struct {
 	Role string `json:"role"`
 	Name string `json:"name"`
+}
+
+// Artist roles the card data uses (ADR 004). A two-sided card lists both
+// faces' artists; roles that start with BackFacePrefix are its back's.
+const (
+	CardBackRole   = "Card back artist" // the shared card back, never one card's
+	BackFacePrefix = "Back "            // e.g. "Back character artist"
+	// PrivateArtist stands for a name that is not public.
+	PrivateArtist = "Private"
+)
+
+// ArtistNames are the names to credit with this face, each once, in the
+// data's order (CD-14, 20.24): a back face (Front set) takes the back
+// roles, a front every other role. The card back's artist and names
+// that are not public are left out. Never nil.
+func (c Card) ArtistNames() []string {
+	names := []string{}
+	back := c.Front != ""
+	for _, a := range c.Artists {
+		name := strings.TrimSpace(a.Name)
+		if a.Role == CardBackRole || name == "" || strings.EqualFold(name, PrivateArtist) {
+			continue
+		}
+		if strings.HasPrefix(a.Role, BackFacePrefix) != back || slices.Contains(names, name) {
+			continue
+		}
+		names = append(names, name)
+	}
+	return names
 }
 
 // Ref names one card version: "the_d6" or "the_d6@2".

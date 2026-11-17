@@ -12,7 +12,7 @@ import (
 )
 
 // TestNoRefusedIntent plays 30 whole policy games, every set, 2 to 4
-// players: the engine refuses no bot intent (ADR 030, Decision 18.8).
+// players: the engine refuses no bot intent (ADR 033, Decision 18.8).
 // The games run side by side, ten per player count.
 func TestNoRefusedIntent(t *testing.T) {
 	for players := 2; players <= 4; players++ {
@@ -111,7 +111,7 @@ func TestGuards(t *testing.T) {
 
 // TestStandardNoLoop replays the games where standard seats once used
 // the same items again and again in one turn, past the turn guard: a
-// move that gains nothing over doing nothing is not made (ADR 030,
+// move that gains nothing over doing nothing is not made (ADR 033,
 // Decision 8.6). Each game is played to its end or the cap.
 //
 // It runs only with FOUR_SOULS_ARENA_GAMES set, never with -short:

@@ -35,7 +35,7 @@ type roomSeat struct {
 	sample  sampler // presence messages (15.35, 20.13)
 	// bot is the level of a bot's seat, "" for a player's; botN its
 	// number. A bot seat has no client and no token, and is never away
-	// (ADR 030, Decision 11).
+	// (ADR 033, Decision 11).
 	bot  string
 	botN int
 }
@@ -51,7 +51,7 @@ type request struct {
 	voteUp  int    // a Soft vote's time ran out (its number)
 	// presence: a seat's waiting presence may go (seat + 1, 20.13).
 	presence int
-	bot      *botAnswer // a bot's move (ADR 030, Decision 12.6)
+	bot      *botAnswer // a bot's move (ADR 033, Decision 12.6)
 	botBan   int        // a bot's ban turn is due (its turn number)
 }
 
@@ -128,7 +128,7 @@ type Room struct {
 	voteGen int
 	voteEnd *protocol.RollbackEnd
 
-	// Bots (ADR 030, Decisions 11 – 14): the open thinker of each seat,
+	// Bots (ADR 033, Decisions 11 – 14): the open thinker of each seat,
 	// the last thinker's number, the bots' random source, each hard
 	// seat's memory (nil for the others; Decision 19), the hard bot's
 	// time budget,
@@ -400,7 +400,7 @@ func (r *Room) broadcast(events []engine.Event) {
 	for _, c := range r.clients {
 		r.update(c, events, base)
 	}
-	// Bots think (ADR 030, Decision 12.1); a hard seat's memory saw
+	// Bots think (ADR 033, Decision 12.1); a hard seat's memory saw
 	// each step already (apply).
 	if r.hasBots() {
 		r.drive()

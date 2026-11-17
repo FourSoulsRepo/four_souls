@@ -45,7 +45,8 @@ function discardLabel(kind: Kind, n: number): string {
 // Deck is a face-down pile with its card count. A drawn card that waits
 // for its place (top) lies face up on it (19.9). A top card only the
 // viewer may look at (peek, 19.30) also lies face up; the deck still
-// takes clicks, e.g. to buy from it.
+// takes clicks, e.g. to buy from it. must: an attack on it is owed
+// this turn (19.182); it gets the dashed fight frame.
 const noHandle: Handle = {};
 
 export function Deck({
@@ -55,6 +56,7 @@ export function Deck({
   handle = noHandle,
   top,
   peek,
+  must = false,
 }: {
   kind: Kind;
   count: number;
@@ -62,10 +64,11 @@ export function Deck({
   handle?: Handle;
   top?: CardView | undefined;
   peek?: CardView | undefined;
+  must?: boolean | undefined;
 }) {
-  const label = deckLabel(kind, count);
+  const label = must ? `${deckLabel(kind, count)} · ${t('deck.must_attack')}` : deckLabel(kind, count);
   return (
-    <div className="pile" role="group" aria-label={label} title={label} data-zone={`deck-${kind}`}>
+    <div className={`pile${must ? ' must-attack' : ''}`} role="group" aria-label={label} title={label} data-zone={`deck-${kind}`}>
       {top ? (
         <Card cardRef={top.card} size={size} objectId={top.id} highlight="pick" />
       ) : peek ? (

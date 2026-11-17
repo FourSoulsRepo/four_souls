@@ -108,7 +108,7 @@ func TestLoadChecks(t *testing.T) {
 // seat, not even a player called "Bot 1"; the game starts when its
 // player is back, and the bots play on. A server that does not allow a
 // saved bot's level refuses the load, as it refuses seating that bot
-// (ADR 030, Decisions 16.1, 16.2, 17.1; 21.9).
+// (ADR 033, Decisions 16.1, 16.2, 17.1; 23.9).
 func TestBotsSaveAndLoad(t *testing.T) {
 	dir := t.TempDir()
 	h, _ := botHub(t, dir, time.Millisecond)

@@ -1,6 +1,6 @@
 # UC-36: See a card flip
 
-**Module:** `rules_engine`, `cards.go`, `frontend/src/components`
+**Module:** `rules_engine`, `bindings/assets`, `frontend/src/components`
 **Status:** Implemented
 **Actors:** Player, spectator
 **Goal:** Everyone sees which side of a two-sided card is up

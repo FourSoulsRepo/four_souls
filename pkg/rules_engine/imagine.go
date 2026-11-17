@@ -6,7 +6,7 @@ import (
 	"slices"
 )
 
-// Known is what a seat remembers of cards it cannot see now (ADR 030,
+// Known is what a seat remembers of cards it cannot see now (ADR 033,
 // Decision 2.7 – 2.9 and 19). The zero Known remembers nothing.
 type Known struct {
 	// Hands are the cards remembered in each player's hand, by seat. The
@@ -18,7 +18,7 @@ type Known struct {
 	Bottoms [deckCount][]CardRef
 }
 
-// Imagine returns a copy of the game as seat p may imagine it (ADR 030,
+// Imagine returns a copy of the game as seat p may imagine it (ADR 033,
 // Decision 2): every card p cannot see now is pooled with the hidden
 // cards of its kind, shuffled and dealt back, so each zone keeps its
 // size and p's view of the copy is p's view of the game. Cards in
@@ -40,7 +40,7 @@ func (g *Game) Imagine(p PlayerID, seed uint64, known Known) (*Game, error) {
 	rng := NewRNG(seed)
 	slots := g.hiddenFrom(p)
 	// hidden is each pool's cards, sorted: what p knows of them is only
-	// the pool (ADR 030, Decision 2.14).
+	// the pool (ADR 033, Decision 2.14).
 	hidden := map[int][]CardRef{}
 	for _, s := range slots {
 		hidden[s.pool] = append(hidden[s.pool], g.Objects[s.id].Card)
@@ -53,6 +53,9 @@ func (g *Game) Imagine(p PlayerID, seed uint64, known Known) (*Game, error) {
 	}
 	c.relabelHidden(p, hidden, &rng)
 	c.RNG = rng
+	// The real game's clean state and steps hold the hidden cards; a
+	// world never saves, so it keeps none and logs no steps.
+	c.saved = tracking{off: true}
 	return c, nil
 }
 
@@ -266,9 +269,11 @@ func (g *Game) objectRefs() []bool {
 	t := v.Type()
 	for i := range t.NumField() {
 		switch t.Field(i).Name {
-		case "Objects", "cards", "events", "asks":
+		case "Objects", "cards", "events", "asks", "saved", "changes":
 			// The objects themselves; card definitions; the last step's
-			// events, which a copy drops; ask effects, functions only.
+			// events, which a copy drops; ask effects, functions only;
+			// the save and event-check logs, which a world drops: their
+			// past intents name objects the view no longer shows.
 			continue
 		}
 		addObjectRefs(v.Field(i), out)

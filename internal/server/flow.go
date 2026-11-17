@@ -42,7 +42,9 @@ func (r *Room) after(events []engine.Event, applied bool) {
 	r.broadcast(events)
 	if r.game.Over {
 		r.closeRecord(true)
-		r.over.Store(true) // after the close: a download reads the whole record
+		if !r.over.Swap(true) && r.hub != nil { // after the close: a download reads the whole record
+			r.hub.send(hubRequest{run: (*Hub).lobbyChanged}) // the lobby drops it (19.166)
+		}
 	}
 }
 
@@ -184,7 +186,7 @@ func (r *Room) paused() bool {
 }
 
 // away lists the seats whose player left and was not kicked. A bot's
-// seat is never away (ADR 030, Decision 11.2).
+// seat is never away (ADR 033, Decision 11.2).
 func (r *Room) away() []int {
 	var out []int
 	for i, s := range r.seats {

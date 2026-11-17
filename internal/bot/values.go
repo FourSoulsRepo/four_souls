@@ -8,7 +8,7 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-// valuesJSON is the measured value of each loot card and item (ADR 030,
+// valuesJSON is the measured value of each loot card and item (ADR 033,
 // Decision 20): written by make bot-values (cmd/bot_values), never by
 // hand. It is data: the bot's code names no card.
 //

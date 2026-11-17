@@ -27,7 +27,7 @@ export function turnFrames(calm: boolean): Keyframe[] {
 }
 
 // botLine fills the label with the text, the robot before each bot's
-// name in it (botNames, 21.12), as BotText draws it.
+// name in it (botNames, 23.12), as BotText draws it.
 function botLine(label: HTMLElement, text: string, bots: readonly string[]): void {
   for (const p of namePieces(text, bots)) {
     if (!p.bot) {

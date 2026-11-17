@@ -278,7 +278,7 @@ describe('LAN Join (19.149)', () => {
   });
 });
 
-describe('bots at the table (ADR 030)', () => {
+describe('bots at the table (ADR 033)', () => {
   const bot: Seat = { seat: 1, name: 'Bot 1', connected: false, ready: true, bot: 'standard', bot_n: 1 };
   const free: Seat = { seat: 2, name: '', connected: false };
   const ann: Seat = { seat: 0, name: 'Ann', connected: true };
@@ -332,7 +332,7 @@ describe('bots at the table (ADR 030)', () => {
   });
 });
 
-describe('bots at the game table (21.12)', () => {
+describe('bots at the game table (23.12)', () => {
   const ann: Seat = { seat: 0, name: 'Ann', connected: true };
   const bot1: Seat = { seat: 1, name: 'Bot 1', connected: false, bot: 'standard', bot_n: 1 };
   const bot2: Seat = { seat: 2, name: 'Bot 2', connected: false, bot: 'hard', bot_n: 2 };

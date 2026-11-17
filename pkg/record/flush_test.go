@@ -10,7 +10,7 @@ import (
 func writeSteps(t *testing.T, w *Writer, n int) {
 	t.Helper()
 	for range n {
-		if err := w.Step(map[string]int{"k": 1}, nil, 7); err != nil {
+		if err := w.Step(map[string]int{"k": 1}, nil, nil, 7); err != nil {
 			t.Fatal(err)
 		}
 	}

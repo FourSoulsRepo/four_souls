@@ -312,7 +312,7 @@ func TestJudge(t *testing.T) {
 	}
 }
 
-// TestUncut (bug 19.162): a move whose settles, or those of doing
+// TestUncut (bug 19.199): a move whose settles, or those of doing
 // nothing, were cut off by settleSteps never beats doing nothing; a
 // move settled to its end keeps its score; a choice with no way to do
 // nothing keeps its means.

@@ -131,6 +131,7 @@ func (g *Game) Apply(in Intent) ([]Event, error) {
 	if err := g.check(in); err != nil {
 		return nil, err
 	}
+	g.beforeApply()
 	g.events = nil
 	g.checkMaxHP() // the last max HP, also after a load
 	g.apply(in)
@@ -141,6 +142,7 @@ func (g *Game) Apply(in Intent) ([]Event, error) {
 	if !g.Over && g.checkBonusSouls() {
 		g.checkWin()
 	}
+	g.afterApply(in)
 	return g.takeEvents(), nil
 }
 

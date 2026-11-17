@@ -684,7 +684,7 @@ func (p *player) seatBot(seat int, level string) protocol.Table {
 
 // TestBotSeats: the host seats, changes and removes bots; a bot is
 // named "Bot N", is ready, and its seat counts as taken; a joining
-// player gets a free seat, never a bot's (ADR 030, Decision 10).
+// player gets a free seat, never a bot's (ADR 033, Decision 10).
 func TestBotSeats(t *testing.T) {
 	h := startHub(t)
 	ann, _ := openTable(t, h, 4)
@@ -782,7 +782,7 @@ func TestBotRefusals(t *testing.T) {
 }
 
 // TestBotsServerLevels: the server allows bots of its -bots levels
-// only, and tells which in the welcome (ADR 030, Decision 17).
+// only, and tells which in the welcome (ADR 033, Decision 17).
 func TestBotsServerLevels(t *testing.T) {
 	for _, tc := range []struct {
 		mode   string
@@ -834,8 +834,8 @@ func TestBotsServerLevels(t *testing.T) {
 }
 
 // TestBotsTableWaitsForHuman: a table of 1 player and 3 bots is full in
-// the game list and waits only for the player to be ready (21.7, Done
-// when); then it starts (21.8).
+// the game list and waits only for the player to be ready (23.7, Done
+// when); then it starts (23.8).
 func TestBotsTableWaitsForHuman(t *testing.T) {
 	h := startHub(t)
 	ann, tb := openTable(t, h, 4)
@@ -868,7 +868,7 @@ func TestBotsTableWaitsForHuman(t *testing.T) {
 
 // TestBotsHostLeaves: when the host leaves, the next player moves into
 // the host's seat and the table keeps its bots; when no player is left,
-// the table closes (21.7).
+// the table closes (23.7).
 func TestBotsHostLeaves(t *testing.T) {
 	h := startHub(t)
 	ann, tb := openTable(t, h, 4)
@@ -933,7 +933,7 @@ func TestBotsAfterHostLeft(t *testing.T) {
 
 // TestBotsKeptOverRestart: a lobby table's bots wait in its restart file
 // and sit down again; a level the new server does not allow leaves its
-// seat free (N-20, ADR 030, Decision 17).
+// seat free (N-20, ADR 033, Decision 17).
 func TestBotsKeptOverRestart(t *testing.T) {
 	dir := t.TempDir()
 	srv := startKeeping(t, dir)
@@ -994,7 +994,7 @@ func helloNoSeat(t *testing.T, h *Hub, token, where string) {
 // TestBotSeatsHoldNoToken: a bot's seat has the empty token. No hello,
 // attach or seat lookup with an empty, missing or invalid token gets a
 // bot's seat: at a lobby table, in a game, and after a server restart
-// (ADR 030, Decision 11.1; 21.7).
+// (ADR 033, Decision 11.1; 23.7).
 func TestBotSeatsHoldNoToken(t *testing.T) {
 	r := botRoom(t, protocol.Options{}, "", protocol.BotStandard)
 	for _, token := range []string{"", " ", "not-a-token"} {
@@ -1054,5 +1054,43 @@ func askSeat(t *testing.T, h *Hub, token string) protocol.SeatInfo {
 	case <-time.After(5 * time.Second):
 		t.Fatal("the hub did not answer")
 		return protocol.SeatInfo{}
+	}
+}
+
+// TestTestSeed: a server started with -test_seeds deals a create's
+// seed; the same seed deals the same game. Any other server refuses a
+// create that names a seed (ADR 032).
+func TestTestSeed(t *testing.T) {
+	h := startHub(t)
+	ann, _ := arrive(t, h, "Ann", "")
+	ann.say(protocol.TypeCreate, protocol.Create{Seats: 2, Options: &protocol.Options{Seed: 42}})
+	var er protocol.Error
+	ann.next(protocol.TypeError, &er)
+	if er.Code != protocol.ErrBadSetup || er.Message != "error.test_seed" {
+		t.Fatalf("a seed on a normal server: %+v", er)
+	}
+
+	h = startHub(t)
+	done := make(chan struct{})
+	h.send(hubRequest{run: func(h *Hub) { h.testSeeds = true; close(done) }})
+	<-done
+	deal := func() ([]engine.CardRef, uint64) {
+		players := startTableWith(t, h, protocol.Create{Seats: 3, Options: &protocol.Options{Seed: 42}})
+		var u protocol.Update
+		players[0].next(protocol.TypeUpdate, &u)
+		var chars []engine.CardRef
+		for _, p := range u.View.Players {
+			chars = append(chars, p.Character.Card)
+		}
+		seed := make(chan uint64)
+		h.send(hubRequest{run: func(h *Hub) { seed <- h.games[len(h.games)-1].room.setup.Seed }})
+		return chars, <-seed
+	}
+	first, seed := deal()
+	if seed != 42 {
+		t.Errorf("the game's seed is %d, want 42", seed)
+	}
+	if again, _ := deal(); !slices.Equal(first, again) || len(first) != 3 {
+		t.Errorf("seed 42 dealt %v, then %v", first, again)
 	}
 }

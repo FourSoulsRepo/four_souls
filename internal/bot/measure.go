@@ -8,7 +8,7 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-// The measurement of card values (ADR 030, Decision 20): make bot-values
+// The measurement of card values (ADR 033, Decision 20): make bot-values
 // (cmd/bot_values) calls PlayGain and ItemPlayout on positions of arena
 // games. Both score with the flat values (Decision 20.6), so the
 // measure never feeds on itself.

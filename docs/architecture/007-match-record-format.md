@@ -58,8 +58,9 @@ Use options 1 and 5.
    17. The setup says `challenge` and `difficulty` in a challenge (ADR 028).
    18. Its card set is not among `sets`; the challenge brings it.
    19. A lost challenge ends finished with no `winners`.
-   20. A bot's seat says `bot` (its level) and `bot_n` (its number); a human's leaves both out (ADR 030).
-       1. The format stays 1: a reader that does not know them skips them; an older record has none.
+   20. Format 2: each `step` also holds the judge view after it (ADR 031).
+   21. A bot's seat says `bot` (its level) and `bot_n` (its number); a human's leaves both out (ADR 033).
+       1. The format stays 2: a reader that does not know them skips them; an older record has none.
 3. Writing
    1. Lines are flushed once a second, and at every stop (18.17).
       1. A crash leaves a readable record without `end`, up to a second short.
@@ -78,6 +79,8 @@ Use options 1 and 5.
    5. Undone steps stay in the file; replay leaves them out.
    6. Records of engines before 0.4.0 cannot replay: messages changed the state (16.4).
    7. A challenge record: the challenge's own set goes after the header's sets.
+   8. The app's replay player uses the steps' views, never the engine (ADR 031).
+   9. Engine replay stays for tests.
 
 ## Consequences
 
@@ -85,6 +88,7 @@ Use options 1 and 5.
 
 1. Any record replays exactly, or shows the first step that differs.
 2. Records are readable with standard tools.
+3. Format 2 records play without the engine (ADR 031).
 
 ### Negative and risks
 

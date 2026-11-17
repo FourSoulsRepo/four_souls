@@ -378,7 +378,7 @@ func TestMaxHPToZeroKills(t *testing.T) {
 	}
 }
 
-// TestHPBonusLikeBonus: checkMaxHP's one-pass HP bonus (21.10) sums the
+// TestHPBonusLikeBonus: checkMaxHP's one-pass HP bonus (23.10) sums the
 // same boosts as bonus, for players and monsters; a monster that left
 // play is forgotten, as a fresh check would.
 func TestHPBonusLikeBonus(t *testing.T) {

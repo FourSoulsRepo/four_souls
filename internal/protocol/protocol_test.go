@@ -69,7 +69,7 @@ func TestGolden(t *testing.T) {
 		// A challenge game (ADR 028, Decision 10).
 		{TypeCreate, 23, Create{Seats: 2, Sets: []string{"b2"}, Options: &Options{Challenge: "krampus", Difficulty: engine.DifficultyHard}}},
 		{TypeGames, 0, Games{Games: []GameInfo{{ID: "g2", Host: "Ann", Seats: 2, Taken: 1, Sets: []string{"b2"}, Challenge: "krampus", Difficulty: engine.DifficultyHard}}}},
-		// Bots (ADR 030, Decision 10).
+		// Bots (ADR 033, Decision 10).
 		{TypeWelcome, 26, Welcome{Protocol: Version, App: "0.1.0", Engine: "0.1.0", Token: "t0k3n", Seat: -1, Create: true, Bots: BotLevels()}},
 		{TypeBot, 24, Bot{Seat: 2, Level: BotHard}},
 		{TypeBot, 25, Bot{Seat: 2}},

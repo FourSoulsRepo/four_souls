@@ -17,7 +17,7 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-// Tests of the bot driver (ADR 030, Decisions 11 – 14; 21.8). They check
+// Tests of the bot driver (ADR 033, Decisions 11 – 14; 23.8). They check
 // that bot moves are allowed and come in time, never how well bots play.
 
 // botRoom starts a game of the given seats on the test's goroutine: ""
@@ -44,7 +44,7 @@ func botRoom(t *testing.T, opts protocol.Options, seats ...string) *Room {
 	}
 	// Hard thinks by playout count, not by time: a 2 ms budget gave it
 	// no playout under -race or a loaded machine, so it only passed and
-	// whole games ran out of time (check phase of step 21).
+	// whole games ran out of time (check phase of step 23).
 	r.second, r.botThink, r.botPlayouts = time.Millisecond, 10*time.Second, 2
 	r.recInfo.game = "g1"
 	t.Cleanup(r.stopThinkers)
@@ -131,7 +131,7 @@ func noBotMove(t *testing.T, r *Room, when string) {
 }
 
 // TestBotsNeverAway: a bot seat is never away; a game of a player and
-// bots is not paused (ADR 030, Decision 11.2).
+// bots is not paused (ADR 033, Decision 11.2).
 func TestBotsNeverAway(t *testing.T) {
 	r := botRoom(t, protocol.Options{}, "", protocol.BotStandard, protocol.BotHard)
 	if r.paused() || len(r.away()) != 0 {
@@ -237,7 +237,7 @@ func TestBotsRollbackThinksAgain(t *testing.T) {
 }
 
 // TestBotsVoteHumansOnly: a kick vote and a Soft vote count only the
-// players; bots never vote (ADR 030, Decision 11.3).
+// players; bots never vote (ADR 033, Decision 11.3).
 func TestBotsVoteHumansOnly(t *testing.T) {
 	r := botRoom(t, protocol.Options{Rollback: protocol.RollbackSoft}, "", "", protocol.BotStandard, protocol.BotHard)
 	if got := r.voters(2); !slices.Equal(got, []int{0, 1}) {
@@ -417,7 +417,7 @@ func TestBotsBanAndPick(t *testing.T) {
 }
 
 // TestBotsGame plays seeded games of one player and three bots, of both
-// levels, to their end (21.8, Done when). The player only passes and
+// levels, to their end (23.8, Done when). The player only passes and
 // ends turns, or gives the forced answer. The bot driver, with its
 // copies for the thinkers, never holds the room over the stall limit.
 func TestBotsGame(t *testing.T) {
@@ -466,7 +466,7 @@ func playBotsGame(t *testing.T, seed uint64, levels []string) (time.Duration, in
 	h := NewHub()
 	// Hard thinks by playout count, not by time: a 2 ms budget gave it
 	// no playout under -race or a loaded machine, so it only passed and
-	// whole games ran out of time (check phase of step 21).
+	// whole games ran out of time (check phase of step 23).
 	h.second, h.seed, h.botThink, h.botPlayouts = time.Millisecond, seed, 10*time.Second, 2
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -480,8 +480,8 @@ func playBotsGame(t *testing.T, seed uint64, levels []string) (time.Duration, in
 	ann.say(protocol.TypeReady, protocol.Ready{Ready: true})
 	// A turn cap, not a time: the bots think by playout count, so the
 	// game repeats; a wall clock failed it on a loaded machine (check
-	// phase of step 21). A stuck game fails in ann.next.
-	const turnCap = 150 // the arena's (ADR 030, Decision 18.4.1)
+	// phase of step 23). A stuck game fails in ann.next.
+	const turnCap = 150 // the arena's (ADR 033, Decision 18.4.1)
 	for {
 		var u protocol.Update
 		ann.next(protocol.TypeUpdate, &u)
@@ -595,7 +595,7 @@ func TestBotsPanic(t *testing.T) {
 }
 
 // TestBotLevel: a seat's protocol level gives the bot package's level;
-// the server knows standard and hard only (ADR 030, Decision 1.2).
+// the server knows standard and hard only (ADR 033, Decision 1.2).
 func TestBotLevel(t *testing.T) {
 	for level, want := range map[string]botai.Level{protocol.BotStandard: botai.Standard, protocol.BotHard: botai.Hard} {
 		if got, err := botLevel(level); err != nil || got != want {

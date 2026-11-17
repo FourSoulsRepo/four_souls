@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { checkSeat, getBacks, getCards, getDice, getFonts, getIcons, getMats, getSettings, getSounds, saveSettings, serverStatus } from './bridge';
+import { checkSeat, getBacks, getCards, getDice, getFonts, getIcons, getMats, getSettings, getSounds, recordStep, saveSettings, serverStatus, type RecordStep, type RecordSummary } from './bridge';
 import { language, setCardLanguages, setLanguage } from './i18n';
 import { disconnect, send } from './net';
 import { noHostSetup } from './hostSetup';
@@ -16,6 +16,7 @@ vi.mock('./bridge', () => ({
   getMats: vi.fn(),
   getSettings: vi.fn(),
   getSounds: vi.fn(),
+  recordStep: vi.fn(),
   saveSettings: vi.fn(),
   serverStatus: vi.fn(),
 }));
@@ -204,7 +205,7 @@ describe('server notices (N-20)', () => {
   });
 });
 
-describe('bots (ADR 030)', () => {
+describe('bots (ADR 033)', () => {
   it('seats, changes and takes away a bot with the bot message', () => {
     useApp.getState().seatBot(2, 'hard');
     expect(send).toHaveBeenCalledWith('bot', { seat: 2, level: 'hard' });
@@ -412,5 +413,197 @@ describe('rollback (ADR 020)', () => {
     expect(s.history.map((e) => e.text)).toEqual(['Bo declares an attack', 'You cancelled the rollback vote']);
     expect(s.history[0]?.undone).toBeUndefined();
     expect(s.jumped).toBe(false);
+  });
+});
+
+describe('replay (10.2, ADR 031)', () => {
+  const view = (turn: number): GameView => ({
+    players: [],
+    shop: null,
+    monsters: null,
+    deck_sizes: [1, 1, 1, 0],
+    discards: [null, null, null, null],
+    discard_sizes: [0, 0, 0, 0],
+    stack: null,
+    turn: { active: 0, number: turn, step: 4, loot_plays: 0, attacks: 0, purchases: 0 },
+    waiting: { kind: 1, player: 0 },
+  });
+  // Six steps, two turns; every odd step has an event.
+  const steps: RecordStep[] = Array.from({ length: 6 }, (_, i) => ({
+    index: i,
+    n: i + 1,
+    events: i % 2 === 1 ? [{ kind: 'attack_declared', player: 0 }] : [],
+    view: view(1 + Math.floor(i / 3)),
+  }));
+  const summary: RecordSummary = {
+    path: '/r/g.fsrec',
+    game: 'g',
+    server: '',
+    started: 0,
+    seats: [
+      { seat: 0, name: 'Ann' },
+      { seat: 1, name: 'Bo' },
+    ],
+    sets: ['b2'],
+    challenge: '',
+    difficulty: '',
+    cards: [],
+    steps: 6,
+    turns: [
+      { number: 1, active: 0, step: 0 },
+      { number: 2, active: 1, step: 3 },
+    ],
+  };
+
+  beforeEach(() => {
+    vi.mocked(recordStep).mockImplementation((i) => {
+      const s = steps.at(i);
+      return s ? Promise.resolve(s) : Promise.reject(new Error('no such step'));
+    });
+    // No effects: the steps show as soon as they come.
+    useApp.setState({ settings: { ...useApp.getState().settings, animation: 'off' } });
+  });
+
+  it('Watch shows the first step at once; nobody at the table is "you"', async () => {
+    await useApp.getState().watch(summary);
+    const s = useApp.getState();
+    expect(s).toMatchObject({ screen: 'game', jumped: true, replay: { at: 0, speed: 1, playing: false } });
+    expect(s.game).toMatchObject({ step: 1, allowed: null, seats: [{ seat: 0, name: 'Ann', connected: true }, { seat: 1, name: 'Bo', connected: true }] });
+    expect(s.game?.deadline).toBeUndefined();
+  });
+
+  it('a step forward plays as live; back shows at once and drops its rows', async () => {
+    await useApp.getState().watch(summary);
+    await useApp.getState().replayTo(1);
+    await vi.waitFor(() => {
+      expect(useApp.getState().game?.step).toBe(2);
+    });
+    expect(useApp.getState().jumped).toBe(false);
+    expect(useApp.getState().history.map((e) => e.text)).toEqual(['Ann declares an attack']);
+    await useApp.getState().replayTo(0);
+    expect(useApp.getState()).toMatchObject({ jumped: true, history: [], replay: { at: 0 } });
+    expect(useApp.getState().game?.step).toBe(1);
+  });
+
+  it('a jump to a turn shows its first step at once', async () => {
+    await useApp.getState().watch(summary);
+    await useApp.getState().replayTo(3);
+    expect(useApp.getState()).toMatchObject({ jumped: true, replay: { at: 3 } });
+    expect(useApp.getState().game?.view.turn.number).toBe(2);
+  });
+
+  it('autoplay waits after each step, by the speed, and stops at the end', async () => {
+    vi.useFakeTimers();
+    try {
+      await useApp.getState().watch(summary);
+      useApp.getState().replaySpeed(2);
+      useApp.getState().replayPlay(true);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(useApp.getState().game?.step).toBe(2);
+      // Step 2 had an event: 0.8 s at 1×, 0.4 s at 2×.
+      await vi.advanceTimersByTimeAsync(399);
+      expect(useApp.getState().game?.step).toBe(2);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(useApp.getState().game?.step).toBe(3);
+      // Step 3 had none: 0.2 s at 1×, 0.1 s at 2×.
+      await vi.advanceTimersByTimeAsync(100);
+      expect(useApp.getState().game?.step).toBe(4);
+      // Pause holds the step.
+      useApp.getState().replayPlay(false);
+      await vi.advanceTimersByTimeAsync(2000);
+      expect(useApp.getState().game?.step).toBe(4);
+      useApp.getState().replayPlay(true);
+      await vi.advanceTimersByTimeAsync(2000);
+      expect(useApp.getState().game?.step).toBe(6);
+      expect(useApp.getState().replay).toMatchObject({ at: 5, playing: false });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('hiding the bar never pauses the autoplay; Watch shows it again (10.7)', async () => {
+    vi.useFakeTimers();
+    try {
+      await useApp.getState().watch(summary);
+      expect(useApp.getState().replay?.bar).toBe(true);
+      useApp.getState().replayPlay(true);
+      useApp.getState().replayBar(false);
+      expect(useApp.getState().replay).toMatchObject({ bar: false, playing: true });
+      await vi.advanceTimersByTimeAsync(2000);
+      expect(useApp.getState().replay).toMatchObject({ bar: false, at: 5 });
+      useApp.getState().replayBar(true);
+      expect(useApp.getState().replay?.bar).toBe(true);
+      useApp.getState().replayBar(false);
+      await useApp.getState().watch(summary);
+      expect(useApp.getState().replay?.bar).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('turns the table to a seat at once; autoplay goes on; Watch starts at seat 0 (4.10)', async () => {
+    vi.useFakeTimers();
+    try {
+      await useApp.getState().watch(summary);
+      expect(useApp.getState().replay?.seat).toBe(0);
+      await useApp.getState().replaySeat(1);
+      expect(useApp.getState()).toMatchObject({ jumped: true, replay: { seat: 1, at: 0, playing: false } });
+      expect(useApp.getState().game?.step).toBe(1);
+      useApp.getState().replayPlay(true);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(useApp.getState().game?.step).toBe(2);
+      await useApp.getState().replaySeat(0);
+      expect(useApp.getState().replay).toMatchObject({ seat: 0, playing: true });
+      expect(useApp.getState().game?.step).toBe(2);
+      await vi.advanceTimersByTimeAsync(4000);
+      expect(useApp.getState().replay).toMatchObject({ at: 5, playing: false });
+      expect(useApp.getState().game?.step).toBe(6);
+      await useApp.getState().replaySeat(1);
+      await useApp.getState().watch(summary);
+      expect(useApp.getState().replay?.seat).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('leaving goes back to the records list', async () => {
+    await useApp.getState().watch(summary);
+    useApp.getState().leaveReplay();
+    expect(useApp.getState()).toMatchObject({ screen: 'records', replay: null, game: null });
+  });
+
+  it('hides and shows hands on the step shown; hands show first (10.3)', async () => {
+    const withHand = (s: RecordStep): RecordStep => ({
+      ...s,
+      view: { ...s.view, players: [{ id: 0, hand_size: 1, hand: [{ id: 7, card: 'a_penny' }] } as unknown as GameView['players'][number]] },
+    });
+    vi.mocked(recordStep).mockImplementation((i) => {
+      const s = steps.at(i);
+      return s ? Promise.resolve(withHand(s)) : Promise.reject(new Error('no such step'));
+    });
+    await useApp.getState().watch(summary);
+    expect(useApp.getState().replay?.hands).toBe(true);
+    expect(useApp.getState().game?.view.players[0]?.hand).toHaveLength(1);
+    await useApp.getState().replayTo(2);
+    await useApp.getState().replayHands(false);
+    expect(useApp.getState()).toMatchObject({ jumped: true, replay: { at: 2, hands: false, playing: false } });
+    expect(useApp.getState().game?.view.players[0]).toMatchObject({ hand: undefined, hand_size: 1 });
+    // The next step keeps them hidden.
+    await useApp.getState().replayTo(3);
+    expect(useApp.getState().game?.view.players[0]?.hand).toBeUndefined();
+    await useApp.getState().replayHands(true);
+    expect(useApp.getState().game?.view.players[0]?.hand).toHaveLength(1);
+    // A new replay shows them again.
+    await useApp.getState().replayHands(false);
+    await useApp.getState().watch(summary);
+    expect(useApp.getState().replay?.hands).toBe(true);
+  });
+
+  it("draws a card the app lacks from the record's text, only while it plays (RP-10)", async () => {
+    useApp.setState({ cards: new Map() });
+    await useApp.getState().watch({ ...summary, cards: [{ ref: 'zz_future', name: 'Future Card', type: 'Loot Card', effects: ['Gain 9¢.'] }] });
+    expect(useApp.getState().cards.get('zz_future')).toMatchObject({ name: 'Future Card', effects: ['Gain 9¢.'], image: '' });
+    useApp.getState().leaveReplay();
+    expect(useApp.getState().cards.has('zz_future')).toBe(false);
   });
 });

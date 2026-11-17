@@ -106,7 +106,7 @@ function Effect({ playing }: { playing: Playing }) {
   const { effect, scale, done } = playing;
   // A die is drawn in its roller's look (15.6).
   const image = useApp((s) => (effect.kind === 'dice' ? diceImage(s.dice, s.game?.seats, effect.player) : ''));
-  // The turn banner is drawn by hand; it puts the robot before a bot's name (21.12).
+  // The turn banner is drawn by hand; it puts the robot before a bot's name (23.12).
   const seats = useApp((s) => s.game?.seats);
   const bots = botNames(seats);
   const duration = (seconds: number) => seconds * scale;

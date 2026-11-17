@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"math/rand/v2"
 	"net"
 	"path/filepath"
@@ -227,7 +226,8 @@ func freePort(t *testing.T) int {
 	return addr.Port
 }
 
-// checkRecord: the record is finished and replays with every checksum.
+// checkRecord: the record is finished and replays with every checksum
+// and judge view (ADR 031).
 func checkRecord(t *testing.T, path string) {
 	t.Helper()
 	rec, err := record.ReadFile(path)
@@ -237,18 +237,7 @@ func checkRecord(t *testing.T, path string) {
 	if rec.End == nil || !rec.End.Finished || len(rec.End.Winners) == 0 {
 		t.Fatalf("record end %+v", rec.End)
 	}
-	setup := replaySetup(t, rec.Header.Setup)
-	steps := make([]engine.StepRecord, len(rec.Steps))
-	for i, st := range rec.Steps {
-		if jerr := json.Unmarshal(st.Intent, &steps[i].Intent); jerr != nil {
-			t.Fatal(jerr)
-		}
-		steps[i].Checksum = st.Checksum
-	}
-	g, err := engine.Replay(setup, steps)
-	if err != nil {
-		t.Fatalf("replay: %v", err)
-	}
+	g := replayViews(t, replaySetup(t, rec.Header.Setup), rec)
 	if !g.Over {
 		t.Error("the replayed game is not over")
 	}

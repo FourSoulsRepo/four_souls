@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { CardInfo } from './cards';
-import { catchUp, chargedIn, createPlayback, effectsFor, hpOf, playedEnds, scaleFor, shopSlot, slotZone, weightOf, type Death, type Effect } from './playback';
+import { catchUp, chargedIn, createPlayback, effectsFor, hpOf, playedEnds, scaleFor, seenBefore, shopSlot, slotZone, weightOf, type Death, type Effect } from './playback';
 import type { GameEvent, GameView, Update } from './protocol';
 
 const ctx = {
@@ -71,7 +71,7 @@ describe('effectsFor', () => {
       { kind: 'draw', from: ['deck-loot'], to: ['hand-1', 'player-1'], own: false, pace: 1 },
     ]);
     const mine: GameEvent = { kind: 'looted', player: 0, object: 9, card: 'a_dime', private: true };
-    expect(effectsFor([mine], ctx)).toEqual([{ kind: 'draw', from: ['deck-loot'], to: ['hand-0', 'player-0'], card: 'a_dime', own: true, pace: 1 }]);
+    expect(effectsFor([mine], ctx)).toEqual([{ kind: 'draw', from: ['deck-loot'], to: ['hand-0', 'player-0'], card: 'a_dime', own: true, pace: 1, object: 9 }]);
   });
 
   // A card taken from the loot discard is drawn the same way (18.7).
@@ -99,8 +99,8 @@ describe('effectsFor', () => {
     const e: GameEvent = { kind: 'gained_treasure', player: 1, object: 60, card: 'the_d6' };
     const bought: GameEvent = { kind: 'purchased', player: 1, object: 61, card: 'the_d20', text: 'treasure deck' };
     expect(effectsFor([e, { ...e, object: 61, card: 'the_d20' }, bought], ctx)).toEqual([
-      { kind: 'fly', from: ['deck-treasure'], to: ['player-1'], card: 'the_d6', back: 'treasure', sound: 'treasureGain' },
-      { kind: 'fly', from: ['deck-treasure'], to: ['player-1'], card: 'the_d20', back: 'treasure', sound: 'treasureGain' },
+      { kind: 'fly', from: ['deck-treasure'], to: ['player-1'], card: 'the_d6', back: 'treasure', sound: 'treasureGain', object: 60 },
+      { kind: 'fly', from: ['deck-treasure'], to: ['player-1'], card: 'the_d20', back: 'treasure', sound: 'treasureGain', object: 61 },
     ]);
   });
 
@@ -109,7 +109,7 @@ describe('effectsFor', () => {
     const e: GameEvent = { kind: 'purchased', player: 0, object: 70, card: 'the_d6' };
     const shopBefore = (ref: string) => (ref === 'the_d6' ? { zone: 'shop-slot-1', object: 44 } : undefined);
     expect(effectsFor([e], { ...ctx, shopBefore })).toEqual([
-      { kind: 'fly', from: ['shop-slot-1'], to: ['player-0'], card: 'the_d6', back: 'treasure', lifts: 44, sound: 'treasureGain' },
+      { kind: 'fly', from: ['shop-slot-1'], to: ['player-0'], card: 'the_d6', back: 'treasure', lifts: 44, sound: 'treasureGain', object: 70 },
     ]);
   });
 
@@ -127,14 +127,14 @@ describe('effectsFor', () => {
   it('flies a starting item from the kept card, silent', () => {
     const e: GameEvent = { kind: 'gained_treasure', player: 1, object: 80, card: 'the_d6', text: 'starting item' };
     expect(effectsFor([e], ctx)).toEqual([
-      { kind: 'fly', from: ['choice-kept-1', 'deck-treasure'], to: ['player-1'], card: 'the_d6', back: 'treasure', start: true },
+      { kind: 'fly', from: ['choice-kept-1', 'deck-treasure'], to: ['player-1'], card: 'the_d6', back: 'treasure', start: true, object: 80 },
     ]);
   });
 
   it('flies a discarded card from where it was to its deck discard', () => {
     const e: GameEvent = { kind: 'discarded', player: -1, object: 12, prev: 7, card: 'cain' };
     expect(effectsFor([e], ctx)).toEqual([
-      { kind: 'fly', from: ['obj-7', 'deck-character'], to: ['discard-character'], card: 'cain', back: 'character' },
+      { kind: 'fly', from: ['obj-7', 'deck-character'], to: ['discard-character'], card: 'cain', back: 'character', object: 12 },
     ]);
   });
 
@@ -215,7 +215,7 @@ describe('effectsFor', () => {
   it('flies a loot card that leaves the stack from the stack (15.74)', () => {
     const e: GameEvent = { kind: 'discarded', player: 1, object: 80, prev: 70, card: 'bomb', text: 'stack' };
     expect(effectsFor([e], ctx)).toEqual([
-      { kind: 'fly', from: ['played-70', 'stack-src-70', 'obj-70', 'deck-loot'], to: ['discard-loot'], card: 'bomb', back: 'loot', leaves: 70 },
+      { kind: 'fly', from: ['played-70', 'stack-src-70', 'obj-70', 'deck-loot'], to: ['discard-loot'], card: 'bomb', back: 'loot', leaves: 70, object: 80 },
     ]);
   });
 
@@ -360,8 +360,8 @@ describe('effectsFor', () => {
       { kind: 'dice_rolled', player: 0, amount: 4, label: { key: 'event.attack_roll' } },
     ];
     expect(effectsFor(events, ctx)).toEqual([
-      { kind: 'reveal', card: 'fly', deck: ['deck-loot'], hold: true },
-      { kind: 'place', from: ['deck-loot'], to: ['monster-slot-1'], card: 'fly', back: 'loot', middle: true },
+      { kind: 'reveal', card: 'fly', deck: ['deck-loot'], hold: true, object: 50 },
+      { kind: 'place', from: ['deck-loot'], to: ['monster-slot-1'], card: 'fly', back: 'loot', middle: true, object: 50 },
       { kind: 'dice', value: 4, label: 'attack roll', player: 0, thrown: true },
     ]);
   });
@@ -369,8 +369,39 @@ describe('effectsFor', () => {
   it('shows a card revealed in the update before large only once (19.4)', () => {
     const e: GameEvent = { kind: 'card_revealed', player: -1, object: 50, card: 'pin' };
     expect(effectsFor([e], ctx)).toEqual([
-      { kind: 'place', from: ['deck-loot'], to: ['monster-slot-1'], card: 'pin', back: 'loot' },
+      { kind: 'place', from: ['deck-loot'], to: ['monster-slot-1'], card: 'pin', back: 'loot', object: 50 },
     ]);
+  });
+
+  // Seed 780402, one update: Chest is revealed on top of the monster
+  // deck and put back (Cheese Grater, object 54); Tumor dies and Chest
+  // is revealed into its slot (object 684). Two showings (19.191).
+  it('shows a card revealed on its deck, then into a slot, twice (19.191)', () => {
+    const events: GameEvent[] = [
+      { kind: 'card_revealed', player: -1, object: 54, card: 'chest', text: 'monster deck' },
+      { kind: 'card_revealed', player: -1, object: 684, card: 'chest' },
+    ];
+    const c = { ...ctx, card: monster, slot: (id: number) => (id === 684 ? 'monster-slot-0' : undefined) };
+    expect(effectsFor(events, c)).toEqual([
+      { kind: 'reveal', card: 'chest', deck: ['deck-monster'], object: 54 },
+      { kind: 'reveal', card: 'chest', deck: ['deck-monster'], hold: true, object: 684 },
+      { kind: 'place', from: ['deck-monster'], to: ['monster-slot-0'], card: 'chest', back: 'monster', middle: true, object: 684 },
+    ]);
+  });
+
+  // The update before showed the card: a deck attack's card waiting for
+  // its slot, or the same object (19.4). One that moved, or another
+  // copy, shows again (19.191).
+  it('tells if the update on screen showed the card already', () => {
+    const view = { revealed: { id: 40, card: 'pin' } } as unknown as GameView;
+    expect(seenBefore({ events: null, view }, 'pin', 50)).toBe(true);
+    const deck: GameEvent = { kind: 'card_revealed', player: -1, object: 54, card: 'chest', text: 'monster deck' };
+    const shown = { events: [deck], view: {} as GameView };
+    expect(seenBefore(shown, 'chest', 54)).toBe(true);
+    expect(seenBefore(shown, 'chest', undefined)).toBe(true);
+    expect(seenBefore(shown, 'chest', 684)).toBe(false);
+    expect(seenBefore(shown, 'pin', 50)).toBe(false);
+    expect(seenBefore(null, 'chest', 54)).toBe(false);
   });
 
   it('neither reveals nor places a card a dead monster uncovered (19.72)', () => {
@@ -390,12 +421,12 @@ describe('effectsFor', () => {
     ];
     expect(effectsFor(deaths, c)).toEqual([
       { kind: 'deaths', at: [['obj-40'], ['obj-41']] },
-      { kind: 'fly', from: ['monster-slot-0'], to: ['discard-monster'], card: 'fly', back: 'monster', lifts: 40 },
+      { kind: 'fly', from: ['monster-slot-0'], to: ['discard-monster'], card: 'fly', back: 'monster', lifts: 40, object: 92 },
     ]);
     expect(effectsFor([{ kind: 'dice_rolled', player: 1, amount: 4, label: { key: 'event.reward_roll' } }], c)).toHaveLength(1);
     const soul: GameEvent = { kind: 'gained_soul', player: 1, object: 93, prev: 91, card: 'boss' };
     expect(effectsFor([soul], c)).toEqual([
-      { kind: 'fly', from: ['monster-slot-2'], to: ['player-1'], card: 'boss', back: 'monster', lifts: 41, sound: 'soulGain' },
+      { kind: 'fly', from: ['monster-slot-2'], to: ['player-1'], card: 'boss', back: 'monster', lifts: 41, sound: 'soulGain', object: 93 },
     ]);
     // Each is flown once.
     expect(c.diedAt.size).toBe(0);
@@ -406,7 +437,7 @@ describe('effectsFor', () => {
     const c = { ...ctx, diedAt: new Map<number, Death>() };
     const chest: GameEvent = { kind: 'gained_soul', player: 0, object: 60, prev: 55, card: 'holy_chest' };
     expect(effectsFor([chest], c)).toEqual([
-      { kind: 'fly', from: ['obj-55'], to: ['player-0'], card: 'holy_chest', back: 'monster', lifts: 55, sound: 'soulGain' },
+      { kind: 'fly', from: ['obj-55'], to: ['player-0'], card: 'holy_chest', back: 'monster', lifts: 55, sound: 'soulGain', object: 60 },
     ]);
   });
 
@@ -415,7 +446,7 @@ describe('effectsFor', () => {
     const bonusOnBoard = (ref: string) => (ref === 'soul_of_envy' ? { zone: 'obj-62', object: 62 } : undefined);
     const bonus: GameEvent = { kind: 'gained_soul', player: 0, object: 61, card: 'soul_of_envy', text: 'bonus soul' };
     expect(effectsFor([bonus], { ...ctx, bonusBefore: bonusOnBoard })).toEqual([
-      { kind: 'fly', from: ['obj-62'], to: ['player-0'], card: 'soul_of_envy', back: 'soul', lifts: 62, sound: 'soulGain' },
+      { kind: 'fly', from: ['obj-62'], to: ['player-0'], card: 'soul_of_envy', back: 'soul', lifts: 62, sound: 'soulGain', object: 61 },
     ]);
     // Not on the board before: no flight, no sound.
     expect(effectsFor([bonus], ctx)).toEqual([]);
@@ -434,19 +465,19 @@ describe('effectsFor', () => {
 
   it('only reveals a card that is in no slot', () => {
     const e: GameEvent = { kind: 'card_revealed', player: 0, object: 51, card: 'fly' };
-    expect(effectsFor([e], ctx)).toEqual([{ kind: 'reveal', card: 'fly', deck: ['deck-loot'] }]);
+    expect(effectsFor([e], ctx)).toEqual([{ kind: 'reveal', card: 'fly', deck: ['deck-loot'], object: 51 }]);
   });
 
   it('holds a reveal only for a move of its card right after it (15.73)', () => {
     const reveal: GameEvent = { kind: 'card_revealed', player: -1, object: 51, card: 'fly', text: 'loot deck' };
     const discard = (card: string): GameEvent => ({ kind: 'discarded', player: -1, object: 60, card });
     expect(effectsFor([reveal, discard('fly')], ctx)).toEqual([
-      { kind: 'reveal', card: 'fly', deck: ['deck-loot'], hold: true },
-      { kind: 'fly', from: ['obj-60', 'deck-loot'], to: ['discard-loot'], card: 'fly', back: 'loot', middle: true },
+      { kind: 'reveal', card: 'fly', deck: ['deck-loot'], hold: true, object: 51 },
+      { kind: 'fly', from: ['obj-60', 'deck-loot'], to: ['discard-loot'], card: 'fly', back: 'loot', middle: true, object: 60 },
     ]);
-    expect(effectsFor([reveal, discard('cain')], ctx)[0]).toEqual({ kind: 'reveal', card: 'fly', deck: ['deck-loot'] });
+    expect(effectsFor([reveal, discard('cain')], ctx)[0]).toEqual({ kind: 'reveal', card: 'fly', deck: ['deck-loot'], object: 51 });
     const later: GameEvent[] = [reveal, { kind: 'gained_cents', player: 0, amount: 1 }, discard('fly')];
-    expect(effectsFor(later, ctx)[0]).toEqual({ kind: 'reveal', card: 'fly', deck: ['deck-loot'] });
+    expect(effectsFor(later, ctx)[0]).toEqual({ kind: 'reveal', card: 'fly', deck: ['deck-loot'], object: 51 });
   });
 });
 
@@ -506,8 +537,8 @@ describe('challenge effects (14.25)', () => {
     ];
     expect(effectsFor(events, minion)).toEqual([
       // The reveal holds it in the middle; it flies on from there (15.73).
-      { kind: 'reveal', card: 'gaper', deck: ['deck-monster'], hold: true },
-      { kind: 'place', from: ['deck-monster'], to: ['minion-slot-2', 'minions'], card: 'gaper', back: 'monster', middle: true },
+      { kind: 'reveal', card: 'gaper', deck: ['deck-monster'], hold: true, object: 70 },
+      { kind: 'place', from: ['deck-monster'], to: ['minion-slot-2', 'minions'], card: 'gaper', back: 'monster', middle: true, object: 70 },
     ]);
   });
 
@@ -519,10 +550,10 @@ describe('challenge effects (14.25)', () => {
       { kind: 'popup', at: ['present-loot'], text: '+2', tone: 'good' },
     ]);
     expect(effectsFor([{ kind: 'present_destroyed', player: -1, object: 81, card: 'the_d6', text: 'soul' }], ctx)).toEqual([
-      { kind: 'fly', from: ['present-soul'], to: ['discard-treasure'], card: 'the_d6', back: 'treasure' },
+      { kind: 'fly', from: ['present-soul'], to: ['discard-treasure'], card: 'the_d6', back: 'treasure', object: 81 },
     ]);
     expect(effectsFor([{ kind: 'present_given', player: 1, object: 82, card: 'the_d6', text: 'treasure' }], ctx)).toEqual([
-      { kind: 'fly', from: ['present-treasure'], to: ['player-1'], card: 'the_d6', back: 'treasure', sound: 'treasureGain' },
+      { kind: 'fly', from: ['present-treasure'], to: ['player-1'], card: 'the_d6', back: 'treasure', sound: 'treasureGain', object: 82 },
     ]);
   });
 
@@ -775,5 +806,62 @@ describe('createPlayback', () => {
     playback.clear();
     await playback.idle();
     expect(shown.length).toBeLessThan(3);
+  });
+
+  it('cancel also stops the update playing now: no more effects, no view (10.2)', async () => {
+    const shown: number[] = [];
+    const played: Effect[] = [];
+    let end: () => void = () => undefined;
+    let current: Update | null = null;
+    const playback = createPlayback({
+      begin: () => undefined,
+      show: (u) => {
+        current = u;
+        shown.push(u.step);
+      },
+      run: (e) => {
+        played.push(e);
+        return new Promise((resolve) => {
+          end = resolve;
+        });
+      },
+      effects: (u) => effectsFor(u.events ?? [], ctx),
+      speed: () => 'normal',
+      shown: () => current,
+    });
+    playback.push({ ...update(1), events: [] });
+    playback.push({ ...update(2), events: [{ kind: 'dice_rolled', player: 0, amount: 1 }, { kind: 'dice_rolled', player: 0, amount: 2 }] });
+    playback.push(update(3));
+    await vi.waitFor(() => {
+      expect(played).toHaveLength(1);
+    });
+    playback.cancel();
+    end();
+    await playback.idle();
+    expect(shown).toEqual([1]);
+    expect(played).toHaveLength(1);
+  });
+
+  it("divides the effects' times by the rate: a replay's speed (10.2)", async () => {
+    const scales: number[] = [];
+    let current: Update | null = null;
+    const playback = createPlayback({
+      begin: () => undefined,
+      show: (u) => {
+        current = u;
+      },
+      run: (_, scale) => {
+        scales.push(scale);
+        return Promise.resolve();
+      },
+      effects: (u) => effectsFor(u.events ?? [], ctx),
+      speed: () => 'normal',
+      rate: () => 4,
+      shown: () => current,
+    });
+    playback.push({ ...update(0), events: [] });
+    playback.push(update(1));
+    await playback.idle();
+    expect(scales).toEqual([0.25]);
   });
 });

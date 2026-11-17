@@ -16,7 +16,7 @@ export function GameMenu({ host }: { host: boolean }) {
   const [settings, setSettings] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   // The right column's seat name keeps clear of this button by its width
-  // (Table.css, --game-menu-width), which a translation changes (19.163).
+  // (Table.css, --game-menu-width), which a translation changes (19.200).
   // The last width stays while the menu is open.
   useLayoutEffect(() => {
     const b = buttonRef.current;

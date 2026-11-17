@@ -22,11 +22,11 @@ FOCUS ?=
 SIMS ?= 3000
 SETS ?=
 
-# Games per line-up of make bots (ADR 030, Decision 18.3).
+# Games per line-up of make bots (ADR 033, Decision 18.3).
 BOT_GAMES ?= 50
 
 # Flags of make bot-values, e.g. BOT_VALUES=-missing after a new set
-# (ADR 030, Decision 20.7).
+# (ADR 033, Decision 20.7).
 BOT_VALUES ?=
 
 # How many Playwright workers e2e and screenshots run at once (19.38).
@@ -143,7 +143,7 @@ internal: ## Build the app for play tests, card images included
 	@go generate ./pkg/card_db/images
 	@wails build -m $(if $(PLATFORM),-platform $(PLATFORM)) -tags "$(TAGS) embed cardimages" -ldflags "-X github.com/FourSoulsRepo/four_souls/internal/version.App=$(INTERNAL_VERSION)"
 	@# wails build regenerates the bindings as executable files; keep them 644.
-	@chmod 644 frontend/wailsjs/go/main/* frontend/wailsjs/go/models.ts frontend/wailsjs/runtime/*
+	@chmod 644 frontend/wailsjs/go/*/* frontend/wailsjs/go/models.ts frontend/wailsjs/runtime/*
 
 # The release server archives (8.17) into .cache/server; needs macOS
 # for the universal macOS binary. VERSION is stamped into the server.
@@ -174,7 +174,7 @@ sims: ## Play SIMS whole random games with the real sets, then the challenges; t
 	@cd pkg/rules_engine && FOUR_SOULS_SIMS=$(SIMS) go test -count=1 -timeout 60m -run '^TestSimulations$$' -v ./cards/
 	@FOUR_SOULS_MEMORY_STRESS=1 go test -count=1 -timeout 60m -run '^TestMemoryStress$$' -v ./internal/world
 
-# The bot arena (ADR 030, Decision 18): whole games between bot levels,
+# The bot arena (ADR 033, Decision 18): whole games between bot levels,
 # BOT_GAMES per line-up; fails on a refused bot intent or when under 95%
 # of games end with a winner within the turn cap, or a loop guard. Then
 # TestStandardNoLoop: whole standard games that once looped (Decision
@@ -183,7 +183,7 @@ bots: ## Play whole games between bot levels and print wins (BOT_GAMES); then th
 	@go run ./cmd/bot_arena -games $(BOT_GAMES)
 	@FOUR_SOULS_ARENA_GAMES=1 go test -count=1 -timeout 60m -run '^TestStandardNoLoop$$' -v ./internal/arena
 
-# The bots' card values (ADR 030, Decision 20): measures every loot card
+# The bots' card values (ADR 033, Decision 20): measures every loot card
 # and item on positions of arena games and writes internal/bot/values.json.
 # After cards are added: make bot-values (or BOT_VALUES=-missing), then
 # make bots. Local; a full run takes at most half an hour (11 minutes on

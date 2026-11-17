@@ -233,6 +233,16 @@ describe('lookedAt', () => {
     ]);
   });
 
+  it('names each shuffled deck, but not the setup shuffles (19.178)', () => {
+    const events = [
+      { kind: 'shuffled', player: -1, text: 'monster deck' },
+      { kind: 'shuffled', player: -1, text: 'treasure deck' },
+    ];
+    expect(entriesFor(events, 1, 0, n, 0).map((e) => e.text)).toEqual(['The monster deck is shuffled', 'The treasure deck is shuffled']);
+    const setup = [{ kind: 'shuffled', player: -1, text: 'loot deck' }, { kind: 'character_dealt', player: 0, object: 3, card: 'isaac' }];
+    expect(entriesFor(setup, 0, 0, n, 0)).toEqual([]);
+  });
+
   it('shows a card looked at twice in one update once (19.13)', () => {
     const events = [
       { kind: 'looked_at', player: 0, object: 361, card: 'library_card', private: true },

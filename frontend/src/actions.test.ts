@@ -168,6 +168,8 @@ describe('actionsFor', () => {
         },
         {
           label: 'monster deck',
+          // The option is the monster deck: it shows as its back (20.26).
+          pile: { kind: 'monster', discard: false },
           target: { player: -1, deck: true },
           intent: { player: 0, kind: IntentKind.choose, choice: 1 },
         },
@@ -422,3 +424,38 @@ describe('shownByChoice', () => {
   });
 });
 
+
+// 20.26: a deck or discard pile option shows the pile, not a button.
+describe('pile options', () => {
+  const choice = (options: Msg[], discards: Update['view']['discards'] = [null, null, null, null]) =>
+    actionsFor(
+      update(
+        { discards, waiting: { kind: PromptKind.choose, player: 0, options } },
+        options.map((_, i) => ({ player: 0, kind: IntentKind.choose, choice: i })),
+      ),
+      names,
+    ).choice;
+
+  // The keys are the engine's DeckOption and DiscardOption (msg.go).
+  it('reads the deck an option is', () => {
+    const o = choice([m('ask.deck.treasure'), m('ask.deck.loot'), m('ask.deck.monster'), m('ask.deck.room')])?.options;
+    expect(o?.map((x) => x.pile)).toEqual([
+      { kind: 'treasure', discard: false },
+      { kind: 'loot', discard: false },
+      { kind: 'monster', discard: false },
+      { kind: 'room', discard: false },
+    ]);
+  });
+
+  // The Curse's ↷: "Put the top card of any discard on top of its deck."
+  it('gives a discard pile option its top card', () => {
+    const o = choice([m('ask.discard.loot'), m('ask.discard.monster')], [null, { id: 9, card: 'a_penny', charged: true }, null, null])?.options;
+    expect(o?.[0]?.pile).toEqual({ kind: 'loot', discard: true, top: 'a_penny' });
+    expect(o?.[1]?.pile).toEqual({ kind: 'monster', discard: true });
+  });
+
+  it('keeps other options as they are', () => {
+    const o = choice([m('ask.no'), card('the_d6'), m('ask.deck.unknown')])?.options;
+    expect(o?.map((x) => x.pile)).toEqual([undefined, undefined, undefined]);
+  });
+});

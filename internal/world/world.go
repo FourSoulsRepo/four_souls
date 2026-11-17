@@ -1,4 +1,4 @@
-// Package world builds the games a bot may look at (ADR 030, Decisions
+// Package world builds the games a bot may look at (ADR 033, Decisions
 // 4.4 and 12.4 – 12.5): a copy of the real game, then for each world i a
 // new game as one seat may imagine it (Game.Imagine).
 //

@@ -46,9 +46,11 @@
     1. A yes/no question names the side it would show.
     2. Yes turns the card in the panel to its other side.
 13. A player who takes damage gets a fear counter (R-TRICK-07).
-    1. Fear shows by the player's name: a dot, the number, "Fear".
-    2. Its tooltip: monsters +1 evasion per 2 on the active player.
+    1. Fear shows on the player's character card only, not by the name.
+    2. Its screen-reader name: monsters +1 evasion per 2 on the active player.
     3. Monsters show the raised evasion; the zoom names the Haunt.
+    4. The player's character card shows it too: a white ghost with the number (18.26).
+    5. The character's zoom names it: "Fear: N" and what it does.
 14. Each attack on a monster starts with the side's roll (R-TRICK-13, R-TRICK-15).
     1. The active player throws it, then the attack roll.
     2. Changed rewards show on the monster as a ribbon and under its zoom.

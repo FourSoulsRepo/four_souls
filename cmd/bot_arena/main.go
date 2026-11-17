@@ -1,5 +1,5 @@
 // Command bot_arena plays whole seeded games between bot levels and
-// prints how they went (ADR 030, Decision 18):
+// prints how they went (ADR 033, Decision 18):
 //
 //	bot_arena -games 50
 //	bot_arena -games 20 -match policy,random -match policy,policy,policy

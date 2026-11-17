@@ -6,7 +6,7 @@ import type { LanServer, RecentServer, Rejoin } from './bridge';
 import { t } from './i18n';
 
 // 'cards' is a dev-only card gallery for tests (?screen=cards).
-export type Screen = 'splash' | 'welcome' | 'menu' | 'settings' | 'host' | 'join' | 'table' | 'game' | 'cards' | 'update';
+export type Screen = 'splash' | 'welcome' | 'menu' | 'settings' | 'host' | 'join' | 'table' | 'game' | 'cards' | 'update' | 'records';
 
 export interface Lobby {
   welcome: Welcome | null;
@@ -130,7 +130,7 @@ export function upText(up: ServerUp | undefined): string {
   return t('lobby.online.open_games', { n: up.open });
 }
 
-// botLevelName names a bot level (ADR 030); an unknown one (a newer
+// botLevelName names a bot level (ADR 033); an unknown one (a newer
 // server's) shows its ID.
 export function botLevelName(level: string): string {
   switch (level) {
@@ -144,7 +144,7 @@ export function botLevelName(level: string): string {
 }
 
 // seatName is how a seat's player shows: a bot as a translated "Bot N
-// (level)" (ADR 030, Decision 10.3), a player by the name it chose.
+// (level)" (ADR 033, Decision 10.3), a player by the name it chose.
 export function seatName(s: Seat): string {
   if (!s.bot) {
     return s.name;
@@ -160,7 +160,7 @@ export function seatNameOf(seats: readonly Seat[] | null | undefined, p: number)
 }
 
 // botNames are the names the bot seats show (seatName), so a line that
-// names one can put the robot before it (21.12).
+// names one can put the robot before it (23.12).
 export function botNames(seats: readonly Seat[] | null | undefined): string[] {
   return (seats ?? []).filter((s) => s.bot).map(seatName);
 }
@@ -207,14 +207,14 @@ export function namePieces(text: string, bots: readonly string[]): NamePiece[] {
 
 // botLead splits a bot's name after its first word: the robot keeps to
 // that word on its line, and the rest may wrap, as in a narrow side
-// column (21.12).
+// column (23.12).
 export function botLead(name: string): [string, string] {
   const i = name.indexOf(' ');
   return i < 0 ? [name, ''] : [name.slice(0, i), name.slice(i)];
 }
 
 // isAway reports whether a seat's player lost the connection. A bot has
-// no connection, yet it is never away (ADR 030, Decision 11.2).
+// no connection, yet it is never away (ADR 033, Decision 11.2).
 export function isAway(s: Seat): boolean {
   return s.name !== '' && !s.connected && !s.bot;
 }
@@ -222,7 +222,7 @@ export function isAway(s: Seat): boolean {
 // isTableHost reports whether the viewer hosts the table: the first
 // player in seat order. That is seat 0, or, once the host left a table
 // without bots, the player the server moves there on the first bot
-// (ADR 030, Decision 10.12).
+// (ADR 033, Decision 10.12).
 export function isTableHost(table: Table): boolean {
   const first = (table.seats ?? []).find((s) => s.name !== '' && !s.bot);
   return first?.seat === table.you;

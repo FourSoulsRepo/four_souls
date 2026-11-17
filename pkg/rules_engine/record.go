@@ -38,6 +38,9 @@ func (g *Game) Step(in Intent) (StepRecord, error) {
 	}
 	g.Chain = chain
 	g.Applied++
+	if n := len(g.saved.since); n > 0 {
+		g.saved.since[n-1].Apply = false // a step, not a bare Apply
+	}
 	sum := chain
 	if g.Applied%anchorEvery == 0 {
 		full, err := g.Checksum()
@@ -104,6 +107,9 @@ func CanReplay(v string) error {
 	if older(v, startVersion) {
 		return fmt.Errorf("replay: the record was made by rules engine %s; engines from %s on start the first-player roll after the start-of-game choices, so its checksums differ and it cannot replay", v, startVersion)
 	}
+	if older(v, eventVersion) {
+		return fmt.Errorf("replay: the record was made by rules engine %s; engines from %s on send an event for every state change, so its checksums differ and it cannot replay", v, eventVersion)
+	}
 	return nil
 }
 
@@ -157,37 +163,6 @@ func (g *Game) replay(steps []StepRecord) error {
 		}
 	}
 	return nil
-}
-
-// Save encodes the whole game state.
-func (g *Game) Save() ([]byte, error) {
-	data, err := json.Marshal(g)
-	if err != nil {
-		return nil, fmt.Errorf("save: %w", err)
-	}
-	return data, nil
-}
-
-// Load decodes a saved game. The same card sets must be given; their
-// definitions are not part of the saved state.
-func Load(data []byte, sets ...CardSet) (*Game, error) {
-	var g Game
-	if err := json.Unmarshal(data, &g); err != nil {
-		return nil, fmt.Errorf("load: %w", err)
-	}
-	names := make([]string, len(sets))
-	for i, s := range sets {
-		names[i] = s.Name
-	}
-	if !slices.Equal(names, g.Sets) {
-		return nil, fmt.Errorf("load: game uses sets %v, got %v", g.Sets, names)
-	}
-	idx, err := newCardIndex(sets...)
-	if err != nil {
-		return nil, fmt.Errorf("load: %w", err)
-	}
-	g.cards = idx
-	return &g, nil
 }
 
 // ErrIncompatible means a game saved by another engine version does not

@@ -6,7 +6,7 @@ import (
 )
 
 // Clone returns a deep copy of the game, written out by hand: a bot
-// copies the game for every move it tries (ADR 030, Decision 3).
+// copies the game for every move it tries (ADR 033, Decision 3).
 //
 // The copy saves to the same bytes and has the same checksum; it shares
 // no slice, map or pointer with the game, so a change to one never shows
@@ -57,10 +57,12 @@ func (g *Game) Clone() (*Game, error) {
 	c.Challenge = clonePtr(g.Challenge, (*ChallengeState).clone)
 	c.Sets = slices.Clone(g.Sets)
 	c.Banned = slices.Clone(g.Banned)
-	c.asks = maps.Clone(g.asks) // an askEffect holds functions only
+	c.asks = maps.Clone(g.asks)                                   // an askEffect holds functions only
+	c.saved.since = cloneEach(g.saved.since, (*ReplayStep).clone) // origin is never changed in place
 	c.maxHP = maps.Clone(g.maxHP)
 	c.events = nil
 	c.forcedRolls = nil
+	c.changes = nil // the event check's log (TakeSnapshot) stays with the game
 	return &c, nil
 }
 
@@ -212,5 +214,12 @@ func (cs *ChallengeState) clone() ChallengeState {
 	c.Reason = cs.Reason.clone()
 	c.TurnFrom = slices.Clone(cs.TurnFrom)
 	c.RoundFrom = slices.Clone(cs.RoundFrom)
+	return c
+}
+
+// clone copies a replay step with its own object list.
+func (r *ReplayStep) clone() ReplayStep {
+	c := *r
+	c.Intent.Objects = slices.Clone(r.Intent.Objects)
 	return c
 }

@@ -18,6 +18,13 @@ describe('seatPositions', () => {
     ]);
   });
 
+  it('turns a three-player table to each seat, as a replay does (4.10)', () => {
+    const at = (you: number) => seatPositions(3, you).map((p) => `${p.position}:${String(p.player)}`);
+    expect(at(0)).toEqual(['bottom:0', 'left:1', 'right:2']);
+    expect(at(1)).toEqual(['bottom:1', 'left:2', 'right:0']);
+    expect(at(2)).toEqual(['bottom:2', 'left:0', 'right:1']);
+  });
+
   it('seats four players left, top, right', () => {
     expect(seatPositions(4, 1).map((p) => `${p.position}:${String(p.player)}`)).toEqual([
       'bottom:1',

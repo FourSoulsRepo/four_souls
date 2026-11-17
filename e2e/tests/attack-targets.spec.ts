@@ -9,10 +9,7 @@ import { cardName, tr } from './locale';
 import { editSave, saveAndContinue, saveEditContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, seen, settle, tablePicks, throwButton, turnAction, untilAttackRoll } from './turn';
-
-// PRIORITY is PromptKind.priority (actions.ts).
-const PRIORITY = 1;
+import { activePage, Ask, click, holds, Intent, may, Purpose, seen, settle, throwButton, turnAction, untilAttackRoll, untilPick } from './turn';
 
 test.setTimeout(150_000);
 
@@ -90,7 +87,7 @@ test('The Siren lets the active player attack a player (14.14, R-ATK-20)', async
   const { me, them } = await seats(active);
 
   await turnAction(active, 'Attack').click();
-  await settle(pages, click, async () => tablePicks(active).first().isVisible());
+  await untilPick(pages, click, active, Purpose.attackTarget);
   // The other player's character glows as a target, beside The Siren.
   const character = active.locator(`[data-zone="obj-${String(them.character.id)}"]`).first();
   await expect(character).toHaveClass(/hl-pick/);
@@ -162,7 +159,7 @@ test('Punching Bag can be attacked (14.14, R-MECH-04)', async ({ browser }) => {
   }
 
   await turnAction(active, 'Attack').click();
-  await settle(pages, click, async () => tablePicks(active).first().isVisible());
+  await untilPick(pages, click, active, Purpose.attackTarget);
   const bag = active.getByRole('group', { name: tr('table.items_of', { player: owner }) }).getByLabel(cardName('punching_bag'), { exact: true });
   await expect(bag).toHaveClass(/hl-pick/);
   await bag.hover();
@@ -213,11 +210,11 @@ test("a helper's extra attack roll shows whose roll it is (14.14, R-ATK-21)", as
   await settle(pages, click, async () => {
     const { view: v } = await view(active);
     const spent = v.players.find((p) => p.id === me.id)?.in_play?.some((c) => c.card === 'sibling_rivalry' && c.charged === false) ?? false;
-    return spent && (v.stack?.length ?? 0) === 0 && v.waiting.kind === PRIORITY && v.waiting.player === me.id && (await seen(active)).ready;
+    return spent && (v.stack?.length ?? 0) === 0 && v.waiting.kind === Ask.priority && v.waiting.player === me.id && (await seen(active)).ready;
   });
 
   await turnAction(active, 'Attack').click();
-  await settle(pages, click, async () => tablePicks(active).first().isVisible());
+  await untilPick(pages, click, active, Purpose.attackTarget);
   await click(active, active.getByRole('group', { name: tr('board.monsters') }).getByLabel(cardName('fatty'), { exact: true }));
   await untilAttackRoll(pages, click, active);
   await click(active, throwButton(active));
@@ -225,7 +222,7 @@ test("a helper's extra attack roll shows whose roll it is (14.14, R-ATK-21)", as
   // After the active player's roll, the helper's own roll waits for them.
   await settle(pages, click, async () => {
     const { view: v } = await view(other);
-    return (v.stack ?? []).some((it) => it.kind === 3 && it.attack === true && it.controller === them.id && !it.roll) && (await throwButton(other).count()) > 0;
+    return (v.stack ?? []).some((it) => it.kind === 3 && it.attack === true && it.controller === them.id && !it.roll) && (await holds(other, may(Intent.throw)));
   });
   // Both tables say it is the helper's roll.
   for (const page of pages) {

@@ -100,6 +100,7 @@ func parseAll(args []string) (server.Config, tracing.Options, error) {
 	gameHours := fs.Int("game_hours", def.GameHours, "end a game this many hours after it started; 0 never")
 	bots := fs.String("bots", def.Bots, "bot levels a host may seat: off, standard (no hard bots) or all")
 	botThink := fs.String("bot_think", def.BotThink, "a hard bot's time to think a move, 100ms to 10s")
+	testSeeds := fs.Bool("test_seeds", false, "let a create choose its game's seed; for e2e tests only, never a public server (ADR 032)")
 	trace := tracing.Flags(fs)
 	// ENV is set like a flag before the flags, so a flag wins. An empty
 	// value counts as unset, as compose passes one for a blank setting.
@@ -149,6 +150,8 @@ func parseAll(args []string) (server.Config, tracing.Options, error) {
 			cfg.Bots = *bots
 		case "bot_think":
 			cfg.BotThink = *botThink
+		case "test_seeds":
+			cfg.TestSeeds = *testSeeds
 		}
 	})
 	return cfg, *trace, cfg.Check()

@@ -1,5 +1,5 @@
 // Package arena plays whole games between bot levels and counts the
-// results (ADR 030, Decision 18). cmd/bot_arena prints them; tests use
+// results (ADR 033, Decision 18). cmd/bot_arena prints them; tests use
 // it to check that no bot intent is refused.
 //
 // The arena holds the real game. Each seat gets only its worlds, made by

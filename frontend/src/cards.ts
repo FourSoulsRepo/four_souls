@@ -1,5 +1,5 @@
 // Card display data and the pure helpers the Card component uses.
-// The data comes from Go (App.Cards), from card_db.
+// The data comes from Go (Assets.Cards), from card_db.
 
 export interface CardInfo {
   ref: string;
@@ -8,6 +8,7 @@ export interface CardInfo {
   name: string; // in the chosen language; the store sets it (inLanguage)
   names?: Record<string, string>; // by language, English too (LO-02)
   translators?: Record<string, string[]>; // credited by language (CD-06)
+  artists?: string[]; // this face's art, credited in every language (CD-14)
   effects: string[];
   footnotes: { title: string; text: string }[];
   stats: { name: string; value: string }[];
@@ -20,6 +21,9 @@ export interface CardInfo {
   // front (ADR 023). Each face is a card of its own.
   back?: string;
   front?: string;
+  // record: the text comes from the watched record's header, for a card
+  // the app has no data for (RP-10, 10.3).
+  record?: boolean;
 }
 
 // Kind is the deck family a card belongs to; it sets the blank card's
@@ -114,6 +118,12 @@ export function translatorsOf(card: CardInfo, lang: string): string[] {
     return [];
   }
   return new Map(Object.entries(card.translators ?? {})).get(lang) ?? [];
+}
+
+// artistsOf credits who drew the card (CD-14, 20.24): the names Go
+// picked for this face, none when the data has no public name.
+export function artistsOf(card: CardInfo): string[] {
+  return card.artists ?? [];
 }
 
 // unknownCard stands in for a ref the app has no data for.

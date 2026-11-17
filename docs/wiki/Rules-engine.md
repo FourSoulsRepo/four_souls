@@ -34,7 +34,7 @@ Every card is an object with an ID. Moving a card to another zone gives it a new
 
 ### Copies and new state fields
 
-`Game.Clone` (`clone.go`) is a deep copy written by hand, no JSON (ADR 030, Decision 3): a bot copies the game for every move it tries, so it must stay cheap (`BenchmarkClone` in `cards/clone_test.go`: under 0.3 ms for a 4-player game with every set). The copy saves to the same bytes and has the same checksum, and shares no slice, map or pointer with the game; only the card definitions are shared. Like a save and a load, it drops the last step's events and the test dice.
+`Game.Clone` (`clone.go`) is a deep copy written by hand, no JSON (ADR 033, Decision 3): a bot copies the game for every move it tries, so it must stay cheap (`BenchmarkClone` in `cards/clone_test.go`: under 0.3 ms for a 4-player game with every set). The copy saves to the same bytes and has the same checksum, and shares no slice, map or pointer with the game; only the card definitions are shared. Like a save and a load, it drops the last step's events and the test dice.
 
 A new field of `Game`, or of any type inside it, must add:
 
@@ -48,19 +48,19 @@ A new place that hides a card from a seat (a new face-down zone, a new peek) als
 
 ### Imagined game
 
-`Game.Imagine(p, seed, known)` (`imagine.go`) is the game as seat `p` may imagine it (ADR 030, Decision 2). A bot gets games only from it, never the real one. It clones the game and then:
+`Game.Imagine(p, seed, known)` (`imagine.go`) is the game as seat `p` may imagine it (ADR 033, Decision 2). A bot gets games only from it, never the real one. It clones the game and then:
 
 1. lists the objects whose card `p` cannot see now (`hiddenFrom`): every deck card, bottom up; the hands of the other players, unless `p`'s view shows them (a revealed hand, or any hand in a co-op challenge); a challenge's face-down presents;
 2. leaves out what `p` looks at now (`seenBy`), as `ViewFor` shows it: the treasure peek, and the cards of `p`'s own open question (its options' cards and targets, its subject, its order, its deck look at the top);
 3. pools the hidden cards by deck (a card of no deck by its kind), so a hand keeps its kinds of cards: a monster card and an event card share the monster deck's pool;
 4. deals `known` first: each remembered card goes to the hand or deck place `p` remembers, when that place is hidden and the card's pool still holds a copy; else it is skipped. The memory is never checked against the real game, so a wrong memory tells the bot nothing;
-5. sorts each pool, shuffles the rest of it with a generator from `seed` and deals it to the remaining places in order; objects keep their IDs and every other field, only `Card` changes. Sorted first, the deal depends only on the pool's cards, `seed` and `known`, never on where the real cards lie (ADR 030, Decision 2.14);
+5. sorts each pool, shuffles the rest of it with a generator from `seed` and deals it to the remaining places in order; objects keep their IDs and every other field, only `Card` changes. Sorted first, the deal depends only on the pool's cards, `seed` and `known`, never on where the real cards lie (ADR 033, Decision 2.14);
 6. renames each hidden card where the copy still names it, to a card drawn from its pool: past objects (`ZoneGone`) that nothing in the state points at (a card drawn unseen leaves its old object behind), and the option labels of another player's prompt. A past object the state still points at, say a trigger of a monster that left play, keeps its card: the stack shows it;
 7. reseeds the copy's RNG from the same generator: no real dice or draws.
 
 `Known` holds the cards of each hand by seat, and of each deck's top (top first) and bottom (bottom up); `""` is a place not remembered. Its zero value remembers nothing.
 
-What stays as it is, because `p` sees it or may know it: everything in play, slots and covered cards, discards, below the top too (open by R-ZONE-07; the view sends only the top, but every card went there in sight), bonus souls, cards outside the game, the revealed monster of a deck attack, deck and hand sizes, `p`'s own hand. Events are not part of the state; what they showed is the memory's work (`Known`, `world.Memory`, step 21.15). For it a `looked_at` of a deck card names the card's deck and depth (`Event.Deck`, hidden with the card), and a deck whose cards change places out of sight tells `deck_order`: `ShuffleDeck`, a refill from the discard, `SetDeckTop`, `DeckToBottom`. Setup shuffles (`shuffleDeck`) and moves told by their own event (`top_choice`, `deck_bottom`: `deckToBottom`) stay silent. A new such move needs `emitDeckOrder` (see [Bots](Bots), Memory).
+What stays as it is, because `p` sees it or may know it: everything in play, slots and covered cards, discards, below the top too (open by R-ZONE-07; the view sends only the top, but every card went there in sight), bonus souls, cards outside the game, the revealed monster of a deck attack, deck and hand sizes, `p`'s own hand. Events are not part of the state; what they showed is the memory's work (`Known`, `world.Memory`, step 23.15). For it a `looked_at` of a deck card names the card's deck and depth (`Event.Deck`, hidden with the card), and a deck whose cards change places out of sight tells it: `ShuffleDeck` (a refill from the discard and setup too) sends `shuffled` (19.178); `SetDeckTop` and `DeckToBottom` send `deck_order`. Moves told by their own event (`top_choice`, `deck_bottom`: `deckToBottom`) send neither. A new such move needs `emitDeckOrder` (see [Bots](Bots), Memory).
 
 A new move into `ZoneOutside` or an `Under` list from a hand or a deck, face down, needs a line in `hiddenFrom`: today only a challenge's presents do that.
 
@@ -79,7 +79,8 @@ Tests in `cards/imagine_test.go`: `TestImagineKeepsTheView` imagines every step 
 | `triggers.go`, `statics.go` | triggered and static abilities |
 | `choice.go` | `Choose` prompts (targets, order of replacements and triggers, penalties) |
 | `allowed.go`, `aims.go`, `blocked.go`, `view.go` | allowed intents, their first targets, and why the rest are not; per-viewer hidden information |
-| `record.go`, `situation.go` | step records, replay, save/load; situation payloads |
+| `record.go`, `situation.go` | step records, replay, resume; situation payloads |
+| `save.go` | save and load, also while a nested question waits (19.177) |
 | `invariants.go` | state checks used by tests and fuzzing |
 
 Cards are Go values built from effect blocks; see [Effect blocks](Effect-blocks).
@@ -211,6 +212,14 @@ A rollback to before step k is `ReplayFrom(base, steps[:k], sets...)` (ADR 020, 
 `Barrier(Event)` (`barrier.go`) says whether an event stops a Soft rollback (ADR 020, item 4): dice, damage and death, hidden information seen, a turn's end, the game's start and end, and any private event but two: a card a player puts from their hand on the loot deck (private `moved_to_deck`, `privateNoBarrier`) shows no deck card, so a played card before it stays undoable (17.6); a kept or bottomed top card (`top_choice`, 19.90) follows its `looked_at`, which already is a barrier. Every event kind is sorted in `barrierKinds`; `TestBarrierKinds` pins the list and fails on a new kind until it is sorted.
 
 `Load` needs the same engine; a base saved by another engine goes through `Resume` first (ADR 019).
+
+### Saving while a nested question waits
+
+An `Ask` keeps its answers in the state (`Asking`), but its questions and its `do` are Go code. While the game runs, `Game.asks` finds that code by `Asking.Key`. After a load the map is empty, and `Asking.Effect` finds the ask again only when it is the ability's own effect, the one `resolveAbility` applied (`Ctx.direct`). An ask made while another effect runs is nested: inside an Ask's `do` (Gimpy's "Loot 1, then discard"), inside a wrapper (`DestroyThis` of Plan C, Mom's Shovel, Forget Me Now) or inside a card's own `EffectFunc` (Berkano). No saved state can hold it (19.143, 19.177).
+
+So `save.go` keeps such states out of saves (ADR 020, item 13). A state is clean when no nested ask waits (`clean()`, `NestedAsk()`). `Save` of a clean game writes the state as before. While a nested ask waits it writes the last clean state plus `replay`: the intents applied since then (`ReplayStep`; `apply` marks one that came from `Apply`, not `Step`, which only tests do). `Load` decodes the clean state and applies those intents, so the card's own code asks the nested question again, closures included. `ReplayFrom` and `Resume` go through `Load`, so a rollback base and a game kept over a restart work the same way.
+
+To write the last clean state without copying the state on every step, the game keeps in memory (`Game.saved`, not saved) an origin: a clean state's bytes, taken at the first `Apply`, at a load, or at a clean `Save`. `Apply` logs each intent after it and notes the last clean point. A save at a nested ask replays the log from the origin up to that point, then replays the rest and checks the result is the game itself (`Checksum`); a game changed outside `Apply` since its origin (a test's direct call) fails the save rather than saving a wrong state. A nested ask lasts a few steps (4 at most in 200 random games), so the replay is short once the origin has moved on. `StateMeaning` is 3: a state kept by an older server may hold a nested ask, which would load as the wrong question.
 
 ## Testing
 

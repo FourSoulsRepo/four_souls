@@ -45,13 +45,13 @@ LR-08 and LR-09 moved to step 12 (11.7, 11.8).
 
 1. Goal: a practice opponent (LR-06).
 2. Changed (owner, 2026-11-16): bots get two levels and play network games (N-21).
-3. Moved to step 21 (21.4 – 21.6).
+3. Moved to step 23 (23.4 – 23.6).
 
 ### [ ] 11.5 Practice games
 
 1. Goal: two practice modes (LR-05).
 2. Tasks:
-   1. Free mode: real game vs bots (step 21), with hints.
+   1. Free mode: real game vs bots (step 23), with hints.
    2. Seeded mode: known draws; only planned moves allowed.
    3. Seeded scenario file format.
 3. Done when:

@@ -22,16 +22,16 @@ const enginePath = "github.com/FourSoulsRepo/rules_engine"
 
 // cloneFuncs are the functions that may copy a game (Game.Clone, a call
 // with no arguments). Each copies only a world from Input.World (ADR
-// 030, Decision 4.4); the search of step 21.5 copies in fork.
+// 030, Decision 4.4); the search of step 23.5 copies in fork.
 var cloneFuncs = map[string]bool{"fork": true}
 
 // keyFuncs are the functions that may read a card's identity (Card),
 // and only to look it up in the measured table of card values, which is
-// generated data (ADR 030, Decision 20.9): tableKey.
+// generated data (ADR 033, Decision 20.9): tableKey.
 var keyFuncs = map[string]bool{"tableKey": true}
 
 // banned are engine names the bot's code never uses: card identities
-// and names (rule 5.24, ADR 030 Decision 6.3), and ways to make a game
+// and names (rule 5.24, ADR 033 Decision 6.3), and ways to make a game
 // other than Input.World.
 var banned = map[string]string{
 	"CardRef":      "a card's identity",
@@ -47,8 +47,8 @@ var banned = map[string]string{
 	"Imagine":      "a game not from Input.World",
 }
 
-// TestBotRules checks the bot's code, test files aside (ADR 030,
-// Decision 4; step 21 rules 3 and 4):
+// TestBotRules checks the bot's code, test files aside (ADR 033,
+// Decision 4; step 23 rules 3 and 4):
 //   - it imports the standard library and the engine only: never
 //     internal/server, internal/world or a card set;
 //   - it names no card: no CardRef, no card field (Card only in

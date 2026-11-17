@@ -8,7 +8,7 @@
 // Each game seats -players bots at one table and plays it to the end with
 // random legal moves, as the headless tests do. With -bots the client
 // plays only the host's seat; the host seats the server's own bots of
-// that level in the others (ADR 030), and the report adds how long their
+// that level in the others (ADR 033), and the report adds how long their
 // turns took. A bot whose connection drops
 // takes its seat back with its token, as the app does, and the report counts
 // those reconnects. The games run in stages: -start

@@ -70,10 +70,13 @@ Every option is a flag, an ENV variable, or a value in a JSON config file. ENV o
 | `-bots` | `FOUR_SOULS_BOTS` | `all` | bot levels a host may seat: `off`, `standard` (no hard bots: they think longer and cost CPU) or `all`; the app hides the others |
 | `-bot_think` | `FOUR_SOULS_BOT_THINK` | `1.5s` | a hard bot's time to think a move, `100ms` to `10s`; less saves CPU and plays weaker. At most half the CPU cores think for hard bots at once (at least one); a hard bot that waits longer than this plays that move as a standard bot |
 | `-config` | `FOUR_SOULS_CONFIG` | none | a JSON file with the same settings |
+| `-test_seeds` | `FOUR_SOULS_TEST_SEEDS` | false | for the e2e tests only: a new game may choose its seed, so a test gets the same deal every run (ADR 032); never on a server people play on |
 
 ```json
 {"port": 4774, "records": "/var/lib/four-souls/records", "retention": 30, "saves": "/var/lib/four-souls/saves", "presence": true, "name": "Basement", "empty_minutes": 30, "game_hours": 24, "bots": "all", "bot_think": "1.5s"}
 ```
+
+`-test_seeds` has no config file key: a copied config can never turn it on. Without it, a game that asks for a seed is refused ("This server does not let a game choose its own deal."): a player could rig their own deal.
 
 `GET /healthz` answers `ok` while the server runs; the Docker setups use it as their healthcheck.
 

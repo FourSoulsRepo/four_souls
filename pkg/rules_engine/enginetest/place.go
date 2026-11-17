@@ -9,7 +9,7 @@ import (
 
 // PlaceFromDeck moves the card of object id from its deck to seat p: a
 // loot card into p's hand, a treasure card or a trinket into p's play
-// area as an item, as a draw and a gain would (ADR 030, Decision 20.5).
+// area as an item, as a draw and a gain would (ADR 033, Decision 20.5).
 // It makes a new object for the card (R-ZONE-01) and returns it.
 //
 // It is quiet: no event and no trigger, so a card that does something as

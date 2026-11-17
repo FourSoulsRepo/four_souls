@@ -11,14 +11,14 @@ import (
 const decks = len(engine.GameView{}.DeckSizes)
 
 // Memory is what one seat remembers of cards it saw go where it cannot
-// see them now (ADR 030, Decision 19): the cards of other hands, and
+// see them now (ADR 033, Decision 19): the cards of other hands, and
 // the cards at known places of each deck. It is fed only what the
 // seat's client gets, the seat's view and its filtered events, step by
 // step; Known gives it to Imagine through For.
 //
 // When unsure, it forgets: a card leaves a hand unseen, a deck is
 // shuffled or changes in a way no event tells, or a count does not add
-// up (Decision 19.9). Test 6 of 21.15 checks it against real games.
+// up (Decision 19.9). Test 6 of 23.15 checks it against real games.
 //
 // A Memory is for one goroutine at a time; it is not saved.
 type Memory struct {
@@ -162,7 +162,7 @@ func (s *step) event(e engine.Event) {
 		}
 	case engine.EvMovedToDeck:
 		s.movedToDeck(e)
-	case engine.EvDeckBottom, engine.EvDeckOrder:
+	case engine.EvDeckBottom, engine.EvDeckOrder, engine.EvShuffled:
 		if d, ok := deckNamed(e.Text, ""); ok {
 			s.lose(d)
 		}

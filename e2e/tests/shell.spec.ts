@@ -49,7 +49,7 @@ test('the menu buttons never move after they show (19.49)', async ({ page }) => 
 
 test('Exit is the last menu button and closes the app (15.79)', async ({ page }) => {
   await page.goto('/?fake&nosplash');
-  await expect(page.getByRole('navigation').getByRole('button')).toHaveText([tr('menu.play'), tr('menu.records') + tr('menu.soon'), tr('menu.settings'), tr('menu.update'), tr('menu.exit')]);
+  await expect(page.getByRole('navigation').getByRole('button')).toHaveText([tr('menu.play'), tr('menu.records'), tr('menu.settings'), tr('menu.update'), tr('menu.exit')]);
   const quit = () => page.evaluate(() => (window as unknown as { fakeQuit: boolean }).fakeQuit);
   expect(await quit()).toBe(false);
   await page.getByRole('button', { name: tr('menu.exit') }).click();
@@ -154,7 +154,7 @@ test('Play opens LAN, Online and Learn to play in place (15.96)', async ({ page 
   await expect(play).toHaveAttribute('aria-expanded', 'true');
   await expect(group.getByRole('button')).toHaveText([tr('menu.lan'), tr('menu.online'), tr('menu.learn') + tr('menu.soon')]);
   await expect(group.getByRole('button', { name: tr('menu.soon_label', { name: tr('menu.learn') }) })).toBeDisabled();
-  await expect(page.getByRole('button', { name: tr('menu.soon_label', { name: tr('menu.records') }) })).toBeDisabled();
+  await expect(page.getByRole('button', { name: tr('menu.records'), exact: true })).toBeEnabled();
   // Settings slides down by the group: three buttons and their gaps.
   const row = await group.getByRole('button', { name: tr('menu.lan') }).evaluate((e) => (e as HTMLElement).offsetHeight + 12);
   await expect.poll(() => top(settings)).toBeCloseTo(settingsTop + 3 * row, 0);

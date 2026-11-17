@@ -1,7 +1,16 @@
 # Repo layout
 
 ```
-main.go, app.go        Wails desktop app and its bindings
+main.go, app.go        Wails desktop app: entry point, binding list; App keeps the Wails context (not bound)
+bindings/              Wails bindings, one package per domain (ADR 030)
+bindings/about/        About: app versions, the fan-game notice
+bindings/prefs/        Prefs: the player's settings, load and save
+bindings/assets/       Assets: card list, backs, dice, mats, fonts, icons, sounds; serves the card files
+bindings/setup/        Setup: card sets, challenges, deck ratios for the host screen
+bindings/join/         Join: LAN games, seat check, server status
+bindings/host/         Host: runs a game server inside the app
+bindings/records/      Records: saves a match record
+bindings/updater/      Updater: checks, downloads and applies app updates
 cmd/server/            dedicated server (no UI)
 cmd/server_load/       load test: plays whole games against a running server
 cmd/bot_arena/         bot arena: whole games between bot levels (make bots)
@@ -9,12 +18,14 @@ cmd/website/           rules website, js/wasm only
 cmd/cardgen/           writes engine card stubs from card_db data
 internal/arena/        plays and counts bot games for bot_arena and tests
 internal/assets/       app files, embedded or read from disk
-internal/bot/          a bot seat's move; sees only imagined games (ADR 030)
+internal/bot/          a bot seat's move; sees only imagined games (ADR 033)
 internal/cardinfo/     card display info from card_db, for app and website
 internal/instance/     one slot per running app copy
 internal/lan/          finds hosted games on the LAN (ADR 009)
 internal/legal/        fan-game notice used by app and server
+internal/msgerr/       player messages out of the bindings (ADR 021)
 internal/protocol/     network messages (never split out)
+internal/replay/       reads a record's live steps and views for the replay player, no engine (ADR 031)
 internal/server/       game rooms and the WebSocket transport (ADR 006)
 internal/settings/     the player's app settings file
 internal/version/      app version stamped at link time

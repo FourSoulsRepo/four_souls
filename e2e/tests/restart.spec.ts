@@ -11,7 +11,7 @@ import { startGame } from './game';
 import { restartPorts } from './ports';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, throwButton, turnAction, untilAttackRoll } from './turn';
+import { activePage, Ask, asked, click, Intent, markGame, may, Purpose, throwButton, turnAction, until, untilAttackRoll, untilResynced } from './turn';
 import { lineRe, tr } from './locale';
 
 const root = join(import.meta.dirname, '..', '..');
@@ -36,7 +36,7 @@ class RestartServer {
   }
 
   async start(): Promise<void> {
-    const args = ['-addr', '127.0.0.1', '-port', String(this.port), '-records', join(this.dir, 'records'), '-saves', join(this.dir, 'saves')];
+    const args = ['-test_seeds', '-addr', '127.0.0.1', '-port', String(this.port), '-records', join(this.dir, 'records'), '-saves', join(this.dir, 'saves')];
     this.proc = spawn(this.bin, args, { cwd: root, stdio: 'ignore' });
     for (let i = 0; i < 100; i++) {
       if (await listening(this.port)) {
@@ -206,27 +206,34 @@ test('server notices: a newer engine, a lost game', async ({ browser }) => {
 });
 
 // rollbackOverRestart plays a Godmode game to an attack's throw, then
-// restarts the server; edit runs while it is down. It returns the
-// active page with its History open.
-async function rollbackOverRestart(browser: Browser, names: string[], edit?: () => void): Promise<Page> {
+// restarts the server; edit runs while it is down; bans go to the host.
+// It returns the active page with its History open.
+async function rollbackOverRestart(browser: Browser, names: string[], edit?: () => void, bans: string[] = []): Promise<Page> {
   await server.start();
-  pages = await startGame(browser, names, { port: server.port, url: `${appURL(server.port)}&anim=off`, options: { rollback: 'god' } });
+  pages = await startGame(browser, names, { port: server.port, url: `${appURL(server.port)}&anim=off`, options: { rollback: 'god' }, bans });
   const active = await activePage(pages, click);
-  await expect(turnAction(active, 'Attack')).toBeEnabled();
+  await until(active, may(Intent.attack));
   await click(active, turnAction(active, 'Attack'));
   await untilAttackRoll(pages, click, active);
+  for (const page of pages) {
+    await markGame(page);
+  }
   await server.stop();
   edit?.();
   await server.start();
   for (const page of pages) {
-    await expect(page.getByRole('status', { name: tr('lost.reconnecting_label') })).toHaveCount(0, { timeout: 15000 });
+    await untilResynced(page);
+    await expect(page.getByRole('status', { name: tr('lost.reconnecting_label') })).toHaveCount(0);
   }
   await active.getByRole('button', { name: tr('history.title'), exact: true }).click();
   return active;
 }
 
 test('Godmode: a rollback reaches past a server restart (17.5)', async ({ browser }) => {
-  const active = await rollbackOverRestart(browser, ['Gus', 'Hex']);
+  // Pride: its trigger's discard resolves before the first throw
+  // (R-ATK-25), so the latest move is the discard, not the target pick
+  // the first Undo names (19.164).
+  const active = await rollbackOverRestart(browser, ['Gus', 'Hex'], undefined, ['pride']);
   const history = active.getByRole('complementary', { name: tr('history.title'), exact: true });
   await expect(history.getByText(tr('history.restarted'))).toHaveCount(0);
   // Two presses: the target pick, then the declaration (17.7).
@@ -236,9 +243,11 @@ test('Godmode: a rollback reaches past a server restart (17.5)', async ({ browse
   await expect(throwButton(active)).toHaveCount(0);
   await expect(undo).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.attack_declared.you') }));
   // The target prompt is back, picked on the table (18.11).
+  await until(active, asked(Ask.choose, Purpose.attackTarget));
   await expect(active.locator('.prompt-title')).toHaveText(tr('choice.title.attack'));
   await shot(active, 'attack-pick-table');
   await undo.click();
+  await until(active, may(Intent.attack));
   await expect(turnAction(active, 'Attack')).toBeEnabled();
 });
 

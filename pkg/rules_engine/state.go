@@ -358,6 +358,9 @@ type Game struct {
 	// see Asking.Key).
 	AskSeq int `json:"ask_seq,omitempty"`
 	asks   map[int]askEffect
+	// saved keeps the last clean state for a save at a nested ask
+	// (19.177; not saved).
+	saved tracking
 	// maxHP is the max HP at the last checkMaxHP (R-MECH-21; not saved).
 	maxHP map[hpKey]int
 
@@ -365,6 +368,9 @@ type Game struct {
 	events []Event
 	// forcedRolls lets tests decide dice results; never set in games.
 	forcedRolls []int
+	// changes logs each move and shuffle since TakeSnapshot, for
+	// CheckEvents; nil (off) in games.
+	changes *changeLog
 }
 
 // newObject adds a card as a new object and returns its ID.
@@ -386,9 +392,13 @@ func (g *Game) Object(id ObjectID) *Object {
 // The old object is gone; callers update the zone lists.
 func (g *Game) move(id ObjectID, to Zone, controller PlayerID) ObjectID {
 	old := g.Object(id)
-	card := old.Card
+	card, from := old.Card, old.Zone
 	old.Zone = Zone{Kind: ZoneGone}
-	return g.newObject(card, to, controller)
+	nid := g.newObject(card, to, controller)
+	if g.changes != nil { // TakeSnapshot turns the log on (22.2)
+		g.changes.moves = append(g.changes.moves, moveLeg{from: id, to: nid, fromZone: from, toZone: to, at: len(g.events)})
+	}
+	return nid
 }
 
 // Checksum is a stable hash of the whole state (RP-12).
@@ -413,7 +423,7 @@ func (g *Game) inPlay() []ObjectID {
 }
 
 // eachInPlay calls f for each object of inPlay, in its order, without
-// building the list: stats read it at every step (21.10).
+// building the list: stats read it at every step (23.10).
 func (g *Game) eachInPlay(f func(ObjectID)) {
 	for _, pl := range g.Players {
 		f(pl.Character)
@@ -474,7 +484,7 @@ func (g *Game) facesOf(id ObjectID) []CardRef {
 }
 
 // eachFace calls f for each card of facesOf, in its order, without
-// building the list (21.10).
+// building the list (23.10).
 func (g *Game) eachFace(id ObjectID, f func(CardRef)) {
 	card := g.CardOf(id)
 	f(card)

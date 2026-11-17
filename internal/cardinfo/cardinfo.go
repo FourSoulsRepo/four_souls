@@ -22,10 +22,12 @@ type CardInfo struct {
 	// too (LO-02); Translators the names credited per language (CD-06).
 	Names       map[string]string   `json:"names"`
 	Translators map[string][]string `json:"translators"`
-	Effects     []string            `json:"effects"`
-	Footnotes   []carddb.Footnote   `json:"footnotes"`
-	Stats       []carddb.Stat       `json:"stats"`
-	Rewards     []carddb.Reward     `json:"rewards"`
+	// Artists are the names credited for this face's art (CD-14, 20.24).
+	Artists   []string          `json:"artists"`
+	Effects   []string          `json:"effects"`
+	Footnotes []carddb.Footnote `json:"footnotes"`
+	Stats     []carddb.Stat     `json:"stats"`
+	Rewards   []carddb.Reward   `json:"rewards"`
 	// Image is the English image URL; "" when the file is missing, and
 	// the card shows as a blank card with text (A-11).
 	Image string `json:"image"`
@@ -75,6 +77,7 @@ func build(fsys fs.FS, langs []carddb.Lang, c carddb.Card) CardInfo {
 		Stats:     append([]carddb.Stat{}, c.Stats...),
 		Rewards:   append([]carddb.Reward{}, c.Rewards...),
 		Names:     map[string]string{}, Translators: map[string][]string{}, Images: map[string]string{},
+		Artists: c.ArtistNames(),
 	}
 	for lang, t := range c.Text {
 		if t.Name != "" {

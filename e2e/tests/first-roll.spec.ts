@@ -5,7 +5,7 @@ import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { shot } from './shot';
-import { seen, throwButton } from './turn';
+import { holds, Intent, may, seen, throwButton, until } from './turn';
 import { tr, trRe } from './locale';
 
 test.setTimeout(120_000);
@@ -62,7 +62,7 @@ test("every player's first-player roll shows before the first turn", async ({ br
   // Cain makes his player go first without a roll; this test needs the
   // roll. Eden's starting-item dialog comes before the roll and covers
   // the History button this test opens.
-  const pages = await startGame(browser, names, { roll: false, bans: ['cain', 'eden'] });
+  const pages = await startGame(browser, names, { roll: false, bans: ['cain', 'eden'], animations: true });
   const seats = new Map<number, Page>();
   for (const page of pages) {
     await recordBanners(page);
@@ -76,6 +76,7 @@ test("every player's first-player roll shows before the first turn", async ({ br
   if (!ann || !bo) {
     throw new Error('no pages');
   }
+  await until(ann, may(Intent.throw));
   await expect(throwButton(ann)).toBeVisible();
   await expect(bo.getByRole('region', { name: tr('throw.label') })).toContainText(tr('throw.throwing', { player: 'Ann' }));
   await shot(bo, 'first-roll-waiting');
@@ -106,12 +107,11 @@ test("every player's first-player roll shows before the first turn", async ({ br
   for (let i = 0; i < 600 && (await seen(ann)).turn < 1; i++) {
     const s = await seen(ann);
     const roller = seats.get(s.waiting);
-    const button = roller ? throwButton(roller) : null;
-    if (!roller || !button || !(await button.isVisible())) {
+    if (!roller || !(await holds(roller, may(Intent.throw)))) {
       await ann.waitForTimeout(100);
       continue;
     }
-    await button.click();
+    await throwButton(roller).click();
     // Off the cards, so no zoom covers the table.
     await roller.mouse.move(1, 1);
   }

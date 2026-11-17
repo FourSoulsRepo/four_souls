@@ -1,6 +1,6 @@
-// Bots in the lobby (21.11, ADR 030 Decision 10): the host seats bots on
+// Bots in the lobby (23.11, ADR 033 Decision 10): the host seats bots on
 // free seats, changes their level or takes them away; the others see
-// them with no buttons. At the game table (21.12) each bot's name is its
+// them with no buttons. At the game table (23.12) each bot's name is its
 // translated "Bot N (level)" after the robot. Against the real Go
 // server, which allows every level by default.
 import type { Locator, Page } from '@playwright/test';
@@ -55,7 +55,7 @@ async function joinTable(page: Page, name: string, id: string, listed: (row: Loc
   return seats;
 }
 
-// Use case "Play with bots" (UC-44).
+// Use case "Play with bots" (UC-47).
 test('the host fills the table with 3 bots and starts alone', async ({ browser }) => {
   const ann = await (await browser.newContext()).newPage();
   const seats = await hostTable(ann, 'Ann', 4);
@@ -72,7 +72,7 @@ test('the host fills the table with 3 bots and starts alone', async ({ browser }
     await expect(row.getByTestId('bot-icon')).toBeVisible();
     await expect(row.getByRole('combobox', { name: tr('lobby.bots.level', { name }) })).toHaveValue(level);
     await expect(row).toContainText(tr('lobby.seats.is_ready'));
-    // A bot has no connection, yet it is never away (21.11 task 9).
+    // A bot has no connection, yet it is never away (23.11 task 9).
     await expect(row).not.toContainText(tr('lobby.seats.away'));
   }
   await shot(ann, 'table-bots-host');
@@ -149,10 +149,10 @@ test('a server that allows no bots shows no bot buttons', async ({ page }) => {
   await expect(seats.getByRole('button')).toHaveCount(0);
 });
 
-// Bots at the game table (21.12): one player and three bots. The bots
-// keep the real pace (ADR 030 Decision 13), so the test plays only until
+// Bots at the game table (23.12): one player and three bots. The bots
+// keep the real pace (ADR 033 Decision 13), so the test plays only until
 // a bot's turn shows on the turn badge, in the history and on the stack.
-test('the game table names each bot with its level after the robot (21.12)', async ({ browser }) => {
+test('the game table names each bot with its level after the robot (23.12)', async ({ browser }) => {
   test.setTimeout(120_000);
   const pages = await startGame(browser, ['Ann'], { bots: ['standard', 'hard', 'standard'] });
   const [ann] = pages;
@@ -181,12 +181,12 @@ test('the game table names each bot with its level after the robot (21.12)', asy
   await expect(stack.getByTestId('bot-icon').first()).toBeVisible();
   await shot(ann, 'bots-table');
   // The right column's name starts clear of the corner Menu, whatever
-  // its language makes the button's width (19.163).
+  // its language makes the button's width (19.200).
   const menu = await ann.getByRole('button', { name: tr('game_menu.button'), exact: true }).boundingBox();
   const robot = await ann.getByRole('region', { name: bots[2], exact: true }).locator('.opp-name').getByTestId('bot-icon').boundingBox();
   expect(menu && robot && (robot.x + robot.width <= menu.x || robot.y >= menu.y + menu.height)).toBe(true);
   // A bot has no connection, yet the game never waits for it as for a
-  // player who left (21.12 task 2).
+  // player who left (23.12 task 2).
   await expect(ann.getByRole('dialog', { name: tr('pause.label') })).toHaveCount(0);
   await ann.getByRole('button', { name: tr('history.title'), exact: true }).click();
   const history = ann.getByRole('complementary', { name: tr('history.title'), exact: true });
@@ -194,10 +194,10 @@ test('the game table names each bot with its level after the robot (21.12)', asy
   await shot(ann, 'bots-history');
 });
 
-// A bot as the partner in a challenge (21.13 task 5, ADR 030 Decision
+// A bot as the partner in a challenge (23.13 task 5, ADR 033 Decision
 // 15): Ann hosts Krampus at Normal with one bot, the game starts with
 // the challenge table, and the bot plays its own turn.
-test('Krampus starts with one bot as the partner (21.13)', async ({ browser }) => {
+test('Krampus starts with one bot as the partner (23.13)', async ({ browser }) => {
   test.setTimeout(120_000);
   const krampus = async (host: Page) => {
     await host.getByLabel(tr('host.mode')).selectOption('challenge');

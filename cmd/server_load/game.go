@@ -220,7 +220,7 @@ func openTable(ctx context.Context, cfg config, g *gameRun, col *collector) ([]*
 }
 
 // seatServerBots has the host seat the server's bots of cfg.botLevel in
-// every other seat (ADR 030, Decision 10.4), then get ready: a bot's seat
+// every other seat (ADR 033, Decision 10.4), then get ready: a bot's seat
 // is always ready, so the game starts.
 func seatServerBots(cfg config, host *bot) error {
 	for seat := 1; seat < cfg.players; seat++ {
