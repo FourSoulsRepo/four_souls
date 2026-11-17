@@ -101,11 +101,9 @@ func TestStandardTakesSoul(t *testing.T) {
 // TestStandardNoHopelessAttack: at 1 HP, with things to lose, against
 // monsters that need two rolls of 6 or five of 4+: a miss is death
 // (odds about 3%), so it does not attack; it knows the monster deck's
-// top, a monster of 6 HP. At most one world of 8 attacks: an attack
-// clears no noise bar (Decision 8.6.2), and the fixed seed 1 kills in 1
-// of its 12 settles, a soul's gain that lifts the mean above ending
-// the turn. The seeds are fixed: the count does not move.
-// With full HP and flies in play it does attack.
+// top, a monster of 6 HP. The score sees the attack as a loss, and at
+// most half the worlds attack. With full HP and flies in play the
+// attack is a gain, and at least half the worlds attack.
 func TestStandardNoHopelessAttack(t *testing.T) {
 	hopeless := 0
 	for _, seed := range seeds {
@@ -123,7 +121,23 @@ func TestStandardNoHopelessAttack(t *testing.T) {
 			hopeless++
 		}
 	}
-	if hopeless > 1 {
+	// The bounds come from the model, not from the seeds (5.25): the
+	// score must see the attack as a loss, by three standard errors of
+	// the paired gain; then one world's 12-draw mean beats ending the
+	// turn with odds below one half, so at most half the worlds attack.
+	g := table(t, engine.SituationSetup{
+		Players: []engine.SituationPlayer{{
+			Character: "isaac", Damage: 1, Cents: 6,
+			Items: []engine.CardRef{"moms_purse", "moms_purse"}, Hand: []engine.CardRef{"soul_heart", "soul_heart"},
+		}, {Character: "cain"}},
+		Monsters: []engine.CardRef{"little_horn", "mom"},
+	})
+	var known engine.Known
+	known.Tops[engine.MonsterDeck] = []engine.CardRef{"satan"}
+	if gain, se := attackGain(t, g, 0, known); gain+3*se >= 0 {
+		t.Errorf("a hopeless attack gains %.2f ± %.2f over ending the turn", gain, se)
+	}
+	if hopeless > len(seeds)/2 {
 		t.Errorf("attacked at hopeless odds in %d of %d worlds", hopeless, len(seeds))
 	}
 	attacks := 0
@@ -135,6 +149,13 @@ func TestStandardNoHopelessAttack(t *testing.T) {
 		if best(t, g, 0, seed).Kind == engine.IntentAttack {
 			attacks++
 		}
+	}
+	flies := table(t, engine.SituationSetup{
+		Players:  []engine.SituationPlayer{{Character: "isaac"}, {Character: "cain"}},
+		Monsters: []engine.CardRef{"fly", "fly"},
+	})
+	if gain, se := attackGain(t, flies, 0, engine.Known{}); gain-3*se <= 0 {
+		t.Errorf("an attack on a fly gains %.2f ± %.2f over ending the turn", gain, se)
 	}
 	if attacks < len(seeds)/2 {
 		t.Errorf("attacked a fly in %d of %d worlds", attacks, len(seeds))
@@ -388,17 +409,29 @@ func TestStandardDigs(t *testing.T) {
 			bad++
 		}
 	}
-	// 7 of 8, not 8: a fly is killed 35 times in 36, but the fixed
-	// seed 2 rolls two 1s in a row against it in 2 of its 6 settles, a
-	// death each, so that world ends the turn. The seeds are fixed: the
-	// count does not move from run to run.
-	if attacks < len(seeds)-1 {
+	// The bounds come from the model, not from the seeds (5.25): the
+	// paired gain of the attack over ending the turn is a win at good
+	// odds and a loss at bad odds, by three standard errors; then one
+	// world's 12-draw mean takes the right side with odds above one
+	// half, so at least half the worlds choose right.
+	good := table(t, engine.SituationSetup{
+		Players:  []engine.SituationPlayer{{Character: "isaac", Items: []engine.CardRef{"moms_purse"}}, {Character: "cain"}},
+		Monsters: []engine.CardRef{"fly", "black_bony"},
+	})
+	if gain, se := attackGain(t, good, 0, known); gain-3*se <= 0 {
+		t.Errorf("an attack at good odds gains %.2f ± %.2f", gain, se)
+	}
+	poor := table(t, engine.SituationSetup{
+		Players:  []engine.SituationPlayer{{Character: "isaac", Damage: 1, Items: []engine.CardRef{"moms_purse"}}, {Character: "cain"}},
+		Monsters: []engine.CardRef{"greedling", "evil_twin"},
+	})
+	if gain, se := attackGain(t, poor, 0, known); gain+3*se >= 0 {
+		t.Errorf("an attack at bad odds gains %.2f ± %.2f", gain, se)
+	}
+	if attacks < len(seeds)/2 {
 		t.Errorf("attacked at good odds in %d of %d worlds", attacks, len(seeds))
 	}
-	// At most 1 of 8 at bad odds: an attack clears no noise bar
-	// (Decision 8.6.2), and the fixed seed 1 kills in 1 of its 12
-	// settles, which lifts the mean above ending the turn.
-	if bad > 1 {
+	if bad > len(seeds)/2 {
 		t.Errorf("attacked at bad odds in %d of %d worlds", bad, len(seeds))
 	}
 }
@@ -596,4 +629,66 @@ func TestStandardCancel(t *testing.T) {
 	if !errors.Is(err, context.Canceled) {
 		t.Fatalf("standardPick on a cancelled context: %v, want context.Canceled", err)
 	}
+}
+
+// attackGain is the paired gain of seat p's attacks over ending the
+// turn on g, as standard scores them (try, Decision 8): for each of
+// eight worlds and 30 dice draws, the best attack's settled score less
+// ending the turn's on the same draws. It returns the mean and its
+// standard error.
+func attackGain(t *testing.T, g *engine.Game, p engine.PlayerID, known engine.Known) (gain, se float64) {
+	t.Helper()
+	var diffs []float64
+	for _, seed := range seeds {
+		wf, err := world.For(g, p, known, seed)
+		if err != nil {
+			t.Fatal(err)
+		}
+		w, err := wf(0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		rng := rand.New(rand.NewPCG(seed, 11)) //nolint:gosec // test draws
+		draws := make([]uint64, 30)
+		for i := range draws {
+			draws[i] = rng.Uint64()
+		}
+		sc := scoring{dig: digValue(w)}
+		var end engine.Intent
+		var attacks []engine.Intent
+		for _, in := range w.Allowed(p) {
+			switch in.Kind {
+			case engine.IntentEndTurn:
+				end = in
+			case engine.IntentAttack:
+				attacks = append(attacks, in)
+			}
+		}
+		if len(attacks) == 0 {
+			t.Fatal("no attack allowed")
+		}
+		base, _, err := try(context.Background(), w, p, end, draws, sc)
+		if err != nil {
+			t.Fatal(err)
+		}
+		best := []float64(nil)
+		for _, in := range attacks {
+			s, _, err := try(context.Background(), w, p, in, draws, sc)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if best == nil || mean(s) > mean(best) {
+				best = s
+			}
+		}
+		for i, s := range best {
+			diffs = append(diffs, s-base[min(i, len(base)-1)])
+		}
+	}
+	m := mean(diffs)
+	ss := 0.0
+	for _, d := range diffs {
+		ss += (d - m) * (d - m)
+	}
+	return m, math.Sqrt(ss / float64(len(diffs)-1) / float64(len(diffs)))
 }
