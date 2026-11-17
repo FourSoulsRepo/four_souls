@@ -6,6 +6,19 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+## 0.5.0 - 2026-11-17
+
+- Records: a Records screen in the main menu lists hosted games and saved records, newest first; open a file, export or delete one.
+- Replays: Watch plays a record on the game table, with play and pause, steps, turns, a slider and speeds from 0.5x to 4x.
+- In a replay, Show hands shows every hand or none; click a player's character card to see the table from their seat; the replay bar hides with a button.
+- A record's cards that this app lacks show as text cards.
+- The card zoom credits the card's artists.
+- Host screen: the Detailed setup options sit in three groups: Characters and seats, Cards, Turns and undo.
+- Fear shows on the character card.
+- A monster you must attack, and the monster deck while an attack on it is owed, get a dashed frame; the banner says how many attacks are left.
+- Who helps the next attack, and who shares its rewards, shows for everyone (Sibling Rivalry).
+- A roll's result on the stack shows the number; a seat kicked by a vote says "Left for good".
+- A finished game leaves the server's game list at once.
 - The history says when a deck is shuffled.
 - The history shows the ¢ that Greed! and Auction Gavel move; Greed! no longer takes ¢ from a player with Rib of Greed.
 - A finished event card, such as a chest or Troll Bombs, flies to the monster discard instead of vanishing.
