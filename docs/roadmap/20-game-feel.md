@@ -574,7 +574,7 @@ Swapping it is the owner's call; not part of this step.
 1. Dropped (owner, 2026-11-17): no Credits button, no credits screen.
 2. Findings stay in ADR 027 "Credits" 6 and 10.7–10.13.
 
-### [ ] 20.26 Deck choices show the decks
+### [x] 20.26 Deck choices show the decks
 
 1. Goal: a card that asks for a deck shows the decks, not buttons (V-56).
    1. Owner, 2026-11-17.
@@ -619,3 +619,5 @@ Swapping it is the owner's call; not part of this step.
    5. UC-13 5r; wiki `Client.md`, `Animations.md` (`choice-grow`).
    6. Found: The Curse's ↷ question reuses the trigger's words.
       1. It asks "which deck into discard?"; logged as a bug in step 19.
+8. Owner notes (2026-11-17)
+   1. Owner marks 20.26 solved; step 20 done again.
