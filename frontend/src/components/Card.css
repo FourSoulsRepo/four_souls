@@ -359,14 +359,32 @@
   box-shadow: 0 0 0.875rem rgb(0 0 0 / 55%);
 }
 
-/* Who translated the card (CD-06): small, like a printed credit. */
+/* Who drew the card (CD-14) and who translated it (CD-06), in the
+   look of the reference's artist credit (ADR 027 "Credits" 11, 13):
+   our mixed-case title letters, so names keep their case, white with
+   a dark outline, centered. No box behind them. A long list wraps,
+   never cut: every name is a credit. Sizes by eye. */
+.card-zoom-credits {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  max-width: 100%;
+}
+
 .card-zoom-credit {
+  max-width: 100%;
   margin: 0;
-  padding: 0.125rem 0.5rem;
-  border-radius: 0.375rem;
-  font-size: 0.75rem;
-  color: var(--fg);
-  background: rgb(10 16 24 / 80%);
+  padding: 0 0.25rem;
+  box-sizing: border-box;
+  font-family: var(--font-title);
+  font-size: 1rem;
+  line-height: 1.25;
+  color: #fff;
+  text-align: center;
+  text-wrap: balance;
+  -webkit-text-stroke: 0.1875rem #000;
+  paint-order: stroke fill;
 }
 
 .card-zoom-owner {
@@ -401,6 +419,14 @@
   margin-right: 0.375rem;
   border-radius: 50%;
   vertical-align: middle;
+}
+
+/* Fear's ghost in the zoom (18.26): a little larger than a dot. */
+.card-zoom-dot.ghost {
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 0;
+  overflow: visible;
 }
 
 .card-zoom-stats {
@@ -560,9 +586,11 @@
   filter: brightness(0.55) saturate(0.6);
 }
 
-/* Highlights (7.7): yellow for "you may act", blue for "pick this". */
+/* Highlights (7.7): yellow for "you may act", blue for "pick this".
+   A card with a click of its own, e.g. a replay's character (4.10), too. */
 .card.hl-act,
-.card.hl-pick {
+.card.hl-pick,
+.card[role='button'] {
   cursor: pointer;
 }
 
@@ -595,6 +623,15 @@
    it shows with any glow. */
 .card.fight {
   outline: 0.1875rem solid #e53935;
+  outline-offset: 0.125rem;
+}
+
+/* A card the active player must attack this turn (19.180): the fight
+   frame, dashed, until the fight starts. The monster deck gets it too
+   while an attack on it is owed (19.182). */
+.card.must-attack:not(.fight),
+.pile.must-attack > .card {
+  outline: 0.1875rem dashed #e53935;
   outline-offset: 0.125rem;
 }
 
@@ -819,6 +856,30 @@
 .card.blank .card-dice {
   top: 40cqi;
   right: 3cqi;
+}
+
+/* The player's fear on their character (18.26): a ghost-white ghost
+   in the middle, its hem between health and attack and its head above
+   them, so its shape shows. Its ink number reads on the pale fill. */
+.card-fear {
+  bottom: 12cqi;
+  left: 50%;
+  width: 32cqi;
+  --fill: #e6ecf5;
+  --digit: #1d120a;
+  translate: -50% 0;
+  rotate: 3deg;
+}
+
+.card-fear .card-badge-value {
+  font-size: 16cqi;
+  -webkit-text-stroke: 0;
+  translate: 0 4cqi;
+}
+
+.card-badge-shape .card-badge-eyes {
+  fill: var(--ink);
+  stroke: none;
 }
 
 /* Damage on a character: a smaller dark-red blob at the top corner. */

@@ -61,6 +61,9 @@
 * **2e. A play (17.7):** a played loot card or a used item has no line of its own.
   * Its result is the resolved line, in the History and the strip.
   * In a game with rollback, the Undo button names the play (UC-30).
+* **2f. A shuffle (19.178):** a line names the deck.
+  * "The monster deck is shuffled"; a card's shuffle and a deck refill too.
+  * The deal's shuffles at the game's start have no line.
 
 ## Postconditions
 

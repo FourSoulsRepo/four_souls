@@ -84,6 +84,10 @@ Use option 1.
    8. A choice's deal clashes in its own beat only (19.139).
    9. A card looked at in a window may be revealed in the next update.
    10. A choice's deal claims each card with its object, when known (19.141).
+   11. A reveal and each arrival claim with the card's object, when known (19.191).
+   12. The engine gives a card a new object at each move.
+   13. So one card revealed on its deck, then into a slot, is two showings.
+   14. Every live claim of a card is kept; a new one is checked against each.
 3. A clash is logged, kept in `clashes`, and the second one skipped.
 4. Every animation site has an `anim: <id>` tag.
    1. `docs/wiki/Animations.md` has one row per id.

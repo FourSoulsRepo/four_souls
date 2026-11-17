@@ -243,7 +243,7 @@ async function tiltOf(page: Page): Promise<{ pitch: number; roll: number }> {
 
 test('a dragged card tilts by its motion and lies flat when still (20.6)', async ({ browser }) => {
   // Animations on: speed "off" keeps the card flat.
-  const pages = await startGame(browser, ['Til', 'Ura'], { url: appURL() });
+  const pages = await startGame(browser, ['Til', 'Ura'], { animations: true });
   await activePage(pages, click);
   await saveAndContinue(pages, 'Til, Ura', 'a_penny');
   const active = await activePage(pages, click);
@@ -498,7 +498,7 @@ test('the other player sees the arrow and the red mark', async ({ browser }) => 
 // a back; a card they drag floats out of the hand and sways until it is
 // played or put back. Animations on, as players see it.
 test('the other player sees a hovered hand card lift and a dragged one float', async ({ browser }) => {
-  const pages = await startGame(browser, ['Lia', 'Max'], { url: appURL() });
+  const pages = await startGame(browser, ['Lia', 'Max'], { animations: true });
   await activePage(pages, click);
   await saveAndContinue(pages, 'Lia, Max', 'a_penny');
   const active = await activePage(pages, click);

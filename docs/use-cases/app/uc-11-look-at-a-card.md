@@ -1,6 +1,6 @@
 # UC-11: Look at a card
 
-**Module:** `frontend/src/components`, `cards.go`
+**Module:** `frontend/src/components`, `bindings/assets`
 **Status:** Implemented
 **Actors:** Player
 **Goal:** The player reads any card on screen, with or without card images
@@ -53,6 +53,13 @@
   * From 4 cards they fan out: 40° plus 2° per card.
 * **2d. Right click (20.18):** the large copy opens at once, with no wait.
   * Any card on the table or in a window, e.g. a choice's card.
+* **3i. Credits (20.24):** under the large copy, who drew the card.
+  * "Art:" and the artists' names, in a match too.
+  * Each face its own artists; a two-sided card's back has its own.
+  * Never the card back's artist, never a name kept private.
+  * No public name: no line.
+  * Under it, the translators of the chosen language (UC-32).
+  * White letters with a dark outline; a long list wraps.
 
 ## Postconditions
 

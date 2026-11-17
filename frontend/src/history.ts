@@ -140,6 +140,7 @@ export const historyKinds: Record<string, string> = {
   roll_resolved: "It changes the roll's line; no new line.",
   roll_would_resolve: 'The roll resolves as a line.',
   shielded: 'The shielding card resolves as a line; a prevent has its line.',
+  shuffled: told,
   stack_added: 'The stack panel shows it; it resolves as a line.',
   stack_resolved: told,
   start_of_turn: 'A trigger window, not a play.',
@@ -162,6 +163,20 @@ function presentName(kind: string | undefined): string {
       return t('history.present.soul');
     default:
       return t('history.present.cents');
+  }
+}
+
+// shuffleText says which deck was shuffled (19.178); text is "<deck> deck".
+function shuffleText(text: string): string {
+  switch (text) {
+    case 'treasure deck':
+      return t('history.shuffled.treasure');
+    case 'monster deck':
+      return t('history.shuffled.monster');
+    case 'room deck':
+      return t('history.shuffled.room');
+    default:
+      return t('history.shuffled.loot');
   }
 }
 
@@ -233,6 +248,8 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
   // roll is the last resolved roll's entry, its die, and its line with
   // another number in the die's place, for its result.
   let roll: { entry: Entry; die: number; line: (rolled?: string) => string } | undefined;
+  // setup: the game's first update; its deck shuffles are no plays.
+  const setup = events.some((e) => e.kind === 'character_dealt' && e.text !== 'replaced');
   for (const e of events) {
     const card = e.card ? n.card(e.card) : '';
     const player = n.player(e.player);
@@ -324,6 +341,10 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         } else {
           add('◉', mine(e.player) ? t('history.look_hidden.you') : t('history.look_hidden.other', { player }), e.card);
         }
+        break;
+      case 'shuffled':
+        // Every shuffle but the setup's: the deck is named (19.178).
+        if (!setup) add('⇅', shuffleText(e.text ?? ''));
         break;
       case 'top_choice': {
         // A looked-at top card stays or goes to the bottom: everyone

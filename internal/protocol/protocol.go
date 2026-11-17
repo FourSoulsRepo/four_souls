@@ -471,6 +471,10 @@ type Options struct {
 	// Difficulty is the challenge's difficulty: "normal", "hard" or
 	// "ultra" (engine.DifficultyNormal …).
 	Difficulty string `json:"difficulty,omitempty"`
+	// Seed, if not 0, is the game's seed: the same seed deals the same
+	// game. Only a server started with -test_seeds takes it; others
+	// refuse the create (ADR 032).
+	Seed uint64 `json:"seed,omitempty"`
 }
 
 // Rollback modes (ADR 020, item 1).

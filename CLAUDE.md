@@ -5,12 +5,12 @@
    2. Network play, 2–4 players.
    3. Wails v2: Go backend, React + TypeScript frontend.
 2. Stage
-   1. Steps 1–8, 16, 17 and 20 done; 15 paused.
+   1. Steps 1–8, 16, 17, 20 and 22 done; 15 paused.
    2. Ideas live in `docs/ideas.md`.
    3. Roadmap: `docs/roadmap.md`; detailed steps in `docs/roadmap/`.
    4. Decisions: `docs/architecture/` (see `INDEX.md`).
 3. Layout
-   1. `main.go`, `app.go`: Wails entry point and bindings.
+   1. `main.go`, `app.go`: Wails entry point and app context.
    2. `frontend/`: React + TS (Vite).
    3. `docs/architecture/`: ADRs.
    4. `docs/use-cases/`: user-visible scenarios.
@@ -28,6 +28,7 @@
    16. `deploy/`: server setups: systemd, Docker, compose with Caddy (ADR 018).
    17. `scripts/`: `setup.sh` installs the tools; `versions.env` holds their versions.
    18. `cmd/server_load`: load test against a running server (wiki Load-test).
+   19. `bindings/`: Wails bindings, one package per domain (ADR 030).
 4. Commands
    1. `wails dev -m`: run with hot reload.
    2. `wails build -m`: release binary to `build/bin/`.
@@ -144,6 +145,19 @@
        5. Put such a rule in one shared place in the engine.
        6. Cards use it; no per-set copies of the rule.
        7. The bug entry lists every card and helper checked.
+   25. A test's expected value comes from the rules, not the code (owner, 2026-11-16).
+       1. Take it from the card text, an R-xxx rule, or a ruling.
+       2. Name the source in a comment next to the check.
+       3. Never run the code to learn what to assert.
+       4. If the code disagrees with the source, the code is the bug.
+       5. Seen in 19.110 (asserted 3 HP) and 19.45 (two uses a turn).
+   26. A client fix covers every place with the same mechanism (owner, 2026-11-16).
+       1. As 5.24, but for screens, playback and tests.
+       2. Search every component for the same pattern.
+       3. E.g. a hover on a node that is redrawn (19.99, 19.102).
+       4. E.g. a copy mark drawn for players but not monsters (19.157).
+       5. Fix them all in the same change.
+       6. The bug entry lists every component checked.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.

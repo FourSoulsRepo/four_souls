@@ -8,6 +8,7 @@ import { GameScreen } from './screens/GameScreen';
 import { HostScreen } from './screens/HostScreen';
 import { JoinScreen } from './screens/JoinScreen';
 import { MainMenu } from './screens/MainMenu';
+import { RecordsScreen } from './screens/RecordsScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { Splash } from './screens/Splash';
 import { TableScreen } from './screens/TableScreen';
@@ -68,5 +69,7 @@ function Screen({ screen, onSplashDone }: { screen: ScreenName; onSplashDone: ()
       return <CardGallery />;
     case 'update':
       return <UpdateScreen />;
+    case 'records':
+      return <RecordsScreen />;
   }
 }

@@ -31,3 +31,6 @@
 | [027](027-game-feel-from-a-reference-client.md) | Game feel: lessons from a reference client | Accepted |
 | [028](028-challenges.md) | Challenges: card set, slot rows, co-op end | Accepted |
 | [029](029-in-app-update.md) | In-app update | Accepted |
+| [030](030-bindings-by-domain.md) | Bindings by domain | Accepted |
+| [031](031-replays-without-the-engine.md) | Replays without the engine | Accepted |
+| [032](032-fixed-deals-in-e2e.md) | Fixed deals in e2e tests | Accepted |

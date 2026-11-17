@@ -9,7 +9,7 @@ import { repeatNames, startGame, statMonsters } from './game';
 import { cardName, tr } from './locale';
 import { editSave, saveEditContinue } from './saves';
 import { shot } from './shot';
-import { activePage, canEndTurn, click, endTurn, gameOver, settle, turnAction } from './turn';
+import { activePage, canEndTurn, click, endTurn, gameOver, holds, Intent, may, Purpose, question as ask, settle, turnAction, untilPick } from './turn';
 
 test.setTimeout(180_000);
 
@@ -289,7 +289,7 @@ test('a present at 0 brings minions; the guarded boss is no target (14.25)', asy
   await click(attacker, turnAction(attacker, 'Attack'));
   // The declared attack goes round for responses; then its target.
   const minion = minionRow(attacker).locator('.card.hl-pick').first();
-  await settle(pages, click, async () => (await minion.count()) > 0);
+  await untilPick(pages, click, attacker, Purpose.attackTarget);
   await expect(minion).toBeVisible();
   await expect(boss(attacker).locator('.card')).toBeVisible();
   await expect(boss(attacker).locator('.card.hl-pick')).toHaveCount(0);
@@ -329,12 +329,11 @@ test('the boss can be attacked once souls are enough; the challenge is won (14.2
     if (!active) {
       break;
     }
-    const attack = turnAction(active, 'Attack');
-    if (await attack.isEnabled()) {
-      await click(active, attack);
+    if (await holds(active, may(Intent.attack))) {
+      await click(active, turnAction(active, 'Attack'));
       // The declared attack goes round for responses; then its target.
       const target = boss(active).getByRole('button', { name: krampus, exact: true });
-      await settle(pages, click, async () => (await target.count()) > 0);
+      await untilPick(pages, click, active, Purpose.attackTarget);
       await expect(target).toHaveClass(/hl-pick/);
       if (i === 0) {
         await shot(active, 'challenge-boss-target');
@@ -368,7 +367,7 @@ test('All I Want for Christmas asks; a lost challenge says why (14.25)', async (
   const question = tr('card.how_the_krampus_stole_christmas.forgo_cents', { n: 1 });
   const asked = async () => {
     for (const page of pages) {
-      if (await page.getByRole('dialog', { name: question }).isVisible()) {
+      if (await holds(page, ask('card.how_the_krampus_stole_christmas.forgo_cents'))) {
         return page;
       }
     }
@@ -381,10 +380,9 @@ test('All I Want for Christmas asks; a lost challenge says why (14.25)', async (
       throw new Error('the game ended before the Fly died');
     }
     const fly = board(active).getByRole('group', { name: tr('board.monsters') }).getByRole('button', { name: cardName('fly'), exact: true });
-    const attack = turnAction(active, 'Attack');
-    if (await attack.isEnabled()) {
-      await click(active, attack);
-      await settle(pages, click, async () => (await fly.count()) > 0);
+    if (await holds(active, may(Intent.attack))) {
+      await click(active, turnAction(active, 'Attack'));
+      await untilPick(pages, click, active, Purpose.attackTarget);
       await click(active, fly);
       await settle(pages, click, async () => (await asked()) !== undefined || (await turnOrOver(pages)));
       forgo = await asked();

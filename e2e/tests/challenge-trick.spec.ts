@@ -1,7 +1,7 @@
 // Trick or Treat on the table (14.33, ADR 028 Decision 11, UC-42):
 // Mischievous The Haunt with its trick counters left of the monster
-// slots, the Trick/Treat card in the challenge panel, fear counters by
-// each player's name, and the monsters' evasion and rewards as the
+// slots, the Trick/Treat card in the challenge panel, fear counters on
+// each player's character card (18.26), and the monsters' evasion and rewards as the
 // challenge changes them. Saved games reach the exact states: fear on
 // a player, a changed reward, a sure hit or miss, enough souls, the
 // last round.
@@ -11,7 +11,7 @@ import { repeatNames, startGame, statMonsters } from './game';
 import { cardName, tr, trRe } from './locale';
 import { editSave, saveEditContinue } from './saves';
 import { shot } from './shot';
-import { activePage, canEndTurn, click, enabled, endTurn, gameOver, settle, throwButton, turnAction } from './turn';
+import { activePage, Ask, asked as askedOf, canEndTurn, click, endTurn, gameOver, holds, Intent, may, Purpose, question, settle, throwButton, turnAction, untilPick } from './turn';
 
 test.setTimeout(180_000);
 
@@ -134,6 +134,8 @@ function swapTop(save: TrickSave, card: string) {
 interface Seen {
   tricks: number;
   fear: number[];
+  // characters are each player's character object, by seat.
+  characters: number[];
   card: string;
   flipped: boolean;
   monsters: { id: number; card: string; dc: number; printed: number; rewards: number }[];
@@ -151,7 +153,7 @@ async function seenOf(page: Page): Promise<Seen> {
     interface S {
       game: {
         view: {
-          players: { counters?: { name?: string; count: number }[] }[];
+          players: { counters?: { name?: string; count: number }[]; character: { id: number } }[];
           monsters?: { top?: Card }[];
           bosses?: { top?: Card }[];
           challenge?: { card: Card };
@@ -163,6 +165,7 @@ async function seenOf(page: Page): Promise<Seen> {
     return {
       tricks: boss?.counters?.find((c) => c.name === 'trick')?.count ?? 0,
       fear: (v?.players ?? []).map((p) => p.counters?.find((c) => c.name === 'fear')?.count ?? 0),
+      characters: (v?.players ?? []).map((p) => p.character.id),
       card: v?.challenge?.card.card ?? '',
       flipped: v?.challenge?.card.flipped ?? false,
       monsters: (v?.monsters ?? []).flatMap((s) =>
@@ -192,6 +195,11 @@ function tricks(page: Page, n: number) {
 // objectCard is a card on the table by its object ID.
 function objectCard(page: Page, id: number) {
   return board(page).locator(`[data-zone="obj-${String(id)}"]`);
+}
+
+// fearBadge is the ghost on a character card: its player's fear (18.26).
+function fearBadge(page: Page, character: number, n: number) {
+  return page.locator(`[data-zone="obj-${String(character)}"]`).getByLabel(tr('table.fear_title', { n }), { exact: true });
 }
 
 // trickNormal is the game list's and the table's line for the game.
@@ -236,10 +244,11 @@ async function untilTurn(pages: Page[]): Promise<Page | undefined> {
   return undefined;
 }
 
-// asked is the page that shows the dialog, if any.
-async function asked(pages: Page[], name: string): Promise<Page | undefined> {
+// asked is the page whose player the game asks this question (its
+// text key), if any.
+async function asked(pages: Page[], key: string): Promise<Page | undefined> {
   for (const page of pages) {
-    if (await page.getByRole('dialog', { name }).isVisible()) {
+    if (await holds(page, question(key))) {
       return page;
     }
   }
@@ -259,7 +268,7 @@ function first(pages: Page[]): Page {
 async function attack(pages: Page[], active: Page, id: number) {
   await click(active, turnAction(active, 'Attack'));
   const target = board(active).locator(`.card.hl-pick[data-zone="obj-${String(id)}"]`);
-  await settle(pages, click, async () => (await target.count()) > 0);
+  await untilPick(pages, click, active, Purpose.attackTarget);
   await click(active, target);
 }
 
@@ -285,9 +294,10 @@ test('Trick or Treat at Normal: the table, a flip at turn start, the timer runs 
   }
 
   // As the turn starts, the active player may flip it (R-TRICK-11).
-  const question = tr('card.trick_treat.flip_to_treat');
-  await settle(pages, click, async () => (await asked(pages, question)) !== undefined);
-  const flipper = await asked(pages, question);
+  const flip = 'card.trick_treat.flip_to_treat';
+  const question = tr(flip);
+  await settle(pages, click, async () => (await asked(pages, flip)) !== undefined);
+  const flipper = await asked(pages, flip);
   if (!flipper) {
     throw new Error('no flip question');
   }
@@ -322,7 +332,7 @@ test('Trick or Treat at Normal: the table, a flip at turn start, the timer runs 
   await shot(first(pages), 'trick-lost');
 });
 
-test('fear by the names raises the shown evasion; damage gives fear; changed rewards show (14.33)', async ({ browser }) => {
+test('fear on the character cards raises the shown evasion; damage gives fear; changed rewards show (14.33)', async ({ browser }) => {
   const names = repeatNames(['Fen', 'Fiz']);
   // Delirium and Stoney change other monsters' evasion (14.10): the
   // test checks the +1 from fear alone.
@@ -349,8 +359,15 @@ test('fear by the names raises the shown evasion; damage gives fear; changed rew
   const activeSeat = now.fear.indexOf(2);
   expect(activeSeat).toBeGreaterThanOrEqual(0);
   for (const page of pages) {
-    // Both screens show the fear by the active player's name.
-    await expect(page.getByRole('img', { name: tr('table.fear_title', { n: 2 }), exact: true })).toBeVisible();
+    // Both screens show the fear on the active player's character card,
+    // not by the name (18.26); the other player's card has none.
+    await expect(page.locator('.player-counter')).toHaveCount(0);
+    await expect(fearBadge(page, now.characters[activeSeat] ?? -1, 2)).toBeVisible();
+    for (const [seat, character] of now.characters.entries()) {
+      if (seat !== activeSeat) {
+        await expect(page.locator(`[data-zone="obj-${String(character)}"] .card-fear`)).toHaveCount(0);
+      }
+    }
     // Each monster shows its evasion one higher, up to 6.
     for (const m of now.monsters) {
       expect(m.dc).toBe(Math.min(m.printed + 1, 6));
@@ -372,6 +389,16 @@ test('fear by the names raises the shown evasion; damage gives fear; changed rew
     await expect(zoom.locator('.card-zoom-stats')).toContainText(cardName(haunt));
     await shot(active, 'trick-fear-evasion');
   }
+  // The character's zoom names the player's fear and what it does.
+  await active.locator(`[data-zone="obj-${String(now.characters[activeSeat] ?? -1)}"]`).hover();
+  await expect(active.locator('.card-zoom .card-zoom-counters')).toContainText(tr('table.fear_title', { n: 2 }));
+  await shot(active, 'trick-fear-card');
+  await active.mouse.move(1, 1);
+  // The other player sees the ghost on the active player's card.
+  const other = pages.find((p) => p !== active);
+  if (other) {
+    await shot(other, 'trick-fear-opponent');
+  }
   await objectCard(active, target).hover();
   await expect(active.locator('.card-zoom .card-zoom-stats')).toContainText(trRe('stats.rewards_now'));
   await shot(active, 'trick-rewards');
@@ -382,7 +409,7 @@ test('fear by the names raises the shown evasion; damage gives fear; changed rew
   await settle(pages, click, async () => ((await seenOf(first(pages))).fear[activeSeat] ?? 0) > 2);
   const fear = (await seenOf(first(pages))).fear[activeSeat] ?? 0;
   for (const page of pages) {
-    await expect(page.getByRole('img', { name: tr('table.fear_title', { n: fear }), exact: true })).toBeVisible();
+    await expect(fearBadge(page, now.characters[activeSeat] ?? -1, fear)).toBeVisible();
   }
   await shot(active, 'trick-fear-gained');
 });
@@ -407,7 +434,7 @@ test('the boss is guarded; a kill asks the trigger order and removes a trick cou
   // the targets glow (R-TRICK-06).
   await click(active, turnAction(active, 'Attack'));
   const target = objectCard(active, fly);
-  await settle(pages, click, async () => (await active.locator('.board .card.hl-pick').count()) > 0);
+  await untilPick(pages, click, active, Purpose.attackTarget);
   await expect(target).toHaveClass(/hl-pick/);
   await expect(boss(active).locator('.card')).toBeVisible();
   await expect(boss(active).locator('.card.hl-pick')).toHaveCount(0);
@@ -416,14 +443,17 @@ test('the boss is guarded; a kill asks the trigger order and removes a trick cou
 
   // The attack-start roll (Ghostly Trickery) comes before the attack
   // roll: the active player throws it.
-  await settle(pages, click, async () => enabled(throwButton(active)));
+  await settle(pages, click, () => holds(active, may(Intent.throw)));
+  await expect(throwButton(active)).toBeEnabled();
   await shot(active, 'trick-attack-start-roll');
 
   // The Fly dies: the Haunt's roll and the Trick side's counter come at
   // once; the active player orders them (R-ABIL-15).
   const order = tr('choice.title.trigger_order');
-  await settle(pages, click, async () => (await active.locator('.choice').filter({ hasText: order }).count()) > 0 || (await seenOf(active)).tricks < 12);
-  if ((await active.locator('.choice').filter({ hasText: order }).count()) > 0) {
+  const ordering = askedOf(Ask.choose, Purpose.triggerOrder);
+  await settle(pages, click, async () => (await holds(active, ordering)) || (await seenOf(active)).tricks < 12);
+  if (await holds(active, ordering)) {
+    await expect(active.locator('.choice').filter({ hasText: order })).toBeVisible();
     await shot(active, 'trick-trigger-order');
   }
   await settle(pages, click, async () => (await seenOf(first(pages))).tricks === 11);
@@ -454,11 +484,10 @@ test('the boss can be attacked once souls reach its trick counters; the challeng
     if (!active) {
       break;
     }
-    const attackIcon = turnAction(active, 'Attack');
-    if (await attackIcon.isEnabled()) {
-      await click(active, attackIcon);
+    if (await holds(active, may(Intent.attack))) {
+      await click(active, turnAction(active, 'Attack'));
       const target = boss(active).getByRole('button', { name, exact: true });
-      await settle(pages, click, async () => (await target.count()) > 0);
+      await untilPick(pages, click, active, Purpose.attackTarget);
       await expect(target).toHaveClass(/hl-pick/);
       await expect(tricks(active, 2)).toBeVisible();
       if (i === 0) {

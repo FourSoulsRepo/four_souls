@@ -12,6 +12,15 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 
+	"github.com/FourSoulsRepo/four_souls/bindings/about"
+	"github.com/FourSoulsRepo/four_souls/bindings/assets"
+	"github.com/FourSoulsRepo/four_souls/bindings/host"
+	"github.com/FourSoulsRepo/four_souls/bindings/join"
+	"github.com/FourSoulsRepo/four_souls/bindings/prefs"
+	"github.com/FourSoulsRepo/four_souls/bindings/records"
+	"github.com/FourSoulsRepo/four_souls/bindings/setup"
+	"github.com/FourSoulsRepo/four_souls/bindings/updater"
+	appfiles "github.com/FourSoulsRepo/four_souls/internal/assets"
 	"github.com/FourSoulsRepo/four_souls/internal/instance"
 	"github.com/FourSoulsRepo/four_souls/internal/settings"
 	"github.com/FourSoulsRepo/four_souls/internal/tracing"
@@ -44,9 +53,12 @@ func main() {
 			title = fmt.Sprintf("%s (%d)", title, slot.N)
 		}
 	}
-	app := NewApp(settingsFile)
-	host := &Host{}
-	updater := NewUpdater()
+	app := NewApp()
+	cardFiles := appfiles.CardsFS()
+	// The hosted server writes its records where the Records screen
+	// lists them (M-01).
+	recordsDir := appPath("records")
+	hosting := host.New(recordsDir, appPath("saves"))
 
 	err = wails.Run(&options.App{
 		Title:  title,
@@ -54,19 +66,21 @@ func main() {
 		Height: 768,
 		AssetServer: &assetserver.Options{
 			Assets:     frontend,
-			Middleware: cardImages(app.cardFiles),
+			Middleware: assets.Middleware(cardFiles),
 		},
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
 		// The saved window mode applies from the first frame (ST-01).
-		Fullscreen: settings.Load(app.settings).Fullscreen,
-		Bind:       []any{app, host, updater},
-		OnStartup: func(ctx context.Context) {
-			app.startup(ctx)
-			updater.startup(ctx)
+		Fullscreen: settings.Load(settingsFile).Fullscreen,
+		// Only the bindings/* structs; App is not bound (ADR 030, item 4).
+		Bind: []any{
+			about.New(), prefs.New(settingsFile), assets.New(cardFiles), setup.New(),
+			join.New(app), hosting, records.New(app, recordsDir), updater.New(app),
 		},
-		OnShutdown: func(ctx context.Context) {
-			updater.shutdown()
-			_ = host.stop(ctx) //nolint:errcheck // the app is closing
+		OnStartup: app.startup,
+		// Ending the context stops a running update (ADR 030, item 5).
+		OnShutdown: func(context.Context) {
+			app.shutdown()
+			_ = hosting.Stop() //nolint:errcheck,contextcheck // closing; Stop has its own limit
 		},
 	})
 	if err != nil {

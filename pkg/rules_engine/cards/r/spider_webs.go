@@ -14,7 +14,7 @@ var spiderWebs = engine.CardDef{
 		Text:    "At the end of the turn, the active player deactivates their character.",
 		Trigger: atEndOfTheTurn(),
 		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
-			c.G.Object(c.G.Players[c.Controller].Character).Charged = false
+			c.G.Deactivate(c.G.Players[c.Controller].Character)
 		})},
 	}},
 }

@@ -33,38 +33,39 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151 | 21 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106 | 10 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110 | 22 |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193 | 18 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
-| D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157      | 7     |
-| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141 | 15 |
-| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
+| D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
+| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141, 19.191 | 16 |
+| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119, 19.167 | 12 |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
-| H  | Lobby and rejoin                         | Server     | 19.32, 19.148                                          | 2     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154 | 37 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.158, 19.159 | 24 |
+| H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166                                  | 3     |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194 | 43 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179, 19.189 | 31 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63, 19.129                                          | 2     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 | N  | A missing control: no way to do it       | Server     | 19.84                                                  | 1     |
-| O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86                                           | 2     |
+| O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86, 19.190                                   | 3     |
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 | R  | Vitest setup: a test sees stale files    | Vitest     | 19.124                                                 | 1     |
 | S  | Sound: media players never released      | Client     | 19.135                                                 | 1     |
 | T  | Events and view: data sent too early     | Engine     | 19.142                                                 | 1     |
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
+| W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 
-Totals by system (151 items):
+Totals by system (186 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U | 33 |
+| Engine    | A, B, T, U, W | 43 |
 | Card data | C       | 2     |
-| Client    | D–G, O, P, S, V | 42 |
-| Server    | H, N    | 3     |
-| e2e       | I, J    | 61    |
+| Client    | D–G, O, P, S, V | 53 |
+| Server    | H, N    | 4     |
+| e2e       | I, J    | 74    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
@@ -2621,6 +2622,8 @@ Totals by system (151 items):
    5. `make e2e` passed just before, both browsers.
    6. 16.5 changes card names only; nothing in playback.
    7. Evidence: `.cache/e2e-evidence/16.5-run2/` (not in git).
+   8. Again in the 22.6 baseline `make screenshots`, old code, line 1129.
+   9. Evidence: `.cache/e2e-evidence/22.6/shots-before/` (not in git).
 3. Cause
    1. Not found yet.
    2. Guess: as 19.43, the short fly ends while the screenshot is taken.
@@ -2817,7 +2820,7 @@ Totals by system (151 items):
 7. Owner notes (2026-10-27)
    1. Owner marks 19.84 solved.
 
-### [ ] 19.85 e2e: the activity test fails when the attacker has Bob's Brain
+### [x] 19.85 e2e: the activity test fails when the attacker has Bob's Brain
 
 1. Goal: `prompt.spec.ts` "the others see what the active player does" passes on every deal.
 2. Report (agent, 2026-10-27)
@@ -2861,6 +2864,8 @@ Totals by system (151 items):
    9. Cause not found yet; the 14.15 change does not touch it.
    10. Evidence: `.cache/e2e-evidence/19.85-reopen-webkit/` (not in git).
    11. It holds the error context, the match records and the run log.
+9. Owner notes (2026-11-16)
+   1. Owner marks 19.85 solved.
 
 ### [x] 19.86 e2e: a Throw click in the Meat! odds test did not land, webkit
 
@@ -3499,7 +3504,7 @@ Totals by system (151 items):
    3. Test: the same choices in a rules test end the turn.
 5. e2e-games bans them too: Smelter, Portable Slot Machine, in `games.spec.ts` (2026-11-08).
 
-### [ ] 19.110 Headless Horseman: prevent death lands it on 1 HP, so its heal ends at 3
+### [x] 19.110 Headless Horseman: prevent death lands it on 1 HP, so its heal ends at 3
 
 1. Goal: the Horseman's death prevention does not heal; its 2 HP heal starts from 0 HP and ends at 2.
 2. Report (owner, 2026-11-01)
@@ -3531,8 +3536,8 @@ Totals by system (151 items):
    6. Open question 33 records the ruling.
    7. Gates: `make build vet test lint` exit 0.
    8. Not changed: `PreventYourDeath` for players (Broken Ankh, Guppy's Collar); they still heal to 1 HP.
-7. Owner notes
-   1. Waiting for the owner's review.
+7. Owner notes (2026-11-17)
+   1. Owner marks 19.110 solved.
 
 ### [x] 19.111 Glitch's copy mark does not say which card it copies
 
@@ -4126,7 +4131,7 @@ Totals by system (151 items):
    3. 0 of 30 runs fail, with the engine tests running beside it.
    4. No new test: the race needs a write at the moment of the stop.
 
-### [ ] 19.132 e2e: the strike test reads the target 1 px off home at contact, webkit
+### [x] 19.132 e2e: the strike test reads the target 1 px off home at contact, webkit
 
 1. Goal: the 20.19 strike test passes every run.
 2. Report (agent, 2026-11-08)
@@ -4154,6 +4159,8 @@ Totals by system (151 items):
    4. Seen again in the 20.23 gate, chromium, 5 workers, mid-strike.
    5. Off by under 0.003 px on all four values; the rerun passed.
    6. Evidence: `.cache/e2e-evidence/20.23-gate1/` (not in git).
+6. Owner notes (2026-11-16)
+   1. Owner marks 19.132 solved.
 
 
 ### [x] 19.133 e2e: the curses test takes Curse of the Tower for a curse
@@ -4312,7 +4319,7 @@ Totals by system (151 items):
    3. 4 players: 82 turns, 1411 s; 0.19 s a step, was 0.32.
    4. A 300-turn game would still pass 1 h; none came near that cap.
 
-### [ ] 19.138 A long game gets slower: the history strip draws every tile
+### [x] 19.138 A long game gets slower: the history strip draws every tile
 
 1. Goal: a step costs the same late in a game as early.
 2. Report (main session, 2026-11-08)
@@ -4353,6 +4360,8 @@ Totals by system (151 items):
    6. Before the fix: 0.12 and 0.31.
    7. Steps per turn stayed about 100 in both 4-player runs.
    8. Log: `.cache/e2e-games-19.138.log` (not in git).
+7. Owner notes (2026-11-16)
+   1. Owner marks 19.138 solved.
 
 ### [x] 19.139 Animation clash: cards ordered by a look, then revealed
 
@@ -4423,7 +4432,7 @@ Totals by system (151 items):
    3. A deal without an object: as before.
    4. ADR 012 2.10 added; Animations.md `show` row.
 
-### [ ] 19.142 The first-player roll shows while Eden picks her item
+### [x] 19.142 The first-player roll shows while Eden picks her item
 
 1. Goal: the roll list shows only after every start-of-game choice (UC-26 6a.2).
 2. Report (20.22 research subagent, 2026-11-09)
@@ -4450,8 +4459,10 @@ Totals by system (151 items):
    6. Client: `beforeStart` in `stack.ts`: turn 0 or a roll.
    7. The badge reads "Before turn 1 · Start of game" during the choices.
    8. Tests: `TestEden`, `TestEdenBeforeCain`; Vitest `beforeStart`.
+6. Owner notes (2026-11-16)
+   1. Owner marks 19.142 solved.
 
-### [ ] 19.143 Fuzz: a nested question asks again after a load
+### [x] 19.143 Fuzz: a nested question asks again after a load
 
 1. Goal: a game loaded during a nested question goes on as before the save.
 2. Report (20.22 subagent, 2026-11-09)
@@ -4460,7 +4471,7 @@ Totals by system (151 items):
    3. Fails the same on `bfc74cd`, before any 20.22 change.
    4. Evidence: `.cache/fuzz-evidence/19.143/` (not in git).
    5. Input: `55bb281b0c9ed398`; states after step 71, played and loaded.
-3. Cause (the states; not fixed yet)
+3. Cause (the states)
    1. Gimpy's answer "Loot 1, then discard" runs a nested question.
    2. The game is saved while that nested question waits.
    3. `Asking.Key` finds a nested effect only while the game runs.
@@ -4468,9 +4479,15 @@ Totals by system (151 items):
    5. So the same answer asks Gimpy's first question again.
    6. Undo (ADR 020) and a server restart load such a state too.
 4. Tasks:
-   1. [ ] A key for a nested effect that survives a load.
-   2. [ ] Go test: save and load inside Gimpy's discard question.
-   3. [ ] The fuzz input as a corpus file once it passes.
+   1. [x] A nested effect that survives a load: fixed by save and replay instead (19.177).
+   2. [x] Go test: save and load inside Gimpy's discard question.
+   3. [x] The fuzz input as a corpus file once it passes.
+5. Seen again as 19.177 (22.3, 2026-11-16); findings there.
+6. Fix (2026-11-16): the 19.177 fix; details there.
+   1. Test: `TestGimpySaveAtDiscard` (fsp2); it looted again before.
+   2. Corpus: `cards/testdata/fuzz/FuzzSets/55bb281b0c9ed398`.
+7. Owner notes (2026-11-17)
+   1. Owner marks 19.143 solved.
 
 ### [x] 19.144 Soul of Envy goes on the stack again for the player who gains it
 
@@ -4736,7 +4753,7 @@ Totals by system (151 items):
 7. Owner notes (2026-11-10)
    1. Owner marks 19.150 solved.
 
-### [ ] 19.151 Pride: the attack die is thrown before Pride's ability resolves
+### [x] 19.151 Pride: the attack die is thrown before Pride's ability resolves
 
 1. Goal: "when an attack is declared on this" resolves before the first attack roll.
 2. Report (owner, 2026-11-10)
@@ -4786,6 +4803,8 @@ Totals by system (151 items):
    16. Engine stays 0.5.3: not released yet (as 19.150).
    17. No replay cutoff: only games with such an attack differ (as 19.150).
    18. No screen change beyond the order: no screenshots.
+8. Owner notes (2026-11-16)
+   1. Owner marks 19.151 solved.
 
 ### [x] 19.152 e2e: Requiem attack and room tests stall on webkit
 
@@ -4919,7 +4938,7 @@ Totals by system (151 items):
    2. Check other specs that use Blood Donation the same way.
    3. Check: the spec, both browsers, 5 workers, 10 repeats.
 
-### [ ] 19.157 Trick: a monster that gains a revealed monster's abilities shows no copy mark
+### [x] 19.157 Trick: a monster that gains a revealed monster's abilities shows no copy mark
 
 1. Goal: a monster that gained abilities shows a copy mark for every gained card.
 2. Report (owner, 2026-11-11)
@@ -4965,8 +4984,10 @@ Totals by system (151 items):
    18. Both reran 3 times per browser: 12 of 12 passed.
    19. Evidence: `.cache/e2e-evidence/19.157-full1/` (not in git).
    20. Screenshots: `.cache/screenshots/19.157/before/` and `after/`.
+7. Owner notes (2026-11-17)
+   1. Owner marks 19.157 solved.
 
-### [ ] 19.158 e2e: Soft rollback test sees Undo instead of Ask to undo
+### [x] 19.158 e2e: Soft rollback test sees Undo instead of Ask to undo
 
 1. Goal: `rollback.spec.ts:211` passes whatever the deal.
 2. Report (19.157 `make e2e`, 2026-11-11)
@@ -4981,6 +5002,20 @@ Totals by system (151 items):
 4. Tasks:
    1. Read the saved match record for the deal.
    2. Check: the spec, both browsers, 5 workers, 10 repeats.
+5. Fix (2026-11-16)
+   1. Record cut short; the title "Pia discards 3 Cents!" matches 19.164's Pride discard.
+   2. Pride's trigger (19.151) resolves before the throw; its discard is the latest move.
+   3. These tests deal b2 only; Pride is the only b2 card with such a trigger (19.151 list).
+   4. So one ban, `pride`, with the reason in a comment (14.10).
+   5. Other Undo tests after an attack: Godmode and Soft vote already ban it (19.151).
+   6. `two-sided.spec.ts` undoes a flip, not an attack: no change.
+   7. Check: rollback tests, both browsers, 5 workers, 10 repeats: 40 of 40.
+   8. Check: restart test, both browsers, 1 worker, 10 repeats: 20 of 20.
+   9. The restart spec is serial with one server per browser; 5 workers clash on it.
+   10. No engine bug: the game did what Pride says.
+   11. Same test as 19.169: `rollback.spec.ts` "declined ask" bans Pride.
+6. Owner notes (2026-11-16)
+   1. Owner marks 19.158 solved.
 
 ### [ ] 19.159 e2e: hover mark stays after the mouse leaves, webkit
 
@@ -4998,3 +5033,919 @@ Totals by system (151 items):
 4. Tasks:
    1. Find whether hover-off is sent, and when, under load.
    2. Check: the spec, webkit, 5 workers, 10 repeats.
+5. Seen again (21.3 `make e2e`, 2026-11-16)
+   1. WebKit, line 482, the same hover mark.
+   2. Rerun, webkit, 5 workers, 3 repeats: 0 of 3 passed.
+   3. All three: the "Hal, Ivy" saved games of 3.2, not line 482.
+   4. Evidence: `.cache/e2e-evidence/21.3-full1/`, `21.3-rerun1/`.
+   5. The change under test (21.3) only moved Go bindings.
+6. Seen again (10.7 `make e2e` run 1, 2026-11-16)
+   1. WebKit, line 482, the same hover mark.
+   2. Rerun alone, webkit: passed.
+   3. Evidence: `.cache/e2e-evidence/10.7/run1/` (not in git).
+
+### [ ] 19.160 e2e: Ambush! as a Krampus minion ends the minions test
+
+1. Goal: `challenge-table.spec.ts:253` passes in the full run.
+2. Report (18.26 `make e2e`, 2026-11-15)
+   1. Chromium only, timeout at 180 s; WebKit passed in the same run.
+   2. The present at 0 brought minions; one draw was Ambush!.
+   3. Ambush!'s attack killed the minion Wizoob at once.
+   4. `settle` waits for `minions > 0`; the row was already empty.
+   5. Rerun, the spec alone: passed.
+   6. Evidence: `.cache/e2e-evidence/18.26-full1/` (not in git).
+3. Cause: the deal (a monster-deck event among the minions).
+   1. The game did what Ambush! says; no engine bug seen yet.
+   2. Check that the engine's minion draw and Ambush! follow the rules.
+4. Tasks:
+   1. If the rules hold: ban Ambush! there, with the reason (14.10).
+   2. Search for other events that attack or clear minions; ban only those needed.
+   3. Check: the spec, both browsers, 5 workers, 10 repeats.
+5. Seen again (21.3 `make e2e`, 2026-11-16)
+   1. WebKit this time; timeout at 180 s; Chromium passed.
+   2. Rerun, webkit, 5 workers, 3 repeats: 2 of 3 passed.
+   3. The failed rerun: "the game never settled" at turn 3, no minions.
+   4. Evidence: `.cache/e2e-evidence/21.3-full1/`, `21.3-rerun1/`.
+   5. `21.3-full1/test-results/` holds stale files from 2026-11-15.
+   6. Their `window.go.host` errors come from the 21.2 fake bridge run.
+   7. The change under test (21.3) only moved Go bindings.
+6. Seen again (10.7 `make e2e` run 2, 2026-11-16)
+   1. Chromium; "Error: the game ended" at line 287.
+   2. A new symptom: not a timeout in `settle`.
+   3. Rerun alone, 3 repeats: 3 of 3 passed.
+   4. Evidence: `.cache/e2e-evidence/10.7/run2/` (not in git).
+
+### [ ] 19.161 e2e: two-click bomb test stalls after the attack, chromium
+
+1. Goal: `aim.spec.ts:33` passes in the full run.
+2. Report (21.2 `make e2e`, 2026-11-16)
+   1. Chromium only; WebKit passed in the same run.
+   2. Timeout at 120 s in `settle` (`turn.ts:57`, `uncovered`).
+   3. The page showed "Turn 1 · Cid · Action" and "Cid is thinking".
+   4. Rerun, the spec alone: passed.
+   5. Evidence: `.cache/e2e-evidence/21.2-full2/` (not in git).
+3. Cause: not found yet.
+   1. Same test as 19.101 (WebKit, can't reproduce).
+   2. The change under test (21.2) only moved Go bindings.
+4. Tasks:
+   1. Read the match record; find what `settle` waited for.
+   2. Check: the spec, chromium, 5 workers, 10 repeats.
+
+### [ ] 19.162 e2e: first-player roll never ends in the lobby test, chromium
+
+1. Goal: `lobby.spec.ts:13` passes in the full run.
+2. Report (21.2 `make e2e`, 2026-11-16)
+   1. Chromium only; WebKit passed in the same run.
+   2. Timeout at 30 s in `throwFirstRoll` (`game.ts:221`).
+   3. The page showed "Before turn 1 · First player roll".
+   4. Rerun, the spec alone: passed.
+   5. Evidence: `.cache/e2e-evidence/21.2-full2/` (not in git).
+3. Cause: not found yet.
+   1. Perhaps the 30 s test limit under load, 5 workers.
+   2. The change under test (21.2) only moved Go bindings.
+4. Tasks:
+   1. Find which roll the test waited for, and why it never came.
+   2. Check: the spec, chromium, 5 workers, 10 repeats.
+5. Seen again (21.4 `make e2e`, 2026-11-16)
+   1. WebKit this time; Chromium passed.
+   2. Timeout at 30 s in `throwFirstRoll` (`game.ts:221`), as before.
+   3. Rerun, webkit, 5 workers, 3 repeats: 3 of 3 passed.
+   4. Evidence: `.cache/e2e-evidence/21.4-run1/` (not in git).
+   5. The change under test (21.4) only moved Go bindings.
+
+### [x] 19.163 e2e: Pride's discard after the attack breaks the Soft undo test
+
+1. Goal: `rollback.spec.ts:248` passes on every deal.
+2. Report (21.3 `make e2e`, 2026-11-16)
+   1. Chromium only; WebKit passed in the same run.
+   2. Line 263 (`expectUndone`): the attack row "Sia attacks Pride" was not greyed.
+   3. Pride: "When an attack is declared on this", a player discards 2 loot.
+   4. That discard is one more move after the target pick.
+   5. So the opponent's Undo rolled back the discard, not the target pick.
+   6. Rerun, the spec alone: passed.
+   7. Evidence: `.cache/e2e-evidence/21.3-full2/` (not in git).
+3. Cause: the deal (a monster with an attack-declared trigger).
+   1. The game did what Pride says; no engine bug seen yet.
+   2. The change under test (21.3) only moved Go bindings.
+4. Tasks:
+   1. Check that the history counts Pride's discard as its own move.
+   2. If so: ban Pride there, with the reason (14.10).
+   3. Search every set for monsters that trigger on an attack; ban only those needed.
+   4. Check: the spec, both browsers, 5 workers, 10 repeats.
+5. Fix (2026-11-16)
+   1. The report names the target: "Sia attacks Pride".
+   2. Pride's trigger (19.151) resolves before the throw; its discard is the latest move.
+   3. These tests deal b2 only; Pride is the only b2 card with such a trigger (19.151 list).
+   4. So one ban, `pride`, with the reason in a comment (14.10).
+   5. Other Undo tests after an attack: Godmode and Soft vote already ban it (19.151).
+   6. `two-sided.spec.ts` undoes a flip, not an attack: no change.
+   7. Check: rollback tests, both browsers, 5 workers, 10 repeats: 40 of 40.
+   8. Check: restart test, both browsers, 1 worker, 10 repeats: 20 of 20.
+   9. The restart spec is serial with one server per browser; 5 workers clash on it.
+   10. No engine bug: the game did what Pride says.
+   11. `rollback.spec.ts` "two players Undo" bans Pride.
+6. Owner notes (2026-11-16)
+   1. Owner marks 19.163 solved.
+
+### [x] 19.164 e2e: a discard after the attack breaks the restart rollback test
+
+1. Goal: `restart.spec.ts:228` passes on every deal.
+2. Report (21.3 `make e2e`, 2026-11-16)
+   1. Chromium only; WebKit passed in the same run.
+   2. Line 234: Undo's title was "Undo: You discard 3 Cents!", not the attack.
+   3. A discard came after the target pick, as in 19.163.
+   4. The attacked monster is not in the evidence; likely Pride again.
+   5. Rerun, the spec alone: passed.
+   6. Evidence: `.cache/e2e-evidence/21.3-full2/` (not in git).
+3. Cause: the deal, probably the same as 19.163.
+   1. The change under test (21.3) only moved Go bindings.
+4. Tasks:
+   1. Read the match record; name the attacked monster.
+   2. Fix with 19.163: the same bans in `rollbackOverRestart`.
+   3. Check: the spec, chromium, 5 workers, 10 repeats.
+5. Fix (2026-11-16)
+   1. Record `g4_Gus_Hex` (restart-chromium): target `pride`, then two discards.
+   2. Pride's trigger (19.151) resolves before the throw; its discard is the latest move.
+   3. These tests deal b2 only; Pride is the only b2 card with such a trigger (19.151 list).
+   4. So one ban, `pride`, with the reason in a comment (14.10).
+   5. Other Undo tests after an attack: Godmode and Soft vote already ban it (19.151).
+   6. `two-sided.spec.ts` undoes a flip, not an attack: no change.
+   7. Check: rollback tests, both browsers, 5 workers, 10 repeats: 40 of 40.
+   8. Check: restart test, both browsers, 1 worker, 10 repeats: 20 of 20.
+   9. The restart spec is serial with one server per browser; 5 workers clash on it.
+   10. No engine bug: the game did what Pride says.
+   11. `rollbackOverRestart` takes bans; only the Undo test passes `pride`.
+6. Owner notes (2026-11-16)
+   1. Owner marks 19.164 solved.
+
+### [ ] 19.165 e2e: a 0-attack monster gives no fear in the fear test
+
+1. Goal: `challenge-trick.spec.ts:333` passes on every deal.
+2. Report (21.4 `make e2e`, 2026-11-16)
+   1. WebKit only; Chromium passed in the same run.
+   2. Line 407: `settle` waited for fear above 2; "the game never settled".
+   3. The first slot held Cod Worm: ATK 0.
+   4. The forced miss dealt 0 damage, so no fear came (R-TRICK-07).
+   5. Then Cod Worm left; Conquest entered play.
+   6. Rerun, webkit, 5 workers, 3 repeats: 3 of 3 passed.
+   7. Evidence: `.cache/e2e-evidence/21.4-run1/` (not in git).
+3. Cause: likely the deal (a monster with no attack).
+   1. Not yet checked in the match record.
+   2. Why Cod Worm left after a miss is not known yet.
+   3. The change under test (21.4) only moved Go bindings.
+4. Tasks:
+   1. Read the match record; confirm the miss and the 0 damage.
+   2. Check that 0 damage giving no fear follows R-TRICK-07.
+   3. If so: ban 0-attack monsters there, with the reason (14.10).
+   4. Search every set for them; ban only those needed.
+   5. Check: the spec, both browsers, 5 workers, 10 repeats.
+
+### [x] 19.166 Dedicated server: a finished game never closes
+
+1. Goal: a finished game leaves the lobby and its room closes.
+2. Report (owner, 2026-11-16)
+   1. Server `online.foursoulsru.org`.
+   2. Challenge games stay in the lobby after they finish.
+   3. Seen: `g1`, Trick or Treat, hard, listed as started.
+3. Cause
+   1. `checkLimits` returns at once for a finished game.
+   2. It kept the room for the record download (8.25).
+   3. No other path stops a finished room; End is refused then.
+   4. `Hub.list` lists every started game, finished ones too.
+   5. So it stays listed and in memory until a restart.
+   6. Every finished game is hit, not only challenges.
+   7. The LAN list already hid finished games (`lanGames`).
+4. Decision (owner, 2026-11-16)
+   1. Close the room; keep the record file on disk.
+   2. The `/record` link stops working once the room closes.
+   3. How to get records from a server: decided later.
+5. Tasks:
+   1. The lobby list leaves out finished games.
+   2. The lobby hears of it when a game finishes.
+   3. A finished room closes once no seat is connected.
+   4. It also closes at the game limit, with no notice.
+   5. Docs: wiki Server, UC-07, bug log.
+6. Done when:
+   1. Go test: a finished game is not listed; its room closes.
+   2. Go test: `/record` answers 404 after that.
+   3. `make lint test` pass.
+7. Result (2026-11-16)
+   1. `Hub.list` skips a finished game; `lanGames` relies on it.
+   2. `Room.after` tells the hub once, at the end; the lobby drops it.
+   3. `checkLimits` stops a finished room with no seat connected.
+   4. It also stops one past the game limit; no notice.
+   5. The record file stays; `/record` then answers 404.
+   6. Go tests: `TestFinishedGameCloses`, `TestFinishedGameAtLimitCloses`.
+   7. Go test: `TestFinishedGameLeavesLobby` (a lost challenge).
+   8. Wiki `Server.md` and UC-07 updated.
+   9. No screen change, so no screenshots.
+8. Owner notes (2026-11-16)
+   1. Owner marks 19.166 solved.
+
+### [ ] 19.167 e2e: the small-window menu test fails with the real images
+
+1. Goal: `page.spec.ts:59` passes under `make screenshots`.
+2. Report (10.1 and 10.2 `make screenshots`, 2026-11-16)
+   1. Chromium; only with `SCREENSHOTS=1`, which serves the real images.
+   2. Every run; `make e2e` without the images passes.
+   3. Timeout: the test never clicks Settings in the 560×360 window.
+   4. The banner image squeezes the Play button to 1.5 px; the nav covers it.
+   5. It also fails with the `MainMenu.tsx` from before 10.1.
+   6. Owner, 2026-11-16: log it.
+   7. Evidence: `.cache/e2e-evidence/10.2/test-results/` (not in git).
+3. Cause: the menu layout with the real banner in a small window.
+   1. Not yet checked which change made it.
+4. Tasks:
+   1. Find why the banner does not shrink with the window.
+   2. Fix the layout, not the test; the menu must fit at 560×360.
+   3. Screenshots before and after (rule 4).
+   4. Check: `make screenshots`, the spec, 10 repeats.
+
+### [ ] 19.168 e2e: the challenge present test times out once
+
+1. Goal: `challenge-table.spec.ts:253` passes on every deal.
+2. Report (10.2 `make e2e`, 2026-11-16)
+   1. Chromium; timeout after 3 minutes.
+   2. The page was at turn 3; the test never finished its waits.
+   3. Rerun: passed.
+   4. Evidence: `.cache/e2e-evidence/10.2/run2/` (not in git).
+3. Cause: not found yet.
+   1. The change under test (10.2) adds a replay mode.
+   2. It does not touch the live game table's flow.
+4. Tasks:
+   1. Read the error context and the match record; find the stuck wait.
+   2. Fix the test or the bug it shows (14.10).
+   3. Check: the spec, both browsers, 5 workers, 10 repeats.
+5. Same test as 19.160; fix it there.
+   1. Run 1 of 10.3: Blue Baby with Forever Alone, as 19.97 bans elsewhere.
+   2. Evidence: `.cache/e2e-evidence/10.3/run1/` (not in git).
+
+### [x] 19.169 e2e: a discard after the move breaks the Soft ask test
+
+1. Goal: `rollback.spec.ts:211` passes on every deal.
+2. Report (10.2 `make screenshots`, 2026-11-16)
+   1. Chromium.
+   2. Expected "Ask to undo"; the button said "Undo".
+   3. Its title: "Undo: Pia discards 3 Cents!", not the move under test.
+   4. A discard came after the move, as in 19.163 and 19.164.
+   5. Rerun: passed.
+   6. Evidence: `.cache/e2e-evidence/10.2/run2/screenshots2.log` (not in git).
+3. Cause: likely the deal, as 19.163.
+   1. The change under test (10.2) adds a replay mode.
+4. Tasks:
+   1. Fix with 19.163 and 19.164: the same bans, with reasons.
+   2. Check: the spec, both browsers, 5 workers, 10 repeats.
+5. Fix (2026-11-16)
+   1. Record cut short; same title and test as 19.158.
+   2. Pride's trigger (19.151) resolves before the throw; its discard is the latest move.
+   3. These tests deal b2 only; Pride is the only b2 card with such a trigger (19.151 list).
+   4. So one ban, `pride`, with the reason in a comment (14.10).
+   5. Other Undo tests after an attack: Godmode and Soft vote already ban it (19.151).
+   6. `two-sided.spec.ts` undoes a flip, not an attack: no change.
+   7. Check: rollback tests, both browsers, 5 workers, 10 repeats: 40 of 40.
+   8. Check: restart test, both browsers, 1 worker, 10 repeats: 20 of 20.
+   9. The restart spec is serial with one server per browser; 5 workers clash on it.
+   10. No engine bug: the game did what Pride says.
+   11. Fixed with 19.158: the same ban.
+6. Owner notes (2026-11-16)
+   1. Owner marks 19.169 solved.
+
+### [ ] 19.170 e2e: the dead soul monster fly is missed once
+
+1. Goal: `playback.spec.ts:1142` passes in full runs.
+2. Report (10.3 `make e2e` run 2, 2026-11-16)
+   1. Chromium; 591 passed, this one failed.
+   2. `effect-fly` was not visible within 5 s.
+   3. Rerun alone 5 times: 5 passed.
+   4. Evidence: `.cache/e2e-evidence/10.3/run2/` (not in git).
+3. Cause: not found yet.
+   1. Maybe as 19.77: a short fly ends before the check sees it.
+   2. The change under test (10.3) touches replays only.
+4. Tasks:
+   1. Find the cause in the evidence; fix the test or the app.
+   2. Check: the spec, both browsers, 5 workers, 10 repeats.
+
+### [ ] 19.171 e2e: the Hanged Man dialog misses its card once, webkit
+
+1. Goal: `choice.spec.ts:408` passes in full runs.
+2. Report (10.7 `make e2e` run 2, 2026-11-16)
+   1. WebKit; line 441.
+   2. The dialog's `.choice-subject .card` was not found.
+   3. Rerun alone, 3 repeats: 3 of 3 passed.
+   4. Evidence: `.cache/e2e-evidence/10.7/run2/` (not in git).
+3. Cause: not found yet.
+   1. The change under test (10.7) restyles the replay bar only.
+4. Tasks:
+   1. Find the cause in the evidence; fix the test or the app.
+   2. Check: the spec, both browsers, 5 workers, 10 repeats.
+5. Seen again (19.163 `make e2e`, 2026-11-16)
+   1. WebKit; the same `.choice-subject .card` not found.
+   2. The change under test (19.163) only bans Pride in Undo tests.
+   3. Evidence: `.cache/e2e-evidence/19.163/run1/` (not in git).
+6. Seen again (22.3 `make e2e`, 2026-11-16)
+   1. Chromium this time; the same `.choice-subject .card` not found.
+   2. The change under test (22.3) adds events and a history line.
+   3. Rerun, both browsers, 3 repeats: 6 of 6 passed.
+   4. Evidence: `.cache/e2e-evidence/22.3/run1/` (not in git).
+
+### [ ] 19.172 e2e: The Siren's player target is not offered once
+
+1. Goal: `attack-targets.spec.ts:82` passes on every deal.
+2. Report (10.8 `make e2e`, 2026-11-16)
+   1. Chromium; 595 passed, this one failed.
+   2. The other player's character card never got `hl-pick`.
+   3. Its classes: "card size-table kind-character spent".
+   4. Rerun alone, 3 repeats: 3 of 3 passed.
+   5. Evidence: `.cache/e2e-evidence/10.8/run1/` (not in git).
+3. Cause: not found yet; maybe the deal.
+   1. The change under test (10.8) changes replay mode only.
+4. Tasks:
+   1. Read the match record; find why the player was no target.
+   2. Fix the test (14.10) or the bug it shows.
+   3. Check: the spec, both browsers, 5 workers, 10 repeats.
+
+### [x] 19.173 No event when a done event card goes to discard
+
+1. Goal: an event card's move from its slot to discard has an event.
+2. Report (22.2 fuzz check, 2026-11-16)
+   1. `make fuzz`: "moved from …: in play slot 1.0 -> monster discard".
+   2. Seen: Ambush, Chest, Gold Chest, Troll Bombs, Holy Chest.
+   3. In minion slots too: Secret Room, Pitfall, TNT Barrel.
+3. Cause (the code)
+   1. `finishEvent` (`monsters.go`) calls `discard` once the ability is done.
+   2. `discard` emits no event; `finishEvent` adds none.
+   3. Same kind of gap as 19.73 (`ActDiscardObject`).
+   4. The client sees the card in the discard on the next view only.
+4. Tasks:
+   1. Fix it in 22.3, game-wide.
+   2. Remove "event done" from the 22.2 list (`event_check.go`).
+5. Fix (22.3, 2026-11-16)
+   1. `finishEvent` emits `discarded`: no player, `Prev` the slot card.
+   2. The same event as `DiscardMonster`; the client flies it already.
+   3. Checked every `discard` caller: only `finishEvent` had no event.
+   4. Checked: `DiscardMonster`, `DiscardRoom`, `DiscardShopItem`, `DestroyObject`.
+   5. Checked: `RerollItem`, `ActDiscardObject`, `DestroyPresent`, stack and hand discards.
+   6. Go test: `TestChest` sees the `discarded` event.
+   7. "event done" is off the 22.2 list.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.173 solved.
+
+### [x] 19.174 No event when an empty deck takes back its discard
+
+1. Goal: a deck refilled from its discard has an event.
+2. Report (22.2 fuzz check, 2026-11-16)
+   1. `make fuzz`: "moved from …: monster discard -> monster deck".
+   2. Every card of the discard pile, in one step.
+3. Cause (the code)
+   1. `refillDeck` (`zones.go`) moves each discard card into the deck (R-ZONE-05).
+   2. It emits no event; nor do `drawTop` and `RevealUntilMonster`, which call it.
+   3. Any deck: loot, treasure, monster, room.
+4. Tasks:
+   1. Fix it in 22.3, game-wide.
+   2. Remove "deck refill" from the 22.2 list (`event_check.go`).
+5. Fix (22.3, 2026-11-16)
+   1. `refillDeck` emits one `moved_to_deck`: no player, no object.
+   2. `Amount` is the card count; `Text` is "<deck> deck".
+   3. No object: the shuffled deck's object IDs stay unknown.
+   4. Every deck refill goes through `refillDeck`: `drawTop`, `RevealUntilMonster`.
+   5. Its callers: loot, treasure, monster and room draws, slot refills.
+   6. 22.2 check: a wide event (`wideEvents`), like `deck_bottom`.
+   7. Client: no line, no flight (`historyKinds`); the board shows the counts.
+   8. Go test: `TestCheckEventsDeckRefill`.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.174 solved.
+
+### [x] 19.175 No event for the character's recharge before a recharge choice
+
+1. Goal: the character's recharge has an event when a choice follows.
+2. Report (22.2 fuzz check, 2026-11-16)
+   1. `make fuzz`: "the_zealot charge in in play: 0 -> 1".
+   2. Events: `turn_started` only; the recharge choice is open.
+3. Cause (the code)
+   1. `recharge` (`turn.go`) charges the character first.
+   2. With a recharge limit and 2+ spent items, it asks which item.
+   3. It returns before its `recharged` event.
+   4. The answer's `recharged` comes in a later step.
+   5. Cards: Curse of Fatigue (g2), Heavy is the Head (r).
+4. Tasks:
+   1. Fix it in 22.3, game-wide.
+   2. Remove the entry from the 22.2 list (`event_check.go`).
+5. Fix (22.3, 2026-11-16)
+   1. `recharge` emits `recharged` (no object) before it asks.
+   2. The turn banner then shows the charged character (`turn_started`).
+   3. The answer's `recharged` stays; it names the chosen item's player.
+   4. Checked every `Charged = true`: `recharge`, `ChooseRecharge`, `Recharge`, `RechargeSelf`, setup.
+   5. Only the recharge choice returned before its event.
+   6. Go test: `TestCurseOfFatigueCharacterRechargeEvent`.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.175 solved.
+
+### [x] 19.176 No event when a card deactivates a character or item
+
+1. Goal: a deactivation by a card effect has an event.
+2. Report (22.2 fuzz check, 2026-11-16)
+   1. `make fuzz`: "the_capricious charge in in play: 1 -> 0".
+   2. Events: `passed_priority stack_resolved` (Curse of Impulse).
+3. Cause (the code)
+   1. Cards set `Charged = false` themselves; nothing emits an event.
+   2. Spider Webs (r): the active player's character.
+   3. Curse of Impulse (fsp2): the character and every ↷ item.
+   4. Hourglass (fsp2, `deactivateAnItem`): one item.
+   5. The engine has no shared deactivate helper with an event.
+   6. Its own deactivation (death penalty) emits `deactivated`.
+4. Tasks:
+   1. Fix it in 22.3, game-wide: one engine helper with the event.
+   2. Remove "deactivated by a card" from the 22.2 list (`event_check.go`).
+5. Fix (22.3, 2026-11-16)
+   1. New `Game.Deactivate(id)`, next to `Recharge` (`ability.go`).
+   2. It emits `deactivated` naming the object and its controller.
+   3. Spider Webs, Curse of Impulse and Hourglass use it.
+   4. Searched every set for `Charged = false`: no other card.
+   5. Also checked: `tapCost` (its `activated`), the death penalty (`deactivated`).
+   6. Also checked: The Chest's soul (`gained_soul`), `EntersDeactivated` (`entered_play`).
+   7. Client: no line, no flight (`historyKinds`); the card turns on the table.
+   8. Go tests: Spider Webs, Curse of Impulse, Hourglass see the event.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.176 solved.
+
+### [x] 19.177 Fuzz: a redo replay differs from the record
+
+1. Goal: undo and redo replay a game exactly as it was played.
+2. Report (22.2 subagent, 2026-11-16)
+   1. `make fuzz-sets`: "redo from step 70: step 0: replay: state differs from the record".
+   2. Fails the same on a clean HEAD worktree; not from 22.2.
+   3. Input: `.cache/fuzz-22.2/FuzzSets/55bb281b0c9ed398` (not in git).
+3. Cause
+   1. Not found yet.
+4. Tasks:
+   1. Replay the saved input; find the first differing step.
+   2. Fix under the step 19 rules; 22.3 needs `make fuzz` green.
+5. Cause (22.3, 2026-11-16): the same bug as 19.143.
+   1. Same input, `55bb281b0c9ed398`; the same step 70.
+   2. Saved at step 70: Gimpy's nested discard question waits.
+   3. After the load, the answer goes to Gimpy's first question again.
+   4. It loots again instead of the discard.
+6. Findings (22.3, 2026-11-16)
+   1. A load-and-step check over 400 random games hit 16 cards.
+   2. Gimpy, Holy Bony, Scolex, Pills, Rag Mega, Holy Mom's Eye, Boss Rush, more.
+   3. A nested ask in a wrapper (Plan C's `DestroyThis`) panics after a load.
+   4. Tried: run the parent again on a copy of the game, take its Nth ask.
+   5. It fails: the parent sees the state after it ran (Plan C is gone).
+   6. Boss Rush then answered another question with no error.
+   7. A copy of the state before each parent runs costs ~0.25 ms per effect.
+7. Owner decision needed (22.3 stopped here)
+   1. Fix 19.143 with one design; 19.177 closes with it.
+   2. Option: a structural path through wrappers; closures still unsolved.
+   3. Option: keep the state before a parent runs; slower steps.
+   4. Option: a save while a nested ask waits keeps the last clean state and the steps since.
+8. Owner decision (2026-11-16): the last option, save and replay.
+   1. A save while a nested ask waits keeps the last clean state.
+   2. It keeps the steps since then, too.
+   3. A load replays those steps; every card works, closures too.
+   4. Covers the host's save, the restart keep, and rollback bases.
+9. Owner note (2026-11-16): breaking old saves is fine for now.
+   1. A format change may refuse older saves.
+   2. Then raise `StateMeaning` or the save version; refuse them with a clear message.
+   3. Say so in `CHANGELOG.md` Unreleased.
+10. Fix (2026-11-16): save and replay (ADR 020, item 13)
+    1. A nested ask: made while another effect runs, not the ability's own effect.
+    2. `resolveAbility` marks the direct one (`Ctx.direct`); the rest are nested.
+    3. A clean state has no nested ask waiting (`Game.NestedAsk`).
+    4. `Save` at a clean state: the state, as before.
+    5. `Save` at a nested ask: the last clean state, plus `replay` (its intents).
+    6. `Load` applies them: the card's own code asks again, closures too.
+    7. In memory the game keeps a clean origin and the intents since (`save.go`).
+    8. No copy per step: about 1 µs more per step; the replay runs at the save.
+    9. The save replays to the end too and checks the result is the game.
+    10. `StateMeaning` 2 → 3: an older kept state may hold a nested ask.
+    11. Host saves already need the same engine version (`save_version`).
+    12. Engine stays 0.5.4: steps and checksums do not change; not released yet.
+11. Checked paths
+    1. The host's save and load (`saves.go`: `Save`, `Load`).
+    2. The restart keep (`restart.go`: `Save`, `Resume`).
+    3. Rollback bases (`rollback.go`: `setBase`, `replayKept`, `ReplayFrom`).
+    4. All three go through `Game.Save` and `Load`; `Resume`, `ReplayFrom` call `Load`.
+    5. `Clone` copies the origin and the intents.
+12. Tests
+    1. `TestGimpySaveAtDiscard` (fsp2): a discard, not a second loot; `Resume` too.
+    2. `TestPlanCSaveAtKill` (g2): it panicked before.
+    3. `TestNestedAskSaveRestartRollback` (server): Mom's Shovel, all three paths.
+    4. `loadCheck` in `playSets` and `TestSimulations`: save and load at every nested ask.
+    5. 100 sim games: 434 such saves over 30 cards, Berkano, Forget Me Now among them.
+    6. The input `55bb281b0c9ed398` is in the `FuzzSets` corpus.
+13. Owner notes (2026-11-17)
+   1. Owner marks 19.177 solved.
+
+
+### [x] 19.178 No event when a deck is shuffled
+
+1. Goal: every shuffle of a deck has an event everyone sees.
+2. Report (owner, 2026-11-16, from the 22.2 review)
+   1. "A shuffle is seen at the table."
+   2. 22.2 listed a shuffle as silent on purpose; the owner disagrees.
+3. Cause (the code)
+   1. `ShuffleDeck` (`zones.go`) reorders the deck and emits nothing.
+   2. Every deck shuffle goes through it: setup, a refill, situations.
+   3. Cards: Peep (b2), The Rainmaker (r), `SearchGuppy` (cardkit).
+4. Tasks:
+   1. One event per shuffled deck from `ShuffleDeck`, naming the deck.
+   2. Remove "shuffle" from the 22.2 list (`event_check.go`).
+   3. Client: a history line only; no animation (a separate idea).
+5. Fix (22.3, 2026-11-16)
+   1. New event `shuffled`: no player, no card, `Text` "<deck> deck".
+   2. `ShuffleDeck` emits it for a deck with cards; no barrier.
+   3. Every deck shuffle uses `ShuffleDeck`: setup, refill, situations.
+   4. Cards: Peep, The Rainmaker, `SearchGuppy` (all its Guppy cards).
+   5. Not a deck shuffle: `ToBottomRandom` (its `deck_bottom`), the character and ratio pools.
+   6. 22.2 check: a wide event; "shuffle" is off the silent list.
+   7. History: "The monster deck is shuffled" (`shuffleText`, UC-15 2f).
+   8. The setup's shuffles get no line: the first update has `character_dealt`.
+   9. Playback: no animation; an idea for the owner.
+   10. Go test: `TestCheckEventsDamageAndShuffle`; Vitest: the history lines.
+   11. `make e2e`: 594 passed; 19.171 and 19.179 failed once, passed on rerun.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.178 solved.
+
+### [ ] 19.179 e2e: the helper roll test never settles once, webkit
+
+1. Goal: `attack-targets.spec.ts:193` passes in full runs.
+2. Report (22.3 `make e2e`, 2026-11-16)
+   1. WebKit; 594 passed, 2 failed (the other is 19.171).
+   2. The first `settle` at line 226 timed out: "the game never settled".
+   3. Both pages: step 34, empty stack, priority to the active player.
+   4. The wait wants Sibling Rivalry spent; it may never have been.
+   5. Rerun, both browsers, 3 repeats: 6 of 6 passed.
+   6. Evidence: `.cache/e2e-evidence/22.3/run1/` (not in git).
+3. Cause: not found yet.
+   1. The change under test (22.3) adds events and a history line.
+   2. It does not touch activation or the aim.
+4. Tasks:
+   1. Read the match record; find why the item was not spent.
+   2. Fix the test or the bug it shows.
+   3. Check: the spec, both browsers, 5 workers, 10 repeats.
+
+### [x] 19.180 The monster a player must attack is not shown
+
+1. Goal: the active player sees which monster they must attack.
+2. Report (22.4 check, 2026-11-16)
+   1. `viewFields.test.ts`: the client never reads `Turn.must_attack`.
+3. Cause (the code)
+   1. The engine sends the monster (Monster Manual, Lust for Blood, Friendly Ball).
+   2. The client draws nothing for it.
+   3. Ending the turn early only says "You must attack first".
+4. Tasks:
+   1. Fix in 22.5: draw it, or list it with a reason.
+5. Fix (22.5, 2026-11-16)
+   1. The monster gets the fight's frame, dashed, for everyone (`must-attack`).
+   2. Its zoom says "Must be attacked this turn".
+   3. The active player's banner: "You must attack: Gaper" under Your turn.
+   4. `forcedAttack`, `mustTargets`, `mustAttackLine` in `prompt.ts`.
+   5. A named monster counts only while it is on the table, as the engine checks.
+   6. A character counts too: Lust for Blood names the player.
+   7. Cards checked: Monster Manual, Lust for Blood, Friendly Ball, `common.go` (r, fsp2).
+   8. Vitest: `forced attacks` (`prompt.test.ts`); e2e: `duties.spec.ts`.
+   9. Use case UC-46; screenshots in `.cache/screenshots/19.180/`.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.180 solved.
+
+### [x] 19.181 How many attacks a player must make is not shown
+
+1. Goal: the active player sees how many more attacks they owe.
+2. Report (22.4 check, 2026-11-16)
+   1. `viewFields.test.ts`: the client never reads `Turn.must_attacks`.
+3. Cause (the code)
+   1. `ForceAttacks` counts them (Envy, Conquest, Portal, Gutted Fatty).
+   2. The client shows only the attacks left, not the ones owed.
+4. Tasks:
+   1. Fix in 22.5: draw it, or list it with a reason.
+5. Fix (22.5, 2026-11-16)
+   1. The banner adds the attacks owed: "You must attack: Gaper (2 left)".
+   2. With no target named: "You must attack (1 left)" (Envy, Conquest).
+   3. Nothing while an attack is open: its target is picked or fought.
+   4. Cards checked: every `ForceAttacks` caller in all sets.
+   5. Vitest and e2e as 19.180; UC-46 3a.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.181 solved.
+
+### [x] 19.182 Forced attacks on the monster deck are not shown
+
+1. Goal: the active player sees how many deck attacks they owe.
+2. Report (22.4 check, 2026-11-16)
+   1. `viewFields.test.ts`: the client never reads `Turn.must_attack_deck`.
+3. Cause (the code)
+   1. `ForceAttacks(n, true)` counts them (Ambush, I Am Error).
+   2. The client draws nothing for it.
+4. Tasks:
+   1. Fix in 22.5: draw it, or list it with a reason.
+5. Fix (22.5, 2026-11-16)
+   1. The monster deck gets the same dashed frame (`Deck`'s `must`).
+   2. Its name adds "an attack on it is owed this turn".
+   3. Banner: "You must attack: the monster deck (2 left)".
+   4. The deck comes first, as `askAttackTarget` asks for it first.
+   5. Cards checked: Ambush, I Am Error, Gaper (g2), `ForceAttacks(n, true)`.
+   6. Vitest and e2e as 19.180; UC-46 2a.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.182 solved.
+
+### [x] 19.183 Attacks only on the monster deck are not shown
+
+1. Goal: the active player sees which of their attacks are deck-only.
+2. Report (22.4 check, 2026-11-16)
+   1. `viewFields.test.ts`: the client never reads `Turn.deck_attacks`.
+3. Cause (the code)
+   1. `AddDeckAttack` adds one (Big Spider, Gold Key, Blastocyst).
+   2. The player's attack count includes it, as a plain attack.
+4. Tasks:
+   1. Fix in 22.5: draw it, or list it with a reason.
+5. Fix (22.5, 2026-11-16)
+   1. The attack count says it: "Attacks 2 (1 deck only)".
+   2. On the active seat for everyone; by the loot count for the player.
+   3. Cards checked: Big Spider, Gold Key, Blastocyst (`AddDeckAttack`).
+   4. e2e: `duties.spec.ts`; UC-46 2b.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.183 solved.
+
+### [x] 19.184 Who helps the next attack is not shown
+
+1. Goal: every seat sees who will help the next attack.
+2. Report (22.4 check, 2026-11-16)
+   1. `viewFields.test.ts`: the client never reads `Turn.next_helpers`.
+3. Cause (the code)
+   1. `HelpNextAttack` lists them (Sibling Rivalry).
+   2. The client draws nothing until the attack.
+4. Tasks:
+   1. Fix in 22.5: draw it, or list it with a reason.
+5. Fix (22.5, 2026-11-16)
+   1. The active seat says "Next attack: Helped by Bo", for everyone.
+   2. `helpLine` in `stack.ts`; `NextAttack` in `PlayerArea.tsx`.
+   3. A running attack had the same gap: 19.188.
+   4. Cards checked: Sibling Rivalry (`HelpNextAttack`), the only caller.
+   5. Vitest: `helpLine`; e2e: `duties.spec.ts`; UC-46 2c.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.184 solved.
+
+### [x] 19.185 Who shares the next attack's rewards is not shown
+
+1. Goal: every seat sees who will share the next attack's rewards.
+2. Report (22.4 check, 2026-11-16)
+   1. `viewFields.test.ts`: the client never reads `Turn.next_share`.
+3. Cause (the code)
+   1. `HelpNextAttack(p, true)` lists them (Sibling Rivalry).
+   2. The client draws nothing for it.
+4. Tasks:
+   1. Fix in 22.5: draw it, or list it with a reason.
+5. Fix (22.5, 2026-11-16)
+   1. The same line adds "· Rewards shared with Bo".
+   2. Fixed with 19.184; the same tests and use case.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.185 solved.
+
+### [x] 19.186 A roll result on the stack does not show its number
+
+1. Goal: a roll's effect on the stack shows the number it acts on.
+2. Report (22.4 check, 2026-11-16)
+   1. `viewFields.test.ts`: the client never reads `StackItem.roll_result`.
+3. Cause (the code)
+   1. A card's roll pushes its "roll result" trigger with the number.
+   2. The stack line names the card only; a later roll may hide the die.
+4. Tasks:
+   1. Fix in 22.5: draw it, or list it with a reason.
+5. Fix (22.5, 2026-11-16)
+   1. The stack row reads "Book of Sin: roll result 4" (`stack.trigger_roll`).
+   2. `stackParts` in `stack.ts`; the history keeps the card's own words.
+   3. Every card roll's result trigger is pushed in one place (`stack.go`).
+   4. Vitest: `a roll result on the stack`; e2e: `duties.spec.ts`; UC-14 2r.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.186 solved.
+
+### [x] 19.187 A kicked player is not shown as gone
+
+1. Goal: every seat sees that a kicked player's seat is empty for good.
+2. Report (22.4 check, 2026-11-16)
+   1. `viewFields.test.ts`: the client never reads `Seat.kicked` in an update.
+3. Cause (the code)
+   1. After a kick vote the server sends `kicked` (N-08).
+   2. In a game the client draws nothing from the seats' state.
+4. Tasks:
+   1. Fix in 22.5: draw it, or list it with a reason.
+5. Fix (22.5, 2026-11-16)
+   1. The seat says "Left for good" and fades, as a dead player's.
+   2. Its tooltip: "Kicked by a vote: this seat plays no more".
+   3. `GameScreen` reads `Seat.kicked`; `PlayerArea` draws it.
+   4. e2e: `duties.spec.ts`; UC-07 2f.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.187 solved.
+
+### [x] 19.188 A running attack's helpers are not shown
+
+1. Goal: every seat sees who helps the attack in progress.
+2. Report (22.5 check, 2026-11-16)
+   1. 22.5 checks that a running attack shows its helpers (owner).
+   2. `AttackView` has no helpers and no sharers.
+3. Cause (the code)
+   1. The engine keeps them in `AttackState.Helpers` and `Share`.
+   2. `View` (`view.go`) sends only the target, the deck and the odds.
+   3. Cards: Gus, Sisters Vis, Ultra Greed, Sibling Rivalry.
+   4. The client sees a helper only by their attack roll.
+4. Tasks:
+   1. Fix in 22.5: send them in `AttackView`; draw them for everyone.
+5. Fix (22.5, 2026-11-16)
+   1. `AttackView` sends `helpers` and `share` (`view.go`).
+   2. The stack's attack row adds "Helped by Bo · Rewards shared with Bo".
+   3. View only: no engine version change; steps and checksums stay.
+   4. Checked every writer: `AddAttackHelpers` (Gus, Sisters Vis, Ultra Greed).
+   5. Also `startAttack`'s next helpers and share (Sibling Rivalry).
+   6. Go test: `TestViewShowsTheAttackHelpers`; Vitest: `helpLine`.
+   7. e2e: `duties.spec.ts`; UC-14 2s.
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.188 solved.
+
+### [ ] 19.189 e2e: three WebKit table tests stall at game start
+
+1. Goal: `table.spec.ts` starts its games in time under a full run.
+2. Report (22.6 baseline `make e2e`, 2026-11-17)
+   1. Old code, before any 22.6 change; WebKit only.
+   2. Lines 193, 220, 266 timed out at 30 s inside `startGame`.
+   3. 193: in `setSpeed` after the first roll; 220, 266: on the main menu.
+   4. The three ran at once; each page stopped answering Playwright.
+   5. The 4-player test next to them took 36.8 s; others 3 to 7 s.
+   6. Load average about 10; the run took 9.8 min (about 3.7 is usual).
+   7. 607 passed, 3 failed, 18 skipped.
+   8. Evidence: `.cache/e2e-evidence/22.6/baseline/` (not in git).
+3. Cause: not found yet.
+   1. A main menu with no game should answer at once.
+   2. Likely the machine under load; not shown.
+   3. No trace: a run keeps none on a first failure.
+4. Tasks:
+   1. Find what blocked the WebKit pages for about 25 s.
+   2. Check: `table.spec.ts`, webkit, 5 workers, 10 repeats.
+
+### [ ] 19.190 A presence message is sent on a socket still connecting
+
+1. Goal: the client never sends on a socket that is not open.
+2. Report (22.7 `make e2e`, 2026-11-17)
+   1. Vite logged an unhandled `InvalidStateError` once; no test failed.
+   2. "Failed to execute 'send' on 'WebSocket': Still in CONNECTING state."
+   3. Stack: `send` (`net.ts:78`) from `sendPresence` (`store.ts:1020`).
+   4. It ran beside the `pause.spec.ts` reconnect tests, Chromium.
+   5. Evidence: `.cache/e2e-evidence/22.7/run1/e2e1.log` (not in git).
+   6. The next run: once in WebKit, "The object is in an invalid state."
+   7. Same stack, from `Presence.tsx:49`; `run2/e2e2.log`.
+3. Cause: found in the code, not yet proven by a test.
+   1. `connect` sets `socket` to the new socket before it opens.
+   2. `send` then calls `socket.send` while it still connects.
+   3. Presence is sent on pointer moves, so a reconnect can meet one.
+   4. The error is thrown into the caller; the message is lost.
+4. Tasks:
+   1. A test: `send` while connecting throws nothing.
+   2. Decide: drop presence then, or queue lobby messages.
+   3. Check every `send` caller for the same race.
+
+### [x] 19.191 Animation clash: a card seen on the deck, then revealed into a slot
+
+1. Goal: a card revealed on top of a deck may then be revealed into a slot.
+2. Report (22.9 subagent, 2026-11-17)
+   1. `make e2e-games`, 2 players, every set, seed 780402.
+   2. Both pages logged "animation clash: reveal shows chest after reveal".
+   3. The game itself ended with a winner: 35 turns, 1926 steps.
+   4. Evidence: `.cache/e2e-evidence/22.9-games-780402/` (not in git).
+3. Cause (the record and the code)
+   1. Step 1515: Bob reveals the top monster card, Chest (object 54).
+   2. Its event: `card_revealed`, text "monster deck".
+   3. Step 1523: Tumor dies; Chest is revealed into the slot (object 684).
+   4. Steps 1516–1527 are server auto passes: no player could act.
+   5. A `reveal` claim carried no object (19.136), so one card name clashed.
+   6. Close to 19.136 and 19.139: the playback was right, the rule wrong.
+   7. A record replay in the engine: `CanAct` false from 1515 to 1526.
+   8. So steps 1515–1527 came in one update, to both pages: one beat.
+   9. Cheese Grater's reveal left Chest on its deck; Bob put it back.
+   10. The refill moved it into the slot: a new object, a new public event.
+   11. Two showings, as 19.139 found for a deal: legal (ADR 012 2.11–2.13).
+   12. Not 19.4: there one draw shows its card, then the slot pick does.
+   13. `seen` (19.4) checks the update before only, by the card's name.
+   14. In one update it never applies; across two it hid another copy too.
+4. Tasks:
+   1. [x] Confirm the cause in `animations.ts` and the playback.
+   2. [x] Fix it game-wide: every reveal of a card seen just before.
+   3. [x] Vitest for the pair; rerun `GAME_SEED=780402 make e2e-games`.
+5. Fix (2026-11-17)
+   1. `reveal`, `fly`, `place` and `draw` effects carry the event's object.
+   2. `claimEffect` passes it to `claim`, as `played` did (19.136).
+   3. Known, different objects never clash; same or unknown: as before.
+   4. `claim` keeps every live claim of a card, not only the newest.
+   5. So one copy's claim never hides another copy's.
+   6. `claimDeal` moved to `animations.ts`; it claims each dealt copy by object.
+   7. Two copies in one deal were one claim by name; now two.
+   8. `seen` is `seenBefore`: the view's `revealed` card (19.9), or the same object.
+   9. A deck attack still shows its card once (19.4); the e2e test sets `revealed`.
+   10. A card that moved, or another copy, shows again in the next update.
+   11. ADR 012 2.11–2.14; Animations.md: rule 4, `arrive`, `show`, `reveal`, `choice-deal`.
+6. Claims and callers checked
+   1. `claimEffect` `fly`: every producer sets the object (discard, death, soul, treasure, buy, present).
+   2. `claimEffect` `place`: a slot's `card_revealed`, its object.
+   3. `claimEffect` `draw`: an own draw's `looted` object; others claim nothing.
+   4. `claimEffect` `reveal`: the `card_revealed` object.
+   5. `claimEffect` `played`: had its object (19.136).
+   6. `claimDeal` (`choice-deal`): `data-object` of each card (19.141).
+   7. `Card` pop-in (`claimed`) and `HandCard` (`arrivedBy`) only read claims.
+   8. They keep keying on the name: a copy no effect brought then stays still.
+   9. That shows nothing twice; a view card's object may differ from its event's.
+   10. Not claims, left by name: `holdReveals`, `playedEnds`.
+   11. `holdReveals` joins only effects in a row; a discard's fly has a new object.
+   12. Unknown object: a `fly` from an event without one (rare); as before.
+   13. A deck attack whose slot a kicked seat's forced pick makes in the same update.
+   14. Its two reveals then have two objects and show twice; not seen in play.
+7. Tests
+   1. Vitest `animations.test.ts`: two objects in one beat and in a row, no clash.
+   2. One object twice, or no object: a clash as before (19.4).
+   3. A later copy's claim does not hide an earlier copy's.
+   4. Arrivals of copies at one place, by object; `claimDeal` of two copies.
+   5. Vitest `playback.test.ts`: the record's pair gives two reveals; `seenBefore`.
+8. Reruns (2026-11-17)
+   1. `GAME_SEED=780402`, 2 players: passed, 224 turns, 33 min, no clash.
+   2. Its deal differs from the report's: that server seed was random.
+   3. The report ran without `GAME_SEED`: the test sent seed 0, a random deal.
+   4. So the exact pair is checked by the Vitest built from the record.
+   5. Full `make e2e-games`: 9 of 9 passed, 42.7 min, no clash.
+9. Owner notes (2026-11-17)
+   1. Owner marks 19.191 solved.
+
+### [x] 19.192 No event when a card moves a player's ¢
+
+1. Goal: every change of a player's ¢ has an event with its amount.
+2. Report (22.10 sims check, 2026-11-17)
+   1. `TestSimulations`: "player 1 cents: 41 -> 0; player 2 cents: 23 -> 64".
+   2. Events: `gained_treasure card_revealed entered_play` (Auction Gavel).
+   3. Also "player 0 cents: 64 -> 0"; events: `card_revealed entered_play discarded` (Greed!).
+3. Cause (the code)
+   1. Auction Gavel (r) moves the bid with `Cents -=` and `+=`.
+   2. Greed! (b2, event) sets `Cents = 0` itself.
+   3. Neither goes through an engine helper with an event.
+   4. The client sees the ¢ change only in the next view, with no popup.
+4. Tasks:
+   1. Fix it in 22.10, game-wide: cards use the engine's ¢ helpers.
+5. Fix (22.10, 2026-11-17)
+   1. Greed! uses `LoseCentsNow`, as Crooked Penny does: one `lost_cents`.
+   2. "Loses" is a loss now: Rib of Greed keeps the ¢ (R-MECH-42); a rules fix.
+   3. Auction Gavel uses `GiveCents`: one `gave_cents` to the controller.
+   4. Searched every set and the engine for `Cents` writes.
+   5. Engine writers all emit: `perform` (gain, lose, steal), `GiveCents`, `PayCents`, `purchase`.
+   6. Setup's starting ¢ is before the first step; no event needed.
+   7. Other cards use the helpers: Crooked Penny, fsp2 `GiveCents` cards.
+   8. Client: `lost_cents` and `gave_cents` have history lines already.
+   9. Go tests: `TestGreedEvent`, `TestAuctionGavel` see the events.
+   10. Steps' checksums change; engine 0.5.4 is unreleased (`eventVersion`).
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.192 solved.
+
+### [x] 19.193 No event names the player an item or soul is taken from
+
+1. Goal: a stolen item's event names both players.
+2. Report (22.10 sims check, 2026-11-17)
+   1. `TestSimulations`: "player 0 souls: 1 -> 0"; events: `gained_treasure game_won`.
+   2. A soul was stolen in place; only the thief is named.
+3. Cause (the code)
+   1. `GainControl` (`zones.go`) changes an item's controller in place.
+   2. Its `gained_treasure` ("stolen") names the new controller only.
+   3. The old controller's items and souls drop with no event naming them.
+4. Tasks:
+   1. Fix it in 22.10: the event names the old controller too.
+5. Fix (22.10, 2026-11-17)
+   1. `GainControl`'s in-place `gained_treasure` sets `By` to the old controller plus 1.
+   2. The same kind: `passCurse` changes a curse's holder in place.
+   3. Its `cursed` now sets `By` to the old holder plus 1.
+   4. Every in-place controller change goes through these two.
+   5. Checked every `InPlay = remove`: the rest move the card (new object).
+   6. `GainControl` callers: 15 in cards (b2, r, fsp2, cardkit), 2 in the engine.
+   7. A shop item's steal moves the card; it had no old controller.
+   8. Client: no change; the table shows the card leave, the line names the thief.
+   9. Go tests: `TestGainControlNamesTheOldController`, `TestPassCurseNamesTheOldHolder`.
+   10. Steps' checksums change; engine 0.5.4 is unreleased (`eventVersion`).
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.193 solved.
+
+### [x] 19.194 Strip popout test hovers the old tile
+
+1. Goal: the two-rows popout test hovers the tile it just added.
+2. Report (20.24 gate run, 2026-11-17)
+   1. `strip.spec.ts:383`, webkit: "toHaveCount 6, received 4".
+   2. Failed again on rerun: 1 of 8 (`--repeat-each 8`).
+   3. Evidence: `.cache/e2e-evidence/20.24-1710/`.
+   4. Snapshot: the strip still shows the old tile; its popout has 4 results.
+3. Cause (the test)
+   1. Since 20.21 the strip holds its tiles while the pointer is on it.
+   2. The test moves off, then adds a tile at once.
+   3. The leave was not handled yet; the new tile waited behind the hold.
+   4. The hover then found the old tile on top.
+   5. The app was right: tiles come in when the pointer leaves (UC-15).
+4. Tasks:
+   1. Wait for the exact state: zoom hidden, dim off (hold gone).
+   2. Then wait until the new tile is on top before hovering it.
+   3. Check every `mouse.move` off the strip in `strip.spec.ts`.
+5. Fix (2026-11-17)
+   1. The test waits for the dim to clear, then for a new top tile.
+   2. Checked the other moves off the strip: 268 and 346 wait 1.2 s.
+   3. 334 waits for the new tile count; 377 waits for the dim; all fine.
+   4. No other spec adds strip tiles (`addTiles` lives in this file).
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.194 solved.

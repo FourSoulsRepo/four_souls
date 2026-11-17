@@ -367,7 +367,7 @@ func rerollable(g *engine.Game, p engine.PlayerID) []engine.ObjectID {
 // ability are offered; a passive item has nothing to deactivate (Q-25).
 var deactivateAnItem = engine.Ask(func(c *engine.Ctx, a []int) {
 	if ids := cardkit.DeactivatableItems(c.G, engine.NoPlayer); a[0] >= 0 && a[0] < len(ids) {
-		c.G.Object(ids[a[0]]).Charged = false
+		c.G.Deactivate(ids[a[0]])
 	}
 }, engine.Question{Text: askDeactivateWhichItem, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 	var out []engine.Msg

@@ -2,6 +2,7 @@ package record
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -27,7 +28,7 @@ func TestRoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 	for i := range 3 {
-		if serr := w.Step(map[string]int{"kind": i}, []map[string]string{{"kind": "passed"}}, uint64(100+i)); serr != nil {
+		if serr := w.Step(map[string]int{"kind": i}, []map[string]string{{"kind": "passed"}}, json.RawMessage(fmt.Sprintf(`{"n":%d}`, i)), uint64(100+i)); serr != nil {
 			t.Fatal(serr)
 		}
 	}
@@ -41,7 +42,7 @@ func TestRoundTrip(t *testing.T) {
 	if rec.Header.Format != Format || rec.Header.Setup.Seed != 42 || rec.Header.Seats[1].Name != "Bo" || rec.Header.Cards[0].Ref != "the_d6" {
 		t.Errorf("header %+v", rec.Header)
 	}
-	if len(rec.Steps) != 3 || rec.Steps[2].N != 3 || rec.Steps[2].Checksum != 102 || string(rec.Steps[1].Intent) != `{"kind":1}` {
+	if len(rec.Steps) != 3 || rec.Steps[2].N != 3 || rec.Steps[2].Checksum != 102 || string(rec.Steps[1].Intent) != `{"kind":1}` || string(rec.Steps[1].View) != `{"n":1}` {
 		t.Errorf("steps %+v", rec.Steps)
 	}
 	if rec.End == nil || !rec.End.Finished || rec.End.Winners[0] != 1 {
@@ -61,7 +62,7 @@ func TestUnfinished(t *testing.T) {
 		t.Fatal(err)
 	}
 	for i := range 5 {
-		if serr := w.Step(i, nil, 1); serr != nil {
+		if serr := w.Step(i, nil, nil, 1); serr != nil {
 			t.Fatal(serr)
 		}
 	}
@@ -90,6 +91,42 @@ func TestNotARecord(t *testing.T) {
 		if _, err := Read(bytes.NewReader(data)); !errors.Is(err, ErrFormat) {
 			t.Errorf("%s: %v", name, err)
 		}
+	}
+}
+
+// writeFormat writes a gzip record of one header line of format n and
+// one step line without a view.
+func writeFormat(t *testing.T, n int) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	gz := gzip.NewWriter(&buf)
+	h := header()
+	h.Kind, h.Format = "header", n
+	enc := json.NewEncoder(gz)
+	if err := enc.Encode(h); err != nil {
+		t.Fatal(err)
+	}
+	if err := enc.Encode(Step{Kind: "step", N: 1, Intent: json.RawMessage(`{}`), Events: json.RawMessage(`[]`), Checksum: 1}); err != nil {
+		t.Fatal(err)
+	}
+	if err := gz.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return buf.Bytes()
+}
+
+// TestFormats: format 1 still reads, with no views; a newer format is
+// refused as ErrNewer, which is an ErrFormat too (ADR 031, 1.6).
+func TestFormats(t *testing.T) {
+	rec, err := Read(bytes.NewReader(writeFormat(t, 1)))
+	if err != nil || rec.Header.Format != 1 || len(rec.Steps) != 1 || rec.Steps[0].View != nil {
+		t.Errorf("format 1: %+v, %v", rec, err)
+	}
+	if _, err := Read(bytes.NewReader(writeFormat(t, Format+1))); !errors.Is(err, ErrNewer) || !errors.Is(err, ErrFormat) {
+		t.Errorf("a newer format: %v", err)
+	}
+	if _, err := Read(bytes.NewReader(writeFormat(t, 0))); !errors.Is(err, ErrFormat) || errors.Is(err, ErrNewer) {
+		t.Errorf("format 0: %v", err)
 	}
 }
 
@@ -128,7 +165,7 @@ func TestAppend(t *testing.T) {
 		t.Fatal(err)
 	}
 	for i := range 2 {
-		if serr := w.Step(i, nil, 1); serr != nil {
+		if serr := w.Step(i, nil, nil, 1); serr != nil {
 			t.Fatal(serr)
 		}
 	}
@@ -139,7 +176,7 @@ func TestAppend(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if serr := w.Step(2, nil, 7); serr != nil {
+	if serr := w.Step(2, nil, nil, 7); serr != nil {
 		t.Fatal(serr)
 	}
 	if cerr := w.Close(End{Finished: true, Winners: []int{0}}); cerr != nil {
@@ -162,7 +199,7 @@ func TestStopThenAppend(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if serr := w.Step(0, nil, 1); serr != nil {
+	if serr := w.Step(0, nil, nil, 1); serr != nil {
 		t.Fatal(serr)
 	}
 	if serr := w.Stop(); serr != nil {
@@ -179,7 +216,7 @@ func TestStopThenAppend(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if serr := w.Step(1, nil, 2); serr != nil {
+	if serr := w.Step(1, nil, nil, 2); serr != nil {
 		t.Fatal(serr)
 	}
 	if cerr := w.Close(End{Finished: true}); cerr != nil {
@@ -237,7 +274,7 @@ func TestRollbackLines(t *testing.T) {
 	}
 	step := func(n uint64) {
 		t.Helper()
-		if serr := w.Step(map[string]uint64{"kind": n}, nil, n); serr != nil {
+		if serr := w.Step(map[string]uint64{"kind": n}, nil, nil, n); serr != nil {
 			t.Fatal(serr)
 		}
 	}
@@ -322,4 +359,60 @@ func TestChallengeSetup(t *testing.T) {
 			}
 		}
 	}
+}
+
+// TestReadBrief: a brief read has the header, the end and every step's
+// N, the rollbacks too, but no step's intent, events or view.
+func TestReadBrief(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "g7"+Ext)
+	w, err := Create(path, header())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := range 4 {
+		if serr := w.Step(map[string]int{"kind": i}, []string{"passed"}, json.RawMessage(`{"turn":{"number":1}}`), 1); serr != nil {
+			t.Fatal(serr)
+		}
+	}
+	if rerr := w.Rollback(3, 0, 2); rerr != nil {
+		t.Fatal(rerr)
+	}
+	if cerr := w.Close(End{Ended: time.Now().UTC(), Finished: true, Winners: []int{0}}); cerr != nil {
+		t.Fatal(cerr)
+	}
+	f, err := os.Open(path) //nolint:gosec // a test file
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close() //nolint:errcheck // reading only
+	rec, err := ReadBrief(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rec.Header.Seats[1].Name != "Bo" || rec.End == nil || !rec.End.Finished || len(rec.Rollbacks) != 1 {
+		t.Errorf("brief %+v", rec)
+	}
+	if len(rec.Steps) != 4 || rec.Steps[3].N != 4 || rec.Steps[0].View != nil || rec.Steps[0].Intent != nil {
+		t.Errorf("steps %+v", rec.Steps)
+	}
+	if live := rec.Live(); len(live) != 2 {
+		t.Errorf("live %+v", live)
+	}
+	if _, err := ReadBrief(bytes.NewReader(stepFirst(t))); !errors.Is(err, ErrFormat) {
+		t.Errorf("a step before the header: %v", err)
+	}
+}
+
+// stepFirst is a gzip file whose first line is a step.
+func stepFirst(t *testing.T) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	gz := gzip.NewWriter(&buf)
+	if _, err := gz.Write([]byte(`{"kind":"step","n":1,"intent":{}}` + "\n")); err != nil {
+		t.Fatal(err)
+	}
+	if err := gz.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return buf.Bytes()
 }

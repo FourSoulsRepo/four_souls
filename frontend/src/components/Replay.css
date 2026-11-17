@@ -1,0 +1,249 @@
+/* The replay bar (10.2, ADR 031, 4): the record's controls, bottom
+   left of the table, where no seat sits with 2 to 4 players. It wears
+   the game's own look (10.7, 4.8): a dark .panel board, the parchment
+   buttons of style.css, the ink select of screens.css. */
+
+.panel.replay-bar {
+  position: fixed;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  z-index: var(--z-replay);
+  gap: 0.5rem;
+  width: 21rem;
+  max-width: calc(100vw - 1.5rem);
+  overflow: visible;
+  padding: 0.625rem 0.75rem 0.75rem;
+}
+
+.replay-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Every button of the bar: smaller than a menu's, same parchment.
+   .panel makes it win over style.css whatever the order. */
+.panel.replay-bar button {
+  padding: 0.25rem 0.75rem 0.125rem;
+  font-size: 0.9375rem;
+  line-height: 1.25;
+}
+
+.replay-icon {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  fill: currentcolor;
+}
+
+.replay-bar button.replay-icon-button {
+  display: grid;
+  place-items: center;
+  width: 2.375rem;
+  height: 2rem;
+  padding: 0;
+}
+
+/* Play is the main action: the gold of End turn. */
+.replay-bar button.replay-play {
+  width: 2.75rem;
+  background: var(--gold);
+  rotate: 0.8deg;
+}
+
+.replay-bar button.replay-icon-button:first-child {
+  rotate: 0.6deg;
+}
+
+/* "Step i / n · Turn t" in the game's letters, gold like a title. */
+.replay-where {
+  flex: 1;
+  font-family: var(--font-game);
+  font-size: 1.0625rem;
+  letter-spacing: 0.03em;
+  color: #f7de8f;
+}
+
+/* Hide (4.9): a small slip at the top right of the bar. */
+.replay-bar button.replay-hide,
+.replay-bar button.replay-show {
+  display: grid;
+  place-items: center;
+  width: 1.875rem;
+  height: 1.625rem;
+  padding: 0;
+  border-width: 0.125rem;
+  box-shadow: 0 0.125rem 0 var(--ink);
+}
+
+/* Hidden, only the button to show it again stays, in the same corner. */
+.panel.replay-bar.replay-hidden {
+  width: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+}
+
+.replay-bar button.replay-show {
+  width: 2.75rem;
+  height: 2.125rem;
+  border-width: 0.1875rem;
+  box-shadow:
+    0 0.1875rem 0 var(--ink),
+    0 0.25rem 0.75rem rgb(0 0 0 / 50%);
+}
+
+/* The speeds are one segmented slip: the parts share a frame, and the
+   speed in use is gold. */
+.replay-speeds {
+  display: flex;
+  margin-left: auto;
+  overflow: hidden;
+  border: 0.1875rem solid var(--ink);
+  border-radius: 0.625rem 0.75rem 0.6875rem 0.5625rem;
+  box-shadow: 0 0.1875rem 0 var(--ink);
+  rotate: -0.6deg;
+}
+
+.replay-bar .replay-speeds button {
+  min-width: 2.375rem;
+  height: 1.625rem;
+  padding: 0.125rem 0.375rem 0;
+  border: none;
+  border-radius: 0;
+  font-size: 0.875rem;
+  letter-spacing: 0;
+  color: rgb(29 18 10 / 70%);
+  background: var(--paper);
+  box-shadow: none;
+  rotate: none;
+}
+
+.replay-bar .replay-speeds button + button {
+  border-left: 0.125rem solid var(--ink);
+}
+
+.replay-bar .replay-speeds button:enabled:hover {
+  translate: none;
+  color: var(--ink);
+  box-shadow: inset 0 0 0.625rem rgb(255 210 122 / 90%);
+}
+
+.replay-bar .replay-speeds button:enabled:active {
+  translate: none;
+  box-shadow: inset 0 0.125rem 0 rgb(29 18 10 / 35%);
+}
+
+.replay-bar .replay-speeds button[aria-pressed='true'] {
+  color: var(--ink);
+  background: var(--gold);
+  box-shadow: inset 0 0.125rem 0 rgb(29 18 10 / 25%);
+}
+
+.replay-bar .replay-speeds button:focus-visible {
+  outline-offset: -0.25rem;
+}
+
+/* The turn list is the ink select of the menu screens. */
+.replay-bar select.replay-turns {
+  flex: 1;
+  min-width: 0;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+  font-size: 0.9375rem;
+}
+
+/* Show hands (10.3): a toggle at the right; gold while pressed. */
+.replay-bar button.replay-hands {
+  flex: none;
+}
+
+.replay-bar button.replay-hands[aria-pressed='true'] {
+  background: var(--gold);
+}
+
+.replay-bar button.replay-leave {
+  flex: 1;
+}
+
+/* The slider over all steps: an ink groove, gold up to the step shown
+   (--fill, set by the bar), and a parchment knob. Chromium and WebKit
+   both draw the -webkit- parts. */
+.replay-slider {
+  --track: 0.75rem;
+  --knob: 1.375rem;
+  width: 100%;
+  height: var(--knob);
+  margin: 0;
+  appearance: none;
+  background: none;
+  cursor: pointer;
+}
+
+.replay-slider::-webkit-slider-runnable-track {
+  height: var(--track);
+  box-sizing: border-box;
+  border: 0.125rem solid var(--ink);
+  border-radius: 0.375rem;
+  background:
+    linear-gradient(to right, #e4a63a 0, #f7de8f var(--fill), rgb(0 0 0 / 45%) var(--fill));
+  box-shadow: 0 0.125rem 0 var(--ink);
+}
+
+.replay-slider::-webkit-slider-thumb {
+  width: var(--knob);
+  height: var(--knob);
+  margin-top: calc((var(--track) - var(--knob)) / 2 - 0.125rem);
+  border: 0.1875rem solid var(--ink);
+  border-radius: 50%;
+  appearance: none;
+  background: var(--paper);
+  box-shadow: 0 0.125rem 0 var(--ink);
+}
+
+.replay-slider::-moz-range-track {
+  height: var(--track);
+  box-sizing: border-box;
+  border: 0.125rem solid var(--ink);
+  border-radius: 0.375rem;
+  background:
+    linear-gradient(to right, #e4a63a 0, #f7de8f var(--fill), rgb(0 0 0 / 45%) var(--fill));
+}
+
+.replay-slider::-moz-range-thumb {
+  width: var(--knob);
+  height: var(--knob);
+  box-sizing: border-box;
+  border: 0.1875rem solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+}
+
+.replay-slider:hover::-webkit-slider-thumb {
+  box-shadow:
+    0 0.125rem 0 var(--ink),
+    0 0 0.75rem rgb(255 210 122 / 85%);
+}
+
+.replay-slider:focus-visible {
+  outline: none;
+}
+
+.replay-slider:focus-visible::-webkit-slider-thumb {
+  outline: 0.1875rem solid #f7de8f;
+  outline-offset: 0.0625rem;
+}
+
+/* The seat the table is seen from (4.10). */
+.replay-seat {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #e8d9b0;
+}
+
+.replay-error {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #ff9a8a;
+}

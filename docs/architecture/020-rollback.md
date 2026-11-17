@@ -45,10 +45,17 @@
     1. Lost. The app knows no intents and no prompts of past steps.
 12. **The server merges a play with its answers**
     1. Won. It keeps the intents and sees the prompt after each step.
+13. **A save names a nested ask by its path through wrappers (19.177)**
+    1. Lost. Asks inside an Ask's answer or a card's closure have no path.
+14. **Keep the state before every effect that may ask**
+    1. Lost. A copy costs about 0.25 ms per effect; every step slows.
+15. **A save at a nested ask keeps the last clean state and the steps since**
+    1. Won (owner, 2026-11-16). The load runs the card's own code again.
+    2. Every card works, closures too; play costs almost nothing.
 
 ## Decision
 
-Use options 1, 4, 8, 10 and 12.
+Use options 1, 4, 8, 10, 12 and 15.
 
 1. Modes
    1. `Options.Rollback`: `""` (Disabled), `soft`, `god`.
@@ -180,6 +187,24 @@ Use options 1, 4, 8, 10 and 12.
         2. Yours reads "your choice"; the vote panel names it alike.
         3. It never borrows the next move's name.
         4. `rollback_steps` → `last`: a play's last answer; its update may name it.
+13. Saves at a nested ask (19.177, 19.143)
+    1. A nested ask is made while another effect runs.
+    2. Examples: Gimpy's "Loot 1, then discard"; Plan C's `DestroyThis`.
+    3. Its question is a Go closure; no saved state can hold it.
+    4. A clean state has no nested ask waiting.
+    5. An ask that is the ability's own effect is found by its index.
+    6. `Save` at a clean state: the state, as before.
+    7. `Save` at a nested ask: the last clean state, plus `replay`.
+    8. `replay` lists the intents applied since that clean state.
+    9. `Load` decodes the clean state and applies those intents.
+    10. So the card's own code asks the nested question again.
+    11. The game keeps a clean state in memory (`origin`), not saved.
+    12. It is the state at the first intent, a load, or a clean save.
+    13. A save at a nested ask replays from it to the last clean state.
+    14. It replays the rest too; the result must be the game, or it fails.
+    15. One path for all: the host's save, the restart keep, rollback bases.
+    16. `StateMeaning` 3: an older kept state may hold a nested ask.
+    17. Such a state loads as the wrong question, so it is refused.
 
 ## Consequences
 
@@ -189,6 +214,7 @@ Use options 1, 4, 8, 10 and 12.
 2. No state copies per step; memory stays one base per game.
 3. Every undone step stays in the record as evidence.
 4. Disabled by default: nothing changes for a game that does not opt in.
+5. A save at any question loads to the same game, every card included (item 13).
 
 ### Negative and risks
 
@@ -199,6 +225,11 @@ Use options 1, 4, 8, 10 and 12.
    1. Still milliseconds; the fuzz tests play whole games faster.
 3. A restart with a rules change ends the Godmode history there.
 4. A new event kind must be sorted into the barrier list.
+5. A save at a nested ask replays the game from its last clean state.
+   1. Milliseconds; the replay runs only when the save is made.
+6. A state changed outside `Apply` cannot be saved at a nested ask.
+   1. Only tests do that; the save then fails instead of saving wrong.
+7. Games kept by a server before `StateMeaning` 3 end at the update.
 
 ### Neutral
 

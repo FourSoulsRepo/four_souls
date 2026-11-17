@@ -1,6 +1,8 @@
 // Network messages (ADR 006), mirroring internal/protocol/protocol.go.
 // Only what the client uses so far; protocol.test.ts checks these types
 // against Go's golden file. Go sends a nil list as null.
+// The game update (Update) declares every field Go sends; the client
+// reads each or lists why not (TS-07, viewFields.test.ts).
 import { say, t } from './i18n';
 import type { Msg } from './locale';
 
@@ -120,6 +122,9 @@ export interface Options {
   // regular game (ADR 028). It needs 2 seats; bonus souls are off.
   challenge?: string;
   difficulty?: Difficulty;
+  // seed fixes the deal; only a test server takes it (ADR 032). The
+  // app never sends it; e2e tests do.
+  seed?: number;
 }
 
 // Difficulty is a challenge's difficulty (ADR 028, Decision 4.2).
@@ -417,6 +422,16 @@ export interface Turn {
   end_declared?: boolean;
   death_end?: boolean;
   entered?: boolean;
+  // The engine's own turn state (TS-07, 22.4): Q-31's random attack,
+  // Credit Card, Sibling Rivalry, R-TURN-12 and R-TURN-18.
+  random_attack_made?: boolean;
+  shop_bought?: number;
+  free_shop_item?: boolean;
+  next_helpers?: number[];
+  next_share?: number[];
+  monster_died?: boolean;
+  room_replaced?: boolean;
+  late_rooms?: number[];
 }
 
 export interface Target {
@@ -428,6 +443,7 @@ export interface Target {
 export interface AbilityRef {
   card: string;
   index: number;
+  lingering?: boolean; // index is into the card's lingering abilities
 }
 
 export interface Chosen {
@@ -458,6 +474,8 @@ export interface StackItem {
   event_amount?: number;
   event_stack?: number;
   event_object?: number;
+  event_source?: number;
+  event_by?: number;
   reward?: number;
   checked?: number;
   // text is the used ability's words, or its chosen mode's (15.21).
@@ -585,6 +603,10 @@ export interface AttackView {
   target?: number;
   deck?: boolean;
   odds?: OddsView; // once aimed (15.94)
+  // helpers roll after each attack roll; share also gain its rewards
+  // (R-ATK-21, Sibling Rivalry, 19.188).
+  helpers?: number[];
+  share?: number[];
 }
 
 // OddsView is the attacker's next roll against the target (15.94): its

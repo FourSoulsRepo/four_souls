@@ -5,36 +5,157 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 import { tr, trRe } from './locale';
 
+// Engine enums the waits read, in Go's order (frontend/src/actions.ts
+// and stack.ts; pkg/rules_engine).
+export const Intent = { pass: 0, endTurn: 1, discard: 2, playLoot: 3, choose: 4, attack: 5, purchase: 6, activate: 7, order: 8, throw: 9 } as const;
+export const Ask = { none: 0, priority: 1, discard: 2, gameOver: 3, choose: 4, order: 5, throw: 6 } as const;
+export const Purpose = {
+  replacement: 0,
+  attackTarget: 1,
+  monsterSlot: 2,
+  penaltyItem: 3,
+  penaltyLoot: 4,
+  purchase: 5,
+  target: 6,
+  triggerOrder: 7,
+  mode: 8,
+  answer: 9,
+  startingItem: 10,
+  cursed: 11,
+  lowest: 12,
+  recharge: 13,
+  copyAbility: 14,
+  die: 15,
+  redirect: 16,
+  order: 17,
+  passCurse: 18,
+  room: 19,
+  mayReplace: 20,
+} as const;
+export const Item = { loot: 0, ability: 1, trigger: 2, roll: 3, damage: 4, death: 5, penalty: 6, deathStep: 7 } as const;
+
+// SeenItem is one stack item, as a wait needs it.
+export interface SeenItem {
+  kind: number;
+  controller: number;
+  attack: boolean;
+  // thrown: a roll's die is thrown (it has its number).
+  thrown: boolean;
+  card: string;
+}
+
 export interface Seen {
   step: number;
   waiting: number;
   you: number;
+  // ready: the page shows the latest state and may act on it: nothing
+  // behind, nothing sent for this step, no rollback vote open.
   ready: boolean;
   turn: number;
   active: number;
   over: boolean;
+  // prompt is what the game waits for: its kind (Ask), purpose (a
+  // choice's), and the text's key (a roll's label).
+  prompt: { kind: number; purpose: number; key: string };
+  // allowed are the intent kinds (Intent) the page may send now; none
+  // while it is not ready.
+  allowed: number[];
+  stack: SeenItem[];
+  // target is the running attack's target object; 0 for none.
+  target: number;
 }
 
-// seen reads who must act from the store (?fake exposes it).
+// seen reads the game state from the store (?fake exposes it). Named
+// waits read it, not the buttons that stand for it (TS-08, 22.8).
 export async function seen(page: Page): Promise<Seen> {
   return page.evaluate(() => {
     interface S {
-      game: { step: number; view: { waiting: { player: number }; turn: { number: number; active: number }; over?: boolean } } | null;
+      game: {
+        step: number;
+        allowed?: { kind: number }[] | null;
+        rollback_vote?: unknown;
+        view: {
+          waiting: { player: number; kind: number; purpose?: number; text?: { key?: string } };
+          turn: { number: number; active: number };
+          over?: boolean;
+          stack?: { kind: number; controller: number; attack?: boolean; roll?: number; card?: string }[] | null;
+          attack?: { target?: number };
+        };
+      } | null;
       lobby: { table: { you: number } | null };
       behind: boolean;
       sent: number | null;
     }
     const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+    const g = s.game;
+    const ready = g !== null && !s.behind && s.sent !== g.step && !(g.rollback_vote && !g.view.over);
     return {
-      step: s.game?.step ?? -1,
-      waiting: s.game?.view.waiting.player ?? -1,
+      step: g?.step ?? -1,
+      waiting: g?.view.waiting.player ?? -1,
       you: s.lobby.table?.you ?? -1,
-      ready: s.game !== null && !s.behind && s.sent !== s.game.step,
-      turn: s.game?.view.turn.number ?? 0,
-      active: s.game?.view.turn.active ?? -1,
-      over: s.game?.view.over ?? false,
+      ready,
+      turn: g?.view.turn.number ?? 0,
+      active: g?.view.turn.active ?? -1,
+      over: g?.view.over ?? false,
+      prompt: { kind: g?.view.waiting.kind ?? 0, purpose: g?.view.waiting.purpose ?? 0, key: g?.view.waiting.text?.key ?? '' },
+      allowed: ready ? (g?.allowed ?? []).map((a) => a.kind) : [],
+      stack: (g?.view.stack ?? []).map((it) => ({
+        kind: it.kind,
+        controller: it.controller,
+        attack: it.attack === true,
+        thrown: !!it.roll,
+        card: it.card ?? '',
+      })),
+      target: g?.view.attack?.target ?? 0,
     };
   });
+}
+
+// A Check is a named wait's condition on the seen state.
+export type Check = (s: Seen) => boolean;
+
+// may: the page may send an intent of this kind now (allowed by the
+// engine, and the page ready): Attack, Buy, Pass, End turn, Throw.
+export function may(kind: number): Check {
+  return (s) => s.ready && s.allowed.includes(kind);
+}
+
+// asked: the game waits for the page's own player to answer a prompt
+// of this kind (Ask), and of this purpose when given.
+export function asked(kind: number, purpose?: number): Check {
+  return (s) => s.ready && s.waiting === s.you && s.prompt.kind === kind && (purpose === undefined || s.prompt.purpose === purpose);
+}
+
+// question: the game asks the page's player this question (its text
+// key), e.g. 'ask.one_on_top'.
+export function question(key: string): Check {
+  return (s) => asked(Ask.choose)(s) && s.prompt.key === key;
+}
+
+// stackHolds: the stack holds n items.
+export function stackHolds(n: number): Check {
+  return (s) => s.stack.length === n;
+}
+
+// turnFree: the stack is empty and the page's player may end the
+// turn: the turn is back in its action step, nothing open.
+export const turnFree: Check = (s) => s.stack.length === 0 && may(Intent.endTurn)(s);
+
+// holds checks a condition on the page's state now, without waiting.
+export async function holds(page: Page, check: Check): Promise<boolean> {
+  return check(await seen(page));
+}
+
+// until waits until the page's state meets the condition. It answers
+// nothing: settle does that.
+export async function until(page: Page, check: Check, timeout?: number): Promise<void> {
+  await expect.poll(async () => check(await seen(page)), timeout === undefined ? {} : { timeout }).toBe(true);
+}
+
+// untilPick answers prompts until the page's player is asked to pick,
+// for this purpose (Purpose): an attack's target, what to buy, a slot.
+export async function untilPick(pages: Page[], press: Tap, page: Page, purpose: number): Promise<void> {
+  await settle(pages, press, () => holds(page, asked(Ask.choose, purpose)));
 }
 
 // enabled: the element is there and enabled, without waiting for it.
@@ -210,35 +331,22 @@ export function tablePicks(page: Page): Locator {
   return page.locator('.card.hl-pick, .player-pick');
 }
 
-// attackRollWaits: the page's player must throw their attack roll. The
+// attackRoll: the page's player must throw their attack roll. The
 // throw is for the attack roll, the roll is on the stack not yet thrown,
-// the attack has its target, and the Throw button shows. Another roll
+// the attack has its target, and the page may throw. Another roll
 // does not count: Bob's Brain rolls when the attack is declared, before
 // the target (19.85). A trigger of the target (Pride) resolves before
 // the first roll goes on the stack (R-ATK-25, 19.151); `settle` answers
 // its prompts on the way. The check does not need the roll on top.
-export async function attackRollWaits(page: Page): Promise<boolean> {
-  const waits = await page.evaluate(() => {
-    interface S {
-      game: {
-        view: { waiting: { kind: number; player: number; text?: { key?: string } }; stack?: { kind: number; attack?: boolean; roll?: number }[]; attack?: { target?: number } };
-      } | null;
-      lobby: { table: { you: number } | null };
-    }
-    const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
-    const view = s.game?.view;
-    // 6 is PromptKind.throw (actions.ts); 3 is StackKind.roll (stack.ts).
-    const roll = view?.stack?.some((it) => it.kind === 3 && it.attack === true && !it.roll) ?? false;
-    return (
-      view !== undefined &&
-      view.waiting.kind === 6 &&
-      view.waiting.player === s.lobby.table?.you &&
-      view.waiting.text?.key === 'event.attack_roll' &&
-      roll &&
-      (view.attack?.target ?? 0) !== 0
-    );
-  });
-  return waits && (await throwButton(page).count()) > 0;
+export const attackRoll: Check = (s) =>
+  asked(Ask.throw)(s) &&
+  may(Intent.throw)(s) &&
+  s.prompt.key === 'event.attack_roll' &&
+  s.stack.some((it) => it.kind === Item.roll && it.attack && !it.thrown) &&
+  s.target !== 0;
+
+export function attackRollWaits(page: Page): Promise<boolean> {
+  return holds(page, attackRoll);
 }
 
 // untilAttackRoll answers prompts after an Attack click until the
@@ -251,25 +359,12 @@ export async function untilAttackRoll(pages: Page[], press: Tap, attacker: Page)
 // stackWaits: the page shows the latest state, where the stack holds an
 // item and waits for a response to it (V-11). A resolving card's
 // question does not count: it shows as a prompt line instead (19.126).
-export async function stackWaits(page: Page): Promise<boolean> {
-  const ready = (await seen(page)).ready;
-  return (
-    ready &&
-    (await page.evaluate(() => {
-      interface S {
-        game: { view: { waiting: { kind: number }; stack?: unknown[] | null } } | null;
-      }
-      const view = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState().game?.view;
-      // 1 is PromptKind.priority (actions.ts).
-      return view?.waiting.kind === 1 && (view.stack?.length ?? 0) > 0;
-    }))
-  );
-}
+export const stackWaits: Check = (s) => s.ready && s.prompt.kind === Ask.priority && s.stack.length > 0;
 
 // untilStackWaits waits until every page shows the stack waiting for a
 // response (19.126).
 export async function untilStackWaits(pages: Page[]): Promise<void> {
-  await expect.poll(async () => (await Promise.all(pages.map(stackWaits))).every(Boolean)).toBe(true);
+  await expect.poll(async () => (await Promise.all(pages.map((p) => holds(p, stackWaits)))).every(Boolean)).toBe(true);
 }
 
 // markGame keeps the page's game state now, for untilResynced.
@@ -331,22 +426,28 @@ export function endTurnQuestion(page: Page) {
 }
 
 // endTurn presses End turn and confirms when it asks: it asks unless it
-// glows, as nothing is left to do then (H-20, V-46).
+// glows, as nothing is left to do then (H-20, V-46). Whether it glows
+// comes from the store: nothing allowed but ending the turn or passing.
+// The button must show the same before it is pressed.
 export async function endTurn(page: Page, press: Tap = click) {
   const button = endTurnButton(page);
-  const asks = !(await button.evaluate((b) => b.classList.contains('idle')));
+  const s = await seen(page);
+  const idle = s.allowed.includes(Intent.endTurn) && s.allowed.every((k) => k === Intent.endTurn || k === Intent.pass);
+  await (idle ? expect(button).toHaveClass(/\bidle\b/) : expect(button).not.toHaveClass(/\bidle\b/));
   await press(page, button);
-  if (asks) {
+  if (!idle) {
     await press(page, endTurnQuestion(page).getByRole('button', { name: tr('turn.end') }));
   }
 }
 
-// canEndTurn: the page may end the turn now (offered and enabled).
-export async function canEndTurn(page: Page): Promise<boolean> {
-  return (await seen(page)).ready && (await enabled(endTurnButton(page)));
+// canEndTurn: the page may end the turn now (the engine allows it, and
+// the page is ready).
+export function canEndTurn(page: Page): Promise<boolean> {
+  return holds(page, may(Intent.endTurn));
 }
 
-// activePage settles the game until a player may end the turn.
+// activePage settles the game until a player may end the turn; then
+// that page's End turn button shows it.
 export async function activePage(pages: Page[], press: Tap): Promise<Page> {
   let active: Page | undefined;
   await settle(pages, press, async () => {
@@ -361,6 +462,7 @@ export async function activePage(pages: Page[], press: Tap): Promise<Page> {
   if (!active) {
     throw new Error('no active player');
   }
+  await expect(endTurnButton(active)).toBeEnabled();
   return active;
 }
 

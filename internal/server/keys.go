@@ -58,4 +58,5 @@ var (
 	errSeats               = engine.NewKey("error.bad_seats")
 	errSitFirst            = engine.NewKey("error.sit_first")
 	errStarted             = engine.NewKey("error.started")
+	errTestSeed            = engine.NewKey("error.test_seed")
 )

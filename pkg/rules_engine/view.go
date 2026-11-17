@@ -226,6 +226,10 @@ type AttackView struct {
 	Deck   bool     `json:"deck,omitempty"`
 	// Odds are what the attacker's next roll needs, once aimed (15.94).
 	Odds *OddsView `json:"odds,omitempty"`
+	// Helpers roll after each attack roll; Share also gain its rewards
+	// (R-ATK-21, Sibling Rivalry, 19.188).
+	Helpers []PlayerID `json:"helpers,omitempty"`
+	Share   []PlayerID `json:"share,omitempty"`
 }
 
 // OddsView is the attacker's next attack roll against the target
@@ -350,7 +354,10 @@ func (g *Game) ViewBase() ViewBase {
 	out.Waiting = g.Waiting
 	out.Passed, out.Responding = g.responders()
 	if g.Attack.On {
-		out.Attack = &AttackView{Target: g.Attack.Target, Deck: g.Attack.Deck, Odds: g.attackOdds()}
+		out.Attack = &AttackView{
+			Target: g.Attack.Target, Deck: g.Attack.Deck, Odds: g.attackOdds(),
+			Helpers: slices.Clone(g.Attack.Helpers), Share: slices.Clone(g.Attack.Share),
+		}
 	}
 	out.Buying = g.Purchase.On
 	if fr := g.FirstRoll; fr != nil {

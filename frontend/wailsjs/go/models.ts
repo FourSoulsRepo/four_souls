@@ -1,3 +1,154 @@
+export namespace assets {
+	
+	export class CardBack {
+	    kind: string;
+	    image: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new CardBack(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.kind = source["kind"];
+	        this.image = source["image"];
+	    }
+	}
+	export class DiceSkin {
+	    id: string;
+	    name: string;
+	    set: string;
+	    image: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new DiceSkin(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.set = source["set"];
+	        this.image = source["image"];
+	    }
+	}
+	export class Fonts {
+	    title: string;
+	    body: string;
+	    cyrillic: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Fonts(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.title = source["title"];
+	        this.body = source["body"];
+	        this.cyrillic = source["cyrillic"];
+	    }
+	}
+	export class Icons {
+	    coin: string;
+	    sword: string;
+	    banner: string;
+	    sky: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Icons(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.coin = source["coin"];
+	        this.sword = source["sword"];
+	        this.banner = source["banner"];
+	        this.sky = source["sky"];
+	    }
+	}
+	export class MatInfo {
+	    id: string;
+	    name: string;
+	    image: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new MatInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.image = source["image"];
+	    }
+	}
+	export class Sounds {
+	    attackHit: string[];
+	    effectCast: string[];
+	    effectImpact: string[];
+	    diceRoll: string[];
+	    lootDraw: string[];
+	    playerDied: string[];
+	    treasureGain: string[];
+	    soulGain: string[];
+	    attackHit2: string[];
+	    attackHit3: string[];
+	    lootLand: string[];
+	    lootDrawOther: string[];
+	    dragBed: string[];
+	    dragAir: string[];
+	    turnStart: string[];
+	    cardPlayOther: string[];
+	    endTurnCue: string[];
+	    timerTick: string[];
+	    timerLast: string[];
+	    choiceDeal: string[];
+	    choicePick: string[];
+	    cardGrab: string[];
+	    aimCancel: string[];
+	    playRefused: string[];
+	    historyHover: string[];
+	    choiceUnpick: string[];
+	    choiceConfirm: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Sounds(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.attackHit = source["attackHit"];
+	        this.effectCast = source["effectCast"];
+	        this.effectImpact = source["effectImpact"];
+	        this.diceRoll = source["diceRoll"];
+	        this.lootDraw = source["lootDraw"];
+	        this.playerDied = source["playerDied"];
+	        this.treasureGain = source["treasureGain"];
+	        this.soulGain = source["soulGain"];
+	        this.attackHit2 = source["attackHit2"];
+	        this.attackHit3 = source["attackHit3"];
+	        this.lootLand = source["lootLand"];
+	        this.lootDrawOther = source["lootDrawOther"];
+	        this.dragBed = source["dragBed"];
+	        this.dragAir = source["dragAir"];
+	        this.turnStart = source["turnStart"];
+	        this.cardPlayOther = source["cardPlayOther"];
+	        this.endTurnCue = source["endTurnCue"];
+	        this.timerTick = source["timerTick"];
+	        this.timerLast = source["timerLast"];
+	        this.choiceDeal = source["choiceDeal"];
+	        this.choicePick = source["choicePick"];
+	        this.cardGrab = source["cardGrab"];
+	        this.aimCancel = source["aimCancel"];
+	        this.playRefused = source["playRefused"];
+	        this.historyHover = source["historyHover"];
+	        this.choiceUnpick = source["choiceUnpick"];
+	        this.choiceConfirm = source["choiceConfirm"];
+	    }
+	}
+
+}
+
 export namespace carddb {
 	
 	export class Footnote {
@@ -54,6 +205,7 @@ export namespace cardinfo {
 	    name: string;
 	    names: Record<string, string>;
 	    translators: Record<string, Array<string>>;
+	    artists: string[];
 	    effects: string[];
 	    footnotes: carddb.Footnote[];
 	    stats: carddb.Stat[];
@@ -75,6 +227,7 @@ export namespace cardinfo {
 	        this.name = source["name"];
 	        this.names = source["names"];
 	        this.translators = source["translators"];
+	        this.artists = source["artists"];
 	        this.effects = source["effects"];
 	        this.footnotes = this.convertValues(source["footnotes"], carddb.Footnote);
 	        this.stats = this.convertValues(source["stats"], carddb.Stat);
@@ -102,6 +255,27 @@ export namespace cardinfo {
 		    }
 		    return a;
 		}
+	}
+
+}
+
+export namespace host {
+	
+	export class Info {
+	    running: boolean;
+	    port: number;
+	    addresses: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Info(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.running = source["running"];
+	        this.port = source["port"];
+	        this.addresses = source["addresses"];
+	    }
 	}
 
 }
@@ -218,187 +392,6 @@ export namespace legal {
 
 }
 
-export namespace main {
-	
-	export class CardBack {
-	    kind: string;
-	    image: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new CardBack(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.kind = source["kind"];
-	        this.image = source["image"];
-	    }
-	}
-	export class ChallengeInfo {
-	    id: string;
-	    difficulties: string[];
-	
-	    static createFrom(source: any = {}) {
-	        return new ChallengeInfo(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
-	        this.difficulties = source["difficulties"];
-	    }
-	}
-	export class DiceSkin {
-	    id: string;
-	    name: string;
-	    set: string;
-	    image: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new DiceSkin(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
-	        this.name = source["name"];
-	        this.set = source["set"];
-	        this.image = source["image"];
-	    }
-	}
-	export class Fonts {
-	    title: string;
-	    body: string;
-	    cyrillic: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new Fonts(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.title = source["title"];
-	        this.body = source["body"];
-	        this.cyrillic = source["cyrillic"];
-	    }
-	}
-	export class HostInfo {
-	    running: boolean;
-	    port: number;
-	    addresses: string[];
-	
-	    static createFrom(source: any = {}) {
-	        return new HostInfo(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.running = source["running"];
-	        this.port = source["port"];
-	        this.addresses = source["addresses"];
-	    }
-	}
-	export class Icons {
-	    coin: string;
-	    sword: string;
-	    banner: string;
-	    sky: string[];
-	
-	    static createFrom(source: any = {}) {
-	        return new Icons(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.coin = source["coin"];
-	        this.sword = source["sword"];
-	        this.banner = source["banner"];
-	        this.sky = source["sky"];
-	    }
-	}
-	export class MatInfo {
-	    id: string;
-	    name: string;
-	    image: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new MatInfo(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
-	        this.name = source["name"];
-	        this.image = source["image"];
-	    }
-	}
-	export class Sounds {
-	    attackHit: string[];
-	    effectCast: string[];
-	    effectImpact: string[];
-	    diceRoll: string[];
-	    lootDraw: string[];
-	    playerDied: string[];
-	    treasureGain: string[];
-	    soulGain: string[];
-	    attackHit2: string[];
-	    attackHit3: string[];
-	    lootLand: string[];
-	    lootDrawOther: string[];
-	    dragBed: string[];
-	    dragAir: string[];
-	    turnStart: string[];
-	    cardPlayOther: string[];
-	    endTurnCue: string[];
-	    timerTick: string[];
-	    timerLast: string[];
-	    choiceDeal: string[];
-	    choicePick: string[];
-	    cardGrab: string[];
-	    aimCancel: string[];
-	    playRefused: string[];
-	    historyHover: string[];
-	    choiceUnpick: string[];
-	    choiceConfirm: string[];
-	
-	    static createFrom(source: any = {}) {
-	        return new Sounds(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.attackHit = source["attackHit"];
-	        this.effectCast = source["effectCast"];
-	        this.effectImpact = source["effectImpact"];
-	        this.diceRoll = source["diceRoll"];
-	        this.lootDraw = source["lootDraw"];
-	        this.playerDied = source["playerDied"];
-	        this.treasureGain = source["treasureGain"];
-	        this.soulGain = source["soulGain"];
-	        this.attackHit2 = source["attackHit2"];
-	        this.attackHit3 = source["attackHit3"];
-	        this.lootLand = source["lootLand"];
-	        this.lootDrawOther = source["lootDrawOther"];
-	        this.dragBed = source["dragBed"];
-	        this.dragAir = source["dragAir"];
-	        this.turnStart = source["turnStart"];
-	        this.cardPlayOther = source["cardPlayOther"];
-	        this.endTurnCue = source["endTurnCue"];
-	        this.timerTick = source["timerTick"];
-	        this.timerLast = source["timerLast"];
-	        this.choiceDeal = source["choiceDeal"];
-	        this.choicePick = source["choicePick"];
-	        this.cardGrab = source["cardGrab"];
-	        this.aimCancel = source["aimCancel"];
-	        this.playRefused = source["playRefused"];
-	        this.historyHover = source["historyHover"];
-	        this.choiceUnpick = source["choiceUnpick"];
-	        this.choiceConfirm = source["choiceConfirm"];
-	    }
-	}
-
-}
-
 export namespace protocol {
 	
 	export class SeatInfo {
@@ -430,6 +423,173 @@ export namespace protocol {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.open = source["open"];
 	    }
+	}
+
+}
+
+export namespace records {
+	
+	export class Card {
+	    ref: string;
+	    name: string;
+	    type: string;
+	    effects: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Card(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ref = source["ref"];
+	        this.name = source["name"];
+	        this.type = source["type"];
+	        this.effects = source["effects"];
+	    }
+	}
+	export class End {
+	    ended: number;
+	    finished: boolean;
+	    winners: number[];
+	
+	    static createFrom(source: any = {}) {
+	        return new End(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ended = source["ended"];
+	        this.finished = source["finished"];
+	        this.winners = source["winners"];
+	    }
+	}
+	export class Entry {
+	    path: string;
+	    name: string;
+	    started: number;
+	    players: string[];
+	    finished: boolean;
+	    winners: string[];
+	    steps: number;
+	    challenge: string;
+	    why: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Entry(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.path = source["path"];
+	        this.name = source["name"];
+	        this.started = source["started"];
+	        this.players = source["players"];
+	        this.finished = source["finished"];
+	        this.winners = source["winners"];
+	        this.steps = source["steps"];
+	        this.challenge = source["challenge"];
+	        this.why = source["why"];
+	    }
+	}
+	export class Seat {
+	    seat: number;
+	    name: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Seat(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.seat = source["seat"];
+	        this.name = source["name"];
+	    }
+	}
+	export class Step {
+	    index: number;
+	    n: number;
+	    events: unknown;
+	    view: unknown;
+	
+	    static createFrom(source: any = {}) {
+	        return new Step(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.index = source["index"];
+	        this.n = source["n"];
+	        this.events = source["events"];
+	        this.view = source["view"];
+	    }
+	}
+	export class Turn {
+	    number: number;
+	    active: number;
+	    step: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new Turn(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.number = source["number"];
+	        this.active = source["active"];
+	        this.step = source["step"];
+	    }
+	}
+	export class Summary {
+	    path: string;
+	    game: string;
+	    server: string;
+	    started: number;
+	    seats: Seat[];
+	    sets: string[];
+	    challenge: string;
+	    difficulty: string;
+	    cards: Card[];
+	    steps: number;
+	    turns: Turn[];
+	    end?: End;
+	
+	    static createFrom(source: any = {}) {
+	        return new Summary(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.path = source["path"];
+	        this.game = source["game"];
+	        this.server = source["server"];
+	        this.started = source["started"];
+	        this.seats = this.convertValues(source["seats"], Seat);
+	        this.sets = source["sets"];
+	        this.challenge = source["challenge"];
+	        this.difficulty = source["difficulty"];
+	        this.cards = this.convertValues(source["cards"], Card);
+	        this.steps = source["steps"];
+	        this.turns = this.convertValues(source["turns"], Turn);
+	        this.end = this.convertValues(source["end"], End);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
 	}
 
 }
@@ -559,6 +719,25 @@ export namespace settings {
 		    }
 		    return a;
 		}
+	}
+
+}
+
+export namespace setup {
+	
+	export class ChallengeInfo {
+	    id: string;
+	    difficulties: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new ChallengeInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.difficulties = source["difficulties"];
+	    }
 	}
 
 }

@@ -77,6 +77,9 @@ type Ctx struct {
 	mode   int
 	roll   int
 	effect int
+	// direct: the effect applied is the ability's own effect number
+	// effect, not one inside it (19.177).
+	direct bool
 }
 
 // Chosen is one chosen target.
@@ -507,6 +510,17 @@ func (g *Game) Recharge(id ObjectID) {
 	}
 	o.Charged = true
 	g.emit(Event{Kind: EvRecharged, Player: o.Controller, Object: id, Card: o.Card})
+}
+
+// Deactivate turns a charged object in play sideways, with its event:
+// "deactivate a character or item" by a card effect (19.176).
+func (g *Game) Deactivate(id ObjectID) {
+	o := g.Object(id)
+	if o.Zone.Kind != ZoneInPlay || !o.Charged {
+		return
+	}
+	o.Charged = false
+	g.emit(Event{Kind: EvDeactivated, Player: o.Controller, Object: id, Card: o.Card})
 }
 
 type killEffect struct{ target int }

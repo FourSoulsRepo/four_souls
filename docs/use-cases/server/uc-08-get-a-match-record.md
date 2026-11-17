@@ -1,6 +1,6 @@
 # UC-08: Get a match record
 
-**Module:** `internal/server`, `pkg/record`, `frontend`, `record.go`
+**Module:** `internal/server`, `pkg/record`, `frontend`, `bindings/records`
 **Status:** In progress
 **Actors:** Players; server owner
 **Goal:** Every match is kept, and its players can download it after the end

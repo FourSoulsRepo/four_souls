@@ -318,3 +318,37 @@ func TestChallengeRestart(t *testing.T) {
 		checkKrampus(t, u.View, engine.DifficultyUltra)
 	}
 }
+
+// TestFinishedGameLeavesLobby: when a challenge ends, the lobby hears
+// at once and no longer lists it (19.166).
+func TestFinishedGameLeavesLobby(t *testing.T) {
+	opts := *krampus(engine.DifficultyNormal)
+	if msg := checkChallenge(&opts, 2); !msg.IsZero() {
+		t.Fatal(msg)
+	}
+	if err := checkOptions(&opts, []string{"b2"}, 2); err != nil {
+		t.Fatal(err)
+	}
+	room, err := NewRoom(engineSetup(3, 2, []string{"b2"}, opts), opts, []roomSeat{{name: "Ann", token: "a"}, {name: "Bo", token: "b"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	room.play([]engine.CardRef{"isaac", "cain"})
+	h := startHub(t)
+	watcher, _ := arrive(t, h, "Watcher", "")
+	watcher.next(protocol.TypeGames, nil)
+	done := make(chan struct{})
+	h.send(hubRequest{run: func(h *Hub) {
+		room.hub = h
+		h.games = append(h.games, started{info: protocol.GameInfo{ID: "g1", Started: true}, room: room})
+		close(done)
+	}})
+	<-done
+	room.game.LoseChallenge(engine.ReasonTimer.Msg())
+	room.after(nil, false)
+	var g protocol.Games
+	watcher.next(protocol.TypeGames, &g)
+	if len(g.Games) != 0 {
+		t.Errorf("lobby lists %+v; want the finished game gone", g.Games)
+	}
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { abilityLine, iconText, inLanguage, kindOf, landscape, textParts, translatorsOf, unknownCard } from './cards';
+import { abilityLine, artistsOf, iconText, inLanguage, kindOf, landscape, textParts, translatorsOf, unknownCard } from './cards';
 
 describe('kindOf', () => {
   it('sorts every Base Game type into its deck family', () => {
@@ -98,5 +98,13 @@ describe('inLanguage', () => {
     expect(translatorsOf(isaac, 'ru')).toEqual(['Alchba', 'Mitboy']);
     expect(translatorsOf(isaac, 'en')).toEqual([]);
     expect(translatorsOf({ ...isaac, names: { en: 'Isaac' } }, 'ru')).toEqual([]);
+  });
+
+  // Go picks the names (Card.ArtistNames); no names means no zoom line
+  // (CD-14, 20.24; ADR 027 "Credits" 10.5).
+  it('credits the artists Go sent, or none', () => {
+    expect(artistsOf({ ...isaac, artists: ['Rojen241'] })).toEqual(['Rojen241']);
+    expect(artistsOf({ ...isaac, artists: [] })).toEqual([]);
+    expect(artistsOf({ ...isaac, artists: undefined })).toEqual([]);
   });
 });

@@ -5,6 +5,7 @@
 import b2 from '../../pkg/card_db/data/b2.json?raw';
 import requiem from '../../pkg/card_db/data/r.json?raw';
 import challenge from '../../pkg/card_db/data/challenge.json?raw';
+import { fakeStep, type FakeRecording } from './fakeReplay';
 import { protocolVersion } from './protocol';
 
 interface Part {
@@ -211,6 +212,7 @@ interface DataCard {
   type: string;
   text: Partial<Record<string, { name: string; effects?: string[]; footnotes?: { title: string; text: string }[] }>>;
   translators?: Record<string, string[]>;
+  artists?: { role: string; name: string }[];
   stats?: { name: string; value: string }[];
   rewards?: { count: string; kind: string }[];
   images?: string[]; // one per copy; the first stands for the card
@@ -229,15 +231,16 @@ const b2Data = JSON.parse(b2) as DataSet;
 // with ?requiem.
 const requiemData = JSON.parse(requiem) as DataSet;
 // The challenge cards (ADR 028): a challenge's boss and rule cards, as
-// Go's App.Cards lists them; never a playable set (14.25).
+// Go's Assets.Cards lists them; never a playable set (14.25).
 const challengeData = JSON.parse(challenge) as DataSet;
 
-// translated gives a card's names in every language and its translators,
-// as Go's App.Cards does (16.5); the cards above take them from b2 too.
-function translated(ref: string, name: string): { names: Record<string, string>; translators: Record<string, string[]> } {
+// translated gives a card's names in every language, its translators
+// and artists, as Go's Assets.Cards does (16.5, 20.24); the cards above
+// take them from b2 too.
+function translated(ref: string, name: string): { names: Record<string, string>; translators: Record<string, string[]>; artists: string[] } {
   const c = b2Data.cards.find((d) => d.id === ref && !d.version);
   const names = Object.fromEntries(Object.entries(c?.text ?? {}).flatMap(([lang, text]) => (text?.name ? [[lang, text.name]] : [])));
-  return { names: { en: name, ...names }, translators: c?.translators ?? {} };
+  return { names: { en: name, ...names }, translators: c?.translators ?? {}, artists: c ? artistNames(c, false) : [] };
 }
 
 function realCards(): unknown[] {
@@ -246,18 +249,35 @@ function realCards(): unknown[] {
       .filter((c) => !c.reprint && !cards.some((s) => s.ref === c.id))
       .flatMap((c) => {
         const front = { ...realCard(data.set.code, c), ...(c.back ? { back: c.back.id } : {}) };
-        // A back face is a card of its own, as in Go's App.Cards.
-        return c.back ? [front, { ...realCard(data.set.code, { ...c, ...c.back, version: 0 }), front: c.id }] : [front];
+        // A back face is a card of its own, as in Go's Assets.Cards.
+        return c.back ? [front, { ...realCard(data.set.code, { ...c, ...c.back, version: 0 }, true), front: c.id }] : [front];
       }),
   );
 }
 
-// realCard is one card of the card data as Go's App.Cards gives it.
-function realCard(set: string, c: DataCard): Record<string, unknown> {
+// artistNames picks a face's credited artists as Go's Card.ArtistNames
+// does (CD-14, 20.24): a back face takes the "Back " roles, a front the
+// rest; never the card back's artist or a name that is not public.
+function artistNames(c: DataCard, backFace: boolean): string[] {
+  const names: string[] = [];
+  for (const a of c.artists ?? []) {
+    const name = a.name.trim();
+    const skip = a.role === 'Card back artist' || name === '' || name.toLowerCase() === 'private';
+    if (!skip && a.role.startsWith('Back ') === backFace && !names.includes(name)) {
+      names.push(name);
+    }
+  }
+  return names;
+}
+
+// realCard is one card of the card data as Go's Assets.Cards gives it;
+// backFace marks a two-sided card's back (ADR 023).
+function realCard(set: string, c: DataCard, backFace = false): Record<string, unknown> {
   const names = Object.fromEntries(Object.entries(c.text).flatMap(([lang, text]) => (text?.name ? [[lang, text.name]] : [])));
   return {
     names: { en: c.text.en?.name ?? c.id, ...names },
     translators: c.translators ?? {},
+    artists: artistNames(c, backFace),
     ref: c.version && c.version > 1 ? `${c.id}@${String(c.version)}` : c.id,
     set,
     type: c.type,
@@ -293,7 +313,8 @@ const hostPort = Number(params.get('server') ?? '4774');
 const hostInfo = { running: true, port: hostPort, addresses: ['127.0.0.1'] };
 
 const w = window as unknown as {
-  go: { main: Record<string, Record<string, (...args: never[]) => Promise<unknown>>> };
+  // Wails puts each bound struct under its Go package: go.<package>.<Struct> (ADR 030).
+  go: Record<string, Record<string, Record<string, (...args: never[]) => Promise<unknown>>>>;
   runtime: Record<string, (...args: never[]) => void>;
   // fakeFullscreen lets tests see the window mode.
   fakeFullscreen: boolean;
@@ -311,7 +332,87 @@ const w = window as unknown as {
   fakeOpened?: string;
   // fakeEmit sends a Wails event to the page, e.g. update:progress.
   fakeEmit: (name: string, ...data: unknown[]) => void;
+  // fakeRecords is the records folder (M-01): a test may replace it
+  // before the Records screen opens; Delete takes from it.
+  fakeRecords: FakeRecord[];
+  // fakeExported is the last record Export copied.
+  fakeExported?: string;
+  // fakePick is the file the Open a file dialog picks; unset cancels.
+  fakePick?: string;
+  // fakeFiles are whole records by path, as Go's Open and Step give
+  // them: a test reads a real record from disk and plays it (10.2).
+  fakeFiles?: Partial<Record<string, FakeFile>>;
 };
+
+// FakeFile is a record as Open and Step give it.
+interface FakeFile {
+  summary: unknown;
+  steps: unknown[];
+}
+
+// FakeRecord is a records.Entry as Go lists it.
+interface FakeRecord {
+  path: string;
+  name: string;
+  started: number;
+  players: string[];
+  finished: boolean;
+  winners: string[];
+  steps: number;
+  challenge: string;
+  why: string;
+}
+
+// fakeRecord is a listed record in the fake records folder.
+function fakeRecord(name: string, started: string, players: string[], more: Partial<FakeRecord> = {}): FakeRecord {
+  return { path: `/fake/records/${name}.fsrec`, name: `${name}.fsrec`, started: Date.parse(started), players, finished: false, winners: [], steps: 0, challenge: '', why: '', ...more };
+}
+
+// The fake records folder: one of each kind the screen shows.
+const fakeRecords = [
+  fakeRecord('2026-11-16-200000-g3_Ann_Bo', '2026-11-16T20:00:00Z', ['Ann', 'Bo'], { steps: 12 }),
+  fakeRecord('2026-11-15-180000-g2_Ann_Bo_Cy', '2026-11-15T18:00:00Z', ['Ann', 'Bo', 'Cy'], { finished: true, winners: ['Bo'], steps: 840 }),
+  fakeRecord('2026-10-01-120000-g1_Ann_Bo', '2026-10-01T12:00:00Z', ['Ann', 'Bo'], { finished: true, winners: ['Ann'], steps: 500, why: 'before_replays' }),
+  fakeRecord('from-the-future', '', [], { started: 0, why: 'newer' }),
+];
+
+// goError is an error as a Go binding sends a player's message.
+function goError(key: string): Error {
+  return new Error(JSON.stringify({ key }));
+}
+
+// opened is the record Open opened, for Step (10.2).
+let opened: FakeRecording | FakeFile | null = null;
+
+// fakeSummary is what Open gives for a record: a turn every ten steps,
+// as its steps have them (fakeReplay.ts).
+function fakeSummary(path: string): Promise<unknown> {
+  const e = w.fakeRecords.find((r) => r.path === path) ?? (path === w.fakePick ? fakeRecord('picked', '2026-11-14T10:00:00Z', ['Dee', 'Eve'], { path, finished: true, winners: ['Eve'], steps: 40 }) : undefined);
+  if (!e) {
+    return Promise.reject(goError('error.record_unreadable'));
+  }
+  if (e.why) {
+    return Promise.reject(goError(`error.record_${e.why}`));
+  }
+  const seats = e.players.map((name, seat) => ({ seat, name }));
+  const turns = Array.from({ length: Math.ceil(e.steps / 10) }, (_, i) => ({ number: i + 1, active: i % seats.length, step: i * 10 }));
+  const winners = e.winners.map((n) => e.players.indexOf(n));
+  opened = { players: seats.length, steps: e.steps, winners };
+  return Promise.resolve({
+    path,
+    game: e.name,
+    server: '',
+    started: e.started,
+    seats,
+    sets: ['b2'],
+    challenge: e.challenge,
+    difficulty: '',
+    cards: [],
+    steps: e.steps,
+    turns,
+    end: e.finished ? { ended: e.started + 3_600_000, finished: true, winners } : undefined,
+  });
+}
 
 // The update the fake check finds unless a test sets fakeUpdate.
 const fakeReleases = 'https://github.com/FourSoulsRepo/four_souls/releases';
@@ -332,12 +433,20 @@ let checkedUrl = '';
 const listeners = new Map<string, Set<(...data: unknown[]) => void>>();
 
 w.go = {
-  main: {
-    App: {
+  about: {
+    About: {
       Versions: () => Promise.resolve({ app: 'demo', engine: 'demo' }),
       Notice: () => Promise.resolve(notice),
+    },
+  },
+  prefs: {
+    Prefs: {
       Settings: () => Promise.resolve(loadSettings()),
       SaveSettings: saveSettings,
+    },
+  },
+  setup: {
+    Setup: {
       // ?requiem adds Requiem, the only set the deck ratios need; other
       // tests keep the older sets.
       CardSets: () => Promise.resolve(['b2', 'g2', 'fsp2', ...(params.has('requiem') ? ['r'] : [])]),
@@ -346,7 +455,7 @@ w.go = {
           { id: 'krampus', difficulties: ['normal', 'hard', 'ultra'] },
           { id: 'trick_or_treat', difficulties: ['normal', 'hard', 'ultra'] },
         ]),
-      // Go's answer for today's card data (App.DeckRatios): the ratios
+      // Go's answer for today's card data (Setup.DeckRatios): the ratios
       // need Requiem, and Four Souls+ too in a 2-player game.
       DeckRatios: (sets: string[], players: number) =>
         Promise.resolve(
@@ -354,6 +463,80 @@ w.go = {
             ? ''
             : JSON.stringify([{ key: 'refuse.deck_ratios', args: { n: players } }, { key: 'refuse.ratio.butter_beans', args: { have: 3, need: 5 } }]),
         ),
+    },
+  },
+  join: {
+    Join: {
+      // The real server's answer, like Go's Join.CheckSeat: the first
+      // base that answers.
+      CheckSeat: async (bases: string[], token: string) => {
+        for (const b of bases) {
+          try {
+            const r = await fetch(`${b}/seat?token=${encodeURIComponent(token)}`);
+            if (r.ok) {
+              return (await r.json()) as unknown;
+            }
+          } catch {
+            // the next base
+          }
+        }
+        throw new Error('server: no answer');
+      },
+      // Like Go's Join.ServerStatus: the first base that answers.
+      ServerStatus: async (bases: string[]) => {
+        for (const b of bases) {
+          try {
+            const r = await fetch(`${b}/status`);
+            if (r.ok) {
+              return (await r.json()) as unknown;
+            }
+          } catch {
+            // the next base
+          }
+        }
+        throw new Error('server: no answer');
+      },
+      // The LAN holds one hosting app: the test server (?server=PORT).
+      // ?nolan finds nothing; a test sets window.fakeLan to list others,
+      // in this app's protocol unless it names one.
+      FindGames: () =>
+        Promise.resolve(
+          w.fakeLan?.map((f) => ({ protocol: protocolVersion, ...(f as object) })) ??
+            (params.has('nolan')
+              ? []
+              : [{ address: `127.0.0.1:${String(hostPort)}`, protocol: protocolVersion, app: 'demo', games: [{ id: '', host: 'Lan', seats: 2, taken: 1 }] }]),
+        ),
+    },
+  },
+  records: {
+    Records: {
+      SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
+      List: () => Promise.resolve(w.fakeRecords.map((r) => ({ ...r }))),
+      Open: (path: string) => {
+        const file = Object.entries(w.fakeFiles ?? {}).find(([p]) => p === path)?.[1];
+        opened = file ?? null;
+        return file ? Promise.resolve(file.summary) : fakeSummary(path);
+      },
+      Step: (index: number) => {
+        const s = opened && 'summary' in opened ? opened.steps.at(index) : opened ? fakeStep(opened, index) : undefined;
+        return s ? Promise.resolve(s) : Promise.reject(new Error(`records: no such step: ${String(index)}`));
+      },
+      Delete: (path: string) => {
+        if (!path.endsWith('.fsrec')) {
+          return Promise.reject(goError('error.record_not_a_record'));
+        }
+        w.fakeRecords = w.fakeRecords.filter((r) => r.path !== path);
+        return Promise.resolve();
+      },
+      Export: (path: string) => {
+        w.fakeExported = path;
+        return Promise.resolve(`/fake/export/${path.split('/').pop() ?? ''}`);
+      },
+      PickFile: () => Promise.resolve(w.fakePick ?? ''),
+    },
+  },
+  assets: {
+    Assets: {
       Cards: () => Promise.resolve(withTestLanguage([...cards.map((c) => ({ ...c, ...translated(c.ref, c.name) })), ...realCards()])),
       // The dice textures at their real paths; like the mat, the e2e
       // tests serve them only for screenshots, else they fail: plain dice.
@@ -451,52 +634,16 @@ w.go = {
                 { id: 'christmas', name: 'Christmas', image: '/cardimg/assets/mats/christmas.webp' },
               ],
         ),
-      // The real server's answer, like Go's App.CheckSeat: the first
-      // base that answers.
-      CheckSeat: async (bases: string[], token: string) => {
-        for (const b of bases) {
-          try {
-            const r = await fetch(`${b}/seat?token=${encodeURIComponent(token)}`);
-            if (r.ok) {
-              return (await r.json()) as unknown;
-            }
-          } catch {
-            // the next base
-          }
-        }
-        throw new Error('server: no answer');
-      },
-      // Like Go's App.ServerStatus: the first base that answers.
-      ServerStatus: async (bases: string[]) => {
-        for (const b of bases) {
-          try {
-            const r = await fetch(`${b}/status`);
-            if (r.ok) {
-              return (await r.json()) as unknown;
-            }
-          } catch {
-            // the next base
-          }
-        }
-        throw new Error('server: no answer');
-      },
-      SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
-      // The LAN holds one hosting app: the test server (?server=PORT).
-      // ?nolan finds nothing; a test sets window.fakeLan to list others,
-      // in this app's protocol unless it names one.
-      FindGames: () =>
-        Promise.resolve(
-          w.fakeLan?.map((f) => ({ protocol: protocolVersion, ...(f as object) })) ??
-            (params.has('nolan')
-              ? []
-              : [{ address: `127.0.0.1:${String(hostPort)}`, protocol: protocolVersion, app: 'demo', games: [{ id: '', host: 'Lan', seats: 2, taken: 1 }] }]),
-        ),
     },
+  },
+  host: {
     Host: {
       Start: () => Promise.resolve(hostInfo),
       Info: () => Promise.resolve(hostInfo),
       Stop: () => Promise.resolve(),
     },
+  },
+  updater: {
     // No network: a test sets the check's answer and sends the download's
     // progress events itself (fakeEmit), then ends it (fakeDownload).
     Updater: {
@@ -534,6 +681,7 @@ w.go = {
 };
 w.fakeFullscreen = false;
 w.fakeQuit = false;
+w.fakeRecords = fakeRecords;
 w.fakeEmit = (name, ...data) => {
   for (const callback of listeners.get(name) ?? []) {
     callback(...data);

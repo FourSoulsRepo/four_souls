@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { IntentKind, PromptKind, Purpose, type Actions, type ChoiceOption } from './actions';
 import type { GameView, Intent, StackItem } from './protocol';
-import { activity, askedSeat, fighters, myMove, picking, promptBanner, stackPrompt, tablePick } from './prompt';
+import { activity, askedSeat, fighters, forcedAttack, mustAttackLine, mustTargets, myMove, picking, promptBanner, stackPrompt, tablePick } from './prompt';
 import { StackKind } from './stack';
 
 const view: GameView = {
@@ -213,5 +213,46 @@ describe('fighters', () => {
     // A player attacked by another: both characters.
     expect(fighters({ ...view, attack: { target: 2 } })).toEqual([1, 2]);
     expect(fighters({ ...view, attack: { target: 9 }, over: true })).toEqual([]);
+  });
+});
+
+describe('forced attacks', () => {
+  const must = (turn: Partial<GameView['turn']>): GameView => ({ ...view, turn: { ...view.turn, ...turn } });
+
+  it('marks the monster the player must attack and names it in the banner (19.180, 19.181)', () => {
+    const v = must({ must_attack: 9, must_attacks: 2 });
+    expect(forcedAttack(v)).toEqual({ target: 9, deck: false, left: 2 });
+    expect(mustTargets(v)).toEqual([9]);
+    expect(mustAttackLine(v, names)).toBe('You must attack: GAPER (2 left)');
+    expect(banner(v, 0)?.hint).toBe('You must attack: GAPER (2 left)');
+    // Monster Manual owes no count, only the monster.
+    expect(mustAttackLine(must({ must_attack: 9 }), names)).toBe('You must attack: GAPER');
+    // Lust for Blood names a player's character: the player by name.
+    expect(mustAttackLine(must({ must_attack: 2, must_attacks: 1 }), names)).toBe('You must attack: Bo (1 left)');
+    expect(mustTargets(must({ must_attack: 2 }))).toEqual([2]);
+  });
+
+  it('says only the count when no target is named (19.181)', () => {
+    const v = must({ must_attacks: 1 });
+    expect(mustTargets(v)).toEqual([]);
+    expect(mustAttackLine(v, names)).toBe('You must attack (1 left)');
+  });
+
+  it('names the monster deck first, as the engine asks for it first (19.182)', () => {
+    const v = must({ must_attack: 9, must_attacks: 2, must_attack_deck: 1 });
+    expect(forcedAttack(v)?.deck).toBe(true);
+    expect(mustAttackLine(v, names)).toBe('You must attack: the monster deck (2 left)');
+  });
+
+  it('drops a monster that left the table, and says nothing while an attack is open', () => {
+    expect(forcedAttack(must({ must_attack: 99 }))).toBeNull();
+    expect(mustTargets(must({ must_attack: 99, must_attacks: 1 }))).toEqual([]);
+    expect(mustAttackLine({ ...must({ must_attack: 9, must_attacks: 1 }), attack: {} }, names)).toBeUndefined();
+    expect(mustTargets({ ...must({ must_attack: 9 }), over: true })).toEqual([]);
+    expect(forcedAttack(view)).toBeNull();
+  });
+
+  it('shows the line to the active player only; others see their turn', () => {
+    expect(banner(must({ must_attacks: 1 }), 1)?.hint).toBe('Playing their turn');
   });
 });

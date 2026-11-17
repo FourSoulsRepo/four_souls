@@ -44,6 +44,10 @@ Rules for this step (owner, 2026-11-06):
 15. Order: 20.21 runs before the step review too (owner, 2026-11-08).
 16. Order: 20.22 runs after 20.18 and before the step review (owner, 2026-11-08).
 17. Order: 20.23 runs after 20.20 and before the step review (owner, 2026-11-08).
+18. 20.24 and 20.25 reopen the step after its review (owner, 2026-11-17).
+    1. Only 20.24 is built; 20.25 is dropped.
+    2. The owner's picks: ADR 027 "Credits" 12.
+    3. Branch: the current one, `step-18-play-test` (owner); not rule 7's.
 
 Owner notes (2026-11-06):
 
@@ -531,3 +535,41 @@ Swapping it is the owner's call; not part of this step.
    2. The owner's picks are built, with before and after screenshots.
    3. UC-13 2e matches the new arrow.
    4. e2e: aiming with the new arrow, set up so it never depends on the deal.
+
+### [x] 20.24 The artist with the card, compared with the reference
+
+1. Goal: a card names who drew it, where the reference does (CD-14).
+   1. Owner, 2026-11-17.
+   2. Ours: card data has artists; the client never gets them.
+   3. Ours: the zoom credits translators (16.5).
+2. Findings (checked 2026-11-17, main conversation).
+   1. In ADR 027 "Credits" 1–9.
+   2. The reference shows "Artist: <name>" only in the collection.
+   3. Never in a match.
+3. Tasks:
+   1. The owner picks from ADR 027 "Credits" 10.1–10.6.
+      1. Picked (2026-11-17): in matches too; see "Credits" 12.
+   2. `internal/cardinfo`: send each face's artist names.
+      1. Front roles for a front, back roles for a back face.
+      2. Drop "Private" and repeats; never the card back artist.
+   3. The bridge, `fakeBridge.ts` and `cards.ts` get the list.
+   4. The zoom: one "Art: <names>" line over the translators line.
+      1. A new string `zoom.artists`, with a note, in every locale file.
+      2. Its look: ADR 027 "Credits" 13, from the reference's (11).
+      3. The translators line takes the same look.
+   5. ADR 004 and ADR 021 note what the client gets.
+   6. Wiki `Client.md`: the zoom's credit lines.
+   7. A use case for the zoom's credits, or the existing one extended.
+4. Done when:
+   1. Go test: a card's artists, without "Private", repeats or the back artist.
+   2. Go test: a two-sided card's back face gets its own artists.
+   3. Vitest: the line hides with no names.
+   4. e2e: a zoom shows the artist line; screenshots before and after.
+   5. `wails build -m -tags embed` and `make e2e` pass without images.
+5. Owner notes (2026-11-17)
+   1. Owner marks 20.24 solved; step 20 done again.
+
+### [-] 20.25 Credits screen, compared with the reference
+
+1. Dropped (owner, 2026-11-17): no Credits button, no credits screen.
+2. Findings stay in ADR 027 "Credits" 6 and 10.7–10.13.

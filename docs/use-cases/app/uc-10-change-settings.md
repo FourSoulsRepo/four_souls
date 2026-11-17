@@ -1,6 +1,6 @@
 # UC-10: Change settings
 
-**Module:** `internal/settings`, `app.go`, `frontend`
+**Module:** `internal/settings`, `bindings/prefs`, `frontend`
 **Status:** Implemented
 **Actors:** Player
 **Goal:** The player's settings are kept across app restarts

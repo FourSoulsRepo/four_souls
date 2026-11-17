@@ -447,6 +447,14 @@
     "text": "yes",
     "note": "Option of a yes-or-no question."
   },
+  "attack.helped_by": {
+    "text": "Helped by {players}",
+    "note": "Game table: who helps an attack (they roll after each attack roll). players: names, comma-separated. In the stack's attack row, and after Next attack: on the active player's seat."
+  },
+  "attack.shared_with": {
+    "text": "Rewards shared with {players}",
+    "note": "Game table: who also gains the attack's rewards if the monster dies (Sibling Rivalry). players: names, comma-separated. Joined to Helped by with a dot."
+  },
   "badge.atk": {
     "text": {
       "one": "{n} attack",
@@ -521,6 +529,10 @@
     "text": "Kept dice: {n}",
     "note": "Tooltip of a die a card keeps on its art. n: the number."
   },
+  "badge.must_attack": {
+    "text": "Must be attacked this turn",
+    "note": "Card zoom, a line under a card the active player must attack this turn (Monster Manual)."
+  },
   "banner.act": {
     "text": "You may act",
     "note": "Prompt banner: the player may use something on another player's turn."
@@ -572,6 +584,22 @@
   "banner.label": {
     "text": "Prompt",
     "note": "Game table: screen-reader name of the banner that says what the game waits for."
+  },
+  "banner.monster_deck": {
+    "text": "the monster deck",
+    "note": "Prompt banner: the target in You must attack: {target}, when the forced attack is on the monster deck. Lower case."
+  },
+  "banner.must_attack": {
+    "text": "You must attack: {target}",
+    "note": "Prompt banner, small line under Your turn: a card makes the player attack this monster before the turn ends. target: the monster, a player, or the monster deck."
+  },
+  "banner.must_attack_any": {
+    "text": "You must attack ({n} left)",
+    "note": "Prompt banner, small line under Your turn: a card makes the player attack before the turn ends, any target. n: attacks still owed."
+  },
+  "banner.must_attack_left": {
+    "text": "You must attack: {target} ({n} left)",
+    "note": "Prompt banner, small line under Your turn: a card makes the player attack. target: the monster, a player, or the monster deck; n: attacks still owed."
   },
   "banner.on_stack": {
     "text": "On the stack: {line}",
@@ -1386,6 +1414,10 @@
     },
     "note": "Board: tooltip of the monster discard pile. n: cards in it."
   },
+  "deck.must_attack": {
+    "text": "an attack on it is owed this turn",
+    "note": "Game table: added to the monster deck's name (Monster deck: 30 cards · …) while a card makes the active player attack the deck."
+  },
   "deck.room": {
     "text": {
       "one": "Room deck: {n} card",
@@ -1673,6 +1705,22 @@
     "text": "This app speaks protocol {app}; the server speaks {server}.",
     "note": "Error from the server, shown in the lobby or on the table. Versions differ; the app shows its own line for it. app, server: protocol numbers."
   },
+  "error.record_before_replays": {
+    "text": "made before replays; it can't be watched",
+    "note": "Error shown to the player, and the reason on the Records screen: a record from an app version older than replays."
+  },
+  "error.record_newer": {
+    "text": "made by a newer app; update the app to watch it",
+    "note": "Error shown to the player, and the reason on the Records screen: a record a newer version of the app made."
+  },
+  "error.record_not_a_record": {
+    "text": "not a record file",
+    "note": "Error shown to the player. Records screen: deleting or exporting a file without the .fsrec extension."
+  },
+  "error.record_unreadable": {
+    "text": "not a record, or the file is damaged",
+    "note": "Error shown to the player, and the reason on the Records screen: a file that can't be read as a match record."
+  },
   "error.refused": {
     "text": "{reason} ({rule})",
     "note": "Error after a move the rules refused, shown in a message box. reason: why (a refuse.* line); rule: the rule's ID, e.g. R-CARD-08."
@@ -1760,6 +1808,10 @@
   "error.started": {
     "text": "That game has started.",
     "note": "Error from the server, shown in the lobby or on the table. Joining a game that already started."
+  },
+  "error.test_seed": {
+    "text": "This server does not let a game choose its own deal.",
+    "note": "Error from the server, shown in the lobby. A new game asked for a fixed seed (its deal), which only a test server allows."
   },
   "error.unknown": {
     "text": "something went wrong",
@@ -2532,6 +2584,22 @@
     "text": "Show the history",
     "note": "Tooltip of the history strip's top button."
   },
+  "history.shuffled.loot": {
+    "text": "The loot deck is shuffled",
+    "note": "History: the loot deck was shuffled."
+  },
+  "history.shuffled.monster": {
+    "text": "The monster deck is shuffled",
+    "note": "History: the monster deck was shuffled."
+  },
+  "history.shuffled.room": {
+    "text": "The room deck is shuffled",
+    "note": "History: the room deck was shuffled."
+  },
+  "history.shuffled.treasure": {
+    "text": "The treasure deck is shuffled",
+    "note": "History: the treasure deck was shuffled."
+  },
   "history.skipped.other": {
     "text": "{player}'s turn is skipped",
     "note": "History: a player's turn was skipped."
@@ -2750,6 +2818,18 @@
   "host.draft_size": {
     "text": "Characters offered",
     "note": "Host screen, detailed setup: label of the select for how many characters each player picks from in a draft."
+  },
+  "host.group_cards": {
+    "text": "Cards",
+    "note": "Host screen, detailed setup: title over bonus souls, deck ratios and room deck."
+  },
+  "host.group_characters": {
+    "text": "Characters and seats",
+    "note": "Host screen, detailed setup: title over how characters are dealt and random seats."
+  },
+  "host.group_turns": {
+    "text": "Turns and undo",
+    "note": "Host screen, detailed setup: title over the response timer and the rollback mode."
   },
   "host.host": {
     "text": "Host",
@@ -3170,7 +3250,7 @@
   },
   "menu.records": {
     "text": "Records",
-    "note": "Main menu: a greyed button for watching saved match records, still to come."
+    "note": "Main menu: button that opens the Records screen, to watch and manage saved match records."
   },
   "menu.rejoin": {
     "text": "Rejoin: {game}",
@@ -3403,6 +3483,97 @@
   "prompt.which_die": {
     "text": "Which dice is the result?",
     "note": "Question when a card rolls several dice and the player picks one."
+  },
+  "records.back": {
+    "text": "Back",
+    "note": "Records screen: button back to the main menu."
+  },
+  "records.delete": {
+    "text": "Delete",
+    "note": "Records screen: button that deletes a match record, after a question."
+  },
+  "records.delete_ask": {
+    "text": "Delete this record for good?",
+    "note": "Records screen: question in a row before its record is deleted."
+  },
+  "records.delete_label": {
+    "text": "Delete {name}",
+    "note": "Records screen: screen-reader name of a row's Delete button. name: the match."
+  },
+  "records.delete_no": {
+    "text": "Keep",
+    "note": "Records screen: the answer that keeps the record."
+  },
+  "records.delete_yes": {
+    "text": "Delete",
+    "note": "Records screen: the answer that deletes the record."
+  },
+  "records.deleted": {
+    "text": "Record deleted",
+    "note": "Records screen status line after a delete."
+  },
+  "records.export": {
+    "text": "Export",
+    "note": "Records screen: button that saves a copy of a match record where the player picks."
+  },
+  "records.export_label": {
+    "text": "Export {name}",
+    "note": "Records screen: screen-reader name of a row's Export button. name: the match."
+  },
+  "records.exported": {
+    "text": "Saved a copy to {path}",
+    "note": "Records screen status line after an export. path: the copy's file."
+  },
+  "records.finished": {
+    "text": "Finished",
+    "note": "Records screen: a saved match that ended with no winner, e.g. a lost challenge."
+  },
+  "records.heading": {
+    "text": "Records",
+    "note": "Records screen title: saved match records (replays)."
+  },
+  "records.list_label": {
+    "text": "Saved matches",
+    "note": "Records screen: screen-reader name of the list of saved matches."
+  },
+  "records.loading": {
+    "text": "Loading…",
+    "note": "Records screen: shown while the list or a record loads."
+  },
+  "records.none": {
+    "text": "No records yet. Games you host and records you save show here.",
+    "note": "Records screen: shown when the records folder is empty."
+  },
+  "records.open_file": {
+    "text": "Open a file",
+    "note": "Records screen: button that opens a match record file from anywhere on the computer."
+  },
+  "records.steps": {
+    "text": {
+      "one": "{n} step",
+      "other": "{n} steps"
+    },
+    "note": "Records screen: how long a saved match is, in game steps (moves). n: the count."
+  },
+  "records.title": {
+    "text": "{date} · {players}",
+    "note": "Records screen: one saved match. date: when it started, e.g. 'Nov 16, 2026, 12:00 PM'. players: 'Ann, Bo'."
+  },
+  "records.unfinished": {
+    "text": "Unfinished",
+    "note": "Records screen: a saved match that never ended, or is still being played."
+  },
+  "records.watch": {
+    "text": "Watch",
+    "note": "Records screen: button that opens a saved match to watch it."
+  },
+  "records.watch_label": {
+    "text": "Watch {name}",
+    "note": "Records screen: screen-reader name of a row's Watch button. name: the match, e.g. 'Nov 16, 2026 · Ann, Bo'."
+  },
+  "records.won": {
+    "text": "Won by {players}",
+    "note": "Records screen: how a saved match ended. players: the winners, 'Ann, Bo'."
   },
   "refuse.action_phase": {
     "text": "Only in the action phase",
@@ -3727,6 +3898,78 @@
   "refuse.wait_stack": {
     "text": "Wait for the stack to resolve",
     "note": "Why Attack, Buy or End turn can't be used: something waits on the stack."
+  },
+  "replay.back": {
+    "text": "Step back",
+    "note": "Replay bar: button that shows the step before, at once."
+  },
+  "replay.forward": {
+    "text": "Step forward",
+    "note": "Replay bar: button that plays the next step with its effects."
+  },
+  "replay.hands": {
+    "text": "Show hands",
+    "note": "Replay bar: toggle button; pressed, every player's hand shows face up, else as card backs."
+  },
+  "replay.hide": {
+    "text": "Hide the controls",
+    "note": "Replay bar: small button that hides the bar; the replay goes on, and a small button brings the bar back."
+  },
+  "replay.label": {
+    "text": "Replay",
+    "note": "Replay bar: screen-reader name of the bar that plays a match record."
+  },
+  "replay.leave": {
+    "text": "Back to records",
+    "note": "Replay bar: button that stops the replay and goes back to the records list."
+  },
+  "replay.pause": {
+    "text": "Pause",
+    "note": "Replay bar: button that stops playing the record step by step."
+  },
+  "replay.play": {
+    "text": "Play",
+    "note": "Replay bar: button that plays the record step by step."
+  },
+  "replay.seat": {
+    "text": "Seen from {player}",
+    "note": "Replay bar: whose seat the table is seen from; that player sits at the bottom. player: a player's name."
+  },
+  "replay.seat_pick": {
+    "text": "Watch from {player}'s seat",
+    "note": "Replay: tooltip of a player's character card; a click turns the table so that player sits at the bottom. player: a player's name."
+  },
+  "replay.show": {
+    "text": "Show the controls",
+    "note": "Replay: the small button left on screen while the replay bar is hidden; it shows the bar again."
+  },
+  "replay.slider": {
+    "text": "Step",
+    "note": "Replay bar: screen-reader name of the slider over all steps of the record."
+  },
+  "replay.speed": {
+    "text": "Speed",
+    "note": "Replay bar: screen-reader name of the speed buttons."
+  },
+  "replay.speed_n": {
+    "text": "{n}×",
+    "note": "Replay bar: a playback speed button. n: the speed, e.g. 0.5 or 2."
+  },
+  "replay.turn": {
+    "text": "Turn {n}",
+    "note": "Replay bar: a turn in the list of turns to jump to. n: the turn number."
+  },
+  "replay.turn_pick": {
+    "text": "Jump to a turn",
+    "note": "Replay bar: screen-reader name of the list of turns to jump to."
+  },
+  "replay.turn_zero": {
+    "text": "Before turn 1",
+    "note": "Replay bar: the steps before the first turn, in the list of turns: who goes first."
+  },
+  "replay.where": {
+    "text": "Step {i} / {n} · Turn {turn}",
+    "note": "Replay bar: where the replay is. i: the step shown; n: all steps; turn: its turn number."
   },
   "rollback.ask.other": {
     "text": "{player} asks to undo a move",
@@ -4177,6 +4420,10 @@
     "text": "{card} triggers",
     "note": "Stack line: a card's triggered ability."
   },
+  "stack.trigger_roll": {
+    "text": "{card}: roll result {n}",
+    "note": "Stack line: the effect of a card's roll, once rolled. n: the number it acts on."
+  },
   "stack.waiting": {
     "text": "Waiting for {players}",
     "note": "Stack panel, under the items. players: who may still respond, comma-separated; the viewer is You."
@@ -4359,6 +4606,10 @@
     "text": "Attacks {n}",
     "note": "Game table, by another active player's name: attacks left this turn."
   },
+  "table.attacks_left_deck": {
+    "text": "Attacks {n} ({deck} deck only)",
+    "note": "Game table, by the active player's name: attacks left this turn, when some may go only to the monster deck. n: all attacks left; deck: those on the monster deck only."
+  },
   "table.cents": {
     "text": {
       "one": "{n} cent",
@@ -4389,13 +4640,9 @@
     "text": "dead",
     "note": "Game table: tag by a dead player's name, lower case."
   },
-  "table.fear": {
-    "text": "Fear",
-    "note": "Game table, by a player's name: the word beside their fear counters (Trick or Treat)."
-  },
   "table.fear_title": {
     "text": "Fear: {n} — monsters +1 evasion per 2 on the active player",
-    "note": "Tooltip and screen-reader name of a player's fear counters (Trick or Treat, Mischievous The Haunt). n: their fear counters."
+    "note": "Screen-reader name of the ghost badge on a player's character card, and its line in the card's zoom: their fear counters (Trick or Treat, Mischievous The Haunt). n: their fear counters."
   },
   "table.hand": {
     "text": {
@@ -4408,6 +4655,14 @@
     "text": "{player}: items",
     "note": "Game table: screen-reader name of another player's items."
   },
+  "table.kicked": {
+    "text": "Left for good",
+    "note": "Game table, by a player's name: the others voted to kick them; the seat stays empty."
+  },
+  "table.kicked_tip": {
+    "text": "Kicked by a vote: this seat plays no more",
+    "note": "Tooltip on Left for good by a player's name."
+  },
   "table.loot_left": {
     "text": "Loot {n}",
     "note": "Game table, by the active player's name: loot cards they may still play this turn. n: that count."
@@ -4415,6 +4670,10 @@
   "table.loot_left_label": {
     "text": "Loot plays left",
     "note": "Game table: screen-reader name of the viewer's loot plays left on their turn."
+  },
+  "table.next_attack": {
+    "text": "Next attack: {line}",
+    "note": "Game table, by the active player's name, for everyone: who joins their next attack this turn (Sibling Rivalry). line: Helped by Bo · Rewards shared with Bo."
   },
   "table.own_name": {
     "text": "{player} (you)",
@@ -4701,6 +4960,10 @@
   "welcome.title": {
     "text": "Welcome!",
     "note": "First start: the screen's title, above the nickname field."
+  },
+  "zoom.artists": {
+    "text": "Art: {names}",
+    "note": "Under a zoomed card, above the translators line: who drew the card. names: the artists, joined by commas."
   },
   "zoom.counters": {
     "text": "Counters",

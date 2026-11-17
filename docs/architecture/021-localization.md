@@ -191,6 +191,7 @@ Use options 5, 7, 11, 12 and 14.
    10. A translator keeps own images in an own folder or repo (16.12).
    11. `$FOUR_SOULS_IMAGES` points the app at it: `<lang>/<set>/<file>`.
    12. Order: own image, built-in image, then English (item 13.5).
+   13. Go also sends each face's artists; the zoom credits them in every language (20.24).
 14. Screenshots for translators
     1. `make screenshots LOCALE=xx`: one PNG per screen, in that language.
     2. The translator checks the lines on them by eye.

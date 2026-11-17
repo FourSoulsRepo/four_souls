@@ -359,6 +359,9 @@ type Game struct {
 	// see Asking.Key).
 	AskSeq int `json:"ask_seq,omitempty"`
 	asks   map[int]askEffect
+	// saved keeps the last clean state for a save at a nested ask
+	// (19.177; not saved).
+	saved tracking
 	// maxHP is the max HP at the last checkMaxHP (R-MECH-21; not saved).
 	maxHP map[hpKey]int
 
@@ -366,6 +369,9 @@ type Game struct {
 	events []Event
 	// forcedRolls lets tests decide dice results; never set in games.
 	forcedRolls []int
+	// changes logs each move and shuffle since TakeSnapshot, for
+	// CheckEvents; nil (off) in games.
+	changes *changeLog
 }
 
 // newObject adds a card as a new object and returns its ID.
@@ -387,9 +393,13 @@ func (g *Game) Object(id ObjectID) *Object {
 // The old object is gone; callers update the zone lists.
 func (g *Game) move(id ObjectID, to Zone, controller PlayerID) ObjectID {
 	old := g.Object(id)
-	card := old.Card
+	card, from := old.Card, old.Zone
 	old.Zone = Zone{Kind: ZoneGone}
-	return g.newObject(card, to, controller)
+	nid := g.newObject(card, to, controller)
+	if g.changes != nil { // TakeSnapshot turns the log on (22.2)
+		g.changes.moves = append(g.changes.moves, moveLeg{from: id, to: nid, fromZone: from, toZone: to, at: len(g.events)})
+	}
+	return nid
 }
 
 // Clone returns a deep copy of the game.
@@ -404,6 +414,8 @@ func (g *Game) Clone() (*Game, error) {
 	}
 	c.cards = g.cards // definitions are not part of the saved state
 	c.asks = maps.Clone(g.asks)
+	c.saved = g.saved
+	c.saved.since = slices.Clone(g.saved.since)
 	c.maxHP = maps.Clone(g.maxHP)
 	return &c, nil
 }

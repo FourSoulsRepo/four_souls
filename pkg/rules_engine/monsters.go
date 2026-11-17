@@ -38,7 +38,9 @@ func (g *Game) finishEvent(id ObjectID) {
 	default:
 		return
 	}
-	g.discard(id, MonsterDeck)
+	// Its event flies it from its slot to the discard (19.173).
+	nid := g.discard(id, MonsterDeck)
+	g.emit(Event{Kind: EvDiscarded, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Prev: id})
 	g.RefillSlots()
 }
 
@@ -280,13 +282,15 @@ func (g *Game) askPassCurse(p PlayerID, curse ObjectID) {
 	g.ask(Choice{Purpose: ChoosePassCurse, Player: p, Rule: "R-ABIL-20", Objects: []ObjectID{curse}, Slots: slots, Question: promptPassCurse.Msg()}, labels)
 }
 
-// passCurse moves a curse from its holder to p.
+// passCurse moves a curse from its holder to p; the event's By names
+// the old holder (19.193).
 func (g *Game) passCurse(curse ObjectID, p PlayerID) {
 	o := g.Object(curse)
-	g.Players[o.Controller].InPlay = remove(g.Players[o.Controller].InPlay, curse)
+	from := o.Controller
+	g.Players[from].InPlay = remove(g.Players[from].InPlay, curse)
 	o.Controller = p
 	g.Players[p].InPlay = append(g.Players[p].InPlay, curse)
-	g.emit(Event{Kind: EvCursed, Player: p, Object: curse, Card: o.Card})
+	g.emit(Event{Kind: EvCursed, Player: p, Object: curse, Card: o.Card, By: int(from) + 1}) // 19.193
 }
 
 // GainBonusSoul gives an active bonus soul to p ("the active player

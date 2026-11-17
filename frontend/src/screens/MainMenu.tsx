@@ -94,7 +94,14 @@ export function MainMenu() {
             </motion.div>
           )}
         </AnimatePresence>
-        <Soon name={t('menu.records')} />
+        <button
+          type="button"
+          onClick={() => {
+            show('records');
+          }}
+        >
+          {t('menu.records')}
+        </button>
         <button
           type="button"
           onClick={() => {

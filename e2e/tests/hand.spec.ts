@@ -115,7 +115,7 @@ const expoOut = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
 test('a click picks a hand card up; the board plays it, the hand puts it back (20.20)', async ({ browser }) => {
   const who = names(['Ann', 'Bo']);
-  const pages = await startGame(browser, who, { url: appURL() });
+  const pages = await startGame(browser, who, { animations: true });
   await activePage(pages, click);
   await saveAndContinue(pages, who.join(', '), 'a_penny');
   const active = await activePage(pages, click);
@@ -338,7 +338,7 @@ test('a played card waits where it was let go until the server answers (20.20)',
   let spoiling = false;
   const who = names(['Gil', 'Hu']);
   const pages = await startGame(browser, who, {
-    url: appURL(),
+    animations: true,
     open: wire(
       () => holding,
       () => spoiling,
@@ -380,7 +380,7 @@ test('a refused play goes home and says why (20.20)', async ({ browser }) => {
   let spoiling = false;
   const who = names(['Ike', 'Jo']);
   const pages = await startGame(browser, who, {
-    url: appURL(),
+    animations: true,
     open: wire(
       () => false,
       () => spoiling,

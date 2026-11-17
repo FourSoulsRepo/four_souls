@@ -167,7 +167,13 @@ func (g *Game) HP(id ObjectID) int {
 	if p, ok := g.characterOf(id); ok {
 		return g.PlayerHP(p)
 	}
-	return max(g.def(id).HP+g.monsterBonus(StatMonsterHP, id)-g.Object(id).Damage, 0)
+	return max(g.objectMaxHP(id)-g.Object(id).Damage, 0)
+}
+
+// objectMaxHP is the max HP of an object that is not a player's
+// character: its card's HP and a monster's bonuses.
+func (g *Game) objectMaxHP(id ObjectID) int {
+	return g.def(id).HP + g.monsterBonus(StatMonsterHP, id)
 }
 
 // characterOf: id is a player's character; p is that player.
@@ -253,6 +259,7 @@ func (g *Game) checkMaxHP() {
 		seen[k] = m
 		if was, ok := g.maxHP[k]; ok && m < was {
 			alive := !pl.Dead && was > pl.Damage
+			g.logHPFell(k, pl.Damage, max(pl.Damage-(was-m), 0))
 			pl.Damage = max(pl.Damage-(was-m), 0)
 			if alive && g.PlayerHP(p) == 0 {
 				g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: eventDeath.Msg(), Target: Target{Player: p, IsPlayer: true}})
@@ -264,10 +271,11 @@ func (g *Game) checkMaxHP() {
 			continue
 		}
 		o := g.Object(id)
-		k, m := hpKey{id: id}, g.def(id).HP+g.monsterBonus(StatMonsterHP, id)
+		k, m := hpKey{id: id}, g.objectMaxHP(id)
 		seen[k] = m
 		if was, ok := g.maxHP[k]; ok && m < was {
 			alive := was > o.Damage
+			g.logHPFell(k, o.Damage, max(o.Damage-(was-m), 0))
 			o.Damage = max(o.Damage-(was-m), 0)
 			if alive && g.HP(id) == 0 && !g.Eternal(id) {
 				g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: eventDeath.Msg(), Target: Target{Object: id}})

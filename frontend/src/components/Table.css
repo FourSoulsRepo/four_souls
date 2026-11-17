@@ -489,7 +489,10 @@
   border-radius: 0.5rem;
 }
 
-.player.dead {
+/* A kicked seat stays empty for good (N-08, 19.187): it fades as a
+   dead player does. */
+.player.dead,
+.player.kicked {
   opacity: 0.6;
 }
 
@@ -585,8 +588,9 @@
   color: var(--muted);
 }
 
-/* Counters on a player (14.33): fear in Trick or Treat. A dot in the
-   kind's colour, the number, the kind's word; the tooltip says more. */
+/* Counters on a player (14.31): a dot in the kind's colour, the number,
+   the kind's word; the tooltip says more. Fear is on the character card
+   (18.26). */
 .player-counters {
   display: flex;
   flex-wrap: wrap;

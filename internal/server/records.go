@@ -22,7 +22,8 @@ type recordInfo struct {
 	cards  []record.Card
 }
 
-// apply applies an intent and appends it to the record (RP-01, RP-03).
+// apply applies an intent and appends it to the record (RP-01, RP-03),
+// with the judge view after it (ADR 031).
 func (r *Room) apply(in engine.Intent) ([]engine.Event, error) {
 	st, err := r.game.Step(in)
 	if err != nil {
@@ -31,7 +32,8 @@ func (r *Room) apply(in engine.Intent) ([]engine.Event, error) {
 	r.steps++
 	r.keepLive(st)
 	if r.rec != nil {
-		if err := r.rec.Step(st.Intent, st.Events, st.Checksum); err != nil {
+		view := protocol.ViewJSON(r.game.View(engine.Viewer{Kind: engine.ViewJudge}))
+		if err := r.rec.Step(st.Intent, st.Events, view, st.Checksum); err != nil {
 			log.Printf("server: record %s: %v; recording stops", r.path, err)
 			r.rec = nil
 		}

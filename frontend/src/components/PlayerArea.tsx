@@ -1,7 +1,7 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { fanPose } from '../feel';
+import { fanPose, type FanPose } from '../feel';
 import { t } from '../i18n';
-import { counterColor, playerCounters } from '../counters';
+import { counterColor, fearOf, playerCounters } from '../counters';
 import { Role, type CardView, type PlayerView } from '../protocol';
 import { useApp } from '../store';
 import type { LinePart } from '../stack';
@@ -30,6 +30,15 @@ interface Props {
   tools?: ReactNode;
   // doing is what this active player does now, for the others (15.30).
   doing?: LinePart[] | null;
+  // watched: a record plays (10.2); the bottom seat is not the viewer's.
+  watched?: boolean;
+  // kicked: a vote emptied the seat for good (N-08, 19.187).
+  kicked?: boolean;
+  // deckAttacks are the active player's attacks only on the monster
+  // deck (19.183).
+  deckAttacks?: number;
+  // nextAttack says who helps the active player's next attack (19.184).
+  nextAttack?: string | undefined;
 }
 
 // useSpent tells if a character or item is used up until it recharges.
@@ -42,8 +51,8 @@ function useSpent(): (c: CardView) => boolean {
 
 // PlayerArea is one player's place at the table: name and counters,
 // character and cards in play, and the hand for the viewer (V-02).
-export function PlayerArea({ you, position, tools, ...rest }: Props) {
-  return you ? <OwnArea tools={tools} {...rest} /> : <OpponentArea position={position} {...rest} />;
+export function PlayerArea({ you, position, tools, watched, ...rest }: Props) {
+  return you ? <OwnArea tools={tools} watched={watched} {...rest} /> : <OpponentArea position={position} {...rest} />;
 }
 
 // OpponentArea is another player's place (15.18): a small name with
@@ -52,14 +61,14 @@ export function PlayerArea({ you, position, tools, ...rest }: Props) {
 // up when the view sends it (19.5). Curses stand at the far left
 // (15.55). At the top it mirrors the own area, the hand hanging past the top edge; in
 // a side column everything stacks in a narrow column (F-09).
-function OpponentArea({ player, name, position, active, asked, winSouls, ui, doing }: Omit<Props, 'you' | 'tools'>) {
+function OpponentArea({ player, name, position, active, asked, winSouls, ui, doing, kicked, deckAttacks = 0, nextAttack }: Omit<Props, 'you' | 'tools'>) {
   const size: CardSize = position === 'left' || position === 'right' ? 'small' : 'table';
   const pick = ui.player(player.id);
   const spent = useSpent();
   const { character } = player;
   return (
     <section
-      className={`player player-${position} opponent${active ? ' active' : ''}${player.dead ? ' dead' : ''}${pick.highlight ? ` hl-${pick.highlight}` : ''}`}
+      className={`player player-${position} opponent${active ? ' active' : ''}${player.dead ? ' dead' : ''}${kicked ? ' kicked' : ''}${pick.highlight ? ` hl-${pick.highlight}` : ''}`}
       aria-label={name}
       data-zone={`player-${String(player.id)}`}
     >
@@ -83,9 +92,15 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
             </span>
             <PlayerCounters player={player} />
             {player.dead && <span className="player-dead">{t('table.dead')}</span>}
+            {kicked && (
+              <span className="player-dead player-kicked" title={t('table.kicked_tip')}>
+                {t('table.kicked')}
+              </span>
+            )}
           </span>
           {active && doing && <Activity parts={doing} />}
-          {active && <Allowance player={player} />}
+          {active && <Allowance player={player} deck={deckAttacks} />}
+          {active && nextAttack && <NextAttack line={nextAttack} />}
           {pick.onClick && (
             <button type="button" className="player-pick" onClick={pick.onClick}>
               {t('table.choose', { player: name })}
@@ -101,6 +116,7 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
           damage={character.damage}
           spent={spent(character)}
           counters={character.counters}
+          fear={fearOf(player.counters)}
           copies={copiesOf(character)}
           stats={statsOf(player)}
           objectId={character.id}
@@ -170,10 +186,12 @@ function OwnCents({ cents }: { cents: number }) {
 // (15.55), the souls and the character centered with its live health
 // and attack, items to its right, and the hand fanned below, partly
 // off screen (F-05, F-06, H-02, H-03, H-15, H-18).
-function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Props, 'you' | 'position'>) {
-  const label = t('table.own_name', { player: name });
+function OwnArea({ player, name, active, asked, winSouls, ui, tools, watched, deckAttacks = 0, nextAttack }: Omit<Props, 'you' | 'position'>) {
+  const label = watched ? name : t('table.own_name', { player: name });
   const pick = ui.player(player.id);
   const hand = player.hand ?? [];
+  // A replay with hands hidden (10.3) sends no hand: its backs fan out.
+  const backs = player.hand ? 0 : player.hand_size;
   const spent = useSpent();
   const { character } = player;
   const handRef = useRef<HTMLDivElement>(null);
@@ -200,6 +218,10 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
               {t('table.loot_left', { n: player.loot_plays })}
             </span>
           )}
+          {active && deckAttacks > 0 && (
+            <span className="player-allowance">{t('table.attacks_left_deck', { n: player.attacks, deck: deckAttacks })}</span>
+          )}
+          {active && nextAttack && <NextAttack line={nextAttack} />}
           {pick.onClick && (
             <button type="button" className="player-pick" onClick={pick.onClick}>
               {t('table.choose', { player: label })}
@@ -216,6 +238,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
           damage={character.damage}
           spent={spent(character)}
           counters={character.counters}
+          fear={fearOf(player.counters)}
           copies={copiesOf(character)}
           stats={statsOf(player)}
           objectId={character.id}
@@ -236,20 +259,25 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
         role="group"
         aria-label={t('table.your_hand')}
         data-zone={`hand-${String(player.id)}`}
-        style={fan(hand.length)}
+        style={fan(hand.length + backs)}
       >
         {hand.map((c, i) => (
           <HandCard key={c.id} card={c} ui={ui} pose={fanPose(i, hand.length)} />
+        ))}
+        {Array.from({ length: backs }, (_, i) => (
+          <div key={i} className="hand-card" style={fanStyle(fanPose(i, backs))}>
+            <Card size="table" back="loot" />
+          </div>
         ))}
       </div>
     </section>
   );
 }
 
-// PlayerCounters are the counters on a player, not on a card (14.31,
-// 14.33): fear in Trick or Treat. Each kind is a dot in its colour, the
-// number and the kind's word; the tooltip says what it does. None, no
-// element.
+// PlayerCounters are the counters on a player, not on a card (14.31).
+// Each kind is a dot in its colour, the number and the kind's word; the
+// tooltip says what it does. Fear shows on the player's character card
+// instead (18.26). None, no element.
 function PlayerCounters({ player }: { player: PlayerView }) {
   const list = playerCounters(player.counters);
   if (list.length === 0) {
@@ -351,14 +379,22 @@ function Activity({ parts }: { parts: LinePart[] }) {
   );
 }
 
-// Allowance is what the active player may still do this turn.
-function Allowance({ player }: { player: PlayerView }) {
+// Allowance is what the active player may still do this turn; deck
+// of the attacks are only on the monster deck (19.183).
+function Allowance({ player, deck }: { player: PlayerView; deck: number }) {
   return (
     <span className="player-allowance" aria-label={t('table.allowance')}>
-      <span>{t('table.loot_left', { n: player.loot_plays })}</span> · <span>{t('table.attacks_left', { n: player.attacks })}</span> ·{' '}
+      <span>{t('table.loot_left', { n: player.loot_plays })}</span> ·{' '}
+      <span>{deck > 0 ? t('table.attacks_left_deck', { n: player.attacks, deck }) : t('table.attacks_left', { n: player.attacks })}</span> ·{' '}
       <span>{t('table.shop_left', { n: player.purchases })}</span>
     </span>
   );
+}
+
+// NextAttack says who helps the active player's next attack and who
+// shares its rewards, for everyone (19.184, 19.185).
+function NextAttack({ line }: { line: string }) {
+  return <span className="player-allowance player-next-attack">{t('table.next_attack', { line })}</span>;
 }
 
 // statsOf is a character's live stats, its print and their sources
@@ -386,6 +422,12 @@ function PlayCard({ card, owner, size, ui }: { card: CardView; owner: number; si
       {...ui.object(card.id)}
     />
   );
+}
+
+// fanStyle turns and drops a card back by its place in the fan, as
+// HandCard does a hand card.
+function fanStyle(pose: FanPose): CSSProperties {
+  return { '--fan-angle': `${String(pose.angle)}deg`, '--fan-drop': rem(pose.drop) } as CSSProperties;
 }
 
 // fan spaces a hand of n cards: more overlap the more cards there are,

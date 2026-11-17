@@ -68,10 +68,13 @@ Every option is a flag, an ENV variable, or a value in a JSON config file. ENV o
 | `-empty_minutes` | `FOUR_SOULS_EMPTY_MINUTES` | 30 | end a game nobody is connected to for this many minutes; 0 never (N-20) |
 | `-game_hours` | `FOUR_SOULS_GAME_HOURS` | 24 | end a game this many hours after it started, even while played; 0 never (N-20) |
 | `-config` | `FOUR_SOULS_CONFIG` | none | a JSON file with the same settings |
+| `-test_seeds` | `FOUR_SOULS_TEST_SEEDS` | false | for the e2e tests only: a new game may choose its seed, so a test gets the same deal every run (ADR 032); never on a server people play on |
 
 ```json
 {"port": 4774, "records": "/var/lib/four-souls/records", "retention": 30, "saves": "/var/lib/four-souls/saves", "presence": true, "name": "Basement", "empty_minutes": 30, "game_hours": 24}
 ```
+
+`-test_seeds` has no config file key: a copied config can never turn it on. Without it, a game that asks for a seed is refused ("This server does not let a game choose its own deal."): a player could rig their own deal.
 
 `GET /healthz` answers `ok` while the server runs; the Docker setups use it as their healthcheck.
 

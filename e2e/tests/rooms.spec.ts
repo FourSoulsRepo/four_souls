@@ -8,7 +8,7 @@ import { cardName, tr, trRe } from './locale';
 import { editSave, saveEditContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, endTurn, settle } from './turn';
+import { activePage, click, endTurn, Purpose, settle, untilPick } from './turn';
 
 test.setTimeout(120_000);
 
@@ -118,7 +118,8 @@ test('a room on the table: use it, change it in the end phase (14.13)', async ({
   // room comes from the deck (R-TURN-12).
   await endTurn(active);
   const choice = active.locator('.choice');
-  await settle(pages, click, async () => (await choice.getByRole('button', { name: cardName('blood_donation') }).count()) > 0);
+  await untilPick(pages, click, active, Purpose.room);
+  await expect(choice.getByRole('button', { name: cardName('blood_donation') }).first()).toBeVisible();
   await shot(active, 'rooms-step');
   await click(active, choice.getByRole('button', { name: cardName('blood_donation') }).first());
   for (const page of pages) {

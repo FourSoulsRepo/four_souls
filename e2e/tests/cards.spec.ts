@@ -60,6 +60,19 @@ test('a long press zooms a card on touch; a tap closes it', async ({ page }) => 
   await expect(zoom).toBeHidden();
 });
 
+// The zoom credits who drew the card (CD-14, 20.24). Big Spider's front
+// character artist in b2.json is TikaratheMew; its background is
+// "Private" and its card back KrystalFlamingo's, so neither shows
+// (ADR 027 "Credits" 10.3, 10.4). English credits no translators.
+test('the zoom credits the card artist', async ({ page }) => {
+  await page.goto(gallery);
+  await page.getByLabel('Table size').getByRole('img', { name: cardName('big_spider') }).hover();
+  const credits = page.getByTestId('card-zoom').locator('.card-zoom-credit');
+  await expect(credits).toHaveCount(1);
+  await expect(credits).toHaveText(tr('zoom.artists', { names: 'TikaratheMew' }));
+  await shot(page, 'card-zoom-artist');
+});
+
 // Russian names come from card_db (16.5, LO-02); the interface stays
 // English. Big Spider has no image, so its text card shows the name;
 // the zoom credits the translators (CD-06).
@@ -76,6 +89,8 @@ test('with Russian picked, cards show their Russian names', async ({ page }) => 
   await spider.hover();
   const zoom = page.getByTestId('card-zoom');
   await expect(zoom).toContainText(trIn('ru', 'zoom.translators', { names: 'Alchba, Mitboy, d0m1n1c132, Blacknenko, N-Chance' }));
+  // The artist line stays, above the translators (CD-14, 20.24).
+  await expect(zoom.locator('.card-zoom-credit').first()).toHaveText(trIn('ru', 'zoom.artists', { names: 'TikaratheMew' }));
   await shot(page, 'card-zoom-ru');
   // A card with no Russian name keeps its English one.
   await expect(table.getByRole('img', { name: 'Soul of Greed' })).toBeVisible();

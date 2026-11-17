@@ -267,6 +267,8 @@ export function HostScreen() {
             }}
           />
         </label>
+        {/* A line between the simple setup and the detailed one (18.25). */}
+        <hr className="divider" />
         <label className="check">
           <input
             type="checkbox"
@@ -279,127 +281,137 @@ export function HostScreen() {
         </label>
         {detailed && (
           <>
-            {/* One random character each by default; a draft offers each
-                player 2–5 and they pick one (GS-01, 14.11). Bans need
-                the ban screen, which comes with the tournament tools. */}
-            <div className="row">
-              <label className="field">
-                {t('host.picking')}
-                <select
-                  value={options.picking}
-                  onChange={(e) => {
-                    option({ picking: e.target.value === 'draft' ? 'draft' : 'random' });
-                  }}
-                >
-                  <option value="random">{t('host.picking_random')}</option>
-                  <option value="draft">{t('host.picking_draft')}</option>
-                </select>
-              </label>
-              {options.picking === 'draft' && (
+            {/* Detailed options in titled groups (18.25). */}
+            <fieldset className="group">
+              <legend>{t('host.group_characters')}</legend>
+              {/* One random character each by default; a draft offers each
+                  player 2–5 and they pick one (GS-01, 14.11). Bans need
+                  the ban screen, which comes with the tournament tools. */}
+              <div className="row">
                 <label className="field">
-                  {t('host.draft_size')}
+                  {t('host.picking')}
                   <select
-                    value={options.draft_size}
+                    value={options.picking}
                     onChange={(e) => {
-                      option({ draft_size: Number(e.target.value) });
+                      option({ picking: e.target.value === 'draft' ? 'draft' : 'random' });
                     }}
                   >
-                    {[2, 3, 4, 5].map((n) => (
-                      <option key={n} value={n}>
-                        {n}
-                      </option>
-                    ))}
+                    <option value="random">{t('host.picking_random')}</option>
+                    <option value="draft">{t('host.picking_draft')}</option>
                   </select>
                 </label>
+                {options.picking === 'draft' && (
+                  <label className="field">
+                    {t('host.draft_size')}
+                    <select
+                      value={options.draft_size}
+                      onChange={(e) => {
+                        option({ draft_size: Number(e.target.value) });
+                      }}
+                    >
+                      {[2, 3, 4, 5].map((n) => (
+                        <option key={n} value={n}>
+                          {n}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </div>
+              {/* Off: the players sit in the order they joined. */}
+              <label className="check">
+                <input
+                  type="checkbox"
+                  checked={!!options.random_seats}
+                  onChange={(e) => {
+                    option({ random_seats: e.target.checked });
+                  }}
+                />
+                {t('host.random_seats')}
+              </label>
+            </fieldset>
+            <fieldset className="group">
+              <legend>{t('host.group_cards')}</legend>
+              {/* A challenge plays without them (ADR 028). */}
+              {!pick && (
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={!options.no_bonus_souls}
+                    onChange={(e) => {
+                      option({ no_bonus_souls: !e.target.checked });
+                    }}
+                  />
+                  {t('host.bonus_souls')}
+                </label>
               )}
-            </div>
-            <div className="row">
-              <label className="field">
-                {t('host.timer')}
-                <select
-                  value={options.response_timer}
-                  onChange={(e) => {
-                    option({ response_timer: Number(e.target.value) });
-                  }}
-                >
-                  <option value={0}>{t('host.timer_off')}</option>
-                  <option value={60}>{t('host.seconds', { n: 60 })}</option>
-                  <option value={90}>{t('host.seconds', { n: 90 })}</option>
-                  <option value={120}>{t('host.seconds', { n: 120 })}</option>
-                  <option value={180}>{t('host.seconds', { n: 180 })}</option>
-                </select>
-              </label>
-            </div>
-            {/* A challenge plays without them (ADR 028). */}
-            {!pick && (
-              <label className="check">
+              {/* Off and locked when the sets are too small; the tooltip
+                  names the short groups. */}
+              <label className="check" title={blocked ? deckRatiosText(blocked) : undefined}>
                 <input
                   type="checkbox"
-                  checked={!options.no_bonus_souls}
+                  checked={blocked === '' && !options.no_deck_ratios}
+                  disabled={blocked !== ''}
                   onChange={(e) => {
-                    option({ no_bonus_souls: !e.target.checked });
+                    option({ no_deck_ratios: !e.target.checked });
                   }}
                 />
-                {t('host.bonus_souls')}
+                {t('host.deck_ratios')}
               </label>
-            )}
-            {/* Off: the players sit in the order they joined. */}
-            <label className="check">
-              <input
-                type="checkbox"
-                checked={!!options.random_seats}
-                onChange={(e) => {
-                  option({ random_seats: e.target.checked });
-                }}
-              />
-              {t('host.random_seats')}
-            </label>
-            {/* Off and locked when the sets are too small; the tooltip
-                names the short groups. */}
-            <label className="check" title={blocked ? deckRatiosText(blocked) : undefined}>
-              <input
-                type="checkbox"
-                checked={blocked === '' && !options.no_deck_ratios}
-                disabled={blocked !== ''}
-                onChange={(e) => {
-                  option({ no_deck_ratios: !e.target.checked });
-                }}
-              />
-              {t('host.deck_ratios')}
-            </label>
-            {/* Off by default; only with Requiem (R-SETUP-16, 14.13). */}
-            {rooms && (
-              <label className="check">
-                <input
-                  type="checkbox"
-                  checked={!!options.room_deck}
-                  onChange={(e) => {
-                    option({ room_deck: e.target.checked });
-                  }}
-                />
-                {t('host.room_deck')}
-              </label>
-            )}
-            {/* Disabled by default (ADR 020, item 1.2). */}
-            <div className="row">
-              <label className="field">
-                {t('host.rollback')}
-                <select
-                  value={options.rollback ?? ''}
-                  aria-describedby="rollback-hint"
-                  onChange={(e) => {
-                    option({ rollback: (e.target.value || undefined) as RollbackMode | undefined });
-                  }}
-                >
-                  <option value="">{t('host.rollback_off')}</option>
-                  <option value="soft">{t('host.rollback_soft')}</option>
-                  <option value="god">{t('host.rollback_god')}</option>
-                </select>
-              </label>
-            </div>
-            <p id="rollback-hint" className="muted hint">
-              {rollbackHint(options.rollback ?? '')}
-            </p>
+              {/* Off by default; only with Requiem (R-SETUP-16, 14.13). */}
+              {rooms && (
+                <label className="check">
+                  <input
+                    type="checkbox"
+                    checked={!!options.room_deck}
+                    onChange={(e) => {
+                      option({ room_deck: e.target.checked });
+                    }}
+                  />
+                  {t('host.room_deck')}
+                </label>
+              )}
+            </fieldset>
+            <fieldset className="group">
+              <legend>{t('host.group_turns')}</legend>
+              <div className="row">
+                <label className="field">
+                  {t('host.timer')}
+                  <select
+                    value={options.response_timer}
+                    onChange={(e) => {
+                      option({ response_timer: Number(e.target.value) });
+                    }}
+                  >
+                    <option value={0}>{t('host.timer_off')}</option>
+                    <option value={60}>{t('host.seconds', { n: 60 })}</option>
+                    <option value={90}>{t('host.seconds', { n: 90 })}</option>
+                    <option value={120}>{t('host.seconds', { n: 120 })}</option>
+                    <option value={180}>{t('host.seconds', { n: 180 })}</option>
+                  </select>
+                </label>
+              </div>
+              {/* Disabled by default (ADR 020, item 1.2). */}
+              <div className="row">
+                <label className="field">
+                  {t('host.rollback')}
+                  <select
+                    value={options.rollback ?? ''}
+                    aria-describedby="rollback-hint"
+                    onChange={(e) => {
+                      option({ rollback: (e.target.value || undefined) as RollbackMode | undefined });
+                    }}
+                  >
+                    <option value="">{t('host.rollback_off')}</option>
+                    <option value="soft">{t('host.rollback_soft')}</option>
+                    <option value="god">{t('host.rollback_god')}</option>
+                  </select>
+                </label>
+              </div>
+              <p id="rollback-hint" className="muted hint">
+                {rollbackHint(options.rollback ?? '')}
+              </p>
+            </fieldset>
           </>
         )}
         <button type="submit" className="primary" disabled={busy}>

@@ -56,12 +56,16 @@ func playFuzz(t *testing.T, seed uint64, players uint8, choices []byte, focus []
 		if in.Kind == IntentDiscard {
 			in.Objects = in.Objects[:p.Count]
 		}
+		snap := g.TakeSnapshot()
 		st, err := g.Step(in)
 		if err != nil {
 			t.Fatalf("step %d: allowed intent %+v refused: %v", i, in, err)
 		}
 		steps = append(steps, st)
 		if err := g.CheckInvariants(); err != nil {
+			t.Fatalf("step %d after %+v: %v", i, in, err)
+		}
+		if err := g.CheckEvents(snap, st.Events); err != nil {
 			t.Fatalf("step %d after %+v: %v", i, in, err)
 		}
 		checkNoLeaks(t, g)

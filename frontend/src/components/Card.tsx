@@ -6,8 +6,8 @@ import { diceImage } from '../dice';
 import { feel } from '../feel';
 import { t } from '../i18n';
 import { scaleFor } from '../playback';
-import { fighters } from '../prompt';
-import { counterColor } from '../counters';
+import { fighters, mustTargets } from '../prompt';
+import { counterColor, ghostPath } from '../counters';
 import type { CounterView, MonsterStats, StatSource } from '../protocol';
 import { rewardsLine, rewardsText, statLines, sumOf, tempSources, trend, type Name, type TempSource, type Trend } from '../stats';
 import { useApp, viewScale } from '../store';
@@ -49,6 +49,9 @@ interface Props {
   // counters are the card's counters by kind; each kind is one badge
   // in its colour (7.9, 18.15).
   counters?: CounterView[];
+  // fear is the fear counters of the character's player (18.26): they
+  // are on the player (R-TRICK-08), shown on the character as a ghost.
+  fear?: number;
   // copies are the cards whose abilities this card uses by copying them,
   // in the order gained: one copy mark each shows its art and zooms it;
   // the card's zoom names them (19.106, 19.111, 19.157).
@@ -77,6 +80,8 @@ interface Props {
   // label names a face-down card instead of its deck, e.g. a challenge
   // present by its kind (14.25).
   label?: string;
+  // hint says what a click on the card does; it shows as its title.
+  hint?: string;
   onClick?: () => void;
 }
 
@@ -89,6 +94,7 @@ export function Card({
   damage = 0,
   spent = false,
   counters = NO_COUNTERS,
+  fear = 0,
   copies = NO_COPIES,
   dice,
   owner = -1,
@@ -102,6 +108,7 @@ export function Card({
   why,
   cost,
   label,
+  hint,
   onClick,
 }: Props) {
   const scale = useApp(viewScale);
@@ -118,8 +125,13 @@ export function Card({
   // and a line under its zoom.
   const rewards = rewardsLine(monster?.rewards);
   // The zoom names the copied card first (19.111).
-  const lines = [...copies.map((c) => t('badge.copy', { card: name(c) })), ...sums, ...(rewards ? [rewards] : [])];
-  const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines, counters.filter((c) => c.count > 0));
+  // A card the active player must attack: a dashed frame for everyone,
+  // and a line under its zoom (19.180).
+  const must = useApp((s) => objectId !== undefined && !!s.game && mustTargets(s.game.view).includes(objectId));
+  const lines = [...copies.map((c) => t('badge.copy', { card: name(c) })), ...sums, ...(rewards ? [rewards] : []), ...(must ? [t('badge.must_attack')] : [])];
+  // The zoom names the player's fear with the card's counters (18.26).
+  const zoomCounters = [...counters.filter((c) => c.count > 0), ...(fear > 0 ? [{ name: 'fear', count: fear }] : [])];
+  const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines, zoomCounters);
   const preview = useCostPreview(cost);
   const cardElRef = useRef<HTMLDivElement>(null);
   // Leaving an icon for the card zooms the card again.
@@ -196,10 +208,11 @@ export function Card({
       transition={{ duration: 0.25 * scale }}
       data-zone={objectId === undefined ? undefined : `obj-${String(objectId)}`}
       data-player={player}
-      className={`card size-${size} kind-${kindOf(card.type)}${landscape(card.type) ? ' landscape' : ''}${image ? '' : ' blank'}${counted > 0 ? ' has-counters' : ''}${badges && copies.length > 0 ? ' has-copy' : ''}${spent ? ' spent' : ''}${fight ? ' fight' : ''}${highlight ? ` hl-${highlight}` : ''}${flip.turn ? ` flip-${flip.turn}` : ''}`}
+      className={`card size-${size} kind-${kindOf(card.type)}${landscape(card.type) ? ' landscape' : ''}${image ? '' : ' blank'}${counted > 0 ? ' has-counters' : ''}${badges && copies.length > 0 ? ' has-copy' : ''}${spent ? ' spent' : ''}${fight ? ' fight' : ''}${must ? ' must-attack' : ''}${highlight ? ` hl-${highlight}` : ''}${flip.turn ? ` flip-${flip.turn}` : ''}`}
       style={flip.turn ? { animationDuration: `${String((FLIP_MS * scale) / 2)}ms` } : undefined}
       role={onClick ? 'button' : 'img'}
       aria-label={card.name}
+      title={hint}
       onClick={click}
       {...zoomHandlers}
       onPointerEnter={(e) => {
@@ -224,6 +237,7 @@ export function Card({
         <BlankFace card={card} full={size === 'zoom'} />
       )}
       {badges && counterBadges}
+      {badges && fear > 0 && <Badge kind="fear" value={fear} label={t('table.fear_title', { n: fear })} />}
       {badges && copies.map((c, i) => <CopyBadge key={`${String(i)}-${c}`} cardRef={c} name={name(c)} place={i} onLeave={backToCard} />)}
       {badges && dice && dice.length > 0 && <DieBadges values={dice} owner={owner} />}
       {/* Damage shows as the lower, red health; the mark is for the rest. */}
@@ -595,11 +609,13 @@ function SourceIcon({ source, name, onLeave, scale }: { source: TempSource; name
 }
 
 // Badge shapes, drawn like the game's cut-out art (15.23): a heart for
-// health, a die for the dice, and lumpy blobs for the rest.
+// health, a die for the dice, a ghost for fear (18.26), and lumpy blobs
+// for the rest.
 const blob = 'M52 6C78 5 95 24 94 50C93 77 74 95 48 94C22 93 5 76 6 49C7 22 26 7 52 6Z';
-type BadgeKind = 'hp' | 'dc' | 'atk' | 'counters' | 'damage';
+type BadgeKind = 'hp' | 'dc' | 'atk' | 'counters' | 'damage' | 'fear';
 const shapes = new Map<BadgeKind, string>([
   ['hp', 'M50 92C24 72 5 55 6 33C7 15 22 6 35 7C43 8 48 13 50 20C52 13 57 8 65 7C78 6 93 15 94 33C95 55 76 72 50 92Z'],
+  ['fear', ghostPath],
   ['dc', 'M22 8L78 6C88 6 94 12 94 22L93 78C93 88 87 94 77 94L23 93C13 93 7 87 7 77L6 23C6 13 12 8 22 8Z'],
 ]);
 
@@ -626,8 +642,10 @@ function Badge({ kind, value, label, title, style, hurt = false, trend: dir }: B
       <svg className="card-badge-shape" viewBox="0 0 100 100" aria-hidden="true">
         <path d={shapes.get(kind) ?? blob} />
         <path className="card-badge-shine" d="M30 26C36 18 46 16 52 18C44 22 38 28 34 36C31 34 29 30 30 26Z" />
+        {/* Fear's ghost has eyes above its number (18.26). */}
+        {kind === 'fear' && <path className="card-badge-eyes" d="M33 30a5 7 0 1 0 10 0a5 7 0 1 0-10 0ZM57 30a5 7 0 1 0 10 0a5 7 0 1 0-10 0Z" />}
       </svg>
-      {kind === 'hp' ? <Count value={value} className="card-badge-value" /> : <span className="card-badge-value">{value}</span>}
+      {kind === 'hp' || kind === 'fear' ? <Count value={value} className="card-badge-value" /> : <span className="card-badge-value">{value}</span>}
     </span>
   );
 }

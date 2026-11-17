@@ -6,7 +6,7 @@ import { appURL, serverPort } from './server';
 import { realAssets, shot } from './shot';
 import { openOnline } from './menu';
 import { locale, tr, trRe } from './locale';
-import { activePage, click, markGame, throwButton, turnAction, untilAttackRoll, untilResynced } from './turn';
+import { activePage, attackRoll, click, markGame, throwButton, turnAction, until, untilAttackRoll, untilResynced } from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -49,6 +49,7 @@ test('an intent lost with a dropped connection can be sent again (19.86)', async
   // The app reconnects to the same step and shows the server's answer;
   // only then is the Throw button back to act on (19.103).
   await untilResynced(active);
+  await until(active, attackRoll);
   await expect(throwButton(active)).toBeVisible();
   await click(active, throwButton(active));
   await expect(throwButton(active)).toHaveCount(0);

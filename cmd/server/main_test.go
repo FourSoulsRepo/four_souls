@@ -67,6 +67,28 @@ func TestParse(t *testing.T) {
 	}
 }
 
+// TestParseTestSeeds: test seeds are off unless the flag or ENV turns
+// them on; a config file cannot (ADR 032).
+func TestParseTestSeeds(t *testing.T) {
+	if cfg, err := parse(nil); err != nil || cfg.TestSeeds {
+		t.Fatalf("default %+v, %v", cfg, err)
+	}
+	if cfg, err := parse([]string{"-test_seeds"}); err != nil || !cfg.TestSeeds {
+		t.Fatalf("flag %+v, %v", cfg, err)
+	}
+	file := filepath.Join(t.TempDir(), "server.json")
+	if err := os.WriteFile(file, []byte(`{"test_seeds": true, "TestSeeds": true}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if cfg, err := parse([]string{"-config", file}); err != nil || cfg.TestSeeds {
+		t.Fatalf("file %+v, %v", cfg, err)
+	}
+	t.Setenv("FOUR_SOULS_TEST_SEEDS", "true")
+	if cfg, err := parse(nil); err != nil || !cfg.TestSeeds {
+		t.Fatalf("env %+v, %v", cfg, err)
+	}
+}
+
 // TestParseEnv: every flag has a FOUR_SOULS_ variable; ENV overrides the
 // file and flags override ENV (N-19).
 // The tracing flags read like the others, and ENV sets them too (ADR 024).

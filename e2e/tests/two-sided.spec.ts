@@ -10,6 +10,20 @@ import { appURL } from './server';
 import { shot } from './shot';
 import { activePage, click, settle } from './turn';
 
+// ownsInPlay: the page's own player has this card in play, up (the
+// store's view).
+function ownsInPlay(page: Page, card: string): Promise<boolean> {
+  return page.evaluate((card) => {
+    interface S {
+      game: { view: { players: { id: number; in_play: { card: string }[] | null }[] } } | null;
+      lobby: { table: { you: number } | null };
+    }
+    const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+    const me = s.game?.view.players.find((p) => p.id === s.lobby.table?.you);
+    return (me?.in_play ?? []).some((c) => c.card === card);
+  }, card);
+}
+
 test.setTimeout(120_000);
 
 // countFlips counts the card-flip animations the page starts from now.
@@ -39,7 +53,9 @@ test('Anima Sola flips to The Revenant and back (14.15)', async ({ browser }) =>
   // back when attacked, and attacking an item is 14.14.
   // The pages offer Requiem (?requiem), so they can continue a game
   // with it; the deal stays the Base Game's.
+  // Animations on: the test counts the card-flip animations.
   const pages = await startGame(browser, names, {
+    animations: true,
     url: `${appURL()}&requiem`,
     setup: (host) => host.getByRole('group', { name: tr('host.sets') }).getByLabel(tr('set.requiem')).uncheck(),
     options: { rollback: 'god' },
@@ -66,7 +82,8 @@ test('Anima Sola flips to The Revenant and back (14.15)', async ({ browser }) =>
   await click(active, mine.getByRole('button', { name: cardName('anima_sola'), exact: true }));
   await click(active, active.getByRole('menu').getByRole('menuitem').first());
   const revenant = mine.getByLabel(cardName('the_revenant'), { exact: true });
-  await settle(pages, click, async () => (await revenant.count()) > 0);
+  await settle(pages, click, () => ownsInPlay(active, 'the_revenant'));
+  await expect(revenant).toBeVisible();
   await expect(theirs.getByLabel(cardName('the_revenant'), { exact: true })).toBeVisible();
   await expect(mine.getByLabel(cardName('anima_sola'), { exact: true })).toHaveCount(0);
   // Both tables turned the card over.

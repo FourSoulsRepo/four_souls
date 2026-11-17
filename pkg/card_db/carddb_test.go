@@ -298,3 +298,37 @@ func TestLoadRejectsSharedOrder(t *testing.T) {
 		t.Error("want error for two sets with one order")
 	}
 }
+
+// ArtistNames credits a face's own artists (CD-14, 20.24). The roles are
+// the card data's (ADR 004); the shapes copy Isaac and The Enigma in the
+// real data. Expected names follow ADR 027 "Credits" 10.3–10.4.
+func TestArtistNames(t *testing.T) {
+	db, err := Load(fstest.MapFS{"data/r.json": {Data: []byte(`{"set":{"code":"r","name":"R","order":1},"cards":[
+		{"id":"isaac","type":"Character Card","copies":1,"text":{"en":{"name":"Isaac"}},
+		 "artists":[{"role":"Front character artist","name":"Ann"},{"role":"Front background artist","name":"Private"},
+		  {"role":"Card back artist","name":"Bo"}]},
+		{"id":"the_enigma","type":"Character Card","copies":1,"text":{"en":{"name":"The Enigma"}},
+		 "artists":[{"role":"Front character artist","name":"Cy"},{"role":"Front background artist","name":"Cy"},
+		  {"role":"Back character artist","name":"Di"},{"role":"Back background artist","name":"private"}],
+		 "back":{"id":"amgine_eht","text":{"en":{"name":"Amgine Eht"}}}},
+		{"id":"no_art","type":"Loot Card","copies":1,"text":{"en":{"name":"No Art"}},
+		 "artists":[{"role":"Card front artist","name":"Private"}]}]}`)}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string][]string{
+		"isaac":      {"Ann"}, // no "Private", no card back artist
+		"the_enigma": {"Cy"},  // each name once; the back's roles left out
+		"amgine_eht": {"Di"},  // the back face: its own roles only
+		"no_art":     {},      // nothing public: no line
+	}
+	for id, names := range want {
+		c, ok := db.Get(Ref{ID: id, Version: 1})
+		if !ok {
+			t.Fatalf("%s missing", id)
+		}
+		if got := c.ArtistNames(); !reflect.DeepEqual(got, names) {
+			t.Errorf("%s artists = %q, want %q", id, got, names)
+		}
+	}
+}

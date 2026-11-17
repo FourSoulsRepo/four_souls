@@ -87,6 +87,13 @@
   * Every player sees it while they may respond.
   * It goes when the end phase starts.
   * A death end has no row; nobody declared it.
+* **2s. An attack's helpers (19.188):** the attack row names them.
+  * "Helped by Bo · Rewards shared with Bo", under the attack.
+  * Gus, Sisters Vis, Ultra Greed and Sibling Rivalry add them.
+  * Every player sees it.
+* **2r. A roll's result (19.186):** its row names the number it acts on.
+  * "Book of Sin: roll result 4".
+  * A later roll may hide the die; the row still says 4.
 
 ## Postconditions
 

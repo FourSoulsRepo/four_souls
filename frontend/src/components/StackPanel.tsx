@@ -25,6 +25,8 @@ interface Props {
   prompt?: string | undefined;
   // answer: Pass answers the banner's prompt, so it glows (15.28).
   answer: boolean;
+  // watched: a record plays (10.2); nobody passes, so no Pass button.
+  watched?: boolean;
 }
 
 // StackPanel is the stack inside the board (15.21, F-03): newest on
@@ -34,7 +36,7 @@ interface Props {
 // turn (19.74). Rows fade in and out and
 // slide (15.51). An empty stack says so (S-09). Pass glows when it
 // answers the prompt.
-export function StackPanel({ view, you, names, pass, disabled, prompt, answer }: Props) {
+export function StackPanel({ view, you, names, pass, disabled, prompt, answer, watched }: Props) {
   const act = useApp((s) => s.act);
   const rows = stackRows(view, names);
   const empty = rows.length === 0;
@@ -51,15 +53,17 @@ export function StackPanel({ view, you, names, pass, disabled, prompt, answer }:
       <header>
         <h2>{t('stack.title')}</h2>
         <LastRollDie names={names} />
-        <button
-          type="button"
-          className={`stack-pass${lit && answer ? ' answer' : ''}`}
-          title={t('stack.pass_tip')}
-          disabled={!lit}
-          onClick={press}
-        >
-          {t('stack.pass')}
-        </button>
+        {!watched && (
+          <button
+            type="button"
+            className={`stack-pass${lit && answer ? ' answer' : ''}`}
+            title={t('stack.pass_tip')}
+            disabled={!lit}
+            onClick={press}
+          >
+            {t('stack.pass')}
+          </button>
+        )}
       </header>
       {view.first_roll ? (
         <FirstRollList roll={view.first_roll} names={names} />
@@ -69,7 +73,7 @@ export function StackPanel({ view, you, names, pass, disabled, prompt, answer }:
         <ol>
           <Rows>
             {rows.map((r) =>
-              'declared' in r ? <DeclaredRow key={r.key} parts={r.declared} odds={r.odds} /> : <StackRow key={r.key} it={r.item} view={view} names={names} />,
+              'declared' in r ? <DeclaredRow key={r.key} parts={r.declared} odds={r.odds} help={r.help} /> : <StackRow key={r.key} it={r.item} view={view} names={names} />,
             )}
           </Rows>
         </ol>
@@ -220,11 +224,12 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
 // DeclaredRow is an open attack or buy (15.91, V-51), or a declared end
 // of turn (19.74). It is no stack item (R-ATK-02, R-SHOP-02), so it has
 // no icon frame and a dashed edge.
-// An aimed attack adds its fight line: what the roll needs (15.94).
-function DeclaredRow({ parts, odds }: { parts: LinePart[]; odds?: string | undefined }) {
-  const line = parts.map((p) => p.text).join('');
+// An aimed attack adds its fight line: what the roll needs (15.94);
+// an attack with helpers names them (19.188).
+function DeclaredRow({ parts, odds, help }: { parts: LinePart[]; odds?: string | undefined; help?: string | undefined }) {
+  const line = [parts.map((p) => p.text).join(''), odds, help].filter(Boolean).join('. ');
   return (
-    <Row className="stack-declared" aria-label={odds ? `${line}. ${odds}` : line}>
+    <Row className="stack-declared" aria-label={line}>
       <span className="stack-line">
         {parts.map((p, i) => (
           // A line's parts never change order, so the index is a stable key.
@@ -233,6 +238,7 @@ function DeclaredRow({ parts, odds }: { parts: LinePart[]; odds?: string | undef
         ))}
       </span>
       {odds && <span className="stack-odds">{odds}</span>}
+      {help && <span className="stack-odds stack-help">{help}</span>}
     </Row>
   );
 }

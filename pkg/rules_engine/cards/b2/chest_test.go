@@ -10,7 +10,12 @@ import (
 func TestChest(t *testing.T) {
 	tb := monsterTable(t, items("fly"), seat("isaac"), seat("cain"))
 	tb.G.ForceRolls(5)
-	tb.RevealFromDeck("chest")
+	ev := tb.RevealFromDeck("chest")
+	if !slices.ContainsFunc(ev, func(e engine.Event) bool {
+		return e.Kind == engine.EvDiscarded && e.Card == "chest" && e.Prev != 0
+	}) {
+		t.Error("no discarded event for the done event card (19.173)")
+	}
 	if c := tb.G.Players[0].Cents; c != 6 {
 		t.Errorf("cents = %d, want 6", c)
 	}
