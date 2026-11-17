@@ -55,6 +55,8 @@ Ideas: TS-13, LR-04, R-03.
 7. No responses in the middle of a stack within `steps`.
    1. The goal: a player builds the table position they have now.
    2. A stack in play is set with `setup.stack` and `priority`.
+8. A moved file may check more than its Go test, from the card text.
+   1. More checks, not fewer.
 
 ## File layout
 
@@ -217,8 +219,12 @@ Ideas: TS-13, LR-04, R-03.
    1. `prompt`: who is asked, and the options by plain label.
    2. `resolved`: cards in the order they resolved.
    3. `events`: kinds that must or must not happen, with their player.
+   4. An `activate` step may name a room in a room slot (owner, 2026-11-17).
+      1. Only the active player may use it (R-CARD-33, R-CARD-36).
+      2. Move the Bomb Bum and Beggar tests to files.
 3. Done when:
    1. A Lucky Foot and Bomb! file checks the order.
+   2. A Bomb Bum file activates the room.
 
 ### [ ] 23.7 Dump a Go test's setup as a file
 
