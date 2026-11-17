@@ -6172,13 +6172,15 @@ Totals by system (209 items):
 3. Tasks:
    1. [ ] ctx into `standardPick`, checked between candidates and between dice draws; a cancelled search returns `ctx.Err()`. Test.
 
-### [ ] 19.208 Bots think at a table no human is connected to
+### [x] 19.208 Bots think at a table no human is connected to
 
 1. Goal: on a 1-CPU server, a table whose humans all left costs no CPU (lead, 2026-11-17).
 2. Report (owner's review).
-3. Cause: to be found: what the room does now when every human disconnects.
+3. Found: not a bug. A player who disconnects and was not kicked is away (`Room.away`); any away seat pauses the game (`paused`), and `drive` then cancels every thinker and starts none. So with no human connected the bots do not think; the game goes on when one comes back.
+   1. All humans can never be kicked: a kick needs a human's vote, and bots never vote (ADR 033, Decision 13).
+   2. The empty game ends by its idle limit as before (`TestBotsEmptyGameEnds`).
 4. Tasks:
-   1. [ ] Write down what happens; if bots go on, `drive` starts no thinkers without a connected human, and the game goes on when one returns. Test.
+   1. [x] Covered by `TestBotsWaitWhilePausedVotingOver` (the only player leaves: no thinker, a late answer dropped, the bot thinks again on return); no code change.
 
 ### [ ] 19.209 A panic in a bot's memory crashes the server
 
