@@ -50,6 +50,11 @@ Ideas: TS-13, LR-04, R-03.
 3. A new test: simple is a file; complicated is Go.
 4. Website examples from test files: no, not for now.
 5. Files are grouped by purpose, never one big folder.
+6. A step `expect` with no `allowed` expects a refusal; keep it.
+   1. Files will come from a visual constructor, not typed by hand.
+7. No responses in the middle of a stack within `steps`.
+   1. The goal: a player builds the table position they have now.
+   2. A stack in play is set with `setup.stack` and `priority`.
 
 ## File layout
 
