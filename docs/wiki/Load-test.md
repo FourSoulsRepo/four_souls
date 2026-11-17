@@ -75,19 +75,21 @@ go run ./cmd/server_load -url ws://127.0.0.1:4774 -bots hard -start 3 -max-games
 
 With one core, only one hard bot thinks at a time. A hard bot that gets no turn to think within its budget (`-bot_think`, 1.5 s) plays that move as a standard bot, so it still answers in about 3 s.
 
-Measured on 2026-11-17, 3 tables of 1 client and 3 bots, `GOMAXPROCS=1 GOMEMLIMIT=512MiB`. The machine was shared with other jobs, so the times are upper bounds:
+Measured on 2026-11-17 (i7-8750H, no other job on the machine), `GOMAXPROCS=1 GOMEMLIMIT=512MiB`, 1 client and 3 bots a table. Each run lasted 8 minutes (`-game-timeout 8m`); games still running then count as failed, which is expected here:
 
-| | Hard | Standard |
+| | 3 hard tables | 20 standard tables |
 |---|---|---|
-| Load average (start → end) | 12.0 → 5.4 | 9.2 → 1.5 |
-| Games | 3 of 3 in 18 min | 3 of 3 in 21 min |
-| Response median / p99 / max | 8.9 / 32 / 40 ms | 0.85 / 20 / 38 ms |
-| Longest bot move | 3.1 s | 192 ms |
-| Bot turn median / max | 49 s / 2 min 49 s | 21 s / 50 s |
-| Peak memory (RSS) | 35 MB | 34 MB |
-| GC share of the CPU | 5% | under 1% |
-| Server's share of the core | 98% | 4% |
-| Hard moves played as standard (no slot) | 54% | – |
+| Load average during the run | 1.9 – 3.2 | 1.3 – 3.1 |
+| Response median / p99 / max | 5.1 / 15 / 31 ms | 1.2 / 58 / 140 ms |
+| Room requests over 100 ms (server log) | none | none |
+| Longest bot move | 3.1 s | 293 ms |
+| Bot turn median / max | 47 s / 1 min 25 s | 21 s / 1 min 2 s |
+| Peak memory (RSS) | 34 MB | 95 MB |
+| GC | 24 795 runs, 0.6 s of pauses, 6% of the CPU | 1751 runs, 68 ms of pauses, 1% of the CPU |
+| Server's share of the core | 99% | 39% |
+| Hard moves played as standard (no slot) | 57% | – |
+
+So one core holds 3 hard tables with every response far under 100 ms, but no room for anything else. It holds 20 standard tables with 99% of responses under 60 ms; no single room request took over 100 ms, so the slowest response, 140 ms, was most likely a wait for the core behind other rooms.
 
 Hard bots think for their whole budget on every move, so three hard tables keep one core busy for the whole game. On a 1-CPU host that also serves a website, prefer `-bots standard`, or a shorter `-bot_think`.
 

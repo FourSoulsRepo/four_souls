@@ -321,9 +321,10 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    3. A waiting thinker still answers before the response timer.
       1. A hard thinker that gets no slot within its budget plays that move as standard (21.10): it answers in about twice the budget, far under the shortest response timer (60 s).
    4. Load test: `cmd/server_load` gets tables with bots (21.10).
-      1. Check phase (2026-11-17), `GOMAXPROCS=1 GOMEMLIMIT=512MiB`, 3 tables of 1 client and 3 bots, on a machine shared with other jobs.
-      2. Hard (load average 12.0 → 5.4): response p99 32 ms, max 40 ms; longest move 3.1 s; peak RSS 35 MB; GC 5% of the CPU; the server took 98% of the core. 54% of hard moves found no slot and played standard; no search ended with 0 playouts (at least 179).
-      3. Standard (load average 9.2 → 1.5): response p99 20 ms, max 38 ms; longest move 192 ms; peak RSS 34 MB; GC under 1%; the server took 4% of the core.
+      1. Check phase (2026-11-17), `GOMAXPROCS=1 GOMEMLIMIT=512MiB`, tables of 1 client and 3 bots, 8 minutes a run, no other job on the machine (load average 1.3 – 3.2).
+      2. 3 hard tables: response p99 15 ms, max 31 ms; no room request over 100 ms; longest move 3.1 s; peak RSS 34 MB; GC 6% of the CPU; the server took 99% of the core. 57% of hard moves found no slot and played standard; no search ended with 0 playouts (at least 386, median 1032).
+      3. 20 standard tables: response p99 58 ms, max 140 ms; no room request over 100 ms; longest move 293 ms; peak RSS 95 MB; GC 1% of the CPU; the server took 39% of the core.
+      4. So hard bots fill one core with 3 tables; a 1-CPU host with other work should allow `-bots standard` or a shorter `-bot_think` (wiki Load-test).
 18. Arena: how strength is checked
    1. `cmd/bot_arena`: whole games between levels, seeded, seats rotated.
    2. It prints wins by level, unfinished games, steps and time per move.
