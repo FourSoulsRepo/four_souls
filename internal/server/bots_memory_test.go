@@ -27,14 +27,21 @@ func TestBotsMemoryLikeArena(t *testing.T) {
 	if raceEnabled || testing.Short() {
 		seeds = seeds[:1]
 	}
+	known := 0
 	for _, seed := range seeds {
-		playMemoryGame(t, seed, 400)
+		known += playMemoryGame(t, seed, 400)
+	}
+	// Bots think on a time budget, so a seed's game differs from run to
+	// run; some games remember nothing. The seeds together must.
+	if known == 0 {
+		t.Error("the memories never held a card; the check proves nothing")
 	}
 }
 
 // playMemoryGame plays up to steps steps of one seeded room game and
-// checks its memories against the reference after every request.
-func playMemoryGame(t *testing.T, seed uint64, steps int) {
+// checks its memories against the reference after every request. It
+// returns the remembered cards summed over the checks.
+func playMemoryGame(t *testing.T, seed uint64, steps int) int {
 	t.Helper()
 	seats := memorySeats
 	r := memoryRoom(t, seed, seats)
@@ -100,9 +107,7 @@ func playMemoryGame(t *testing.T, seed uint64, steps int) {
 		check()
 	}
 	t.Logf("seed %d: %d steps, %d remembered cards summed over the checks", seed, done, known)
-	if known == 0 {
-		t.Errorf("seed %d: the memories never held a card; the check proves nothing", seed)
-	}
+	return known
 }
 
 // memorySeats are the seats of the memory tests: a player, two hard
