@@ -116,6 +116,8 @@ Rules for this step (owner, 2026-11-16):
 
 ### [x] 21.5 Score and standard level
 
+Gates by the latest numbers: against random 86%, 17.5 ms a move; finished ×2 96%, ×3 98% (tuning, before 7937f18; not measured after it), ×4 100% (after 7937f18).
+
 1. Goal: the standard bot (ADR 030, Decisions 7 and 8).
 2. Tasks:
    1. `Score(g, p)` with its weights in one file.
@@ -212,7 +214,9 @@ Rules for this step (owner, 2026-11-16):
 3. Done when:
    1. A restart in the middle of a bot's turn: the game goes on with no notice to players on the same engine.
 
-### [ ] 21.10 Server limits and load
+### [~] 21.10 Server limits and load
+
+Not [x] (2026-11-17): Done when 1 asks for 20 tables of hard bots on one core; only 3 were run (lead), see 3.1.6.
 
 1. Goal: bots never starve a public server (ADR 030, Decision 17).
 2. Tasks:
@@ -245,6 +249,8 @@ Rules for this step (owner, 2026-11-16):
 
 ### [~] 21.11 Lobby screen
 
+Not [x] (2026-11-17): the full `make e2e` passed in Chromium (287, check phase), WebKit not run (no libavif13; owner), and 19.160 is still open.
+
 1. Goal: the host adds bots in the app (ADR 030, Decision 10).
 2. Tasks:
    1. First, before any new work: `make frontend` and `make i18n` on the frontend edits of 21.7 (`protocol.ts`, `protocol.test.ts`, locales).
@@ -263,6 +269,8 @@ Rules for this step (owner, 2026-11-16):
       1. Lead (2026-11-17): not closed, and the branch not merged, until a full `make e2e` passes, WebKit too.
 
 ### [~] 21.12 Bots at the game table
+
+Not [x] (2026-11-17): it waits for the WebKit e2e, as 21.11; Chromium passed in full.
 
 1. Goal: everyone sees which seats are bots (N-21).
 2. Tasks:
@@ -287,7 +295,7 @@ Rules for this step (owner, 2026-11-16):
    8. Every game of `games.spec.ts` now fails when the table pauses: none of them has a player who leaves.
    9. The bots game seats standard, hard, standard.
 
-### [ ] 21.13 Bots in challenges
+### [x] 21.13 Bots in challenges
 
 1. Goal: a bot as the second player of a challenge (ADR 030, Decision 15).
 2. Tasks:
@@ -313,6 +321,8 @@ Rules for this step (owner, 2026-11-16):
    3. No refused intent, no loop guard, no panic. Hard 0.29 – 0.62 s a move.
 
 ### [~] 21.14 Docs and review
+
+Not [x] (2026-11-17): task 6 (`wails build -m -tags embed` needs libgtk-3-dev and libwebkit2gtk-4.0-dev; owner), the full gate run of task 5, and the owner's game.
 
 1. Goal: the step is ready for the owner.
 2. Tasks:
@@ -362,7 +372,9 @@ Rules for this step (owner, 2026-11-16):
    5. Short run, 20 games, 2 players, 150 playouts a move, seeds 1–20 (2026-11-16): hard with memory wins 18 of 20 against standard (90%); without memory (21.6, same seeds) 14 of 20. All 20 finished (median 18 turns, max 70); no refused intent, no loop guard; 1.16 deaths a kill; 0.48 s a hard move under load.
    6. Full run at the end of line 1 (2026-11-17): hard with memory wins 34 of 50 (68%) against standard at 150 playouts; hard without memory was not run again. `TestMemoryStress` (800 games of 2000 steps) runs from `make sims`.
 
-### [x] 21.16 Card values
+### [~] 21.16 Card values
+
+Not [x] (2026-11-17): Done when 2 not reached, standard with the table wins 46 of 100 (46%) against flat; the 55% gate is the owner's decision (3.11).
 
 1. Goal: each loot card and item has a measured value in the score (ADR 030, Decision 20).
 2. Tasks:

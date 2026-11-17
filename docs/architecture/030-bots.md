@@ -173,6 +173,7 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
          1. The two then stop at different items of a deep stack; the gain was what the items left unresolved would do, not the move's.
          2. Standard×4 seed 28, a stack of 20–36 items: a paid roll ability measured +6 a use cut off, 0.0 settled to its end; it was used 77 times on one turn.
          3. A choice with no way to do nothing keeps its means.
+         4. Known limit, accepted (lead, 2026-11-17): on a stack deep enough that the settles are cut off, standard passes, even when a move would truly help.
    5. A candidate whose settle threw a die is settled 12 times and scored by the mean (6 before the tuning of 2026-11-17: an attack that wins a soul in one settle of several was judged on one or two draws).
       1. The first on the world's own dice, the others with the copy's RNG reseeded.
       2. Each settle's policy choices come from a seed of its own.
@@ -195,6 +196,7 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    1. Many worlds, each a new `Imagine`.
    2. For each candidate and world: copy, apply, play out, score.
    3. The playout runs to the end of the current turn; cap 120 steps.
+      1. Known limit (lead, 2026-11-17): a playout cut at 120 steps is scored as it stands, so on a deep stack two candidates can stop at different items and the bias of Decision 8.4.3 is possible; hard has no `uncut` rule. The measure (`make bot-values`, Decision 20) ignores the cut flag too.
    4. Every seat follows the policy, so the others may respond.
    5. Candidates are halved round by round; the tries go to the best ones.
       1. Each round gives every candidate still in an even share of the budget, world by world: every candidate meets the same worlds, with the same policy seeds.

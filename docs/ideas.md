@@ -674,6 +674,11 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    13. Shown as "Bot 1 (hard)" with a robot icon; the name is translated.
    14. The hard bot remembers cards it saw; the standard one does not.
    15. Details: ADR 030; work: step 21.
+22. N-22. A hard bot thinks less on a move with one or two candidates (lead, 2026-11-17).
+   1. Now every hard move uses its whole time budget, even a choice of two (ADR 030, Decision 9.8.2.1).
+   2. Measured (21.10, 3 hard tables, one CPU): 50% of searches had at most 2 candidates and took 529 of 1066 s of search time.
+   3. A shorter budget for such moves would free about half of the hard bots' CPU.
+   4. Not done in step 21: the full budget stays.
 
 ## Learning
 
