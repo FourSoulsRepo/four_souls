@@ -150,6 +150,8 @@ Ideas: TS-07, TS-08, TS-09, TS-10, TS-11, TS-12.
    4. Limits: about twice today's values; write them in the spec with that note.
    5. Over a limit, the test fails and names the page and the value.
    6. Wiki: the limits in `docs/wiki/Frontend-tests.md`.
+   7. Owner (2026-11-17): fix 19.191 inside step 22; then a green `make e2e-games`.
+   8. Owner (2026-11-17): a game under ~800 steps gets no growth check; accepted.
 3. Done when:
    1. `make e2e-games` passes with the limits.
    2. A test page with a growing list over the limit fails the check.
