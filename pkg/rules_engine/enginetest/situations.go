@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
+	"reflect"
 	"regexp"
 	"slices"
 	"strings"
@@ -99,6 +100,12 @@ func CheckSituation(tree Tree, files fs.FS, path string, sets ...engine.CardSet)
 	}
 	// A test file is read strictly: a misspelt field is an error, not
 	// a field left out. A payload is read as before (rule 2 of step 23).
+	if bad := unknownFields(data, reflect.TypeFor[engine.Situation]()); len(bad) > 0 {
+		for i, b := range bad {
+			bad[i] = path + ": " + b
+		}
+		return append(bad, path+": the fields are in docs/wiki/Situation-payload.md")
+	}
 	var s engine.Situation
 	dec := json.NewDecoder(bytes.NewReader(data))
 	dec.DisallowUnknownFields()

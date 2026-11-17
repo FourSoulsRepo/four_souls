@@ -134,7 +134,26 @@ func TestSituationFiles(t *testing.T) {
 func TestCheckSituationUnknownField(t *testing.T) {
 	data := strings.Replace(razorFile(cardSource, rightExpect), `"active": 0`, `"active": 0, "rols": [6]`, 1)
 	got := check(enginetest.CardTree, "razor_blade/hits-cain.json", data)
-	if len(got) != 1 || !strings.Contains(got[0], `unknown field "rols"`) || !strings.Contains(got[0], "Situation-payload.md") {
-		t.Errorf("problems %q; want one naming the field and the field list", got)
+	if len(got) != 2 || !strings.Contains(got[0], `setup: unknown field "rols"; did you mean "rolls"?`) || !strings.Contains(got[1], "Situation-payload.md") {
+		t.Errorf("problems %q; want the field, its place, the nearest name and the field list", got)
+	}
+}
+
+// An unknown field names its line and path; with no near name, the
+// fields of that place are listed.
+func TestCheckSituationUnknownFieldPlace(t *testing.T) {
+	data := "{\n\"title\": \"t\",\n\"setup\": {\"players\": [{}, {\n\"centz\": 1}]},\n\"zzz\": 1}"
+	got := check(enginetest.CardTree, "razor_blade/hits-cain.json", data)
+	want := []string{
+		`line 4, setup.players[1]: unknown field "centz"; did you mean "cents"?`,
+		`line 5, top level: unknown field "zzz"; fields: title, sets, seed, setup, action, expect, source`,
+	}
+	if len(got) != 3 {
+		t.Fatalf("problems %q; want two fields and the field list", got)
+	}
+	for i, w := range want {
+		if !strings.HasSuffix(got[i], w) {
+			t.Errorf("problem %q; want it to end with %q", got[i], w)
+		}
 	}
 }

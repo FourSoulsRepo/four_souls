@@ -105,6 +105,7 @@ Use option 1.
    5. Only tests import it; the wasm build stays the same.
    6. It reads a test file strictly: an unknown field fails (23.3).
    7. A payload outside a tree is read as before.
+   8. An unknown field's error names its line, path and nearest field.
 13. A new card's simple tests are files from now on.
    1. `Adding-a-card.md` says how (23.9).
 
