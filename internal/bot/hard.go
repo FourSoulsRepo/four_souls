@@ -54,9 +54,9 @@ func hardPick(ctx context.Context, in Input, w *engine.Game, allowed []engine.In
 	} else if in.Budget.Time > 0 {
 		s.until = s.start.Add(in.Budget.Time)
 	}
-	s.noise = noiseOpen
+	s.noise = noiseAll(noiseOpen)
 	if len(w.Stack) > 0 {
-		s.noise = noiseStack
+		s.noise = noiseAll(noiseStack)
 	}
 	if err := s.run(w); err != nil {
 		return engine.Intent{}, err
@@ -72,7 +72,7 @@ type search struct {
 	p     engine.PlayerID
 	cs    []engine.Intent
 	sc    scoring
-	noise float64
+	noise noiseOf
 	// tries[c] are candidate c's playout scores, one per world it met;
 	// every candidate still in meets the same worlds, in order.
 	tries [][]float64

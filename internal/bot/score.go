@@ -17,7 +17,9 @@ const (
 	// A soul is worth far more than everything else together.
 	wSoul = 100.0
 	// An item costs 10¢ (shopPrice) and stays; a cent is worth one.
-	wItem  = 12.0
+	// An average item is worth clearly more than its price (21.16
+	// tuning, 12 before): cents are spent almost only on items.
+	wItem  = 15.0
 	wCent  = 1.0
 	wLoot  = 0.75
 	wCurse = -8.0
@@ -52,6 +54,13 @@ const (
 	// which its own die shifts, so its gain there is mostly noise.
 	noiseOpen  = 1.0
 	noiseStack = 2.0
+	// noiseAttack: standard's attack on an empty stack clears no noise
+	// (Decision 8.6.2). The spread of its settles is the attack's real
+	// risk, not a measuring error: an attack that wins a soul in one
+	// settle of six beats ending the turn on the mean, and one standard
+	// error cut every such attack (21.5 tuning). Other moves keep
+	// noiseOpen: with no bar, standard used items in a loop.
+	noiseAttack = 0.0
 	// noiseClip: in the hard level's noise a gain counts at most four
 	// souls, the most a table holds before a win. A game won or lost
 	// in one world of fifty is a real part of the mean, but as noise it
@@ -68,7 +77,7 @@ const (
 	// another seat's turn. Spent now, it is gone against a later
 	// threat. With one opponent clearly the strongest the share grows
 	// up to 1 + wHoldLead times: the threat to keep it for is near. An
-	// item answer (12) is so worth 2.4 to 7.2 more while it is ready.
+	// item answer (wItem, 15) is so worth 3 to 9 more while it is ready.
 	wHold     = 0.2
 	wHoldLead = 2.0
 )

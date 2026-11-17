@@ -149,8 +149,8 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       5. "Can answer": what `Allowed` shows the seat on another seat's turn: a loot card or a card's ability (`answers`). No card names.
          1. On its own turn: the abilities of cards it controls; a room's work on the active player's turn only (R-CARD-36), and a loot card needs a loot play another seat's turn does not give (R-CARD-08).
       6. It is a multiplier on the card's base value, not a term of its own (lead, 2026-11-16): each answer the seat still holds (in hand; in play and charged, or recharging as its turn starts) counts `cardValue` × (1 + `wHold` × (1 + `wHoldLead` × lead)), with 0.2 and 2.
-         1. `cardValue` is the one function that gives a loot card in hand and an item in play their base value (0.75 and 12); 21.16 makes it a value per card.
-         2. So a held item answer is worth 2.4 to 7.2 more than a spent one; a character has no base value, so its ↷ adds nothing.
+         1. `cardValue` is the one function that gives a loot card in hand and an item in play their base value (0.75 and `wItem`, 15; 12 before the tuning of 2026-11-17); 21.16 makes it a value per card.
+         2. So a held item answer is worth 3 to 9 more than a spent one; a character has no base value, so its ↷ adds nothing.
       7. Lead: the strongest opponent's share of the weights of every seat, past an even share; 0 with no one ahead, towards 1 as one pulls away.
       8. So the multiplier is never 0 and is up to three times higher with one opponent clearly the strongest.
       9. Test (21.6): 3 seats; hard holds Godhead, which can turn a killing roll into a miss. The weak seat (0 souls, no items) kills a monster with no soul while the strong seat (3 souls, items) moves later: hard passes. The strong seat kills a soul monster: hard answers. It does so with one turn of playouts and the holding value; no plan over several turns.
@@ -169,14 +169,18 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    4. It runs to the end of what the candidate started: the stack empty and no attack or purchase going on, the turn's end, or the game's end; cap 150 steps.
       1. So an attack runs to its end: the monster dead, the attacker dead and its penalty paid, or the attack cancelled.
       2. A cap of 40 (2026-11-16) cut off a fifth of 2-player fights and half of 4-player ones.
-   5. A candidate whose settle threw a die is settled 6 times and scored by the mean.
+   5. A candidate whose settle threw a die is settled 12 times and scored by the mean (6 before the tuning of 2026-11-17: an attack that wins a soul in one settle of several was judged on one or two draws).
       1. The first on the world's own dice, the others with the copy's RNG reseeded.
       2. Each settle's policy choices come from a seed of its own.
       3. Every candidate of a move gets the same seeds: scores differ by the move, not by luck.
       4. A candidate with no die keeps one settle.
    6. An action must beat doing nothing: a pass, or an end of turn in the bot's own action phase.
       1. Its gain over doing nothing, settle by settle on the same seeds, counts less 0.25 (a quarter coin) and less a share of its standard error.
-      2. On an empty stack one standard error.
+      2. On an empty stack one standard error; an attack none (tuning, 2026-11-17).
+         1. The spread of an attack's settles is the attack's real risk, not a measuring error: draws like [-10 -10 -10 123 -10 -10] beat ending the turn on the mean, and one standard error cut every such attack; standard left about half its turns without one.
+         2. With no bar for any move, standard×3 seed 28 hit the turn guard (items used again and again), so every other move keeps one standard error.
+         3. An attack is told apart by the intent's kind alone (`standardNoise`), never by a card. Hard keeps one standard error for every move.
+         4. So with 12 draws a hopeless attack whose world kills in 1 settle of 12 is made: `TestStandardNoHopelessAttack` and `TestStandardDigs` allow 1 world of 8.
       3. On a stack two: the move is judged through the dice of every item below it, which its own die shifts.
       4. So a move that gains nothing, or gains only by luck of the dice, is not made; no repeat counter.
    7. Options of a choice that take a play back are left out, as in the policy (Decision 6).
@@ -380,7 +384,7 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       4. Each play and doing nothing are settled as standard settles a candidate (Decision 8.4 – 8.5): 6 draws when dice roll, the same for both; the best play's mean gain counts.
       5. Item: a clone with the item and one without it; a policy playout to the end of the seat's next turn; the difference.
       6. The item is added, never removed: no destroy is needed.
-      7. The playout runs to the end of the seat's next turn that starts after the position, at most 1500 steps; every seat moves by the policy, the seat's own choices get its best option; dice and choices come from the same seeds in both copies. With the item the item counts its flat 12 there, so the value is 12 plus what the item does in that time.
+      7. The playout runs to the end of the seat's next turn that starts after the position, at most 1500 steps; every seat moves by the policy, the seat's own choices get its best option; dice and choices come from the same seeds in both copies. With the item the item counts its flat 12 there (`wItem` when the table was measured; it was not measured again at 15), so the value is 12 plus what the item does in that time.
       8. Positions: the tool plays arena games of the `flat` level, 12 of each table size by default, side by side, each to at most 60 game turns, and keeps about one priority position in 23 steps, at most 60 a game, with the seat to move. They stay in memory: the same seed plays the same games, so a run needs no saved file.
          1. A card is measured on the positions where its card lies in its deck (and, for loot, the seat may play it), in an order of the card's own, up to 32 for a loot card and 64 for an item; an item on 4 seeds a position.
          2. Playing the games is most of a run: 24 games to the 150-turn cap took 16 minutes on 12 cores, the slowest game alone most of it; the cap of 60 turns keeps the early and middle game, where most positions are.
@@ -404,7 +408,7 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
          1. A base below 0 holds nothing: the multiplier counts max(0, base), so a held answer is never a loss. Godhead measured −1.2 ± 3.6 by its playouts alone; with its uses (20.4.10) it is 1.4 ± 1.1 on the 5 positions where it could be used, 3.4 after the shrink and scaling, against an active mean of 10.3.
       4. Shrink by precision (lead, 2026-11-17): v' = (v/se² + m/τ²) / (1/se² + 1/τ²), m the kind's mean over its measured cards, τ² the variance of their values less their mean se², at least 0.01 (`tauFloor2`). A card with no sample gets m; one with se 0 keeps its value. A kind with no measured card keeps the flat value.
          1. It replaced (n × v + 8 × m) / (n + 8), which weighed a card by its samples, not by its noise: items have five times the error of loot.
-      5. Items are scaled by `wItem` over the mean of every measured item, active and passive (lead, 2026-11-17): the average item is worth 12 again, the order stays, a bad item stays below 0.
+      5. Items are scaled by `wItem` over the mean of every measured item, active and passive (lead, 2026-11-17): the average item is worth `wItem` again (15 since the tuning of 2026-11-17: coins are spent almost only on items, so an average item is worth clearly more than its 10¢), the order stays, a bad item stays below 0.
          1. A correction for the measurement's horizon: an item is measured over about one round (to the end of the seat's next turn), but stays for the game. Unscaled, the means were 4.4 and 7.3 against a price of 10¢, so every purchase lost.
       6. A loot card in hand counts `wHand` = 0.5 of its value; another seat's hand card 0.5 of the kind's mean (lead, 2026-11-17).
          1. A card in hand is not played yet: it can be discarded or stolen, and a turn has few loot plays.

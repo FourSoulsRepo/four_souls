@@ -22,8 +22,9 @@ const (
 	// diceDraws is how often a candidate whose settle rolled dice is
 	// settled (Decision 8.5): the world's own dice, then the copy's dice
 	// reseeded, the same seeds for every candidate. One settle judges a
-	// fight by luck.
-	diceDraws = 6
+	// fight by luck; 12 (21.5 tuning) judge a soul won in one settle
+	// of several on more than a draw or two.
+	diceDraws = 12
 	// mistakeOdds: one move in this many is picked by chance among the
 	// best mistakeTop, weighted mistakeTop, …, 1 by rank (Decision 8.9).
 	mistakeOdds = 10
@@ -68,9 +69,9 @@ func standardPick(w *engine.Game, p engine.PlayerID, allowed []engine.Intent, rn
 		}
 		tries[i] = t
 	}
-	noise := noiseOpen
+	noise := standardNoise
 	if len(w.Stack) > 0 {
-		noise = noiseStack
+		noise = noiseAll(noiseStack)
 	}
 	scores := judge(cs, tries, noise, 0)
 	order := make([]int, len(cs))
@@ -102,11 +103,11 @@ func standardPick(w *engine.Game, p engine.PlayerID, allowed []engine.Intent, rn
 // there is a way to do nothing (a pass, or an end of turn; first in cs
 // after the sort), a move must beat it (Decision 8.6): the move's gain
 // over doing nothing, draw by draw on the same seeds, counts less wAct
-// and less noise times its standard error. So a move whose gain is
-// noise is not made. clip, when not 0, bounds each gain in the
+// and less noise(move) times its standard error. So a move whose gain
+// is noise is not made. clip, when not 0, bounds each gain in the
 // standard error to ±clip (the mean keeps it whole): a game won or lost
 // in one draw of many then does not hide what the others show.
-func judge(cs []engine.Intent, tries [][]float64, noise, clip float64) []float64 {
+func judge(cs []engine.Intent, tries [][]float64, noise noiseOf, clip float64) []float64 {
 	scores := make([]float64, len(cs))
 	for i, t := range tries {
 		scores[i] = mean(t)
@@ -130,9 +131,28 @@ func judge(cs []engine.Intent, tries [][]float64, noise, clip float64) []float64
 				gain[d] = min(max(x, -clip), clip)
 			}
 		}
-		scores[i] = scores[0] + m - wAct - noise*stdErr(gain)
+		scores[i] = scores[0] + m - wAct - noise(cs[i])*stdErr(gain)
 	}
 	return scores
+}
+
+// noiseOf is how many standard errors of its gain a move must clear
+// (Decision 8.6).
+type noiseOf func(engine.Intent) float64
+
+// noiseAll is the same bar for every move.
+func noiseAll(n float64) noiseOf {
+	return func(engine.Intent) float64 { return n }
+}
+
+// standardNoise is standard's bar on an empty stack (Decision 8.6.2):
+// none for an attack, noiseOpen for any other move. Told apart by the
+// intent's kind alone.
+func standardNoise(in engine.Intent) float64 {
+	if in.Kind == engine.IntentAttack {
+		return noiseAttack
+	}
+	return noiseOpen
 }
 
 // mean is the mean of xs, which is not empty.
