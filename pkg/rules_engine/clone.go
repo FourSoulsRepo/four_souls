@@ -18,6 +18,13 @@ import (
 // CloneRules (enginetest/clone.go); TestCloneCoversEveryField fails until both
 // are there.
 func (g *Game) Clone() (*Game, error) {
+	return g.clone(true), nil
+}
+
+// clone is Clone; with keepSaved false the copy keeps no save tracking
+// (saved): Imagine's worlds never save, so copying the steps since the
+// last clean state, which grow all game, would be thrown away (19.213).
+func (g *Game) clone(keepSaved bool) *Game {
 	c := *g
 	c.Players = clonePlayers(g.Players)
 	c.Objects = cloneObjects(g.Objects)
@@ -58,12 +65,16 @@ func (g *Game) Clone() (*Game, error) {
 	c.Sets = slices.Clone(g.Sets)
 	c.Banned = slices.Clone(g.Banned)
 	c.asks = maps.Clone(g.asks)                                   // an askEffect holds functions only
-	c.saved.since = cloneEach(g.saved.since, (*ReplayStep).clone) // origin is never changed in place
+	if keepSaved {
+		c.saved.since = cloneEach(g.saved.since, (*ReplayStep).clone) // origin is never changed in place
+	} else {
+		c.saved = tracking{}
+	}
 	c.maxHP = maps.Clone(g.maxHP)
 	c.events = nil
 	c.forcedRolls = nil
 	c.changes = nil // the event check's log (TakeSnapshot) stays with the game
-	return &c, nil
+	return &c
 }
 
 // cloneEach copies a slice, each element by one; nil stays nil and

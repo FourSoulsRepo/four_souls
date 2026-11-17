@@ -33,10 +33,7 @@ func (g *Game) Imagine(p PlayerID, seed uint64, known Known) (*Game, error) {
 	if p < 0 || int(p) >= len(g.Players) {
 		return nil, fmt.Errorf("imagine: no player %d", p)
 	}
-	c, err := g.Clone()
-	if err != nil {
-		return nil, err
-	}
+	c := g.clone(false) // a world never saves: no copy of the save tracking
 	rng := NewRNG(seed)
 	slots := g.hiddenFrom(p)
 	// hidden is each pool's cards, sorted: what p knows of them is only

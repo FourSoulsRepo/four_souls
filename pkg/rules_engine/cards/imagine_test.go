@@ -7,6 +7,7 @@ import (
 	"math/rand/v2"
 	"reflect"
 	"slices"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -344,20 +345,26 @@ func TestImagineNoPlayer(t *testing.T) {
 }
 
 // BenchmarkImagine imagines the game of BenchmarkClone for one seat: a
-// hard bot makes one per world it tries.
+// hard bot makes one per world it tries. After 300 and 3000 steps: a
+// world copies no save tracking, so a long game costs it no more
+// (19.213).
 func BenchmarkImagine(b *testing.B) {
-	s := engine.Setup{Seed: 7, Players: 4, Sets: Sets(), BonusSouls: true, Rooms: true}
-	g, _, err := engine.NewGame(s)
-	if err != nil {
-		b.Fatal(err)
-	}
-	playSteps(b, g, rand.New(rand.NewPCG(7, 99)), 300, nil) //nolint:gosec // test moves, not security
-	b.ReportAllocs()
-	seed := uint64(0)
-	for b.Loop() {
-		seed++
-		if _, err := g.Imagine(1, seed, engine.Known{}); err != nil {
-			b.Fatal(err)
-		}
+	for _, steps := range []int{300, 3000} {
+		b.Run(strconv.Itoa(steps), func(b *testing.B) {
+			s := engine.Setup{Seed: 7, Players: 4, Sets: Sets(), BonusSouls: true, Rooms: true}
+			g, _, err := engine.NewGame(s)
+			if err != nil {
+				b.Fatal(err)
+			}
+			playSteps(b, g, rand.New(rand.NewPCG(7, 99)), steps, nil) //nolint:gosec // test moves, not security
+			b.ReportAllocs()
+			seed := uint64(0)
+			for b.Loop() {
+				seed++
+				if _, err := g.Imagine(1, seed, engine.Known{}); err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
 	}
 }
