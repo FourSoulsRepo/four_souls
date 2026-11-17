@@ -8,36 +8,38 @@ Each step ends in something that runs and is tested.
 
 ## Overview
 
-| Step | Name | Result | Depends on |
-|------|------|--------|------------|
-| 1 | Foundation | Repo layout, CI, versions, legal splash | — |
-| 2 | Card data | Base Game data and images, scraped automatically | 1 |
-| 3 | Rules research | Rules downloaded from all sources; our rules text with stable IDs | 2 |
-| 4 | Engine core | General rules, stack, effect blocks, test tools | 3 |
-| 5 | Base Game cards | Every Base Game card implemented and tested | 2, 4 |
-| 6 | Server | Dedicated and hosted server, lobby, records | 4 |
-| 7 | Client | Playable table in the desktop app; internal play-test build | 4, 6 |
-| 8 | First release | **MVP:** 2–4 players, Base Game, over LAN | 7 |
-| 15 | Visual refresh | Table layout reworked after fouronlinesouls.net (paused) | 8 |
-| 17 | Rollback | Other players can undo a mistaken event | 8 |
-| 16 | Localization | Menus, messages, and cards in several languages | 8 |
-| 14 | More sets | Gold Box, Four Souls+, Requiem, promos | 8 |
-| 12 | Rules website | Engine in WebAssembly on GitHub Pages, in English and Russian | 8, 16 |
-| 20 | Game feel | Hearthstone-like timing, impacts and pacing (ADR 027) | 8 |
-| 18 | Play-test | New-user check, play-test, docs check | 14 |
-| 21 | Bindings by domain | Wails bindings split into packages under `bindings/` | 8 |
-| 9 | Spectators | Viewers watch live | 8 |
-| 10 | Replays | Records screen and replay player | 8 |
-| 11 | Learning | Rules viewer, sandbox, tutorial, bot | 8, 12 |
-| 13 | Web client | Browser client served by the game server | 9 |
-| 19 | Bugs | Every bug report, logged and fixed under the roadmap rules | — |
-| — | Future | Not scheduled yet | — |
+| Step | Name | Result | Depends on | Status |
+|------|------|--------|------------|--------|
+| 1 | Foundation | Repo layout, CI, versions, legal splash | — | Done |
+| 2 | Card data | Base Game data and images, scraped automatically | 1 | Done |
+| 3 | Rules research | Rules downloaded from all sources; our rules text with stable IDs | 2 | Done |
+| 4 | Engine core | General rules, stack, effect blocks, test tools | 3 | Done |
+| 5 | Base Game cards | Every Base Game card implemented and tested | 2, 4 | Done |
+| 6 | Server | Dedicated and hosted server, lobby, records | 4 | Done |
+| 7 | Client | Playable table in the desktop app; internal play-test build | 4, 6 | Done |
+| 8 | First release | **MVP:** 2–4 players, Base Game, over LAN | 7 | Done |
+| 15 | Visual refresh | Table layout reworked after fouronlinesouls.net (paused) | 8 | Paused |
+| 17 | Rollback | Other players can undo a mistaken event | 8 | Done |
+| 16 | Localization | Menus, messages, and cards in several languages | 8 | Done |
+| 14 | More sets | Gold Box, Four Souls+, Requiem, promos | 8 | In progress |
+| 12 | Rules website | Engine in WebAssembly on GitHub Pages, in English and Russian | 8, 16 | In progress |
+| 20 | Game feel | Hearthstone-like timing, impacts and pacing (ADR 027) | 8 | Done |
+| 18 | Play-test | New-user check, play-test, docs check | 14 | In progress |
+| 21 | Bindings by domain | Wails bindings split into packages under `bindings/` | 8 | Done |
+| 22 | Test reliability | Bugs caught by tests before play tests (ADR 032) | 19 | Done |
+| 9 | Spectators | Viewers watch live | 8 | Not started |
+| 10 | Replays | Records screen and replay player | 8 | Done |
+| 11 | Learning | Rules viewer, sandbox, tutorial, bot | 8, 12 | Not started |
+| 13 | Web client | Browser client served by the game server | 9 | Not started |
+| 19 | Bugs | Every bug report, logged and fixed under the roadmap rules | — | Ongoing |
+| — | Future | Not scheduled yet | — | — |
 
 Step 3 reuses the browser scraping tool from step 2.
 Steps 5, 6 and 7 can run in parallel.
 Step 7 ends with an internal build on a partial card set.
 Step 8 needs all Base Game cards from step 5.
 After the MVP the order is 15, 17, 16, 14, 12, 18, 9, 10, 11, 13.
+Status: a step is Done only after the owner approves it.
 Step 12 moved before 18 (owner, 2026-11-06); it takes LR-08 and LR-09 from step 11.
 Step 15 is paused (owner, 2026-10-26); work goes on with 17, then 16.
 Step numbers stay as IDs; the table lists steps in work order.
