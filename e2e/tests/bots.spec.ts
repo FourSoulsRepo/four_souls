@@ -252,7 +252,9 @@ test('the game table names each bot with its level after the robot (23.12)', asy
   const at = seats.indexOf((await seen(ann)).active);
   await expect(badge).toContainText(lineRe(bots[at] ?? ''));
   await expect(badge.getByTestId('bot-icon')).toHaveAttribute('data-level', levels[at] ?? '');
-  await expect(stack.getByTestId('bot-icon').first()).toBeVisible();
+  // A hidden tooltip of the stack (the last roll) names a bot too: the
+  // check is for a robot the player sees.
+  await expect(stack.getByTestId('bot-icon').filter({ visible: true }).first()).toBeVisible();
   await shot(ann, 'bots-table');
   // The right column's name starts clear of the corner Menu, whatever
   // its language makes the button's width (19.200).

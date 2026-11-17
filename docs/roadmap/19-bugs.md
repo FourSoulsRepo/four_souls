@@ -6248,6 +6248,7 @@ Totals by system (212 items):
    3. The replay bar's seat line and the records list (19.216).
 5. Checked, already right: the turn badge, the history panel, the stack rows, the action bar, the throw window, the vote and pause windows, the game end title, the choice dialog, the start wait, the opponent areas, the turn banner.
 6. Checked, not drawn as text (title or aria label only): the history strip tiles, a deck's look, a present's label, Undo's title, a replay seat's hint. The rules website names no bot.
+7. Final check (2026-11-18): `bots.spec.ts:220` failed in Chromium and WebKit: its first stack robot sat in the hidden last-roll tooltip this item added. The test now looks for a visible one; the app is right.
 
 ### [ ] 19.216 A replay of a game with bots shows "Bot N"
 
