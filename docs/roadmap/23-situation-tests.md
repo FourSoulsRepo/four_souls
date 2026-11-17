@@ -336,3 +336,9 @@ Ideas: TS-13, LR-04, R-03.
    13. Cain: the loot step; Bomb Bum (`r`): the loot step too.
    14. New in `b2`: Mr. Boom (start), Jawbone (end, purchase).
    15. New in `b2`: Monster Manual (declared attack).
+6. Follow-up (owner, 2026-11-18): `declared` with a stack.
+   1. A response to a declaration is a real table: allow it.
+   2. E.g. Isaac declared an attack; Cain's Bomb! waits on the stack.
+   3. The stack resolves first; then the target or item is chosen.
+   4. Replaces Done item 7's "an empty stack" for `declared`.
+   5. A file per kind: a declared attack and a declared purchase.
