@@ -32,6 +32,7 @@ A situation is a small JSON document: a table position, one action, and optional
 * `action.kind` — `play`, `activate`, `attack`, `purchase`, `end_turn` or `pass`; `card` and `ability` pick the card.
 * `action.choices` — answers to the prompts that follow, by option label: an option's plain form, with no language (`Game.Plain`, 16.4). A card is its ref (`"bomb"`), a player `"player 2 (hero_b)"`, a number its digits, a card's own words (a "choose one-" option) the words; any other option is its key, then its values (`"ask.deck.monster"`, `"ask.cancel"`, `"ask.yes"`, `"ask.slot_card 1 fly"`).
 * `expect` — optional: `allowed`, the refusal `rule`, and `after` checks per player (`cents`, `hand`, `damage`, `souls`, `dead`).
+* `source` — optional for a payload, required in a test file: a list of what the `expect` values come from (ADR 033, CLAUDE.md 5.25); see [As tests](#as-tests). The engine does not read it.
 
 ## Stacked items
 
@@ -87,4 +88,55 @@ ans, err := engine.RunSituation(data, b2.Set)
 
 ## As tests
 
-Every file in `pkg/rules_engine/testdata/situations/` runs in `go test` and must match its expectation. A disputed case, once resolved, becomes such a file (R-03).
+A situation file with `expect` and `source` is a rules test (LR-07, ADR 033). Each package with tests keeps them in its own `testdata/situations/` tree, and its `go test` runs them: one subtest per file, named by its path in the tree without `.json`, e.g. `TestSituations/razor_blade/deals-1-damage-to-a-player`. A disputed case, once resolved, becomes such a file (R-03); it goes where its card or rule goes.
+
+### Layout
+
+Paths are relative to `pkg/rules_engine/`:
+
+| Tree | Folder | Holds |
+|------|--------|-------|
+| `cards/<set>/testdata/situations/` | `<card>/` | one card's tests; `<card>` is its ref, as in `<card>_test.go` |
+| `cards/<set>/testdata/situations/` | `interactions/` | several cards of the set together, named after them: `lucky-foot-bomb.json` |
+| `cards/testdata/situations/` | `interactions/` | cards of several sets |
+| `testdata/situations/` | `<topic>/` | engine rules with the test sets; `<topic>` is the rule topic in lower case (`R-ATK-01` is `atk/`) |
+
+A folder holds only `.json` files named in kebab case after what they check (`pays-5-cents.json`); no deeper levels. The runner fails a file outside this layout, a card folder that is no card ref of the package's sets, and a topic folder that is no rule topic (the topics in `pkg/rules_engine/docs/rules/README.md`).
+
+### `source`
+
+A non-empty list; each item names one basis for the expected values:
+
+| Form | Example | The runner checks |
+|------|---------|-------------------|
+| `card <ref>` | `card razor_blade` | the card is in the package's sets; its own text is the basis |
+| `R-<TOPIC>-<NN>` | `R-ABIL-07` | the rule is defined in `pkg/rules_engine/docs/rules/` |
+| `Q-<NN>` | `Q-07` | the question is a heading of `open-questions.md` |
+| `R-07 #<N>` | `R-07 #4` | the row is in the old rulings table of `open-questions.md` |
+| `https://…` | a ruling outside the repo | only the form |
+
+Any other form fails with the list of forms. The `expect` values come from these sources, never from running the code (CLAUDE.md 5.25).
+
+### The runner
+
+`enginetest.RunSituations(t, files, sets...)` runs a card tree; `enginetest.RunRuleSituations` the engine's topic tree (`situation_files_test.go`). For each file it checks the layout, then that the file has `expect` and `source` and that each source exists, then runs it with `engine.RunSituation`. A mismatch names the file, the step and every failed check:
+
+```
+razor_blade/hits-cain.json, step 1 (activate razor_blade): player 1 damage is 1, expected 2
+```
+
+The rule and question IDs come from `pkg/rules_engine/docs` (package `docs`), which embeds the rules text; only tests import it, so the website's wasm stays the same size.
+
+A set package that has files adds one test (`cards/b2/situations_test.go` is the model):
+
+```go
+//go:embed testdata/situations
+var situations embed.FS
+
+// TestSituations runs this set's situation files (ADR 033).
+func TestSituations(t *testing.T) {
+	enginetest.RunSituations(t, situations, Set)
+}
+```
+
+`go:embed` fails on a folder with no files, so a package adds this test with its first file, not before. A cross-set file in `cards/testdata/situations/` passes every set (`cards.Sets()` and the challenge set) the same way.

@@ -1,5 +1,6 @@
 {
   "title": "Golden Razor Blade-like item: pay 5 cents, deal 1 damage to a player",
+  "source": ["card razor", "R-ABIL-07", "R-MECH-15"],
   "sets": ["test", "abilities"],
   "setup": {
     "players": [

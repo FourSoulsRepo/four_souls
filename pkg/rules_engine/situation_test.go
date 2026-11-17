@@ -9,35 +9,11 @@ import (
 	"testing"
 )
 
-//go:embed testdata/situations/*.json
+// situationFiles is the rule tree; TestSituations in
+// situation_files_test.go runs it, these tests read single files.
+//
+//go:embed testdata/situations
 var situationFiles embed.FS
-
-// TestSituations runs every payload in testdata/situations as a rules test
-// (LR-07): each must match its expectation.
-func TestSituations(t *testing.T) {
-	files, err := fs.Glob(situationFiles, "testdata/situations/*.json")
-	if err != nil || len(files) == 0 {
-		t.Fatalf("no situations: %v", err)
-	}
-	for _, f := range files {
-		t.Run(f, func(t *testing.T) {
-			data, err := fs.ReadFile(situationFiles, f)
-			if err != nil {
-				t.Fatal(err)
-			}
-			ans, err := RunSituation(data, testSet, abilitySet)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if ans.Matches == nil {
-				t.Fatal("a situation test needs an expectation")
-			}
-			if !*ans.Matches {
-				t.Errorf("mismatch: %v (answer: allowed=%v rule=%s reason=%s)", ans.Mismatch, ans.Allowed, ans.Rule, ans.Reason)
-			}
-		})
-	}
-}
 
 func TestSituationWithoutExpectationJustAnswers(t *testing.T) {
 	data := []byte(`{"title":"q","sets":["test"],"setup":{"players":[{"character":"hero_a"},{"character":"hero_b"}],"active":0},
@@ -55,7 +31,7 @@ func TestSituationWithoutExpectationJustAnswers(t *testing.T) {
 // so the website shows it in its language (ADR 026); an allowed answer
 // has none.
 func TestSituationAnswerSay(t *testing.T) {
-	data, err := fs.ReadFile(situationFiles, "testdata/situations/loot-needs-a-loot-play.json")
+	data, err := fs.ReadFile(situationFiles, "testdata/situations/card/loot-needs-a-loot-play.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,7 +50,7 @@ func TestSituationAnswerSay(t *testing.T) {
 		t.Errorf("JSON %s; want say and reason", out)
 	}
 
-	data, err = fs.ReadFile(situationFiles, "testdata/situations/razor-pays-and-damages.json")
+	data, err = fs.ReadFile(situationFiles, "testdata/situations/abil/razor-pays-and-damages.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,7 +92,7 @@ func TestSituationErrors(t *testing.T) {
 // A stacked situation resolves last in, first out: the ability on top,
 // then the loot card, then the dice roll at the bottom (12.5).
 func TestStackedEventsResolveTopFirst(t *testing.T) {
-	data, err := fs.ReadFile(situationFiles, "testdata/situations/three-stacked-events.json")
+	data, err := fs.ReadFile(situationFiles, "testdata/situations/stack/three-stacked-events.json")
 	if err != nil {
 		t.Fatal(err)
 	}

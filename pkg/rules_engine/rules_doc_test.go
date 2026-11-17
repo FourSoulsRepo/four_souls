@@ -1,28 +1,24 @@
 package rulesengine
 
 import (
-	"embed"
 	"fmt"
 	"io/fs"
 	"regexp"
 	"sort"
 	"strconv"
 	"testing"
+
+	"github.com/FourSoulsRepo/rules_engine/docs"
 )
 
-//go:embed docs/rules/*.md
-var rulesDocs embed.FS
-
 var (
-	// ruleDef is a rule definition: "**R-STACK-03**".
-	ruleDef = regexp.MustCompile(`\*\*(R-[A-Z]+-\d+)\*\*`)
 	// ruleRef is any mention of a rule ID.
 	ruleRef = regexp.MustCompile(`\bR-[A-Z]+-\d+\b`)
 	ruleID  = regexp.MustCompile(`^R-([A-Z]+)-(\d{2})$`)
 )
 
 func TestRuleIDs(t *testing.T) {
-	files, err := fs.Glob(rulesDocs, "docs/rules/*.md")
+	files, err := fs.Glob(docs.Rules, "rules/*.md")
 	if err != nil || len(files) == 0 {
 		t.Fatalf("no rules files: %v", err)
 	}
@@ -30,11 +26,11 @@ func TestRuleIDs(t *testing.T) {
 	refs := map[string][]string{}  // id -> files that mention it
 	numbers := map[string][]int{}  // topic -> numbers
 	for _, f := range files {
-		data, err := fs.ReadFile(rulesDocs, f)
+		data, err := fs.ReadFile(docs.Rules, f)
 		if err != nil {
 			t.Fatal(err)
 		}
-		for _, m := range ruleDef.FindAllStringSubmatch(string(data), -1) {
+		for _, m := range docs.RuleDef.FindAllStringSubmatch(string(data), -1) {
 			id := m[1]
 			parts := ruleID.FindStringSubmatch(id)
 			if parts == nil {

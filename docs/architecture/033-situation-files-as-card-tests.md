@@ -100,6 +100,9 @@ Use option 1.
 12. Runner
    1. `enginetest.RunSituations` runs a set's tree in its `go test`.
    2. One subtest per file, named by its path in the tree.
+   3. `enginetest.RunRuleSituations` runs the engine's topic tree.
+   4. Rule and question IDs come from package `docs` (`pkg/rules_engine/docs`).
+   5. Only tests import it; the wasm build stays the same.
 13. A new card's simple tests are files from now on.
    1. `Adding-a-card.md` says how (23.9).
 

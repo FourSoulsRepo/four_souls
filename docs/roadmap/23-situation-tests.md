@@ -77,7 +77,7 @@ Ideas: TS-13, LR-04, R-03.
 3. Done when:
    1. The ADR is Accepted and in `INDEX.md`.
 
-### [ ] 23.2 A runner per set, and the `source` field
+### [x] 23.2 A runner per set, and the `source` field
 
 1. Goal: each set's `go test` runs its own situation files.
 2. Tasks:

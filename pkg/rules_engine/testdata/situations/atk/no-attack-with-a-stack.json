@@ -1,5 +1,6 @@
 {
   "title": "Can the active player declare an attack while something is on the stack?",
+  "source": ["R-ATK-01"],
   "sets": ["test"],
   "setup": {
     "players": [{"character": "hero_a"}, {"character": "hero_b"}],

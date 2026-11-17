@@ -1,5 +1,6 @@
 {
   "title": "A Bomb!-like loot kills a 1-HP monster; the loot card leaves the hand",
+  "source": ["R-CARD-07"],
   "sets": ["test", "abilities"],
   "setup": {
     "players": [{"character": "hero_a", "hand": ["bomb_loot"]}, {"character": "hero_b"}],

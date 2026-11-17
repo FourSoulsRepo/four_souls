@@ -1,5 +1,6 @@
 {
   "title": "Can a non-active player play loot without an ability allowing it?",
+  "source": ["R-CARD-08"],
   "sets": ["test", "abilities"],
   "setup": {
     "players": [

@@ -16,6 +16,10 @@ type Situation struct {
 	Setup  SituationSetup  `json:"setup"`
 	Action SituationAction `json:"action"`
 	Expect *Expectation    `json:"expect,omitempty"`
+	// Source names the basis of Expect: a card, a rule, a question or a
+	// link. A test file needs it; a payload needs none (ADR 033). Only
+	// the test runner reads it (enginetest.RunSituations).
+	Source []string `json:"source,omitempty"`
 }
 
 // SituationSetup is the table. Turn: the active player is in the open

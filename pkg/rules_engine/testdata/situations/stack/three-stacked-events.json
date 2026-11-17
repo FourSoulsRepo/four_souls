@@ -1,5 +1,6 @@
 {
   "title": "A dice roll, a loot card and an ability on the stack: the top resolves first",
+  "source": ["R-STACK-02", "card coin_bag", "card bomb_loot"],
   "sets": ["test", "abilities"],
   "setup": {
     "players": [

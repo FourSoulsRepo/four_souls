@@ -20,13 +20,18 @@ func TestCardStatus(t *testing.T) {
 		"done.go":        "package x\n",
 		"tested.go":      "package x\n",
 		"tested_test.go": "package x\n",
+		"by_file.go":     "package x\n",
+		"testdata/situations/by_file/a-case.json": "{}",
 	}
 	for name, src := range files {
+		if err := os.MkdirAll(filepath.Dir(filepath.Join(dir, name)), 0o750); err != nil {
+			t.Fatal(err)
+		}
 		if err := os.WriteFile(filepath.Join(dir, name), []byte(src), 0o600); err != nil {
 			t.Fatal(err)
 		}
 	}
-	for id, want := range map[string]Status{"stub": NotStarted, "done": Implemented, "tested": Tested, "missing": NotStarted} {
+	for id, want := range map[string]Status{"stub": NotStarted, "done": Implemented, "tested": Tested, "by_file": Tested, "missing": NotStarted} {
 		got, err := cardStatus(dir, carddb.Ref{ID: id, Version: 1})
 		if err != nil || got != want {
 			t.Errorf("%s: %v, %v; want %v", id, got, err, want)
