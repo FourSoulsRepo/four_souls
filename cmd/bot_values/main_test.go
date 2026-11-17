@@ -101,3 +101,19 @@ func readTable(t *testing.T, path string) []byte {
 	}
 	return data
 }
+
+// TestStats: the mean, its standard error (the sample's spread over
+// √n) and the count, rounded to three decimals.
+func TestStats(t *testing.T) {
+	mean, se, n := stats([]float64{1, 2, 3, 4})
+	// spread: ((1.5² + 0.5²) · 2) / 3 = 5/3; se = √(5/3 / 4) = 0.6455
+	if mean != 2.5 || se != 0.645 || n != 4 {
+		t.Errorf("stats = %v, %v, %v; want 2.5, 0.645, 4", mean, se, n)
+	}
+	if mean, se, n := stats([]float64{7}); mean != 7 || se != 0 || n != 1 {
+		t.Errorf("one sample: %v, %v, %v; want 7, 0, 1", mean, se, n)
+	}
+	if _, _, n := stats(nil); n != 0 {
+		t.Errorf("no sample: n %d", n)
+	}
+}
