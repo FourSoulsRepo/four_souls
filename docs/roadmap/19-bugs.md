@@ -6024,7 +6024,7 @@ Totals by system (212 items):
 7. Owner notes (2026-11-17)
    1. Owner marks 19.197 solved.
 
-### [ ] 19.198 A load right after "saved" goes to the old room
+### [x] 19.198 A load right after "saved" goes to the old room
 
 1. Goal: `TestChallengeSaveAndLoad` passes under any load; a host may load a save at once.
 2. Report (step 23 check phase, 2026-11-17)
@@ -6046,6 +6046,7 @@ Totals by system (212 items):
       3. A finished game closing (`checkLimits`): no message goes out first; unchanged.
       4. Leaving a running game is a dropped connection (`Room.drop`): no reply goes out, so nothing races; a kick hits only away players.
       5. Rollback, restart and a kept game's resume: the room goes on; no hand-back.
+   4. [x] `go test -race -count=50 -run 'SaveAndLoad|TestEndAndCreateAtOnce|TestBotsThinkerContextsEnd' ./internal/server`: 50 of 50 (2026-11-18, load 2 – 14 on 12 cores, 173 s).
 
 ### [ ] 19.199 Standard bot: a settle cut off by its cap is scored as if it had ended
 
