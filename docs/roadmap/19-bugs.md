@@ -44,7 +44,7 @@ This step never closes; new reports are appended.
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194, 19.197, 19.217 | 45 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179, 19.189, 19.196, 19.202, 19.203 | 34 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
-| K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91, 19.201                     | 5     |
+| K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91, 19.201, 19.218             | 6     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63, 19.129                                          | 2     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 | N  | A missing control: no way to do it       | Server     | 19.84                                                  | 1     |
@@ -58,7 +58,7 @@ This step never closes; new reports are appended.
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 | X  | Bots: a bot or its driver wrong          | Bots       | 19.199, 19.204, 19.205, 19.206, 19.207, 19.208, 19.209, 19.210, 19.211, 19.212, 19.213, 19.214, 19.215, 19.216 | 14 |
 
-Totals by system (209 items):
+Totals by system (210 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -67,7 +67,7 @@ Totals by system (209 items):
 | Client    | D–G, O, P, S, V | 54 |
 | Server    | H, N    | 5     |
 | e2e       | I, J    | 79    |
-| Release   | K       | 5     |
+| Release   | K       | 6     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
 | Go tools  | Q       | 2     |
@@ -6253,3 +6253,12 @@ Totals by system (209 items):
 2. Report (owner's review): `bots.spec.ts:170` polls the badge and stack for robot icons.
 3. Tasks:
    1. [ ] A named store wait: a bot's turn with its item on the stack.
+
+### [ ] 19.218 Docker deploys keep the server log without a size limit
+
+1. Goal: a server that logs a lot cannot fill the host's disk.
+2. Report (owner's review of `bots`, 2026-11-17, with 19.211): `deploy/` sets no log size limit.
+3. Found: the systemd unit logs to journald, which caps its own size (`SystemMaxUse`, by default 10 % of the file system); the Docker files set no `logging` options, and Docker's default `json-file` driver keeps every line.
+4. Not a bot bug: any server log grows so; not fixed in step 23.
+5. Tasks:
+   1. [ ] Docker and compose: `max-size` and `max-file` for the server's log; a line in wiki Server.md.

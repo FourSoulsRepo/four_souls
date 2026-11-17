@@ -693,3 +693,107 @@ func TestBotsThinkerContextsEnd(t *testing.T) {
 	}
 	t.Fatalf("%d bot moves left %d goroutines behind", moves, n-before)
 }
+
+// TestBotsTurnCap: a bot seat at botTurnActs moves in a turn gives only
+// forced answers until the turn ends, with one log line; the next turn
+// it plays again (Decision 12.14; 19.210).
+func TestBotsTurnCap(t *testing.T) {
+	var buf syncBuffer
+	prev := log.Writer()
+	log.SetOutput(&buf)
+	defer log.SetOutput(prev)
+	r := botRoom(t, protocol.Options{Rollback: protocol.RollbackGod}, "", protocol.BotStandard)
+	serveBots(t, r, func() bool { return r.game.Turn.Active == 1 })
+	r.stopThinkers()
+	turn := r.game.Turn.Number
+	for range botTurnActs {
+		r.noteAct(1, engine.Intent{Kind: engine.IntentAttack})
+	}
+	if !r.botHeld(1) {
+		t.Fatal("the seat is not held at the cap")
+	}
+	from := len(r.live)
+	r.drive()
+	serveBots(t, r, func() bool { return r.game.Turn.Number != turn })
+	for _, l := range r.live[from:] {
+		in := l.rec.Intent
+		// A forced answer may answer a prompt (a choice, a throw, a
+		// discard); it never plays loot, buys or uses an ability.
+		if in.Player == 1 && (in.Kind == engine.IntentPlayLoot || in.Kind == engine.IntentPurchase || in.Kind == engine.IntentActivate) {
+			t.Errorf("a held seat made %+v", in)
+		}
+	}
+	if r.botHeld(1) {
+		t.Error("the seat is still held in the next turn")
+	}
+	if n := strings.Count(buf.String(), "forced answers only until the turn ends"); n != 1 {
+		t.Errorf("%d cap lines, want 1:\n%s", n, buf.String())
+	}
+}
+
+// TestBotsPanicLimit: a bot that panics every move logs one stack, then
+// one line a panic; at botPanicLimit its seat gives forced answers only,
+// said once, and nothing of the bot runs for it; the game goes on
+// (Decision 12.12.5; 19.211).
+func TestBotsPanicLimit(t *testing.T) {
+	var buf syncBuffer
+	prev := log.Writer()
+	log.SetOutput(&buf)
+	defer log.SetOutput(prev)
+	r := botRoom(t, protocol.Options{Rollback: protocol.RollbackGod}, "", protocol.BotStandard)
+	r.stopThinkers()
+	calls := 0
+	r.worldFor = func(*engine.Game, engine.PlayerID, engine.Known, uint64) (world.Func, error) {
+		calls++
+		panic("a copy that breaks")
+	}
+	r.drive()
+	botSteps := func() int {
+		n := 0
+		for _, l := range r.live {
+			if l.rec.Intent.Player == 1 {
+				n++
+			}
+		}
+		return n
+	}
+	serveBots(t, r, func() bool { return botSteps() >= botPanicLimit+3 })
+	out := buf.String()
+	if calls != botPanicLimit {
+		t.Errorf("the bot ran %d times, want %d", calls, botPanicLimit)
+	}
+	if n := strings.Count(out, "goroutine "); n != 1 {
+		t.Errorf("%d stacks, want 1", n)
+	}
+	if n := strings.Count(out, "bot panic: seed"); n != botPanicLimit {
+		t.Errorf("%d panic lines, want %d", n, botPanicLimit)
+	}
+	if n := strings.Count(out, "forced answers only for the rest of the game"); n != 1 {
+		t.Errorf("%d switch-off lines, want 1", n)
+	}
+}
+
+// TestBotsMemoryPanic: a panic in a seat's memory is logged and counted,
+// and never leaves observe: the room and the server go on (19.209). A
+// nil memory stands in for one that breaks.
+func TestBotsMemoryPanic(t *testing.T) {
+	var buf syncBuffer
+	prev := log.Writer()
+	log.SetOutput(&buf)
+	defer log.SetOutput(prev)
+	r := botRoom(t, protocol.Options{}, "", protocol.BotHard)
+	func() {
+		defer func() {
+			if v := recover(); v != nil {
+				t.Fatalf("observe let a panic through: %v", v)
+			}
+		}()
+		r.observe(1, nil, r.game.ViewBase(), nil)
+	}()
+	if r.botGuard.panics[1] != 1 {
+		t.Errorf("panics %v, want one for seat 1", r.botGuard.panics)
+	}
+	if !strings.Contains(buf.String(), "bot panic") {
+		t.Errorf("no log line: %q", buf.String())
+	}
+}

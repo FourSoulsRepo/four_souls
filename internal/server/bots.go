@@ -2,12 +2,14 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math/rand/v2"
 	"runtime"
 	"runtime/debug"
 	"slices"
+	"sync/atomic"
 	"time"
 
 	botai "github.com/FourSoulsRepo/four_souls/internal/bot"
@@ -30,6 +32,41 @@ const (
 	// botActionPace: an action in the bot's own turn, plus up to one more.
 	botActionPace = 1.0
 )
+
+// botTurnActs caps a bot seat's moves that are not passes in one turn
+// (Decision 12.14; 19.210): past it the seat gives only forced answers
+// until the turn ends, so a looping bot stops within its turn instead
+// of playing every 0.7 – 2 s until the game's hour limit. It is about
+// three times the arena's largest count of one seat in one turn
+// (standard and hard, after 19.199; measured with 19.210), so a long
+// honest turn passes. The arena's own MaxTurnIntents (1000, all seats,
+// passes too) is half an hour of bot pace here.
+const botTurnActs = 150
+
+// botPanicLimit is how many panics one bot seat may have in a game
+// (Decision 12.12.5; 19.211): from then on the seat plays forced answers
+// only and nothing of the bot runs for it.
+const botPanicLimit = 5
+
+// errBotOff: the seat plays forced answers only, its bot switched off
+// for the game or for the turn (19.210, 19.211).
+var errBotOff = errors.New("server: the bot plays forced answers only")
+
+// botGuard holds what switches a bot seat to forced answers: its panics
+// this game and its moves this turn (19.210, 19.211).
+type botGuard struct {
+	panics []int // per seat, this game
+	off    []bool
+	turn   int   // the game turn acts counts
+	acts   []int // per seat, moves that are not passes in turn
+}
+
+// grow sizes the guard for n seats.
+func (g *botGuard) grow(n int) {
+	if len(g.panics) != n {
+		g.panics, g.off, g.acts = make([]int, n), make([]bool, n), make([]int, n)
+	}
+}
 
 // hardThink is the hard bot's time budget per move (Decision 9.8), the
 // default of the flag -bot_think (Decision 17.2.1).
@@ -85,6 +122,7 @@ type botAnswer struct {
 	seat, id, step int
 	intent         engine.Intent
 	err            error // no move: the room sends the forced answer
+	panicked       bool  // Choose panicked: the room counts it (19.211)
 }
 
 // botLevel is the bot package's level for a seat's protocol level: the
@@ -164,9 +202,28 @@ func (r *Room) remember(events []engine.Event) {
 		if m == nil {
 			continue
 		}
-		v := engine.Viewer{Kind: engine.ViewPlayer, Player: engine.PlayerID(i)}
-		m.Observe(r.game.ViewFor(base, v), engine.FilterEvents(events, v))
+		if i < len(r.botGuard.off) && r.botGuard.off[i] {
+			continue // switched off for its panics: nothing of the bot runs
+		}
+		r.observe(i, m, base, events)
 	}
+}
+
+// observe feeds seat i's memory one step. A panic there would end the
+// room and the server with it: it is logged with what replays it, the
+// seat's memory starts over, and the game goes on (19.209).
+func (r *Room) observe(i int, m *world.Memory, base engine.ViewBase, events []engine.Event) {
+	defer func() {
+		if v := recover(); v != nil {
+			logBotPanic(&r.panicLogged, r.recInfo.game, r.setup.Seed, 0, r.step, i, v)
+			if m != nil {
+				m.Reset()
+			}
+			r.notePanic(i)
+		}
+	}()
+	v := engine.Viewer{Kind: engine.ViewPlayer, Player: engine.PlayerID(i)}
+	m.Observe(r.game.ViewFor(base, v), engine.FilterEvents(events, v))
 }
 
 // known is what bot seat i remembers now: its memory's Known for a hard
@@ -254,6 +311,9 @@ func (r *Room) think(ctx context.Context, i int) {
 	seed, own := rng.Uint64(), r.game.PromptFor(p).Kind == engine.PromptPriority && r.game.Turn.Active == p
 	answerPace, actionPace := r.botSecond(botAnswerPace), r.botSecond(botActionPace+rng.Float64())
 	level, err := botLevel(s.bot)
+	if err == nil && r.botHeld(i) {
+		err = errBotOff
+	}
 	var worlds world.Func
 	if err == nil {
 		worlds, err = r.botWorlds(i, seed)
@@ -277,7 +337,7 @@ func (r *Room) think(ctx context.Context, i int) {
 		if err == nil {
 			use, release, ok := thinkSlot(ctx, slots, in, wait)
 			if ok {
-				botChoose(ctx, use, a, func(v any) { logBotPanic(game, gameSeed, seed, t.step, i, v) })
+				botChoose(ctx, use, a, func(v any) { logBotPanic(&r.panicLogged, game, gameSeed, seed, t.step, i, v) })
 			}
 			release()
 		}
@@ -305,7 +365,8 @@ func (r *Room) think(ctx context.Context, i int) {
 func (r *Room) botWorlds(i int, seed uint64) (worlds world.Func, err error) {
 	defer func() {
 		if v := recover(); v != nil {
-			logBotPanic(r.recInfo.game, r.setup.Seed, seed, r.step, i, v)
+			logBotPanic(&r.panicLogged, r.recInfo.game, r.setup.Seed, seed, r.step, i, v)
+			r.notePanic(i)
 			worlds, err = nil, fmt.Errorf("server: bot panic: %v", v)
 		}
 	}()
@@ -325,16 +386,65 @@ func botChoose(ctx context.Context, in botai.Input, a *botAnswer, onPanic func(v
 	defer func() {
 		if v := recover(); v != nil {
 			onPanic(v)
-			a.intent, a.err = engine.Intent{}, fmt.Errorf("server: bot panic: %v", v)
+			a.intent, a.err, a.panicked = engine.Intent{}, fmt.Errorf("server: bot panic: %v", v), true
 		}
 	}()
 	a.intent, a.err = botai.Choose(ctx, in)
 }
 
 // logBotPanic logs a bot's panic with what replays it: the room's game,
-// its seed, the bot's seed, the step and the seat, and the stack.
-func logBotPanic(game string, gameSeed, botSeed uint64, step, seat int, v any) {
-	log.Printf("server: game %s: bot panic: seed %d, bot seed %d, step %d, seat %d: %v\n%s", game, gameSeed, botSeed, step, seat, v, debug.Stack())
+// its seed, the bot's seed, the step and the seat. The room's first
+// panic logs the stack too; later ones one line, so a bot that panics
+// every move does not flood the log (19.211).
+func logBotPanic(logged *atomic.Bool, game string, gameSeed, botSeed uint64, step, seat int, v any) {
+	if logged.CompareAndSwap(false, true) {
+		log.Printf("server: game %s: bot panic: seed %d, bot seed %d, step %d, seat %d: %v\n%s", game, gameSeed, botSeed, step, seat, v, debug.Stack())
+		return
+	}
+	log.Printf("server: game %s: bot panic: seed %d, bot seed %d, step %d, seat %d: %v", game, gameSeed, botSeed, step, seat, v)
+}
+
+// notePanic counts a panic of bot seat i; at botPanicLimit the seat
+// plays forced answers only for the rest of the game, said in one line
+// (19.211). Room goroutine only.
+func (r *Room) notePanic(i int) {
+	r.botGuard.grow(len(r.seats))
+	r.botGuard.panics[i]++
+	if r.botGuard.panics[i] == botPanicLimit && !r.botGuard.off[i] {
+		r.botGuard.off[i] = true
+		log.Printf("server: game %s: %s panicked %d times: forced answers only for the rest of the game", r.recInfo.game, r.seats[i].name, botPanicLimit)
+	}
+}
+
+// botHeld reports whether bot seat i gives only forced answers now:
+// switched off by its panics, or past botTurnActs this turn.
+func (r *Room) botHeld(i int) bool {
+	g := &r.botGuard
+	g.grow(len(r.seats))
+	if g.off[i] {
+		return true
+	}
+	return r.game != nil && g.turn == r.game.Turn.Number && g.acts[i] >= botTurnActs
+}
+
+// noteAct counts bot seat i's applied move in; at botTurnActs the seat
+// gives only forced answers until the turn ends, said in one line
+// (19.210). A rollback inside the turn keeps the count; a load or a
+// restart, a new room, starts over.
+func (r *Room) noteAct(i int, in engine.Intent) {
+	if in.Kind == engine.IntentPass || r.game == nil {
+		return
+	}
+	g := &r.botGuard
+	g.grow(len(r.seats))
+	if n := r.game.Turn.Number; g.turn != n {
+		g.turn = n
+		clear(g.acts)
+	}
+	g.acts[i]++
+	if g.acts[i] == botTurnActs {
+		log.Printf("server: game %s: seed %d, step %d: %s made %d moves in turn %d: forced answers only until the turn ends", r.recInfo.game, r.setup.Seed, r.step, r.seats[i].name, botTurnActs, g.turn)
+	}
 }
 
 // botMove applies a thinker's answer like a client's intent: record,
@@ -358,16 +468,26 @@ func (r *Room) botMove(a *botAnswer) {
 	}
 	p := engine.PlayerID(a.seat)
 	name := r.seats[a.seat].name
-	if a.err == nil {
+	if a.panicked {
+		r.notePanic(a.seat)
+	}
+	switch {
+	case a.err == nil:
 		in := a.intent
 		in.Player = p
+		turn := r.game.Turn.Number
 		events, err := r.apply(in)
 		if err == nil {
+			if r.game.Turn.Number == turn {
+				r.noteAct(a.seat, in)
+			}
 			r.after(events, true)
 			return
 		}
 		log.Printf("server: game %s: %s: the engine refused %+v: %v; the fallback move goes", r.recInfo.game, name, in, err)
-	} else {
+	case errors.Is(a.err, errBotOff):
+		// Logged once when it was switched off.
+	default:
 		log.Printf("server: game %s: %s has no move: %v; the fallback move goes", r.recInfo.game, name, a.err)
 	}
 	for _, in := range r.botFallbacks(p) {

@@ -147,6 +147,13 @@ type Room struct {
 	// botPlayouts caps a hard move's playouts (0: none); tests set it,
 	// with a long botThink, so a seeded bot game repeats under any load.
 	botPlayouts int
+	// botGuard counts each bot seat's panics this game and its moves this
+	// turn; a seat past either limit plays forced answers only (19.210,
+	// 19.211). Room goroutine only.
+	botGuard botGuard
+	// panicLogged: a bot panic of this room already logged its stack;
+	// later ones log one line (19.211). Any goroutine.
+	panicLogged atomic.Bool
 	// thinkSlots is the hub's limit on hard thinkers; nil: none.
 	thinkSlots chan struct{}
 	botWork    atomic.Int64
