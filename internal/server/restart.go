@@ -292,6 +292,7 @@ func (r *Room) resumeKept() {
 	}
 	r.step, r.steps = f.Step, f.Steps
 	r.restoreHistory(f)
+	r.resetMemory() // no memory is kept over a restart (ADR 030, Decision 19.12)
 	r.grace = time.Now().Add(voteGrace * r.second)
 	if r.recDir != "" && f.Record != "" {
 		if w, err := record.Append(f.Record, f.Steps, time.Now().UTC()); err == nil {

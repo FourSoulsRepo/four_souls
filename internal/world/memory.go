@@ -24,6 +24,10 @@ const decks = len(engine.GameView{}.DeckSizes)
 type Memory struct {
 	seat    engine.PlayerID
 	started bool
+	// steps counts the Observe calls since the start or the last Reset:
+	// a step that changes nothing remembered still counts, so a test
+	// that compares two memories sees one skipped.
+	steps int
 	// hands are the remembered cards of each seat's hand; the seat's own
 	// stays empty. sizes are the hand sizes of the last view.
 	hands [][]handCard
@@ -94,6 +98,7 @@ func trimUnknown(cards []engine.CardRef) []engine.CardRef {
 // seat (FilterEvents). It must see every step, in order; the first call
 // only takes the view as it is.
 func (m *Memory) Observe(v engine.GameView, events []engine.Event) {
+	m.steps++
 	if !m.started || len(v.Players) != len(m.hands) {
 		m.start(v)
 		return

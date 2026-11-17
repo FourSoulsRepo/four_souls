@@ -29,6 +29,7 @@ func (r *Room) apply(in engine.Intent) ([]engine.Event, error) {
 	}
 	r.steps++
 	r.keepLive(st)
+	r.remember(st.Events) // a hard bot's memory sees every step (ADR 030, Decision 19.17)
 	if r.rec != nil {
 		if err := r.rec.Step(st.Intent, st.Events, st.Checksum); err != nil {
 			log.Printf("server: record %s: %v; recording stops", r.path, err)

@@ -262,6 +262,11 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       2. The thinker recovers a panic in `Choose` or its `World(i)`; the room recovers one in `world.For`.
       3. The log line `bot panic` has the game, seed, bot seed, step, seat and the stack.
       4. The thinker sends an error answer; the room makes the fallback move (12.10).
+   13. The room keeps one `world.Memory` per hard seat (Decision 19; standard none, 19.1).
+      1. `Room.apply` feeds it after every applied step: intents, bot moves, fallbacks, the server's passes and forced answers.
+      2. With the seat's `ViewFor` and `FilterEvents`, as the arena does; `TestBotsMemoryLikeArena` checks the two agree.
+      3. It starts over (`resetMemory`) at the game start, after a load, a restart and a rollback.
+      4. Its `Known` goes into `world.For` for the seat's thinker.
 13. Pace (owner, 2026-11-16)
    1. A pass or an answer to a prompt: 0.7 s after the prompt came.
    2. An action in the bot's own turn: 1 to 2 s, at random.

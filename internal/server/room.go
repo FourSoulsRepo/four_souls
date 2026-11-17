@@ -129,15 +129,16 @@ type Room struct {
 	voteEnd *protocol.RollbackEnd
 
 	// Bots (ADR 030, Decisions 11 – 14): the open thinker of each seat,
-	// the last thinker's number, the bots' random source, what each
-	// seat remembers (empty until 21.15), the hard bot's time budget,
+	// the last thinker's number, the bots' random source, each hard
+	// seat's memory (nil for the others; Decision 19), the hard bot's
+	// time budget,
 	// and the longest time the driver held the room, in nanoseconds.
 	// worldFor stands in for world.For when set: a test's bot panic.
 	thinkers []*thinker
 	due      []int // bot seats to think, for Run to start (startThinkers)
 	thinkN   int
 	botRand  *mrand.Rand
-	known    []engine.Known
+	memory   []*world.Memory
 	botThink time.Duration
 	botWork  atomic.Int64
 	worldFor func(*engine.Game, engine.PlayerID, engine.Known, uint64) (world.Func, error)
@@ -394,10 +395,9 @@ func (r *Room) broadcast(events []engine.Event) {
 	for _, c := range r.clients {
 		r.update(c, events, base)
 	}
-	// Bots hear what their seat's client would, then think (ADR 030,
-	// Decision 12.1).
+	// Bots think (ADR 030, Decision 12.1); a hard seat's memory saw
+	// each step already (apply).
 	if r.hasBots() {
-		r.remember(events, base)
 		r.drive()
 	}
 }

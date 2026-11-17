@@ -274,6 +274,7 @@ func (r *Room) resumeLoaded() {
 	}
 	r.game, r.step, r.steps, r.path = g, f.Step, f.Steps, f.Record
 	r.setBase() // a loaded game is a new base: no rollback behind it
+	r.resetMemory()
 	if r.recDir != "" && f.Record != "" {
 		if w, err := record.Append(f.Record, f.Steps, time.Now().UTC()); err == nil {
 			r.rec = w

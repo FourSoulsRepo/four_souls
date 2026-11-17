@@ -360,6 +360,7 @@ func (r *Room) play(characters []engine.CardRef) {
 	}
 	r.game, r.match = g, nil
 	r.setBase()
+	r.resetMemory()
 	r.openRecord(s)
 	r.after(startEvents(events), false) // the start is step 0
 }

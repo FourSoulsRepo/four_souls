@@ -90,18 +90,53 @@ func (r *Room) botSecond(f float64) time.Duration {
 	return time.Duration(f * float64(r.second))
 }
 
-// remember feeds each hard seat's memory with what its client would get
-// now: its view and its events (ADR 030, Decision 19.3).
-//
-// memory from 21.15: world.Memory does not exist in this branch yet.
-// The merge fills this in: for each hard seat, feed r.memory[i] with
-// ViewFor(base, its viewer) and FilterEvents(events, its viewer), then
-// set r.known[i] from it. Until then r.known stays empty: a hard bot
-// imagines every card it cannot see now.
-func (r *Room) remember(_ []engine.Event, _ engine.ViewBase) {
-	if len(r.known) != len(r.seats) {
-		r.known = make([]engine.Known, len(r.seats))
+// resetMemory starts each hard seat's memory over from the game as it
+// is now (ADR 030, Decision 19): at the game start, and after a load, a
+// server restart or a rollback, whose steps in between no memory saw
+// (Decision 19.12). Standard and the other seats get none (19.1).
+func (r *Room) resetMemory() {
+	r.memory = nil
+	if r.game == nil {
+		return
 	}
+	for i, s := range r.seats {
+		if s.bot != protocol.BotHard {
+			continue
+		}
+		if r.memory == nil {
+			r.memory = make([]*world.Memory, len(r.seats))
+		}
+		r.memory[i] = world.NewMemory(engine.PlayerID(i))
+	}
+	r.remember(nil) // the first Observe takes the view as it is
+}
+
+// remember feeds each hard seat's memory one applied step as its
+// client would get it: the seat's view after the step and the step's
+// events filtered for the seat (Decision 19.3, 19.17). apply calls it
+// after every step, the server's own passes and forced answers among
+// them, so no step goes unseen.
+func (r *Room) remember(events []engine.Event) {
+	if r.memory == nil {
+		return
+	}
+	base := r.game.ViewBase()
+	for i, m := range r.memory {
+		if m == nil {
+			continue
+		}
+		v := engine.Viewer{Kind: engine.ViewPlayer, Player: engine.PlayerID(i)}
+		m.Observe(r.game.ViewFor(base, v), engine.FilterEvents(events, v))
+	}
+}
+
+// known is what bot seat i remembers now: its memory's Known for a hard
+// seat, nothing for the others.
+func (r *Room) known(i int) engine.Known {
+	if i < len(r.memory) && r.memory[i] != nil {
+		return r.memory[i].Known()
+	}
+	return engine.Known{}
 }
 
 // drive drops the thinkers a broadcast made stale and notes the bot
@@ -116,9 +151,6 @@ func (r *Room) drive() {
 	defer r.noteBotWork(start)
 	if len(r.thinkers) != len(r.seats) {
 		r.thinkers = make([]*thinker, len(r.seats))
-	}
-	if len(r.known) != len(r.seats) {
-		r.known = make([]engine.Known, len(r.seats))
 	}
 	if r.game.Over || r.paused() || r.rbVote != nil {
 		r.stopThinkers()
@@ -234,7 +266,7 @@ func (r *Room) botWorlds(i int, seed uint64) (worlds world.Func, err error) {
 	if worldFor == nil {
 		worldFor = world.For
 	}
-	return worldFor(r.game, engine.PlayerID(i), r.known[i], seed)
+	return worldFor(r.game, engine.PlayerID(i), r.known(i), seed)
 }
 
 // botChoose fills a with bot.Choose's move, on the thinker's goroutine.
