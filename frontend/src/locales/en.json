@@ -4961,6 +4961,10 @@
     "text": "Welcome!",
     "note": "First start: the screen's title, above the nickname field."
   },
+  "zoom.artists": {
+    "text": "Art: {names}",
+    "note": "Under a zoomed card, above the translators line: who drew the card. names: the artists, joined by commas."
+  },
   "zoom.counters": {
     "text": "Counters",
     "note": "Zoomed card: screen-reader name of the counter list under it, one line a kind."

@@ -1110,6 +1110,11 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. Each card lists the numbers it may change.
    2. Until then only numbers in common blocks count (Q-14).
    3. Owner, 2026-10-19: a task for later.
+14. CD-14. Artists and translators shown like the reference (owner, 2026-11-17).
+   1. The reference: Fanstone, as in ADR 027.
+   2. The artist's name with the card; a credits screen.
+   3. Planned in 20.24 and 20.25.
+   4. Credits screen dropped (owner, 2026-11-17); the zoom line stays.
 
 ## Build
 

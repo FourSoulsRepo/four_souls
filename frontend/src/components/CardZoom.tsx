@@ -4,7 +4,7 @@ import { useApp, type Zoom } from '../store';
 import { feel } from '../feel';
 import { keyword, placeZoom, type Place } from '../zoom';
 import { outcomeGrid, type Outcome } from '../history';
-import { translatorsOf } from '../cards';
+import { artistsOf, translatorsOf } from '../cards';
 import { counterColor } from '../counters';
 import type { CounterView } from '../protocol';
 import { Card, CardText } from './Card';
@@ -21,9 +21,11 @@ import './Card.css';
 // card's keywords stand beside it (H-13). A card the player can't use
 // now says why under it (15.29, F-17, C-06). A history headline's zoom
 // shows what it did beside the card, after an arrow (15.90). A changed
-// stat's sum goes under the card (15.92). A translated card credits its
-// translators under it (CD-06, 16.5). A two-sided card shows its other
-// side beside it, smaller (ADR 023).
+// stat's sum goes under the card (15.92). Under it, its artists (CD-14,
+// 20.24) and, for a translated card, its translators (CD-06, 16.5), in
+// outlined game letters like the reference's credit (ADR 027 "Credits"
+// 13). A two-sided card shows its other side beside it, smaller
+// (ADR 023).
 export function CardZoom() {
   const zoom = useApp((s) => s.zoom);
   const setZoom = useApp((s) => s.setZoom);
@@ -32,6 +34,8 @@ export function CardZoom() {
   const otherSide = info?.back ?? info?.front;
   // Who translated the card's name into the shown language (CD-06).
   const translators = info ? translatorsOf(info, language()) : [];
+  // Who drew this face, in every language (CD-14).
+  const artists = info ? artistsOf(info) : [];
   const bodyRef = useRef<HTMLDivElement>(null);
   const [place, setPlace] = useState<Place | null>(null);
   // The zoom is measured before it paints, then placed by its size.
@@ -112,7 +116,12 @@ export function CardZoom() {
               ))}
             </ul>
           )}
-          {translators.length > 0 && <p className="card-zoom-credit">{t('zoom.translators', { names: translators.join(', ') })}</p>}
+          {(artists.length > 0 || translators.length > 0) && (
+            <div className="card-zoom-credits">
+              {artists.length > 0 && <p className="card-zoom-credit">{t('zoom.artists', { names: artists.join(', ') })}</p>}
+              {translators.length > 0 && <p className="card-zoom-credit">{t('zoom.translators', { names: translators.join(', ') })}</p>}
+            </div>
+          )}
           {zoom.caption && (
             <figcaption className="card-zoom-caption">
               {zoom.caption.ability && <p className="card-zoom-ability">{zoom.caption.ability}</p>}

@@ -212,6 +212,7 @@ interface DataCard {
   type: string;
   text: Partial<Record<string, { name: string; effects?: string[]; footnotes?: { title: string; text: string }[] }>>;
   translators?: Record<string, string[]>;
+  artists?: { role: string; name: string }[];
   stats?: { name: string; value: string }[];
   rewards?: { count: string; kind: string }[];
   images?: string[]; // one per copy; the first stands for the card
@@ -233,12 +234,13 @@ const requiemData = JSON.parse(requiem) as DataSet;
 // Go's Assets.Cards lists them; never a playable set (14.25).
 const challengeData = JSON.parse(challenge) as DataSet;
 
-// translated gives a card's names in every language and its translators,
-// as Go's Assets.Cards does (16.5); the cards above take them from b2 too.
-function translated(ref: string, name: string): { names: Record<string, string>; translators: Record<string, string[]> } {
+// translated gives a card's names in every language, its translators
+// and artists, as Go's Assets.Cards does (16.5, 20.24); the cards above
+// take them from b2 too.
+function translated(ref: string, name: string): { names: Record<string, string>; translators: Record<string, string[]>; artists: string[] } {
   const c = b2Data.cards.find((d) => d.id === ref && !d.version);
   const names = Object.fromEntries(Object.entries(c?.text ?? {}).flatMap(([lang, text]) => (text?.name ? [[lang, text.name]] : [])));
-  return { names: { en: name, ...names }, translators: c?.translators ?? {} };
+  return { names: { en: name, ...names }, translators: c?.translators ?? {}, artists: c ? artistNames(c, false) : [] };
 }
 
 function realCards(): unknown[] {
@@ -248,17 +250,34 @@ function realCards(): unknown[] {
       .flatMap((c) => {
         const front = { ...realCard(data.set.code, c), ...(c.back ? { back: c.back.id } : {}) };
         // A back face is a card of its own, as in Go's Assets.Cards.
-        return c.back ? [front, { ...realCard(data.set.code, { ...c, ...c.back, version: 0 }), front: c.id }] : [front];
+        return c.back ? [front, { ...realCard(data.set.code, { ...c, ...c.back, version: 0 }, true), front: c.id }] : [front];
       }),
   );
 }
 
-// realCard is one card of the card data as Go's Assets.Cards gives it.
-function realCard(set: string, c: DataCard): Record<string, unknown> {
+// artistNames picks a face's credited artists as Go's Card.ArtistNames
+// does (CD-14, 20.24): a back face takes the "Back " roles, a front the
+// rest; never the card back's artist or a name that is not public.
+function artistNames(c: DataCard, backFace: boolean): string[] {
+  const names: string[] = [];
+  for (const a of c.artists ?? []) {
+    const name = a.name.trim();
+    const skip = a.role === 'Card back artist' || name === '' || name.toLowerCase() === 'private';
+    if (!skip && a.role.startsWith('Back ') === backFace && !names.includes(name)) {
+      names.push(name);
+    }
+  }
+  return names;
+}
+
+// realCard is one card of the card data as Go's Assets.Cards gives it;
+// backFace marks a two-sided card's back (ADR 023).
+function realCard(set: string, c: DataCard, backFace = false): Record<string, unknown> {
   const names = Object.fromEntries(Object.entries(c.text).flatMap(([lang, text]) => (text?.name ? [[lang, text.name]] : [])));
   return {
     names: { en: c.text.en?.name ?? c.id, ...names },
     translators: c.translators ?? {},
+    artists: artistNames(c, backFace),
     ref: c.version && c.version > 1 ? `${c.id}@${String(c.version)}` : c.id,
     set,
     type: c.type,

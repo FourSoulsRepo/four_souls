@@ -30,6 +30,17 @@ func TestCards(t *testing.T) {
 	if isaac.Names["en"] != "Isaac" || isaac.Names["ru"] != "Исаак" || len(isaac.Translators["ru"]) == 0 {
 		t.Fatalf("isaac names %v, translators %v", isaac.Names, isaac.Translators)
 	}
+	// Artists from the card data (CD-14): Isaac's front character artist
+	// is Rojen241; the background is "Private" and the card back
+	// KrystalFlamingo's, so neither is credited (ADR 027 "Credits" 10.3).
+	if len(isaac.Artists) != 1 || isaac.Artists[0] != "Rojen241" {
+		t.Fatalf("isaac artists %q", isaac.Artists)
+	}
+	// The Harbingers' front art is "Private"; its back, The Beast, is by
+	// Not Your Sagittarius (card data, r.json): each face its own.
+	if h, b := byRef["the_harbingers"], byRef["the_beast"]; len(h.Artists) != 0 || len(b.Artists) != 1 || b.Artists[0] != "Not Your Sagittarius" {
+		t.Fatalf("harbingers artists %q, beast %q", h.Artists, b.Artists)
+	}
 	// The private images submodule may be missing; then no card has an
 	// image URL and every card shows as a blank card.
 	if _, err := os.Stat("../../pkg/card_db/images/en/b2/isaac.webp"); (err == nil) != (isaac.Image == "/cardimg/en/b2/isaac.webp") {

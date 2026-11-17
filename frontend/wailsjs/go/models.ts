@@ -205,6 +205,7 @@ export namespace cardinfo {
 	    name: string;
 	    names: Record<string, string>;
 	    translators: Record<string, Array<string>>;
+	    artists: string[];
 	    effects: string[];
 	    footnotes: carddb.Footnote[];
 	    stats: carddb.Stat[];
@@ -226,6 +227,7 @@ export namespace cardinfo {
 	        this.name = source["name"];
 	        this.names = source["names"];
 	        this.translators = source["translators"];
+	        this.artists = source["artists"];
 	        this.effects = source["effects"];
 	        this.footnotes = this.convertValues(source["footnotes"], carddb.Footnote);
 	        this.stats = this.convertValues(source["stats"], carddb.Stat);

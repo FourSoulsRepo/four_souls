@@ -8,6 +8,7 @@ export interface CardInfo {
   name: string; // in the chosen language; the store sets it (inLanguage)
   names?: Record<string, string>; // by language, English too (LO-02)
   translators?: Record<string, string[]>; // credited by language (CD-06)
+  artists?: string[]; // this face's art, credited in every language (CD-14)
   effects: string[];
   footnotes: { title: string; text: string }[];
   stats: { name: string; value: string }[];
@@ -117,6 +118,12 @@ export function translatorsOf(card: CardInfo, lang: string): string[] {
     return [];
   }
   return new Map(Object.entries(card.translators ?? {})).get(lang) ?? [];
+}
+
+// artistsOf credits who drew the card (CD-14, 20.24): the names Go
+// picked for this face, none when the data has no public name.
+export function artistsOf(card: CardInfo): string[] {
+  return card.artists ?? [];
 }
 
 // unknownCard stands in for a ref the app has no data for.
