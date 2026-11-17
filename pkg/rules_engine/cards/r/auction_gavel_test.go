@@ -1,6 +1,7 @@
 package r
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/FourSoulsRepo/rules_engine/enginetest"
@@ -21,7 +22,14 @@ func gavelTable(t *testing.T) *enginetest.Table {
 func TestAuctionGavel(t *testing.T) {
 	tb := gavelTable(t)
 	// Cain bids 1¢, Samson tops it with 3¢, Cain passes: Samson's bid stands.
-	tb.Activate(0, "auction_gavel", 0, "spoon_bender", "card.auction_gavel.bid 1", "card.auction_gavel.bid 3", "card.auction_gavel.pass")
+	events := tb.Activate(0, "auction_gavel", 0, "spoon_bender", "card.auction_gavel.bid 1", "card.auction_gavel.bid 3", "card.auction_gavel.pass")
+	// 19.192: the payment has its event: Samson gives Isaac 3¢.
+	paid := func(e engine.Event) bool {
+		return e.Kind == engine.EvGaveCents && e.Player == 2 && e.Amount == 3 && e.By == 1
+	}
+	if !slices.ContainsFunc(events, paid) {
+		t.Errorf("no gave_cents of 3¢ from Samson to Isaac: %+v", events)
+	}
 	if !hasItem(tb.G, 2, "spoon_bender") {
 		t.Fatal("Samson wins the item")
 	}

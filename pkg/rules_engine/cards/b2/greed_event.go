@@ -23,7 +23,7 @@ var greedEvent = engine.CardDef{
 			Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
 				if a[0] >= 0 {
 					p := richest(c.G)[a[0]]
-					c.Do(engine.EffectFunc(func(c *engine.Ctx) { c.G.Players[p].Cents = 0 }))
+					c.Do(engine.EffectFunc(func(c *engine.Ctx) { c.G.LoseCentsNow(p, c.G.Players[p].Cents) })) // its lost_cents (19.192)
 				}
 			}, engine.Question{Text: greedEventWhichPlayerLoses, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 				var out []engine.Msg

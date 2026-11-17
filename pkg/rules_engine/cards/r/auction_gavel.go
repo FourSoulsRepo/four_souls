@@ -92,8 +92,7 @@ func auction() engine.Effect {
 		if high == engine.NoPlayer || !inShop(c.G, c.Source, c.Targets[0]) || c.G.Players[high].Cents < bid {
 			return
 		}
-		c.G.Players[high].Cents -= bid
-		c.G.Players[c.Controller].Cents += bid
+		c.G.GiveCents(high, c.Controller, bid) // its gave_cents (19.192)
 		c.G.GainControl(high, item)
 	}, qs...)
 }

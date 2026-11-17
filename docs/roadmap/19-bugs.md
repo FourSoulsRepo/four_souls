@@ -34,7 +34,7 @@ This step never closes; new reports are appended.
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151 | 21 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188 | 16 |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193 | 18 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141, 19.191 | 16 |
@@ -57,11 +57,11 @@ This step never closes; new reports are appended.
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 
-Totals by system (182 items):
+Totals by system (184 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U, W | 40 |
+| Engine    | A, B, T, U, W | 42 |
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 53 |
 | Server    | H, N    | 4     |
@@ -5819,3 +5819,42 @@ Totals by system (182 items):
    2. [ ] Fix it game-wide: every reveal of a card seen just before.
    3. [ ] Vitest for the pair; rerun `GAME_SEED=780402 make e2e-games`.
 
+
+### [x] 19.192 No event when a card moves a player's ¢
+
+1. Goal: every change of a player's ¢ has an event with its amount.
+2. Report (22.10 sims check, 2026-11-17)
+   1. `TestSimulations`: "player 1 cents: 41 -> 0; player 2 cents: 23 -> 64".
+   2. Events: `gained_treasure card_revealed entered_play` (Auction Gavel).
+   3. Also "player 0 cents: 64 -> 0"; events: `card_revealed entered_play discarded` (Greed!).
+3. Cause (the code)
+   1. Auction Gavel (r) moves the bid with `Cents -=` and `+=`.
+   2. Greed! (b2, event) sets `Cents = 0` itself.
+   3. Neither goes through an engine helper with an event.
+   4. The client sees the ¢ change only in the next view, with no popup.
+4. Tasks:
+   1. Fix it in 22.10, game-wide: cards use the engine's ¢ helpers.
+5. Fix (22.10, 2026-11-17)
+   1. Greed! uses `LoseCentsNow`, as Crooked Penny does: one `lost_cents`.
+   2. "Loses" is a loss now: Rib of Greed keeps the ¢ (R-MECH-42); a rules fix.
+   3. Auction Gavel uses `GiveCents`: one `gave_cents` to the controller.
+   4. Searched every set and the engine for `Cents` writes.
+   5. Engine writers all emit: `perform` (gain, lose, steal), `GiveCents`, `PayCents`, `purchase`.
+   6. Setup's starting ¢ is before the first step; no event needed.
+   7. Other cards use the helpers: Crooked Penny, fsp2 `GiveCents` cards.
+   8. Client: `lost_cents` and `gave_cents` have history lines already.
+   9. Go tests: `TestGreedEvent`, `TestAuctionGavel` see the events.
+   10. Steps' checksums change; engine 0.5.4 is unreleased (`eventVersion`).
+
+### [ ] 19.193 No event names the player an item or soul is taken from
+
+1. Goal: a stolen item's event names both players.
+2. Report (22.10 sims check, 2026-11-17)
+   1. `TestSimulations`: "player 0 souls: 1 -> 0"; events: `gained_treasure game_won`.
+   2. A soul was stolen in place; only the thief is named.
+3. Cause (the code)
+   1. `GainControl` (`zones.go`) changes an item's controller in place.
+   2. Its `gained_treasure` ("stolen") names the new controller only.
+   3. The old controller's items and souls drop with no event naming them.
+4. Tasks:
+   1. Fix it in 22.10: the event names the old controller too.
