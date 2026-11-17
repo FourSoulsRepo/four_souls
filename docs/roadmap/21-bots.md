@@ -220,6 +220,8 @@ Rules for this step (owner, 2026-11-16):
       2. Numbers taken under load never go into the wiki.
 3. Done when:
    1. 20 tables of 1 human and 3 hard bots: no room stall over 100 ms; every bot answers before the response timer.
+4. Decisions (rule 12, 2026-11-17):
+   1. `checkMaxHP`: one pass lists the cards in play and their HP statics; each player and monster sums its boosts and those statics (`hpBonus`, the same sum as `bonus`); the last max HP is updated in place, objects that left the check are deleted. No cache across steps: a static's `Applies` and `Value` read the game, so a cache would need every change to invalidate it.
 
 ### [ ] 21.11 Lobby screen
 

@@ -377,3 +377,35 @@ func TestMaxHPToZeroKills(t *testing.T) {
 		t.Error("one death only")
 	}
 }
+
+// TestHPBonusLikeBonus: checkMaxHP's one-pass HP bonus (21.10) sums the
+// same boosts as bonus, for players and monsters; a monster that left
+// play is forgotten, as a fresh check would.
+func TestHPBonusLikeBonus(t *testing.T) {
+	g := newTestGame(t, 2)
+	m := putMonster(g, 0, "boss")
+	g.Boosts = append(g.Boosts,
+		Boost{Stat: StatMonsterHP, Object: m, Amount: 2},
+		Boost{Stat: StatPlayerHP, Player: 1, Amount: 3},
+		Boost{Stat: StatPlayerHP, Player: 0, Amount: -1},
+	)
+	hs := g.hpStatics(g.inPlay(), nil)
+	for p := range PlayerID(2) {
+		if got, want := g.hpBonus(hs, StatPlayerHP, p, 0), g.bonus(StatPlayerHP, p, 0); got != want {
+			t.Errorf("player %d: %d, want %d", p, got, want)
+		}
+	}
+	if got, want := g.hpBonus(hs, StatMonsterHP, NoPlayer, m), g.monsterBonus(StatMonsterHP, m); got != want {
+		t.Errorf("monster: %d, want %d", got, want)
+	}
+	g.checkMaxHP()
+	if g.maxHP[hpKey{id: m}] != 6 || g.maxHP[hpKey{p: 1}] != g.playerMaxHP(1) {
+		t.Fatalf("max HP %v", g.maxHP)
+	}
+	g.Monsters[0].Cards = nil
+	g.Object(m).Zone = Zone{Kind: ZoneDiscard}
+	g.checkMaxHP()
+	if _, ok := g.maxHP[hpKey{id: m}]; ok {
+		t.Errorf("max HP %v after the monster left", g.maxHP)
+	}
+}
