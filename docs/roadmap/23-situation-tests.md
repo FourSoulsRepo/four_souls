@@ -1,0 +1,175 @@
+# Step 23. Situation tests
+
+Goal: most card tests are situation files, not Go code.
+
+Ideas: TS-13, LR-04, R-03.
+
+## Why (2026-11-17)
+
+1. The situation format exists since 4.11; the stack came in 12.5.
+   1. `pkg/rules_engine/testdata/situations/` holds 6 files.
+   2. They use the test sets only, not real cards.
+2. Card tests are Go: about 930 tests in `pkg/rules_engine/cards/`.
+   1. They already build the table from `engine.SituationSetup`.
+   2. So the setup half of the language is shared today.
+3. Why new tests stayed in Go:
+   1. One action only; 159 card tests do several.
+   2. No forced dice; `ForceRolls` is in about 300 lines.
+   3. No deck tops (`PutOnDeck`, 83), counters (35), turn counters.
+   4. Checks are only cents, hand size, damage, souls, dead.
+   5. No check of prompt options (55 tests) or resolve order (76).
+   6. Each set's package has no situation runner.
+   7. `Adding-a-card.md` shows only the Go way.
+4. About 380 card tests are one action and a plain state check.
+   1. They fit the format once checks and dice are added.
+5. Gains:
+   1. The owner reads and reviews a test without Go.
+   2. Tests are grouped by card and rule, so their purpose shows.
+   3. A file names its source; CLAUDE.md 5.25 asks for that.
+   4. The sandbox (LR-01) and tests share one format.
+
+## Rules for this step
+
+1. Branch: `step-23-situation-tests`, from `main`.
+2. Old payloads keep working: website links hold them (12.7).
+   1. `action` stays; `steps` is added beside it.
+   2. A new field is optional.
+3. An `expect` value comes from the rules, never from a run (5.25).
+   1. A tool may write `setup` and `steps`; never `expect`.
+4. Every new field: a line in `docs/wiki/Situation-payload.md`.
+5. Unknown fields stay errors that list the options.
+6. Gates: `make lint test`; `make site` when the format changes.
+7. Sub-steps run in fresh subagents, one at a time (5.21).
+
+## Owner answers (2026-11-17)
+
+1. Move, not copy: only a test a file says exactly the same.
+   1. Its Go test is deleted in the same change.
+2. Go and JSON side by side for one card: yes.
+   1. A test only Go can say stays in Go.
+3. A new test: simple is a file; complicated is Go.
+4. Website examples from test files: no, not for now.
+5. Files are grouped by purpose, never one big folder.
+
+## File layout
+
+1. A card's tests: `cards/<set>/testdata/situations/<card>/<case>.json`.
+   1. `<card>` is the card ref, as its `<card>_test.go`.
+   2. `<case>` says what is checked, e.g. `pays-5-cents.json`.
+2. Two or more cards of one set together: `.../situations/interactions/`.
+   1. Named after the cards, e.g. `lucky-foot-bomb.json`.
+3. Cards of several sets: `cards/testdata/situations/interactions/`.
+4. Engine rules, test sets only: `testdata/situations/<area>/`.
+   1. `<area>` is the rule ID area in lower case: `atk`, `stack`, `abil`.
+   2. The 6 files today move there (23.2).
+5. A resolved disputed case (R-03) goes where its card or rule goes.
+   1. Its `source` names the ruling.
+6. A folder holds only `.json` files; no deeper levels.
+
+### [ ] 23.1 ADR: situation files as card tests
+
+1. Goal: one ADR fixes when a test is a file and when Go.
+2. Tasks:
+   1. Written in the main conversation (5.21.2).
+   2. The owner answers and the file layout above.
+   3. The `source` field and its forms.
+   4. "Simple" and "complicated", with examples of each.
+3. Done when:
+   1. The ADR is Accepted and in `INDEX.md`.
+
+### [ ] 23.2 A runner per set, and the `source` field
+
+1. Goal: each set's `go test` runs its own situation files.
+2. Tasks:
+   1. `enginetest.RunSituations(t, files, sets...)`, one subtest per file.
+   2. Each set package embeds its `testdata/situations/` tree.
+   3. The subtest name is the path: `<card>/<case>`.
+   4. A file outside the layout fails the run.
+   5. A test file needs `expect` and `source`; a sandbox payload needs neither.
+   6. A mismatch prints the file, the step and every failed check.
+   7. Move the 6 root files into rule area folders; run them with it.
+3. Done when:
+   1. A b2 file with a wrong `expect` fails `go test ./cards/b2`.
+   2. A test file with no `source` fails.
+
+### [ ] 23.3 Setup: dice, decks, counters, turn
+
+1. Goal: the setup says what Go tests set by hand today.
+2. Tasks:
+   1. `rolls`: the next dice results, in order (as `ForceRolls`).
+   2. `decks`: cards on top of the loot, treasure, monster decks, top first.
+   3. `counters` on a player's card, a monster or an item.
+   4. Monster `damage` in a slot.
+   5. Turn: `attacks`, `purchases`, extra loot plays, `phase` if needed.
+   6. List the other hand-set fields in card tests; add or reject each.
+3. Done when:
+   1. A test of each field, from card text, passes.
+
+### [ ] 23.4 Several steps
+
+1. Goal: a file plays several actions in a row.
+2. Tasks:
+   1. `steps`: a list of actions, each with its own `choices`.
+   2. `action` is one step; a file has one of the two.
+   3. A step may expect a refusal; later steps still run.
+   4. Step kinds as `enginetest`: `throw`, `choose`, `reveal`.
+   5. `expect` may sit on a step, checked after it.
+3. Done when:
+   1. An attack, a roll and an end turn run from one file.
+
+### [ ] 23.5 Richer checks
+
+1. Goal: the checks Go card tests use most.
+2. Tasks:
+   1. Player: `hp`, `atk`, `items` in play, `hand` cards, `deactivated`, `counters`.
+   2. Monster slot: the card, `damage`, `dead`, `counters`.
+   3. Discards and deck tops; `souls` by card.
+   4. Turn: active player, loot plays, attacks left.
+   5. Game: `over`, `winners`.
+   6. A missing field means "not checked", as today.
+3. Done when:
+   1. Each check has a passing and a failing test.
+
+### [ ] 23.6 Checks on prompts and order
+
+1. Goal: a file checks what a player is asked and what resolves first.
+2. Tasks:
+   1. `prompt`: who is asked, and the options by plain label.
+   2. `resolved`: cards in the order they resolved.
+   3. `events`: kinds that must or must not happen, with their player.
+3. Done when:
+   1. A Lucky Foot and Bomb! file checks the order.
+
+### [ ] 23.7 Dump a Go test's setup as a file
+
+1. Goal: a tool writes `setup` and `steps` from a Go test run.
+2. Tasks:
+   1. `enginetest.Table` records its setup, rolls, decks and steps.
+   2. An env var writes them to a file per test.
+   3. It never writes `expect` (rule 3).
+   4. Hand-set state it can't express is listed as a TODO.
+3. Done when:
+   1. A dumped b2 test, with `expect` from its Go checks, passes.
+
+### [ ] 23.8 Pilot: move one group
+
+1. Goal: learn the cost on real tests before any bulk move.
+2. Tasks:
+   1. Move simple tests of `cards/b2/interactions_test.go` and one card family.
+   2. Each `expect` from the Go test's checks and its source comment.
+   3. Count what fit, what needed a format change, what stayed Go.
+   4. A rule bug found on the way is a step 19 item.
+   5. Report the numbers to the owner; the bulk move waits for a yes.
+3. Done when:
+   1. The moved files pass; the Go tests they replace are gone.
+   2. The report is in this file.
+
+### [ ] 23.9 Docs
+
+1. Goal: a simple new card test starts as a file.
+2. Tasks:
+   1. `Adding-a-card.md`: simple is a file, complicated is Go.
+   2. `Situation-payload.md`: every new field and the file layout.
+   3. `CLAUDE.md` Commands: how to run one set's files.
+3. Done when:
+   1. A simple new card from the guide needs no Go test.

@@ -808,6 +808,14 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. 19.135, 19.137, 19.138 showed only after thousands of steps.
    2. `make e2e-games` checks each page at the game's end.
    3. Page elements and script time per step stay under a limit.
+13. TS-13. Card tests as situation files (owner, 2026-11-17).
+   1. The situation format (LR-04, 4.11) has 6 test files; Go card tests have about 930.
+   2. Go tests already build tables from `SituationSetup`.
+   3. The JSON form lacks forced dice, deck tops, counters, several steps.
+   4. Its checks: only cents, hand size, damage, souls, dead.
+   5. About 380 card tests are one action and a plain state check.
+   6. A situation file is readable without Go and can show on the website.
+   7. Each file names its source: card text, an R-xxx rule, or a ruling.
 
 ## Localization
 

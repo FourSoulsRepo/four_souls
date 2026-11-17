@@ -348,6 +348,16 @@ Step 10 done (owner, 2026-11-16); it merges with step 18.
 6. Long games stay under a size and speed limit.
 7. Ideas: TS-07 – TS-12.
 
+## 23. Situation tests
+
+1. The situation format grows to cover most card tests.
+2. Forced dice, deck tops, counters, several steps, richer checks.
+3. Each set runs its own situation files in `go test`.
+4. A file names its source (CLAUDE.md 5.25).
+5. Simple tests move to files; complicated ones stay in Go.
+6. Files grouped by card, interaction or rule area.
+7. Ideas: TS-13, LR-04, R-03.
+
 ## Future
 
 Not scheduled; revisit after the MVP.
