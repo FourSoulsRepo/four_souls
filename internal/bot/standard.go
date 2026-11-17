@@ -87,15 +87,7 @@ func standardPick(ctx context.Context, w *engine.Game, p engine.PlayerID, allowe
 	for i := range order {
 		order[i] = i
 	}
-	slices.SortStableFunc(order, func(a, b int) int {
-		switch d := scores[b] - scores[a]; {
-		case d > scoreEps:
-			return 1
-		case d < -scoreEps:
-			return -1
-		}
-		return 0
-	})
+	slices.SortStableFunc(order, func(a, b int) int { return rank(scores[b] - scores[a]) })
 	best := order[0]
 	if mistakes > 0 && len(order) > 1 && rng.IntN(mistakes) == 0 {
 		top := min(len(order), mistakeTop)
