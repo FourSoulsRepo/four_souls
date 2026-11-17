@@ -6,11 +6,11 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { addBot, gameId, lobbyGame, startGame, throwFirstRoll } from './game';
-import { canEndTurn, click, endTurn, settle } from './turn';
+import { Ask, canEndTurn, click, endTurn, holds, seen, settle, until, type Check } from './turn';
 import { appURL, serverPort } from './server';
-import { realAssets, shot } from './shot';
+import { realAssets, shot, shotOf } from './shot';
 import { openHost, openOnline } from './menu';
-import { anyOf, lineRe, tr, trRe } from './locale';
+import { lineRe, tr, trRe } from './locale';
 
 const standard = () => tr('bot.level.standard');
 const hard = () => tr('bot.level.hard');
@@ -69,7 +69,8 @@ test('the host fills the table with 3 bots and starts alone', async ({ browser }
     const row = seat(seats, i + 1);
     const name = tr('bot.number', { n: i + 1 });
     await expect(row).toContainText(name);
-    await expect(row.getByTestId('bot-icon')).toBeVisible();
+    // Each level has its own robot (ADR 033, Decision 10.3).
+    await expect(row.getByTestId('bot-icon')).toHaveAttribute('data-level', level);
     await expect(row.getByRole('combobox', { name: tr('lobby.bots.level', { name }) })).toHaveValue(level);
     await expect(row).toContainText(tr('lobby.seats.is_ready'));
     // A bot has no connection, yet it is never away (23.11 task 9).
@@ -82,6 +83,8 @@ test('the host fills the table with 3 bots and starts alone', async ({ browser }
   const bot3 = tr('bot.number', { n: 3 });
   await seat(seats, 3).getByRole('combobox', { name: tr('lobby.bots.level', { name: bot3 }) }).selectOption('hard');
   await expect(seat(seats, 3).getByRole('combobox', { name: tr('lobby.bots.level', { name: bot3 }) })).toHaveValue('hard');
+  // The robot follows the level.
+  await expect(seat(seats, 3).getByTestId('bot-icon')).toHaveAttribute('data-level', 'hard');
   const bot2 = tr('bot.number', { n: 2 });
   await seat(seats, 2).getByRole('button', { name: tr('lobby.bots.remove', { name: bot2 }) }).click();
   await expect(seat(seats, 2)).toContainText(tr('lobby.seats.waiting'));
@@ -113,8 +116,9 @@ test('the other players see the bots and their levels, with no buttons', async (
   await addBot(ann, 3, standard());
 
   await expect(seat(boSeats, 2)).toContainText(tr('bot.name', { n: 1, level: hard() }));
-  await expect(seat(boSeats, 2).getByTestId('bot-icon')).toBeVisible();
+  await expect(seat(boSeats, 2).getByTestId('bot-icon')).toHaveAttribute('data-level', 'hard');
   await expect(seat(boSeats, 3)).toContainText(tr('bot.name', { n: 2, level: standard() }));
+  await expect(seat(boSeats, 3).getByTestId('bot-icon')).toHaveAttribute('data-level', 'standard');
   await expect(seat(boSeats, 3)).not.toContainText(tr('lobby.seats.away'));
   await expect(boSeats.getByRole('button')).toHaveCount(0);
   await expect(boSeats.getByRole('combobox')).toHaveCount(0);
@@ -149,35 +153,105 @@ test('a server that allows no bots shows no bot buttons', async ({ page }) => {
   await expect(seats.getByRole('button')).toHaveCount(0);
 });
 
+// botSeats are the bot seats of the page's game, from its store.
+function botSeats(page: Page): Promise<number[]> {
+  return page.evaluate(() => {
+    interface S {
+      game: { seats?: { seat: number; bot?: string }[] | null } | null;
+    }
+    const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+    return (s.game?.seats ?? []).filter((x) => x.bot).map((x) => x.seat);
+  });
+}
+
+// botItemWaits holds when a bot seat's turn is on and the stack waits
+// for this page's player on an item a bot seat controls: bots are the
+// bot seats.
+function botItemWaits(bots: readonly number[]): Check {
+  return (s) =>
+    s.ready &&
+    s.waiting === s.you &&
+    s.prompt.kind === Ask.priority &&
+    bots.includes(s.active) &&
+    s.stack.some((it) => bots.includes(it.controller));
+}
+
+// robotsShot saves both robots on the table's background, at the size
+// of a seat's name and eight times larger, for the owner's review
+// (ADR 033, Decision 10.3). Only with SCREENSHOTS.
+async function robotsShot(page: Page): Promise<void> {
+  if (!process.env.SCREENSHOTS) {
+    return;
+  }
+  await page.evaluate(() => {
+    const name = document.querySelector('.opp-name');
+    if (!name) {
+      throw new Error('no seat name');
+    }
+    let back = 'rgba(0, 0, 0, 0)';
+    for (let el: Element | null = name; el && back === 'rgba(0, 0, 0, 0)'; el = el.parentElement) {
+      back = getComputedStyle(el).backgroundColor;
+    }
+    const style = getComputedStyle(name);
+    const sheet = document.createElement('div');
+    sheet.id = 'robots-shot';
+    Object.assign(sheet.style, { position: 'fixed', left: '0', top: '0', zIndex: '2147483647', padding: '12px', display: 'flex', alignItems: 'center', gap: '24px', background: back, color: style.color, fontSize: style.fontSize });
+    for (const scale of [1, 8]) {
+      for (const level of ['standard', 'hard']) {
+        const icon = document.querySelector(`.opp-name [data-testid="bot-icon"][data-level="${level}"]`);
+        if (!icon) {
+          throw new Error(`no ${level} robot`);
+        }
+        const box = document.createElement('span');
+        box.style.fontSize = `${String(scale)}em`;
+        box.append(icon.cloneNode(true));
+        sheet.append(box);
+      }
+    }
+    document.body.append(sheet);
+  });
+  await shotOf(page.locator('#robots-shot'), 'bots-robots');
+  await page.evaluate(() => document.getElementById('robots-shot')?.remove());
+}
+
 // Bots at the game table (23.12): one player and three bots. The bots
 // keep the real pace (ADR 033 Decision 13), so the test plays only until
-// a bot's turn shows on the turn badge, in the history and on the stack.
+// a bot's item waits on the stack in its turn.
 test('the game table names each bot with its level after the robot (23.12)', async ({ browser }) => {
   test.setTimeout(120_000);
-  const pages = await startGame(browser, ['Ann'], { bots: ['standard', 'hard', 'standard'] });
+  const levels = ['standard', 'hard', 'standard'];
+  const pages = await startGame(browser, ['Ann'], { bots: levels });
   const [ann] = pages;
   if (!ann) {
     throw new Error('no page');
   }
   const bots = [tr('bot.name', { n: 1, level: standard() }), tr('bot.name', { n: 2, level: hard() }), tr('bot.name', { n: 3, level: standard() })];
-  for (const name of bots) {
+  for (const [i, name] of bots.entries()) {
     const area = ann.getByRole('region', { name, exact: true });
     await expect(area.locator('.opp-name')).toHaveText(name);
-    await expect(area.locator('.opp-name').getByTestId('bot-icon')).toBeVisible();
+    await expect(area.locator('.opp-name').getByTestId('bot-icon')).toHaveAttribute('data-level', levels[i] ?? '');
   }
+  await robotsShot(ann);
   const badge = ann.getByRole('status', { name: tr('turn_badge.label') });
   const stack = ann.getByRole('complementary', { name: tr('stack.title') });
-  const botTurn = async () => (await badge.getByTestId('bot-icon').count()) > 0;
   // Ann passes on the bots' stack and ends her own turns, until the
-  // stack waits for her on a bot's item.
-  const botOnStack = async () => (await botTurn()) && (await stack.getByTestId('bot-icon').count()) > 0;
-  for (let i = 0; i < 4 && !(await botOnStack()); i++) {
-    await settle(pages, click, async () => (await botOnStack()) || (!(await botTurn()) && (await canEndTurn(ann))));
-    if (!(await botOnStack())) {
+  // stack waits for her on a bot's item in a bot's turn (5.16.10: the
+  // state, not the icons).
+  const seats = await botSeats(ann);
+  const waits = botItemWaits(seats);
+  const botTurn: Check = (s) => seats.includes(s.active);
+  for (let i = 0; i < 4 && !(await holds(ann, waits)); i++) {
+    await settle(pages, click, async () => (await holds(ann, waits)) || (!(await holds(ann, botTurn)) && (await canEndTurn(ann))));
+    if (!(await holds(ann, waits))) {
       await endTurn(ann);
     }
   }
-  await expect(badge).toContainText(anyOf(...bots.map((b) => lineRe(b))));
+  await until(ann, waits);
+  // Then the screen: the active bot's name with its level's robot on
+  // the badge, and a robot on the stack.
+  const at = seats.indexOf((await seen(ann)).active);
+  await expect(badge).toContainText(lineRe(bots[at] ?? ''));
+  await expect(badge.getByTestId('bot-icon')).toHaveAttribute('data-level', levels[at] ?? '');
   await expect(stack.getByTestId('bot-icon').first()).toBeVisible();
   await shot(ann, 'bots-table');
   // The right column's name starts clear of the corner Menu, whatever
@@ -215,16 +289,20 @@ test('Krampus starts with one bot as the partner (23.13)', async ({ browser }) =
   const name = tr('bot.name', { n: 1, level: standard() });
   const area = ann.getByRole('region', { name, exact: true });
   await expect(area.locator('.opp-name').getByTestId('bot-icon')).toBeVisible();
-  // Ann ends her turns until the turn badge names the bot.
+  // Ann ends her turns until the bot's turn is on (5.16.10: the
+  // state); then the turn badge names it with its robot.
   const badge = ann.getByRole('status', { name: tr('turn_badge.label') });
-  const botTurn = async () => (await badge.getByTestId('bot-icon').count()) > 0;
-  for (let i = 0; i < 3 && !(await botTurn()); i++) {
-    await settle(pages, click, async () => (await botTurn()) || (await canEndTurn(ann)));
-    if (!(await botTurn())) {
+  const bot = await botSeats(ann);
+  const botTurn: Check = (s) => bot.includes(s.active);
+  for (let i = 0; i < 3 && !(await holds(ann, botTurn)); i++) {
+    await settle(pages, click, async () => (await holds(ann, botTurn)) || (await canEndTurn(ann)));
+    if (!(await holds(ann, botTurn))) {
       await endTurn(ann);
     }
   }
-  await expect(badge.getByTestId('bot-icon')).toBeVisible();
+  await until(ann, botTurn);
+  await expect(badge).toContainText(lineRe(name));
+  await expect(badge.getByTestId('bot-icon')).toHaveAttribute('data-level', 'standard');
   await expect(ann.getByRole('dialog', { name: tr('pause.label') })).toHaveCount(0);
   await shot(ann, 'bots-krampus');
 });
