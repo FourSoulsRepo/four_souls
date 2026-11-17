@@ -664,6 +664,7 @@ func (opaqueCtx) Value(any) any { return nil }
 func TestBotsThinkerContextsEnd(t *testing.T) {
 	r := botRoom(t, protocol.Options{}, "", "standard", "standard")
 	r.stopThinkers()
+	r.drive()
 	ctx := opaqueCtx{t.Context()}
 	before := runtime.NumGoroutine()
 	moves := 0
@@ -762,7 +763,7 @@ func TestBotsPanicLimit(t *testing.T) {
 	if calls != botPanicLimit {
 		t.Errorf("the bot ran %d times, want %d", calls, botPanicLimit)
 	}
-	if n := strings.Count(out, "goroutine "); n != 1 {
+	if n := strings.Count(out, "[running]"); n != 1 {
 		t.Errorf("%d stacks, want 1", n)
 	}
 	if n := strings.Count(out, "bot panic: seed"); n != botPanicLimit {
