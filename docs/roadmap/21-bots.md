@@ -310,7 +310,7 @@ Rules for this step (owner, 2026-11-16):
    7. Rule for new card sets in `Bots.md` and the developer wiki: after cards are added, `make bot-values`, then `make bots` (ADR 030, Decision 20).
 3. Done when:
    1. **Owner** plays a game against three hard bots and approves the merge.
-4. Waits: UI merge (players' page, UC-44 link, Home/_Sidebar), check phase, owner's game.
+4. Waits: check phase, owner's game.
 5. Done now (2026-11-17, non-UI parts):
    1. `Bots.md`: sections "A new card set" and "In the server" (flags, thinker slots, pace, memory), the arena's and `bot_values`' flags, hard's time budget and the numbers before 21.10 marked as such.
    2. `Server.md`: the stale line-1 paragraph replaced; `Dedicated-server-on-a-VPS.md`, the compose page and `deploy/docker` already carried `-bots` and `-bot_think` alike: no change.
@@ -321,6 +321,7 @@ Rules for this step (owner, 2026-11-16):
    1. Task 1: UC-44 "Play with bots" comes from `step-21-bots-ui`; only its index entry and links are checked here, no second use case.
    2. Task 2: the players' wiki page on playing with bots, in the players' group of `Home.md` and `_Sidebar.md`; `Bots.md` and `README.md` link to it.
    3. Tasks 5 and 6: the check phase.
+   4. Done (2026-11-17): tasks 1 and 2. UC-44 is in the index; it links the players' page and `Bots.md`. `Playing-with-bots.md` (adding bots in the lobby, standard against hard, the robot at the table) is in the players' group of `Home.md` and `_Sidebar.md`; `Bots.md` and `README.md` link to it. 21.14 stays open for tasks 5 and 6 and the owner's game.
 7. Decisions (rule 12, 2026-11-17):
    1. No new developer or admin wiki page: the server part of the bots goes into `Bots.md` ("In the server") and links to `Server.md` and the operators' options table, so Home and `_Sidebar` stay as they are now; only the Home line of Bots names its new sections.
    2. The measure keeps 6 draws a loot play (`lootDraws`) after standard's 12, as it keeps the flat values: the table stays as it was measured (ADR 030, 20.4.4.1).

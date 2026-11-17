@@ -28,3 +28,4 @@
 ## Postconditions
 
 * The game runs with the bots in their seats; the e2e tests are `e2e/tests/bots.spec.ts` and the bots game of `e2e/tests/games.spec.ts` (`make e2e-games`).
+* For players: wiki page `docs/wiki/Playing-with-bots.md`; for developers: `docs/wiki/Bots.md` and `docs/wiki/Client.md` (bots on the table screen).

@@ -19,6 +19,7 @@ one player and three bots make a full table, a bot can be the partner in a
 challenge, and the app's own server needs no internet. Server operators
 choose the allowed levels and the hard bot's thinking time with `-bots` and
 `-bot_think` ([Dedicated server on a VPS](docs/wiki/Dedicated-server-on-a-VPS.md)).
+How to seat them: [Playing with bots](docs/wiki/Playing-with-bots.md).
 
 Besides the regular game there are co-op challenges for 2 players:
 [Challenges](docs/wiki/Challenges.md).

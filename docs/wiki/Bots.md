@@ -1,6 +1,6 @@
 # Bots
 
-Bots fill free seats of a network game (ADR 030, step 21). This page is for developers: where the code lives, the levels, and the arena that measures them.
+Bots fill free seats of a network game (ADR 030, step 21). This page is for developers: where the code lives, the levels, and the arena that measures them. Players read [Playing with bots](Playing-with-bots); the use case is UC-44 (`docs/use-cases/app/uc-44-play-with-bots.md`).
 
 ## Layout
 
