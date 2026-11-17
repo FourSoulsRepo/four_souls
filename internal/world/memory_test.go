@@ -483,3 +483,44 @@ func TestMemoryReset(t *testing.T) {
 		t.Errorf("after Reset: %+v", k)
 	}
 }
+
+// TestShuffledDeckImaginedAgain: main's shuffled event (19.178) makes the
+// memory drop the deck's known top, so For no longer deals the
+// remembered card there: across worlds, the imagined top varies again,
+// while before the shuffle every world put the remembered card on top.
+func TestShuffledDeckImaginedAgain(t *testing.T) {
+	g, m := table(t, engine.SituationPlayer{Character: "isaac"}, engine.SituationPlayer{Character: "cain"})
+	g.LookAt(0, g.DeckTop(engine.LootDeck, 1)...)
+	feed(m, g, g.Run())
+	tops := func() map[engine.CardRef]bool {
+		t.Helper()
+		worlds, err := For(g, 0, m.Known(), 7)
+		if err != nil {
+			t.Fatal(err)
+		}
+		seen := map[engine.CardRef]bool{}
+		for i := range 20 {
+			w, err := worlds(i)
+			if err != nil {
+				t.Fatal(err)
+			}
+			seen[top(w, engine.LootDeck)] = true
+		}
+		return seen
+	}
+	if seen := tops(); len(seen) != 1 || !seen[top(g, engine.LootDeck)] {
+		t.Fatalf("before the shuffle, worlds put %v on top; want only the remembered card", seen)
+	}
+	g.ShuffleDeck(engine.LootDeck)
+	events := g.Run()
+	if !slices.ContainsFunc(events, func(e engine.Event) bool { return e.Kind == engine.EvShuffled }) {
+		t.Fatal("ShuffleDeck sent no shuffled event")
+	}
+	feed(m, g, events)
+	if k := m.Known(); len(k.Tops[engine.LootDeck]) != 0 {
+		t.Fatalf("after shuffled, the memory keeps the loot top %v", k.Tops[engine.LootDeck])
+	}
+	if seen := tops(); len(seen) < 2 {
+		t.Errorf("after the shuffle, every world put %v on top; want the deck imagined shuffled", seen)
+	}
+}

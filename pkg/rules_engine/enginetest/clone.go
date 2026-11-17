@@ -19,6 +19,11 @@ import (
 // A new field fails TestCloneCoversEveryField (clone_test.go) until it
 // is here; a field marked * that Clone does not copy fails
 // TestCloneCopiesEveryField.
+//
+// Game's changes! is left out on purpose: it is the event check's log
+// of moves since TakeSnapshot (fuzz only, nil in games), and it belongs
+// to the game that took the snapshot, so a copy starts with none.
+// tracking's origin! is shared: a save's bytes, never changed in place.
 var CloneRules = map[string]string{
 	"Game": "RNG Players* Objects* Decks* Discards* Shop* Monsters* Rooms* " +
 		"Bosses* Minions* Outside* BonusSouls* Queue* Attack* Purchase " +
