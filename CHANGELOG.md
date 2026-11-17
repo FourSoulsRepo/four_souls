@@ -6,6 +6,10 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+## 0.5.1 - 2026-11-17
+
+- A card that asks for a deck shows the decks as card backs, with their names, instead of buttons; a discard pile shows its top card (e.g. The Curse, Sleight of Hand).
+
 ## 0.5.0 - 2026-11-17
 
 - Records: a Records screen in the main menu lists hosted games and saved records, newest first; open a file, export or delete one.
