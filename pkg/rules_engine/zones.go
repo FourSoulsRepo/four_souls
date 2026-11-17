@@ -314,8 +314,9 @@ func (g *Game) DestroyObject(p PlayerID, id ObjectID) bool {
 }
 
 // GainControl moves an item in play to p: "steal an item". It stays the
-// same object; only its controller changes (R-MECH-38). A shop item
-// leaves its slot, which is refilled.
+// same object; only its controller changes (R-MECH-38); the event's By
+// names the old controller (19.193). A shop item leaves its slot, which
+// is refilled.
 func (g *Game) GainControl(p PlayerID, id ObjectID) {
 	o := g.Object(id)
 	if o.Zone.Kind != ZoneInPlay || o.Controller == p {
@@ -333,7 +334,7 @@ func (g *Game) GainControl(p PlayerID, id ObjectID) {
 	g.Players[from].InPlay = remove(g.Players[from].InPlay, id)
 	o.Controller = p
 	g.Players[p].InPlay = append(g.Players[p].InPlay, id)
-	g.emit(Event{Kind: EvGainedTreasure, Player: p, Object: id, Card: o.Card, Text: "stolen"})
+	g.emit(Event{Kind: EvGainedTreasure, Player: p, Object: id, Card: o.Card, Text: "stolen", By: int(from) + 1}) // 19.193
 }
 
 // ShopItems lists the items on top of the shop slots.

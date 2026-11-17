@@ -5846,7 +5846,7 @@ Totals by system (184 items):
    9. Go tests: `TestGreedEvent`, `TestAuctionGavel` see the events.
    10. Steps' checksums change; engine 0.5.4 is unreleased (`eventVersion`).
 
-### [ ] 19.193 No event names the player an item or soul is taken from
+### [x] 19.193 No event names the player an item or soul is taken from
 
 1. Goal: a stolen item's event names both players.
 2. Report (22.10 sims check, 2026-11-17)
@@ -5858,3 +5858,14 @@ Totals by system (184 items):
    3. The old controller's items and souls drop with no event naming them.
 4. Tasks:
    1. Fix it in 22.10: the event names the old controller too.
+5. Fix (22.10, 2026-11-17)
+   1. `GainControl`'s in-place `gained_treasure` sets `By` to the old controller plus 1.
+   2. The same kind: `passCurse` changes a curse's holder in place.
+   3. Its `cursed` now sets `By` to the old holder plus 1.
+   4. Every in-place controller change goes through these two.
+   5. Checked every `InPlay = remove`: the rest move the card (new object).
+   6. `GainControl` callers: 15 in cards (b2, r, fsp2, cardkit), 2 in the engine.
+   7. A shop item's steal moves the card; it had no old controller.
+   8. Client: no change; the table shows the card leave, the line names the thief.
+   9. Go tests: `TestGainControlNamesTheOldController`, `TestPassCurseNamesTheOldHolder`.
+   10. Steps' checksums change; engine 0.5.4 is unreleased (`eventVersion`).

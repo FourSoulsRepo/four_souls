@@ -226,3 +226,26 @@ func TestLootStepGoesThroughReplacements(t *testing.T) {
 		t.Errorf("loot step drew %d, want 2 with loot doubling", got)
 	}
 }
+
+// 19.193: an item stolen in place names its old controller in By.
+func TestGainControlNamesTheOldController(t *testing.T) {
+	g := eventCheckGame(t)
+	id := giveItem(g, 0, g.Object(g.Decks[TreasureDeck][0]).Card)
+	g.GainControl(1, id)
+	events := g.takeEvents()
+	if len(events) != 1 || events[0].Kind != EvGainedTreasure || events[0].Player != 1 || events[0].By != 1 {
+		t.Fatalf("want one stolen gained_treasure for player 1 from player 0 (By 1), got %+v", events)
+	}
+}
+
+// 19.193: a curse passed to another player names its old holder in By.
+func TestPassCurseNamesTheOldHolder(t *testing.T) {
+	g := eventCheckGame(t)
+	id := giveItem(g, 0, g.Object(g.Decks[MonsterDeck][0]).Card)
+	g.Object(id).Role = RoleCurse
+	g.passCurse(id, 1)
+	events := g.takeEvents()
+	if len(events) != 1 || events[0].Kind != EvCursed || events[0].Player != 1 || events[0].By != 1 {
+		t.Fatalf("want one cursed for player 1 from player 0 (By 1), got %+v", events)
+	}
+}
