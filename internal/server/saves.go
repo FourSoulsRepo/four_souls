@@ -194,7 +194,7 @@ func (h *Hub) load(c *Client, env protocol.Envelope) {
 		t.seats[i] = tableSeat{name: s.Name, token: s.Token}
 		if s.Bot != "" {
 			// A bot sits down at once; only the players come back (ADR
-			// 030, Decision 16.2).
+			// 033, Decision 16.2).
 			t.seats[i] = tableSeat{name: s.Name, bot: s.Bot, botN: s.BotN, ready: true}
 		}
 	}

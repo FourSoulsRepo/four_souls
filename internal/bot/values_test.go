@@ -164,3 +164,24 @@ func TestValueShrink(t *testing.T) {
 		t.Errorf("z %v, u %v: want %v and %v", z, u, 9*scale, -scale)
 	}
 }
+
+// TestValuesKindWithoutMeasures: a kind with no measured card keeps the
+// flat value, unscaled; the measured items are scaled so their mean is
+// wItem (Decision 20.8).
+func TestValuesKindWithoutMeasures(t *testing.T) {
+	v := newValues(ValueFile{Cards: []ValueEntry{
+		{Key: "a_penny", Kind: KindLoot, Value: 1, N: 10},
+		{Key: "breakfast", Kind: KindPassive, Value: 20, N: 10},
+		{Key: "lunch", Kind: KindPassive, Value: 40, N: 10},
+		{Key: "the_d6", Kind: KindActive, N: 0},
+	}})
+	if got := v.mean(kindActive); got != wItem {
+		t.Errorf("the unmeasured kind's mean %v, want the flat %v", got, wItem)
+	}
+	if got := v.cards[kindActive]["the_d6"]; got != wItem {
+		t.Errorf("an unmeasured item %v, want the flat %v", got, wItem)
+	}
+	if got := v.mean(kindPassive); math.Abs(got-wItem) > 1e-9 {
+		t.Errorf("the measured items' mean %v, want %v", got, wItem)
+	}
+}

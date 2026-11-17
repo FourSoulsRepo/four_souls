@@ -103,7 +103,8 @@ func parseKind(s string) (valueKind, bool) {
 }
 
 // values is the table as the score reads it: each card's value shrunk
-// to its kind's mean, by kind; items scaled to the flat item value.
+// to its kind's mean, by kind; measured items scaled so their mean is
+// wItem; a kind with no measured card at its flat value, unscaled.
 type values struct {
 	cards [kindCount]map[string]float64
 	means [kindCount]float64
@@ -138,12 +139,14 @@ func mustValues(data []byte) *values {
 func newValues(f ValueFile) *values {
 	v := &values{scale: 1}
 	var vals, ses [kindCount][]float64
+	var measured [kindCount]bool // the kind has a card with a sample
 	items, itemSum := 0, 0.0
 	for _, e := range f.Cards {
 		k, _ := parseKind(e.Kind)
 		if e.N == 0 {
 			continue
 		}
+		measured[k] = true
 		vals[k] = append(vals[k], e.Value)
 		ses[k] = append(ses[k], e.SE*e.SE)
 		if k != kindLoot {
@@ -183,13 +186,15 @@ func newValues(f ValueFile) *values {
 			p := 1 / (e.SE * e.SE)
 			x = (x*p + m/v.tau2[k]) / (p + 1/v.tau2[k])
 		}
-		if k != kindLoot {
+		if k != kindLoot && measured[k] {
 			x *= v.scale
 		}
 		v.cards[k][e.Key] = x
 	}
 	for k := kindActive; k < kindCount; k++ {
-		v.means[k] *= v.scale
+		if measured[k] { // a kind with no measure keeps the flat value (Decision 20.8)
+			v.means[k] *= v.scale
+		}
 	}
 	return v
 }
