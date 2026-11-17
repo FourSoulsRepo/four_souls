@@ -49,17 +49,18 @@ type botAnswer struct {
 	err            error // no move: the room sends the forced answer
 }
 
-// botLevel is the bot package's level for a seat's protocol level.
-//
-// stand-in until line 1 merges (21.8): this branch's bot package knows
-// only random and policy, so standard and hard play the policy until
-// the levels of line 1 arrive; ParseLevel then knows them and the
-// stand-in is never reached. Remove it at the merge.
-func botLevel(level string) botai.Level {
-	if l, err := botai.ParseLevel(level); err == nil {
-		return l
+// botLevel is the bot package's level for a seat's protocol level: the
+// server seats standard and hard only (Decision 1.2); random, policy
+// and flat are for tests and the arena, and never reach a seat.
+func botLevel(level string) (botai.Level, error) {
+	switch level {
+	case protocol.BotStandard:
+		return botai.Standard, nil
+	case protocol.BotHard:
+		return botai.Hard, nil
+	default:
+		return "", fmt.Errorf("server: no bot level %q", level)
 	}
-	return botai.Policy // stand-in until line 1 merges (21.8)
 }
 
 // botBudget is the search budget of a level: hard thinks for the room's
@@ -181,13 +182,17 @@ func (r *Room) think(ctx context.Context, i int) {
 	rng := r.botRng()
 	seed, own := rng.Uint64(), r.game.PromptFor(p).Kind == engine.PromptPriority && r.game.Turn.Active == p
 	answerPace, actionPace := r.botSecond(botAnswerPace), r.botSecond(botActionPace+rng.Float64())
-	worlds, err := r.botWorlds(i, seed)
+	level, err := botLevel(s.bot)
+	var worlds world.Func
+	if err == nil {
+		worlds, err = r.botWorlds(i, seed)
+	}
 	ctx, cancel := context.WithCancel(ctx)
 	r.thinkN++
 	t := &thinker{id: r.thinkN, step: r.step, done: ctx.Done(), cancel: cancel}
 	r.thinkers[i] = t
 	in := botai.Input{
-		Seat: p, Level: botLevel(s.bot), Rand: rand.New(rand.NewPCG(seed, rng.Uint64())), //nolint:gosec // bot play, not security
+		Seat: p, Level: level, Rand: rand.New(rand.NewPCG(seed, rng.Uint64())), //nolint:gosec // bot play, not security
 		Budget: r.botBudget(s.bot), World: botai.World(worlds),
 	}
 	game, gameSeed := r.recInfo.game, r.setup.Seed

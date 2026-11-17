@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	botai "github.com/FourSoulsRepo/four_souls/internal/bot"
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
 	"github.com/FourSoulsRepo/four_souls/internal/world"
 	engine "github.com/FourSoulsRepo/rules_engine"
@@ -580,5 +581,20 @@ func TestBotsPanic(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// TestBotLevel: a seat's protocol level gives the bot package's level;
+// the server knows standard and hard only (ADR 030, Decision 1.2).
+func TestBotLevel(t *testing.T) {
+	for level, want := range map[string]botai.Level{protocol.BotStandard: botai.Standard, protocol.BotHard: botai.Hard} {
+		if got, err := botLevel(level); err != nil || got != want {
+			t.Errorf("botLevel(%q) = %q, %v; want %q", level, got, err, want)
+		}
+	}
+	for _, level := range []string{string(botai.Random), string(botai.Policy), string(botai.Flat), ""} {
+		if _, err := botLevel(level); err == nil {
+			t.Errorf("botLevel(%q) gives a level", level)
+		}
 	}
 }
