@@ -659,12 +659,24 @@ func TestThinkSlot(t *testing.T) {
 	}
 }
 
-// opaqueCtx hides its parent's cancel context: a WithCancel under it
-// watches it from a goroutine of its own until the child is cancelled,
-// so a child nobody cancels shows as a goroutine left behind.
-type opaqueCtx struct{ context.Context }
+// opaqueCtx is a context that is no cancel context of the standard
+// library: a WithCancel under it watches it from a goroutine of its own
+// until the child is cancelled, so a child nobody cancels shows as a
+// goroutine left behind. It ends when done closes.
+type opaqueCtx struct{ done <-chan struct{} }
 
-func (opaqueCtx) Value(any) any { return nil }
+func (opaqueCtx) Deadline() (time.Time, bool) { return time.Time{}, false }
+func (c opaqueCtx) Done() <-chan struct{}     { return c.done }
+func (opaqueCtx) Value(any) any               { return nil }
+
+func (c opaqueCtx) Err() error {
+	select {
+	case <-c.done:
+		return context.Canceled
+	default:
+		return nil
+	}
+}
 
 // TestBotsThinkerContextsEnd: a bot move leaves no live context behind
 // once its answer is applied (19.204).
@@ -672,7 +684,7 @@ func TestBotsThinkerContextsEnd(t *testing.T) {
 	r := botRoom(t, protocol.Options{}, "", "standard", "standard")
 	r.stopThinkers()
 	r.drive()
-	ctx := opaqueCtx{t.Context()}
+	ctx := opaqueCtx{t.Context().Done()}
 	before := runtime.NumGoroutine()
 	moves := 0
 	for moves < 20 && !r.game.Over {

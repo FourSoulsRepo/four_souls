@@ -29,7 +29,7 @@ export function BotIcon({ level }: { level: string }) {
   const look = botLook(level);
   return (
     <svg className="bot-icon" viewBox="0 0 24 24" aria-hidden="true" data-testid="bot-icon" data-level={look}>
-      <path fillRule="evenodd" d={botPaths[look]} />
+      <path fillRule="evenodd" d={look === 'hard' ? botPaths.hard : botPaths.standard} />
     </svg>
   );
 }

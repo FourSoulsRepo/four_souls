@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"context"
 	"math"
 	"testing"
 
@@ -29,7 +30,7 @@ func TestPlayGainKnown(t *testing.T) {
 	for _, id := range before.Players[0].Hand {
 		nickel = id
 	}
-	gain, ok, err := PlayGain(fixedWorld(before), 0, nickel, []uint64{1, 2, 3, 4})
+	gain, ok, err := PlayGain(context.Background(), fixedWorld(before), 0, nickel, []uint64{1, 2, 3, 4})
 	if err != nil || !ok {
 		t.Fatalf("PlayGain: ok %v, %v", ok, err)
 	}
@@ -70,7 +71,7 @@ func TestValuesShrink(t *testing.T) {
 		{Key: "lunch", Kind: KindPassive, Value: 30, SE: 1, N: 50},
 	}})
 	m := 20.0
-	tau2 := (math.Pow(10-m, 2)+math.Pow(30-m, 2))/1 - 1 // sample variance (n-1 = 1) less the mean se²
+	tau2 := ((10-m)*(10-m)+(30-m)*(30-m))/1 - 1 // sample variance (n-1 = 1) less the mean se²
 	shrunk := (10/1.0 + m/tau2) / (1/1.0 + 1/tau2)
 	scale := wItem * 2 / (10 + 30)
 	if got, want := v.cards[kindPassive]["breakfast"], shrunk*scale; math.Abs(got-want) > 1e-9 {

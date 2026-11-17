@@ -33,8 +33,8 @@ const (
 // are settled as the standard level settles a candidate, on the same
 // draws; the gain is the best one's mean gain, draw by draw, each draw's
 // gain clipped to ±ValueClip. ok is false when the seat may not play or
-// use the card now, or has no way to do nothing.
-func PlayGain(world World, p engine.PlayerID, id engine.ObjectID, draws []uint64) (gain float64, ok bool, err error) {
+// use the card now, or has no way to do nothing. ctx ends it early.
+func PlayGain(ctx context.Context, world World, p engine.PlayerID, id engine.ObjectID, draws []uint64) (gain float64, ok bool, err error) {
 	if len(draws) == 0 {
 		return 0, false, errors.New("bot: no draws")
 	}
@@ -56,13 +56,13 @@ func PlayGain(world World, p engine.PlayerID, id engine.ObjectID, draws []uint64
 		return 0, false, nil
 	}
 	sc := scoring{dig: digValue(w), flat: true}
-	base, _, err := try(context.Background(), w, p, nothing, draws, sc)
+	base, _, err := try(ctx, w, p, nothing, draws, sc)
 	if err != nil {
 		return 0, false, err
 	}
 	best := 0.0
 	for i, in := range plays {
-		t, _, err := try(context.Background(), w, p, in, draws, sc)
+		t, _, err := try(ctx, w, p, in, draws, sc)
 		if err != nil {
 			return 0, false, err
 		}

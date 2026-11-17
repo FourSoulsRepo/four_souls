@@ -335,7 +335,7 @@ func measureAll(ctx context.Context, jobs []card, pos []position, c config) ([]m
 		wg.Go(func() {
 			for i := range next {
 				out[i] = measured{card: jobs[i]}
-				out[i].xs, out[i].uses, errs[i] = measure(jobs[i], pos, c)
+				out[i].xs, out[i].uses, errs[i] = measure(ctx, jobs[i], pos, c)
 				mu.Lock()
 				done++
 				c.progress.printf("  %d/%d %s %s: %d samples, %d uses\n", done, len(jobs), jobs[i].kind, jobs[i].ref, len(out[i].xs), len(out[i].uses))
@@ -362,7 +362,7 @@ func measureAll(ctx context.Context, jobs []card, pos []position, c config) ([]m
 // of the card's own, those where the card lies in its deck, and for
 // loot those where the seat may play it. For an active item, uses are
 // also the gains of using it over doing nothing, where the seat may.
-func measure(x card, pos []position, c config) (xs, uses []float64, err error) {
+func measure(ctx context.Context, x card, pos []position, c config) (xs, uses []float64, err error) {
 	h := fnv.New64a()
 	_, _ = h.Write([]byte(x.kind + " " + string(x.ref)))
 	rng := rand.New(rand.NewPCG(c.seed, h.Sum64())) //nolint:gosec // samples, not security
@@ -392,7 +392,7 @@ func measure(x card, pos []position, c config) (xs, uses []float64, err error) {
 			seeds[k] = rng.Uint64()
 		}
 		if !x.item() || x.kind == bot.KindActive {
-			gain, ok, err := bot.PlayGain(fixed(with), ps.p, nid, seeds[:lootDraws])
+			gain, ok, err := bot.PlayGain(ctx, fixed(with), ps.p, nid, seeds[:lootDraws])
 			if err != nil {
 				return nil, nil, fmt.Errorf("%s: %w", x.ref, err)
 			}

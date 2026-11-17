@@ -662,6 +662,7 @@ func attackGain(t *testing.T, g *engine.Game, p engine.PlayerID, known engine.Kn
 				end = in
 			case engine.IntentAttack:
 				attacks = append(attacks, in)
+			default: // other moves are not compared here
 			}
 		}
 		if len(attacks) == 0 {

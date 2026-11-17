@@ -302,7 +302,7 @@ func playGame(ctx context.Context, m Match, k int, r *Result) error {
 	var kinds []engine.IntentKind
 	step, turn, inTurn := 0, g.Turn.Number, 0
 	seatActs := make([]int, len(levels)) // per seat, this turn
-	attacked := false // the active player attacked this turn
+	attacked := false                    // the active player attacked this turn
 	guard := ""
 	for ; !g.Over && g.Turn.Number <= m.Cap; step++ {
 		if g.Turn.Number != turn {
