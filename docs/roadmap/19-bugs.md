@@ -5865,6 +5865,8 @@ Totals by system (184 items):
    3. The report ran without `GAME_SEED`: the test sent seed 0, a random deal.
    4. So the exact pair is checked by the Vitest built from the record.
    5. Full `make e2e-games`: 9 of 9 passed, 42.7 min, no clash.
+9. Owner notes (2026-11-17)
+   1. Owner marks 19.191 solved.
 
 ### [x] 19.192 No event when a card moves a player's ¢
 
@@ -5891,6 +5893,8 @@ Totals by system (184 items):
    8. Client: `lost_cents` and `gave_cents` have history lines already.
    9. Go tests: `TestGreedEvent`, `TestAuctionGavel` see the events.
    10. Steps' checksums change; engine 0.5.4 is unreleased (`eventVersion`).
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.192 solved.
 
 ### [x] 19.193 No event names the player an item or soul is taken from
 
@@ -5915,3 +5919,5 @@ Totals by system (184 items):
    8. Client: no change; the table shows the card leave, the line names the thief.
    9. Go tests: `TestGainControlNamesTheOldController`, `TestPassCurseNamesTheOldHolder`.
    10. Steps' checksums change; engine 0.5.4 is unreleased (`eventVersion`).
+6. Owner notes (2026-11-17)
+   1. Owner marks 19.193 solved.
