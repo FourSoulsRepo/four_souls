@@ -113,6 +113,9 @@ Use option 1.
    19. `declared` may come with `setup.stack`: responses resolve before the choice.
 11. `expect` comes from the rules, never from a run (5.25).
    1. A tool may write `setup` and `steps`; never `expect` (23.7).
+   2. `enginetest` dumps a Go test with `SITUATION_DUMP` (23.7).
+   3. The dump adds `title`, `sets`, an empty `source`, and `todo`.
+   4. `todo` lists what it can't say; the runner rejects it until removed.
 12. Runner
    1. `enginetest.RunSituations` runs a set's tree in its `go test`.
    2. One subtest per file, named by its path in the tree.

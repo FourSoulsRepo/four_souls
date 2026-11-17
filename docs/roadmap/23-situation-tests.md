@@ -264,7 +264,7 @@ Ideas: TS-13, LR-04, R-03.
    6. New in `r`: Red Vise spares a player with 2 loot cards.
    7. `stack/three-stacked-events.json` also checks `resolved`.
 
-### [ ] 23.7 Dump a Go test's setup as a file
+### [x] 23.7 Dump a Go test's setup as a file
 
 1. Goal: a tool writes `setup` and `steps` from a Go test run.
 2. Tasks:
@@ -274,6 +274,19 @@ Ideas: TS-13, LR-04, R-03.
    4. Hand-set state it can't express is listed as a TODO.
 3. Done when:
    1. A dumped b2 test, with `expect` from its Go checks, passes.
+4. Done (2026-11-18):
+   1. `SITUATION_DUMP=<dir>` makes each `Table` write a draft at its test's end.
+   2. Path: `<dir>/<package folder>/<TestName>.json`; relative from the repo root.
+   3. It writes `title`, `sets`, `setup`, `steps`, an empty `source`; no `expect`.
+   4. `rolls`: every die thrown, forced or random, from the events.
+   5. Hand-set state before step 1 goes into setup where a field says it.
+   6. A rebuild from the dumped setup is compared with the test's table.
+   7. What still differs is a `todo` line; so is a write between steps.
+   8. Direct `G.Apply` calls: read from the engine's applied-intent log by reflect.
+   9. `todo` is no situation field; the author removes it.
+   10. Moved: TestDinga, dumped, `expect` by hand from the card text.
+   11. Wiki: `Situation-payload.md`, "Dump a Go test".
+   12. Lint: `enginetest` may import `os`; only tests import it (depguard nolint).
 
 ### [ ] 23.8 Pilot: move one group
 

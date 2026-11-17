@@ -379,3 +379,53 @@ func TestSituations(t *testing.T) {
 ```
 
 `go:embed` fails on a folder with no files, so a package adds this test with its first file, not before. A cross-set file in `cards/testdata/situations/` passes every set (`cards.Sets()` and the challenge set) the same way.
+
+## Dump a Go test
+
+A Go card test can write its own draft file (23.7): `enginetest.Table` records its setup and every step it takes through the `Table` helpers, and with the `SITUATION_DUMP` env var set it writes them as JSON when the test ends. Run it for one test:
+
+```sh
+cd pkg/rules_engine
+SITUATION_DUMP=.cache/situations go test ./cards/b2 -run 'TestDinga$' -count=1
+```
+
+A relative folder is from the repository root (`go test` runs in the package folder), and `.cache/` is not tracked. Each table writes `<folder>/<package folder>/<TestName>.json`, e.g. `.cache/situations/b2/TestDinga.json`; a subtest is a subfolder (`TestX/case.json`), and a second table in one test gets `-2`. Without the env var a table records nothing and writes nothing.
+
+```json
+{
+  "title": "Dinga",
+  "source": [],
+  "sets": ["b2"],
+  "setup": {"players": [{"character": "isaac"}, {"character": "cain"}], "active": 0, "monsters": ["dinga"], "rolls": [6, 6, 6, 3]},
+  "steps": [{"player": 0, "kind": "attack", "choices": ["dinga"]}],
+  "todo": ["a draft of TestDinga (23.7): …", "setup.rolls are every die the test threw, forced or not"]
+}
+```
+
+(The file is indented one value per line; it is shown compact here.)
+
+What it records:
+
+* `title` from the test name, `sets` by code, and the setup the test built (`NewSetup`, `New` and the set helpers on them).
+* State the test set by hand before its first step, where a setup field says it: cents, damage, items, hand, souls, deactivated cards, counters, `eternal`, `extra_loot_plays`, slot cards, `monster_damage`, slot `counters`, `loot_plays`, `attacks`, `purchases`, and cards put on top of a deck (`G.PutOnDeck`) as `decks`.
+* `rolls`: every die the test threw, in order, forced (`G.ForceRolls`, `Attack`'s rolls) or random, so the file throws the same dice.
+* A step per outermost helper, with its choices as the plain labels the test gave: `Activate`, `Start` and `Refused` are `activate`, `Play` is `play`, `Attack` and `Do` with an attack are `attack`, `EndTurn` is `end_turn`, `Pass` is `pass`, `Choose` is `choose`, `RevealFromDeck` is `reveal`, and `ThrowPending` a `throw` per die. `Settle`'s choices go to the step before it. `UntilChoose` adds nothing: the step before it stops at the question when a `choose` follows.
+* Intents the test applied itself (`tb.G.Apply`, `tb.G.Settle`) become steps too, read from the game's applied-intent log; passes and throws after a step are left out, since the runner settles each step.
+
+It never writes `expect`: an expected value comes from the rules, never from a run (CLAUDE.md 5.25, ADR 033). `source` is an empty list to fill.
+
+`todo` lists what the file can't say yet, and the work left:
+
+* State set by hand that no setup field says (`Players[1].SkipTurns`, a boost, a pushed stack item), found by rebuilding the table from the dumped setup and comparing it with the test's table before its first step.
+* State changed between two steps outside a helper (`tb.G.Players[0].Cents = 3`, a `PutOnDeck` mid-test, `tb.G.Run()`).
+* A choice made by a direct `G.Apply` (its label is unknown: `#<index>`), a response in the middle of a stack (owner answer 7: start from `setup.stack`), a helper that does not settle (`Start`, `Pass`), and a `Refused` step whose `expect` needs `allowed: false`.
+
+`todo` is no situation field, so the runner rejects the file until it is gone. To turn a draft into a test file:
+
+1. Check each `todo` line; a test with state no field says stays Go (ADR 033).
+2. Write `title` as the question, and fill `source`.
+3. Write `expect` from the Go test's checks and their source comments or card text; more checks from the card text are fine, never fewer (owner answer 8).
+4. Remove `todo` and save it as `cards/<set>/testdata/situations/<card>/<case>.json`.
+5. Run the set's `go test`, and delete the Go test it replaces in the same change (owner answer 1).
+
+`cards/b2/testdata/situations/dinga/doubles-rewards-on-a-6.json` is the draft above, finished: `TestDinga` is gone.
