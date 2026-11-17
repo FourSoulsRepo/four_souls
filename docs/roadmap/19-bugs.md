@@ -5080,12 +5080,13 @@ Totals by system (154 items):
    2. [x] Standard: a move does not beat doing nothing when any settle of it, or of doing nothing, was cut off.
    3. [x] Go test: a cut settle never beats doing nothing; a finished one still can.
    4. [x] ADR 030 Decision 8.4 and 8.6: the rule.
-   5. [ ] Replay seed 28: finishes, or the guard hits elsewhere.
+   5. [x] Replay seed 28: finishes, or the guard hits elsewhere.
 5. Fix (2026-11-17)
    1. `settle` returns false when `settleSteps` cut it off; `try` reports a cut over its draws.
    2. `uncut` (standard only): such a move scores at most doing nothing less `wAct`; no number changed.
    3. Tests: `TestUncut` (fails with the rule taken out), `TestSettleEnds`.
    4. ADR 030 Decision 8.4.3.
+   5. Replay after the fix: seed 28 standard×4 ends with a winner at turn 69, 9017 intents (1443 not passes), no guard; longest turn 365 intents (was: guard at 30000, turn 110).
 6. Checked (5.24)
    1. The fix is in `judge`'s input, by kind of prompt only: every paid or repeatable ability, loot play, and other move on a deep stack.
    2. `measure.go` (the card values) uses `try` too; its table is not regenerated here (no number changes); its stack positions are few.
