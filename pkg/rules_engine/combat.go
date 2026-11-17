@@ -312,17 +312,17 @@ type hpStatic struct {
 // in the order eachPart visits them.
 func (g *Game) hpStatics(in []ObjectID, buf []hpStatic) []hpStatic {
 	for _, id := range in {
-		for _, face := range g.facesOf(id) {
+		g.eachFace(id, func(face CardRef) {
 			d, ok := g.cards.find(face)
 			if !ok {
-				continue
+				return
 			}
 			for i := range d.Statics {
 				if st := d.Statics[i].Stat; st == StatPlayerHP || st == StatMonsterHP {
 					buf = append(buf, hpStatic{src: id, s: &d.Statics[i]})
 				}
 			}
-		}
+		})
 	}
 	return buf
 }

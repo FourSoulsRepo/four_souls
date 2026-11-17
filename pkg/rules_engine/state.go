@@ -408,26 +408,32 @@ func (g *Game) Checksum() (uint64, error) {
 // soul only counts for its value (R-CARD-18).
 func (g *Game) inPlay() []ObjectID {
 	var out []ObjectID
+	g.eachInPlay(func(id ObjectID) { out = append(out, id) })
+	return out
+}
+
+// eachInPlay calls f for each object of inPlay, in its order, without
+// building the list: stats read it at every step (21.10).
+func (g *Game) eachInPlay(f func(ObjectID)) {
 	for _, pl := range g.Players {
-		out = append(out, pl.Character)
+		f(pl.Character)
 		for _, id := range pl.InPlay {
 			if g.Object(id).Role != RoleSoul || g.soulKeepsAbilities(id) {
-				out = append(out, id)
+				f(id)
 			}
 		}
 	}
 	// Shop items' abilities do not work in the shop (R-CARD-05).
-	for _, rows := range [][]Slot{g.Monsters, g.Rooms, g.Bosses, g.Minions} {
+	for _, rows := range [...][]Slot{g.Monsters, g.Rooms, g.Bosses, g.Minions} {
 		for _, s := range rows {
 			if top, ok := s.TopOf(); ok && g.Object(top).Zone.Kind == ZoneInPlay {
-				out = append(out, top)
+				f(top)
 			}
 		}
 	}
 	if g.Challenge != nil {
-		out = append(out, g.Challenge.Card)
+		f(g.Challenge.Card)
 	}
-	return out
 }
 
 // ManyDice is a pending "roll several dice, one is the result".
@@ -462,14 +468,27 @@ type Gain struct {
 // facesOf lists the cards whose abilities an object has: the card it
 // acts as, then any it gained (R-ABIL-38: Glitch, Golden Trinket).
 func (g *Game) facesOf(id ObjectID) []CardRef {
-	out := []CardRef{g.CardOf(id)}
-	for _, gn := range g.Object(id).gains() {
-		out = append(out, gn.Card)
-	}
-	if d, ok := g.cards.find(out[0]); ok && d.GainsAbilities != nil {
-		out = append(out, d.GainsAbilities(g, id)...)
-	}
+	var out []CardRef
+	g.eachFace(id, func(c CardRef) { out = append(out, c) })
 	return out
+}
+
+// eachFace calls f for each card of facesOf, in its order, without
+// building the list (21.10).
+func (g *Game) eachFace(id ObjectID, f func(CardRef)) {
+	card := g.CardOf(id)
+	f(card)
+	if o := g.Object(id); o.Gained != "" {
+		f(o.Gained)
+		for _, gn := range o.MoreGained {
+			f(gn.Card)
+		}
+	}
+	if d, ok := g.cards.find(card); ok && d.GainsAbilities != nil {
+		for _, c := range d.GainsAbilities(g, id) {
+			f(c)
+		}
+	}
 }
 
 // GainAbilities gives an object the abilities of card till the end of
