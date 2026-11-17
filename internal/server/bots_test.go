@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"log"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -649,4 +650,46 @@ func TestThinkSlot(t *testing.T) {
 	if in, _, ok := thinkSlot(ctx, nil, hard, time.Hour); !ok || in.Level != botai.Hard {
 		t.Error("no limit: hard waited")
 	}
+}
+
+// opaqueCtx hides its parent's cancel context: a WithCancel under it
+// watches it from a goroutine of its own until the child is cancelled,
+// so a child nobody cancels shows as a goroutine left behind.
+type opaqueCtx struct{ context.Context }
+
+func (opaqueCtx) Value(any) any { return nil }
+
+// TestBotsThinkerContextsEnd: a bot move leaves no live context behind
+// once its answer is applied (19.204).
+func TestBotsThinkerContextsEnd(t *testing.T) {
+	r := botRoom(t, protocol.Options{}, "", "standard", "standard")
+	r.stopThinkers()
+	ctx := opaqueCtx{t.Context()}
+	before := runtime.NumGoroutine()
+	moves := 0
+	for moves < 20 && !r.game.Over {
+		r.startThinkers(ctx)
+		if r.playerAnswers() {
+			continue
+		}
+		select {
+		case req := <-r.in:
+			if req.bot != nil {
+				moves++
+			}
+			r.handle(req)
+		case <-time.After(5 * time.Second):
+			t.Fatal("no bot move came")
+		}
+	}
+	r.stopThinkers()
+	n := runtime.NumGoroutine()
+	for range 200 {
+		if n <= before {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+		n = runtime.NumGoroutine()
+	}
+	t.Fatalf("%d bot moves left %d goroutines behind", moves, n-before)
 }

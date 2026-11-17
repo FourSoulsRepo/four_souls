@@ -268,6 +268,10 @@ func (r *Room) think(ctx context.Context, i int) {
 	}
 	game, gameSeed, slots, wait := r.recInfo.game, r.setup.Seed, r.thinkSlots, r.botThink
 	go func() {
+		// The thinker's context ends with its goroutine: else each move's
+		// context stays a child of the room's until the room ends (19.204).
+		// botMove checks the answer's id and step, never its context.
+		defer cancel()
 		begin := time.Now()
 		a := &botAnswer{seat: i, id: t.id, step: t.step, err: err}
 		if err == nil {
