@@ -224,6 +224,7 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    1. `Seat` gets `bot` (the level) and `bot_n` (its number, from 1).
    2. `Seat.Name` of a bot is `Bot N`, in English, for records and logs.
    3. The client shows a translated name with the level, and a robot icon.
+      1. The robot follows the level, from `Seat.bot`, never from the name's text (owner, 2026-11-17): standard has round eyes, a straight mouth and an antenna; hard the same head with slanted eyes under brows, a jagged mouth and two horns. Own SVG paths, one color.
    4. New message `bot`: `{seat, level}`; an empty level takes the bot away.
       1. A new level for a bot's seat keeps its number and name.
       2. A new bot takes the smallest number no seat uses, as a number or as a name.

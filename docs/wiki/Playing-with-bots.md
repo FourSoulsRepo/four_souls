@@ -34,6 +34,8 @@ Bots wait a moment before each move so you can follow them: about 0.7 seconds fo
 
 A bot's name is **Bot N (level)** after a robot icon, wherever the game names a player: its area on the table, the turn badge, the history, the stack, the banners, the vote window and the game end.
 
+Each level has its own robot: a Standard bot's is friendly, with round eyes and an antenna; a Hard bot's has horns, angry eyes and a jagged mouth. A replay shows the bots the same way.
+
 * A bot is never away or disconnected, and the game never pauses for it.
 * Bots do not vote on a kick or a Soft rollback.
 * A bot stays in its seat through a save, a server restart and a match record.
