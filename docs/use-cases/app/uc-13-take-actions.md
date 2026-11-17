@@ -216,6 +216,12 @@
   * After the active player's roll, each helper throws in turn.
   * The helper gets the Throw button; others read "<name> is throwing".
   * The stack line names the helper: "Attack: Fay rolls against Fatty".
+* **5r. Pick a deck (20.26):** e.g. The Curse, Sleight of Hand.
+  * Each deck shows as its back, its name under it; no button.
+  * A discard pile shows as its top card, e.g. The Curse's ↷.
+  * No card count; the piles grow in like other card options.
+  * A click picks it; the deck stays on the table.
+  * Without the private images: plain backs with the deck's word.
 
 ## Postconditions
 

@@ -1,7 +1,8 @@
 // What the player may do now, from the update's allowed intents (7.7).
 // Pure: the table only offers what the server allows.
+import type { Kind } from './cards';
 import { say, t } from './i18n';
-import type { Block, Intent, ModeView, Msg, MsgNames, OptionView, OutcomeView, Prompt, Update } from './protocol';
+import type { Block, GameView, Intent, ModeView, Msg, MsgNames, OptionView, OutcomeView, Prompt, Update } from './protocol';
 
 // Engine enums, in Go's order (pkg/rules_engine/prompt.go, choice.go).
 export const IntentKind = {
@@ -81,6 +82,17 @@ export interface ChoiceOption extends Action {
   target?: OptionView;
   // outcome is what picking it leads to (19.17).
   outcome?: OutcomeView;
+  // pile is the deck or discard pile the option is, if it is one (20.26).
+  pile?: Pile;
+}
+
+// Pile is a deck option ("ask.deck.loot") or a discard pile option
+// ("ask.discard.loot"), as The Curse asks (20.26). top is a discard
+// pile's top card, if the view has it.
+export interface Pile {
+  kind: Kind;
+  discard: boolean;
+  top?: string;
 }
 
 // outcomeLines says what an order of replacement effects gives, for the
@@ -256,11 +268,13 @@ export function actionsFor(u: Update, names: MsgNames, explained: Block[] = []):
         const label = option?.key ? say(option, names) : t('choice.option_n', { n: i + 1 });
         const target = u.view.options?.at(i);
         const card = optionCard(option);
+        const pile = optionPile(option, u.view.discards);
         const trigger = w.purpose === Purpose.triggerOrder ? triggerLabel(option) : undefined;
         return {
           label,
           intent,
           ...(card ? { card } : {}),
+          ...(pile ? { pile } : {}),
           ...trigger,
           ...(target && (target.object || target.is_player || target.deck || target.stack_id) ? { target } : {}),
           ...(target?.outcome ? { outcome: target.outcome } : {}),
@@ -324,6 +338,24 @@ export function shownByChoice(u: Update | null | undefined, you: number): Set<st
 function optionCard(m?: Msg): string | undefined {
   const v = m?.key === 'ask.card' ? m.args?.card : undefined;
   return typeof v === 'object' && 'card' in v ? v.card : undefined;
+}
+
+// pileKinds are the engine's decks in Go's order (DeckKind), as the
+// option keys name them: "ask.deck.<kind>", "ask.discard.<kind>".
+const pileKinds: Kind[] = ['treasure', 'loot', 'monster', 'room'];
+
+// optionPile is the deck or discard pile an option is, if it is one
+// (20.26). discards are the view's discard tops, in deck order.
+function optionPile(m: Msg | undefined, discards: GameView['discards'] | undefined): Pile | undefined {
+  const match = /^ask\.(deck|discard)\.([a-z]+)$/.exec(m?.key ?? '');
+  const i = pileKinds.findIndex((k) => k === match?.[2]);
+  const kind = pileKinds.at(i);
+  if (!match || i < 0 || !kind) {
+    return undefined;
+  }
+  const discard = match[1] === 'discard';
+  const top = discard ? discards?.at(i)?.card : undefined;
+  return { kind, discard, ...(top ? { top } : {}) };
 }
 
 // triggerLabel splits a trigger order option, an ability ("ask.ability"),

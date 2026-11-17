@@ -593,6 +593,8 @@ Swapping it is the owner's call; not part of this step.
       1. Write the findings into ADR 027.
    2. The prompt marks an option as a deck or a discard, with its kind.
       1. One shared place in the engine; no per-card change.
+      2. Found: the option keys already do (`ask.deck.<kind>`, `ask.discard.<kind>`).
+      3. The client reads them; a Go test keeps the keys.
    3. The dialog shows each deck's back image for a deck option.
       1. The deck's name stays under it, for text and screen readers.
    4. A discard option shows its top card.
@@ -609,3 +611,11 @@ Swapping it is the owner's call; not part of this step.
    3. e2e: The Curse's choice shows deck backs, with a fixed deal.
    4. Screenshots before and after.
    5. `wails build -m -tags embed` and `make e2e` pass without images.
+7. Built (2026-11-17, main conversation):
+   1. ADR 027 "Deck choices": the reference has no deck option.
+   2. `optionPile` in `actions.ts`; `OptionPile` in `ChoiceDialog.tsx`.
+   3. Every `DeckQuestion` and `DiscardOption` card gets it at once.
+   4. The monster deck as an attack option in the dialog too.
+   5. UC-13 5r; wiki `Client.md`, `Animations.md` (`choice-grow`).
+   6. Found: The Curse's ↷ question reuses the trigger's words.
+      1. It asks "which deck into discard?"; logged as a bug in step 19.
