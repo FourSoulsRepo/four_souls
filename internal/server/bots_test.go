@@ -598,3 +598,45 @@ func TestBotLevel(t *testing.T) {
 		}
 	}
 }
+
+// TestThinkSlot: hard bots share the hub's slots (Decision 17.2): a
+// free slot is taken and given back; with none free a hard move turns
+// standard after the wait, so it still answers in time (17.3); a
+// cancelled ctx ends the wait; other levels need no slot. The hub has
+// max(1, GOMAXPROCS/2) slots.
+func TestThinkSlot(t *testing.T) {
+	if n := cap(NewHub().thinkSlots); n != thinkLimit() || n < 1 {
+		t.Fatalf("hub slots %d, limit %d", n, thinkLimit())
+	}
+	ctx := context.Background()
+	slots := make(chan struct{}, 1)
+	hard := botai.Input{Level: botai.Hard, Budget: botai.Budget{Time: time.Second}}
+	in, release, ok := thinkSlot(ctx, slots, hard, time.Millisecond)
+	if !ok || in.Level != botai.Hard || len(slots) != 1 {
+		t.Fatalf("free slot: %+v %v, %d taken", in, ok, len(slots))
+	}
+	start := time.Now()
+	in, release2, ok := thinkSlot(ctx, slots, hard, 20*time.Millisecond)
+	if !ok || in.Level != botai.Standard || in.Budget != (botai.Budget{}) || time.Since(start) < 20*time.Millisecond {
+		t.Errorf("no slot: %+v %v after %v", in, ok, time.Since(start))
+	}
+	release2()
+	if len(slots) != 1 {
+		t.Error("a standard move gave back a slot it never took")
+	}
+	cctx, cancel := context.WithCancel(ctx)
+	cancel()
+	if _, _, ok := thinkSlot(cctx, slots, hard, time.Hour); ok {
+		t.Error("a cancelled wait went on")
+	}
+	if in, _, ok := thinkSlot(ctx, slots, botai.Input{Level: botai.Standard}, time.Hour); !ok || in.Level != botai.Standard {
+		t.Error("standard waited for a slot")
+	}
+	release()
+	if len(slots) != 0 {
+		t.Error("the slot was not given back")
+	}
+	if in, _, ok := thinkSlot(ctx, nil, hard, time.Hour); !ok || in.Level != botai.Hard {
+		t.Error("no limit: hard waited")
+	}
+}

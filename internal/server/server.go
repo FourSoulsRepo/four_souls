@@ -55,6 +55,24 @@ type Config struct {
 	// Bots is which bot levels a host may seat: BotsOff, BotsStandard or
 	// BotsAll (ADR 030, Decision 17). An app's own host keeps BotsAll.
 	Bots string `json:"bots"`
+	// BotThink is the hard bot's time budget per move, a Go duration
+	// such as "1.5s" (ADR 030, Decision 17.2.1): minBotThink to
+	// maxBotThink. An app's own host keeps the default.
+	BotThink string `json:"bot_think"`
+}
+
+// The bounds of Config.BotThink: below a tenth of a second hard is
+// hardly more than standard; above ten seconds the table waits long.
+const (
+	minBotThink = 100 * time.Millisecond
+	maxBotThink = 10 * time.Second
+)
+
+// botThink is the duration of a Config.BotThink value, and whether it
+// is one within the bounds.
+func botThink(s string) (time.Duration, bool) {
+	d, err := time.ParseDuration(s)
+	return d, err == nil && d >= minBotThink && d <= maxBotThink
 }
 
 // Values of Config.Bots.
@@ -80,7 +98,7 @@ func botLevels(mode string) ([]string, bool) {
 
 // DefaultConfig is used for settings the flags and file leave out.
 func DefaultConfig() Config {
-	return Config{Port: protocol.DefaultPort, Records: "records", Retention: 30, Saves: "saves", Presence: true, EmptyMinutes: 30, GameHours: 24, Bots: BotsAll}
+	return Config{Port: protocol.DefaultPort, Records: "records", Retention: 30, Saves: "saves", Presence: true, EmptyMinutes: 30, GameHours: 24, Bots: BotsAll, BotThink: hardThink.String()}
 }
 
 // LoadConfig reads a JSON config file over the defaults.
@@ -110,6 +128,9 @@ func (c Config) Check() error {
 	}
 	if _, ok := botLevels(c.Bots); !ok {
 		return fmt.Errorf("server: bots %q is not %s, %s or %s", c.Bots, BotsOff, BotsStandard, BotsAll)
+	}
+	if _, ok := botThink(c.BotThink); !ok {
+		return fmt.Errorf("server: bot_think %q is not a duration from %s to %s", c.BotThink, minBotThink, maxBotThink)
 	}
 	return nil
 }
@@ -147,6 +168,7 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 	hub.records, hub.cards, hub.seed, hub.saves = cfg.Records, cardTexts(), cfg.Seed, cfg.Saves
 	hub.hostOnly, hub.presence = cfg.HostOnly, cfg.Presence
 	hub.bots, _ = botLevels(cfg.Bots)
+	hub.botThink, _ = botThink(cfg.BotThink)
 	hub.name, _ = protocol.CleanServerName(cfg.Name)
 	hub.emptyLimit = time.Duration(cfg.EmptyMinutes) * time.Minute
 	hub.gameLimit = time.Duration(cfg.GameHours) * time.Hour

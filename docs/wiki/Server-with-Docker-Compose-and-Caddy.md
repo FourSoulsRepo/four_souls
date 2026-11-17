@@ -34,6 +34,7 @@ FOUR_SOULS_PRESENCE=
 FOUR_SOULS_EMPTY_MINUTES=
 FOUR_SOULS_GAME_HOURS=
 FOUR_SOULS_BOTS=
+FOUR_SOULS_BOT_THINK=
 ```
 
 Another `FOUR_SOULS_*` setting from the Options table goes into `.env` and into the `environment` list of `server` in `docker-compose.yml`.

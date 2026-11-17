@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand/v2"
+	"runtime"
 	"runtime/debug"
 	"slices"
 	"time"
@@ -30,9 +31,46 @@ const (
 	botActionPace = 1.0
 )
 
-// hardThink is the hard bot's time budget per move (Decision 9.8). The
-// flag -bot_think comes with the thinker limit (21.10).
+// hardThink is the hard bot's time budget per move (Decision 9.8), the
+// default of the flag -bot_think (Decision 17.2.1).
 const hardThink = 1500 * time.Millisecond
+
+// thinkLimit is how many hard bots may think at once in the whole hub
+// (Decision 17.2): half the cores Go uses, at least one. The rest wait.
+func thinkLimit() int {
+	return max(1, runtime.GOMAXPROCS(0)/2)
+}
+
+// thinkSlot takes a hard thinker's slot of slots (Decision 17.2) and
+// returns the input to choose with and the slot's release. A slot not
+// free within wait (the think budget) makes this move a standard one,
+// which needs no slot: so a waiting bot still answers in about twice
+// its budget, far before any response timer (Decision 17.3). ok is
+// false when ctx ended first. Any other level, or nil slots, goes at
+// once.
+func thinkSlot(ctx context.Context, slots chan struct{}, in botai.Input, wait time.Duration) (botai.Input, func(), bool) {
+	none := func() {}
+	if in.Level != botai.Hard || slots == nil {
+		return in, none, true
+	}
+	release := func() { <-slots }
+	select {
+	case slots <- struct{}{}:
+		return in, release, true
+	default:
+	}
+	t := time.NewTimer(wait)
+	defer t.Stop()
+	select {
+	case slots <- struct{}{}:
+		return in, release, true
+	case <-t.C:
+		in.Level, in.Budget = botai.Standard, botai.Budget{}
+		return in, none, true
+	case <-ctx.Done():
+		return in, none, false
+	}
+}
 
 // thinker is one open bot move.
 type thinker struct {
@@ -227,12 +265,16 @@ func (r *Room) think(ctx context.Context, i int) {
 		Seat: p, Level: level, Rand: rand.New(rand.NewPCG(seed, rng.Uint64())), //nolint:gosec // bot play, not security
 		Budget: r.botBudget(s.bot), World: botai.World(worlds),
 	}
-	game, gameSeed := r.recInfo.game, r.setup.Seed
+	game, gameSeed, slots, wait := r.recInfo.game, r.setup.Seed, r.thinkSlots, r.botThink
 	go func() {
 		begin := time.Now()
 		a := &botAnswer{seat: i, id: t.id, step: t.step, err: err}
 		if err == nil {
-			botChoose(ctx, in, a, func(v any) { logBotPanic(game, gameSeed, seed, t.step, i, v) })
+			use, release, ok := thinkSlot(ctx, slots, in, wait)
+			if ok {
+				botChoose(ctx, use, a, func(v any) { logBotPanic(game, gameSeed, seed, t.step, i, v) })
+			}
+			release()
 		}
 		pace := answerPace
 		if own && a.err == nil && a.intent.Kind != engine.IntentPass {

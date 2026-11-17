@@ -140,8 +140,10 @@ type Room struct {
 	botRand  *mrand.Rand
 	memory   []*world.Memory
 	botThink time.Duration
-	botWork  atomic.Int64
-	worldFor func(*engine.Game, engine.PlayerID, engine.Known, uint64) (world.Func, error)
+	// thinkSlots is the hub's limit on hard thinkers; nil: none.
+	thinkSlots chan struct{}
+	botWork    atomic.Int64
+	worldFor   func(*engine.Game, engine.PlayerID, engine.Known, uint64) (world.Func, error)
 }
 
 // NewRoom prepares a game for seated players; it starts in Run. The

@@ -163,6 +163,9 @@ type Hub struct {
 	// botThink is the hard bot's time budget per move (Decision 9.8);
 	// tests shorten it.
 	botThink time.Duration
+	// thinkSlots holds one token per hard bot thinking now, in every
+	// room: at most thinkLimit at once (Decision 17.2).
+	thinkSlots chan struct{}
 	// name is the server's name for the welcome (N-18).
 	name string
 	// restart is the folder for restart files (N-20); "" keeps nothing.
@@ -181,7 +184,7 @@ type Hub struct {
 
 // NewHub makes a lobby with the card sets the engine knows.
 func NewHub() *Hub {
-	return &Hub{in: make(chan hubRequest, 64), done: make(chan struct{}), sets: cards.Sets(), second: time.Second, presence: true, bots: protocol.BotLevels(), botThink: hardThink, now: time.Now, limitTick: time.Minute}
+	return &Hub{in: make(chan hubRequest, 64), done: make(chan struct{}), sets: cards.Sets(), second: time.Second, presence: true, bots: protocol.BotLevels(), botThink: hardThink, thinkSlots: make(chan struct{}, thinkLimit()), now: time.Now, limitTick: time.Minute}
 }
 
 // Connect adds a connection; its first message must be hello.
@@ -635,7 +638,7 @@ func (h *Hub) start(t *table) {
 
 // setUpRoom gives a new room the server's settings.
 func (h *Hub) setUpRoom(room *Room, n int, id, host string, sets []string) {
-	room.second, room.hub, room.saves, room.botThink = h.second, h, h.saves, h.botThink
+	room.second, room.hub, room.saves, room.botThink, room.thinkSlots = h.second, h, h.saves, h.botThink, h.thinkSlots
 	room.presenceOn = h.presence
 	room.recDir = h.records
 	room.recInfo = recordInfo{game: id, server: h.name, sets: sets, cards: h.cards}

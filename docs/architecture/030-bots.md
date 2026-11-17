@@ -310,9 +310,11 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       3. A bot of another level is refused with a translated message (Decision 10.5).
       4. The app's own server always allows every level.
    2. At most `GOMAXPROCS / 2` hard thinkers at once, at least 1; the rest wait.
-      1. Flag `-bot_think`: the hard budget per move, default 1.5 s (Decision 9.8); it comes with the limit in 21.10.
+      1. Flag `-bot_think`: the hard budget per move, default 1.5 s (Decision 9.8); ENV `FOUR_SOULS_BOT_THINK`, config `bot_think`, a Go duration from 100 ms to 10 s; any other value stops the start (21.10).
       2. The app's own server always uses the default.
+      3. One limit for the whole hub (`thinkSlots`); standard thinks without a slot.
    3. A waiting thinker still answers before the response timer.
+      1. A hard thinker that gets no slot within its budget plays that move as standard (21.10): it answers in about twice the budget, far under the shortest response timer (60 s).
    4. Load test: `cmd/server_load` gets tables with bots.
 18. Arena: how strength is checked
    1. `cmd/bot_arena`: whole games between levels, seeded, seats rotated.
