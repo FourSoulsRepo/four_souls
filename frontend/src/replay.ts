@@ -4,6 +4,7 @@
 import { PromptKind } from './actions';
 import type { RecordStep, RecordSummary } from './bridge';
 import type { CardInfo } from './cards';
+import { seatName as named } from './lobby';
 import type { Update } from './protocol';
 
 // replaySpeeds are the player's speeds (ADR 031, 4.5).
@@ -27,22 +28,23 @@ export interface Replaying {
   seat: number;
 }
 
-// seatName is the name of the seat the replay is seen from; its number
-// when the header has no such seat.
+// seatName is the name of the seat the replay is seen from, a bot's as
+// in the game (19.216); its number when the header has no such seat.
 export function seatName(summary: Pick<RecordSummary, 'seats'>, seat: number): string {
-  return summary.seats.find((s) => s.seat === seat)?.name ?? String(seat);
+  const s = summary.seats.find((x) => x.seat === seat);
+  return s ? named(s) : String(seat);
 }
 
 // replayUpdate is a step as playback takes it (ADR 031, 3.4, 3.5): its
-// events and view, the seats from the header; no intents, no aims, no
-// deadline, no rollback.
+// events and view, the seats from the header, a bot's level and number
+// too (19.216); no intents, no aims, no deadline, no rollback.
 export function replayUpdate(step: RecordStep, summary: Pick<RecordSummary, 'seats'>): Update {
   return {
     step: step.n,
     events: step.events,
     view: step.view,
     allowed: null,
-    seats: summary.seats.map((s) => ({ seat: s.seat, name: s.name, connected: true })),
+    seats: summary.seats.map((s) => ({ seat: s.seat, name: s.name, connected: true, ...(s.bot ? { bot: s.bot, bot_n: s.bot_n ?? 0 } : {}) })),
   };
 }
 

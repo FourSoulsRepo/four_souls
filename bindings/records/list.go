@@ -38,23 +38,32 @@ const (
 
 // Entry is one record of the list.
 type Entry struct {
-	Path      string   `json:"path"`
-	Name      string   `json:"name"`    // the file name
-	Started   int64    `json:"started"` // Unix ms; 0 when the header is unreadable
-	Players   []string `json:"players"` // in seat order
-	Finished  bool     `json:"finished"`
-	Winners   []string `json:"winners"`
-	Steps     int      `json:"steps"` // live steps
-	Challenge string   `json:"challenge"`
+	Path      string `json:"path"`
+	Name      string `json:"name"`    // the file name
+	Started   int64  `json:"started"` // Unix ms; 0 when the header is unreadable
+	Players   []Seat `json:"players"` // in seat order
+	Finished  bool   `json:"finished"`
+	Winners   []int  `json:"winners"` // seats
+	Steps     int    `json:"steps"`   // live steps
+	Challenge string `json:"challenge"`
 	// Why is "" when the record can be watched, else before_replays,
 	// newer or unreadable.
 	Why string `json:"why"`
 }
 
-// Seat is one player of a record.
+// Seat is one player of a record. Bot is a bot seat's level and BotN
+// its number, as in the record (ADR 033, 16.5): the app names a bot
+// "Bot N (level)" in its own language, with its robot, as in the game.
 type Seat struct {
 	Seat int    `json:"seat"`
 	Name string `json:"name"`
+	Bot  string `json:"bot,omitempty"`
+	BotN int    `json:"bot_n,omitempty"`
+}
+
+// seatOf is a record seat as the app reads it.
+func seatOf(s record.Seat) Seat {
+	return Seat{Seat: s.Seat, Name: s.Name, Bot: s.Bot, BotN: s.BotN}
 }
 
 // Card is the text of one card a record holds (RP-10).
@@ -122,7 +131,7 @@ func (r *Records) List() ([]Entry, error) {
 // entry reads one record's header and end, without its steps'
 // contents (record.ReadBrief), so a long list stays fast.
 func entry(path string) Entry {
-	e := Entry{Path: path, Name: filepath.Base(path), Players: []string{}, Winners: []string{}}
+	e := Entry{Path: path, Name: filepath.Base(path), Players: []Seat{}, Winners: []int{}}
 	f, err := os.Open(path) //nolint:gosec // a file of the records folder
 	if err != nil {
 		e.Why = whyUnreadable
@@ -142,16 +151,12 @@ func entry(path string) Entry {
 	}
 	h := rec.Header
 	e.Started, e.Challenge, e.Steps = h.Started.UnixMilli(), h.Setup.Challenge, len(rec.Live())
-	names := map[int]string{}
 	for _, s := range h.Seats {
-		e.Players = append(e.Players, s.Name)
-		names[s.Seat] = s.Name
+		e.Players = append(e.Players, seatOf(s))
 	}
 	if rec.End != nil && rec.End.Finished {
 		e.Finished = true
-		for _, w := range rec.End.Winners {
-			e.Winners = append(e.Winners, names[w])
-		}
+		e.Winners = append(e.Winners, rec.End.Winners...)
 	}
 	return e
 }
@@ -199,7 +204,7 @@ func summary(path string, rp *replay.Replay) Summary {
 		Challenge: h.Setup.Challenge, Difficulty: h.Setup.Difficulty, Steps: len(rp.Steps),
 	}
 	for _, seat := range h.Seats {
-		s.Seats = append(s.Seats, Seat{Seat: seat.Seat, Name: seat.Name})
+		s.Seats = append(s.Seats, seatOf(seat))
 	}
 	for _, c := range h.Cards {
 		s.Cards = append(s.Cards, Card{Ref: c.Ref, Name: c.Name, Type: c.Type, Effects: append([]string{}, c.Effects...)})

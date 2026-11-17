@@ -316,6 +316,30 @@ test("a card the app lacks plays from the record's text (10.3)", async ({ page }
   expect(known).toBe(false);
 });
 
+// A bot's seat in a record keeps its level and number (19.216): the
+// replay names it "Bot N (level)" after its level's robot, as the game
+// did, not by the record's plain "Bot N".
+test('a replay names a bot with its level and robot (19.216)', async ({ page }) => {
+  await page.goto('/?fake&nosplash');
+  const record = futureRecord();
+  const summary = { ...record.summary, seats: [{ seat: 0, name: 'Ann' }, { seat: 1, name: 'Bot 1', bot: 'hard', bot_n: 1 }] };
+  await page.evaluate(
+    (r) => {
+      const w = window as unknown as { fakeFiles: Record<string, unknown>; fakePick: string };
+      w.fakeFiles = { [r.path]: { summary: r.summary, steps: r.steps } };
+      w.fakePick = r.path;
+    },
+    { ...record, summary },
+  );
+  await page.getByRole('button', { name: tr('menu.records'), exact: true }).click();
+  await page.getByRole('button', { name: tr('records.open_file') }).click();
+  await expect(where(page)).toHaveText(tr('replay.where', { i: 1, n: 2, turn: 1 }));
+  const name = tr('bot.name', { n: 1, level: tr('bot.level.hard') });
+  const bot = page.getByRole('region', { name, exact: true }).locator('.opp-name');
+  await expect(bot).toHaveText(name);
+  await expect(bot.getByTestId('bot-icon')).toHaveAttribute('data-level', 'hard');
+});
+
 // Line is one line of a record file (pkg/record).
 interface Line {
   kind: string;

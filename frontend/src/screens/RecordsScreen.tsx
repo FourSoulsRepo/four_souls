@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { BotText } from '../components/BotIcon';
 import { deleteRecord, exportRecord, listRecords, openRecord, pickRecordFile, type RecordEntry } from '../bridge';
 import { t } from '../i18n';
 import { useEscape } from '../keys';
@@ -89,8 +90,12 @@ export function RecordsScreen() {
               return (
                 <li key={r.path}>
                   <div className="records-entry">
-                    <span className="selectable">{name}</span>
-                    <span className="muted">{entryLine(r)}</span>
+                    <span className="selectable">
+                      <BotText text={name} seats={r.players} />
+                    </span>
+                    <span className="muted">
+                      <BotText text={entryLine(r)} seats={r.players} />
+                    </span>
                   </div>
                   {asking === r.path ? (
                     <div className="row records-buttons" role="group" aria-label={t('records.delete_ask')}>
