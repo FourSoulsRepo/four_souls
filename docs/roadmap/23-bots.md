@@ -51,6 +51,7 @@ Rules for this step (owner, 2026-11-16):
    3. No arena, e2e, sims, fuzz, lint or benchmarks until the check phase; its contents come from the lead.
    4. Stop only on a failed build or an architecture choice; a small choice is made and written as one line under its sub-step.
    5. `step-21-bots-ui` may merge into this branch before its e2e; the e2e runs in the check phase.
+13. Review fixes without subagents (owner, 2026-11-17); stronger than CLAUDE.md 5.21 and rules 7, 10 and 12: one session does every item in a row; before a commit only `go build ./...` and `npm run typecheck`; every test, e2e, arena and screenshot runs once at the end.
 
 ---
 
