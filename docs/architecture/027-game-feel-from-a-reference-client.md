@@ -1655,6 +1655,24 @@ Each sub-step of step 20 takes the part it needs.
     8. Not `--font-game`: capitals only, so "d0m1n1c132" read as "DØM1N…".
     9. Not one line: five translators did not fit the card's width.
 
+### Deck choices
+
+1. Checked 2026-11-17 for V-56 (owner), 20.26.
+   1. `ChoiceCardMgr`, `CustomChoiceConcealSpell`, `HiddenChoiceCardTextBuilder`.
+2. The reference has no deck option in a match.
+   1. Every choice option is a card object, as in "Choosing cards" 1.
+   2. "Choose One" sub-options are cards too.
+   3. Deck pickers (`DeckPickerTrayDisplay`) are menus, not match choices.
+3. So nothing to copy; ours follows "Choosing cards".
+   1. A deck option is its back at choice size.
+   2. A discard pile option is its top card.
+   3. The pile's name under it, in the "Credits" 13 look.
+   4. It grows in as other card options; no deal, no fly back.
+   5. Hover and pick as "Choosing cards" 6; the pick sound.
+4. Owner picks (2026-11-17).
+   1. The pick stays in the dialog, not on the table.
+   2. No card count on a deck option.
+
 ## Consequences
 
 ### Positive

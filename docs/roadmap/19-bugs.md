@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110 | 22 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195 | 23 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193 | 18 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
@@ -42,7 +42,7 @@ This step never closes; new reports are appended.
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166                                  | 3     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194 | 43 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179, 19.189 | 31 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179, 19.189, 19.196 | 32 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63, 19.129                                          | 2     |
@@ -57,15 +57,15 @@ This step never closes; new reports are appended.
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 
-Totals by system (186 items):
+Totals by system (188 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U, W | 43 |
+| Engine    | A, B, T, U, W | 44 |
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 53 |
 | Server    | H, N    | 4     |
-| e2e       | I, J    | 74    |
+| e2e       | I, J    | 75    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
@@ -5949,3 +5949,34 @@ Totals by system (186 items):
    4. No other spec adds strip tiles (`addTiles` lives in this file).
 6. Owner notes (2026-11-17)
    1. Owner marks 19.194 solved.
+
+### [ ] 19.195 The Curse's ↷ asks "which deck into discard?"
+
+1. Goal: The Curse's ↷ question says what the ability does.
+2. Report (20.26 screenshots, 2026-11-17)
+   1. The ↷ choice title: "Put the top card of which deck into discard?"
+   2. Card text: "Put the top card of any discard on top of its deck."
+   3. Screenshot: `.cache/screenshots/20.26/after/screen-20.26-curse-discard.png`.
+3. Cause (the card)
+   1. `discardQuestion` in `cards/b2/the_curse.go` reuses `theCursePutTheTop`.
+   2. That key is the start-of-turn trigger's question.
+4. Tasks:
+   1. A key of its own for the ↷ question, in every locale file.
+   2. Check every question built on `DiscardOption`, all sets (5.24).
+   3. Check other cards that reuse one ability's question for another.
+
+
+### [ ] 19.196 Attack strike test sees the monster grown mid-strike
+
+1. Goal: `playback.spec.ts:381` passes under a full parallel run.
+2. Report (20.26 gate run, 2026-11-17)
+   1. Chromium, line 407: the monster's box before the hit differs.
+   2. Expected 81.42 × 113.72 at (534.66, 192.58).
+   3. Got 81.80 × 114.24 at (534.48, 192.32): about 0.5 % larger.
+   4. Rerun alone: 6 of 6 pass (`--repeat-each 6`).
+   5. Evidence: `.cache/e2e-evidence/20.26-full/`.
+3. Cause: not found yet.
+   1. A guess: a hover or glow scale still settling under load.
+4. Tasks:
+   1. Find what scales the monster at that moment.
+   2. Wait for the exact state, not a time (5.16.10).

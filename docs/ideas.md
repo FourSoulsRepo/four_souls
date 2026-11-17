@@ -315,6 +315,12 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    4. A refilled deck (discard back into the deck) shows it too.
    5. Follows ADR 012: an `anim:` tag and a row in `Animations.md`.
    6. A sound may come with it (ADR 022 loudness).
+56. V-56. A deck choice shows the decks, not buttons (owner, 2026-11-17).
+   1. E.g. The Curse: "put the top card of a deck into discard".
+   2. Today the dialog shows one text button per deck.
+   3. Instead each option shows that deck's back image.
+   4. A discard pile option shows its top card.
+   5. Planned in 20.26.
 
 ## Rules
 

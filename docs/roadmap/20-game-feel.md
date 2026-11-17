@@ -573,3 +573,51 @@ Swapping it is the owner's call; not part of this step.
 
 1. Dropped (owner, 2026-11-17): no Credits button, no credits screen.
 2. Findings stay in ADR 027 "Credits" 6 and 10.7–10.13.
+
+### [x] 20.26 Deck choices show the decks
+
+1. Goal: a card that asks for a deck shows the decks, not buttons (V-56).
+   1. Owner, 2026-11-17.
+   2. Example: The Curse, "put the top card of a deck into discard".
+   3. Ours: the choice dialog shows one text button per deck.
+2. Where it comes from today:
+   1. `engine.DeckQuestion`: options are `DeckOption` keys (`ask.deck.*`).
+   2. `DiscardOption` keys (`ask.discard.*`): The Curse's ↷ ability.
+   3. The client gets only text; it cannot tell a deck option apart.
+3. Cards to check (5.24, all sets):
+   1. b2: The Curse, Cheese Grater, Sleight of Hand, Sack Head, Forever Alone.
+   2. r: rooms, Spelunker Hat (a "may" question with a no option).
+   3. Shared helpers: `cardkit` (`AskLookTop`), `g2`, `fsp2`.
+4. Tasks:
+   1. Check how the reference shows such a choice (rule 10).
+      1. Write the findings into ADR 027.
+   2. The prompt marks an option as a deck or a discard, with its kind.
+      1. One shared place in the engine; no per-card change.
+      2. Found: the option keys already do (`ask.deck.<kind>`, `ask.discard.<kind>`).
+      3. The client reads them; a Go test keeps the keys.
+   3. The dialog shows each deck's back image for a deck option.
+      1. The deck's name stays under it, for text and screen readers.
+   4. A discard option shows its top card.
+   5. Other options (e.g. "No") stay buttons.
+   6. Without private images: plain backs with the deck name (6.9).
+   7. Hover and pick look as in 20.18 "Choosing cards".
+   8. UC-13 5a (choice dialog) gets the new look.
+5. Owner picks (2026-11-17):
+   1. The pick stays in the dialog; no table pick.
+   2. A deck option shows no card count.
+6. Done when:
+   1. Go test: deck and discard options carry their kind.
+   2. Vitest: a deck option draws a back; other options stay buttons.
+   3. e2e: The Curse's choice shows deck backs, with a fixed deal.
+   4. Screenshots before and after.
+   5. `wails build -m -tags embed` and `make e2e` pass without images.
+7. Built (2026-11-17, main conversation):
+   1. ADR 027 "Deck choices": the reference has no deck option.
+   2. `optionPile` in `actions.ts`; `OptionPile` in `ChoiceDialog.tsx`.
+   3. Every `DeckQuestion` and `DiscardOption` card gets it at once.
+   4. The monster deck as an attack option in the dialog too.
+   5. UC-13 5r; wiki `Client.md`, `Animations.md` (`choice-grow`).
+   6. Found: The Curse's ↷ question reuses the trigger's words.
+      1. It asks "which deck into discard?"; logged as a bug in step 19.
+8. Owner notes (2026-11-17)
+   1. Owner marks 20.26 solved; step 20 done again.

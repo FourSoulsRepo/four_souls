@@ -329,6 +329,7 @@ Step 10 done (owner, 2026-11-16); it merges with step 18.
 6. One sound per moment; response timer only near its end.
 7. Ideas: V-54, V-13, V-22.
 8. Artists and translators credited like the reference (CD-14).
+9. Deck choices show deck backs, not buttons (V-56).
 
 ## 21. Bindings by domain
 
