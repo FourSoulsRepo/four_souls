@@ -66,7 +66,7 @@ Ideas: TS-13, LR-04, R-03.
    1. Its `source` names the ruling.
 6. A folder holds only `.json` files; no deeper levels.
 
-### [ ] 23.1 ADR: situation files as card tests
+### [x] 23.1 ADR: situation files as card tests
 
 1. Goal: one ADR fixes when a test is a file and when Go.
 2. Tasks:
