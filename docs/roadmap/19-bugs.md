@@ -5003,10 +5003,10 @@ Totals by system (152 items):
 
 1. Goal: `TestChallengeSaveAndLoad` passes under any load; a host may load a save at once.
 2. Report (step 21 check phase, 2026-11-17)
-   1. `go test -race ./internal/server`, run 17 of 30, 4 runs side by side (load about 24 on 12 cores).
-   2. `challenge_test.go:292: no table message`; the test took 5.07 s, the wait of `next`.
-   3. The other 29 race runs and the plain runs passed.
-   4. Evidence: the step-21 check scratchpad, `flaky/server-race-17.log` (not in git).
+   1. `go test -race ./internal/server`, 30 runs, 4 runs side by side (load about 24 on 12 cores): runs 17, 21, 25, 26 and 30 failed, all here.
+   2. `challenge_test.go:292: no table message`; the test took 5.06 – 5.07 s, the wait of `next`.
+   3. The other 25 race runs and all 30 plain runs passed.
+   4. Evidence: the step-21 check scratchpad, `flaky/server-race-{17,21,25,26,30}.log` (not in git).
 3. Cause (code, since 6.11, `f4545f9`):
    1. `Room.save` sends `saved` to every client, then sets `r.stopped`.
    2. Only when `Run` ends does `backToLobby` clear each client's `room`.
