@@ -62,6 +62,35 @@ With `-stop-at 30`, the stage stops its other games once 30% of its games have e
 
 Progress is printed every 2 seconds. With up to 8 games it shows one part per game: its turn and step, then `done` or `FAILED`. With more, it shows counts of running, done and failed games.
 
+## Bots
+
+With `-bots standard` or `-bots hard`, the tool plays only the host's seat; the server's own bots play the others. The server must allow that level (`-bots` on the server, see [Server](Server)). The report gains a **bot turns** line: how long a bot's whole turn took, with the server's pauses between its actions.
+
+To see a small public server, give the server one core and a memory limit:
+
+```sh
+GOMAXPROCS=1 GOMEMLIMIT=512MiB go run ./cmd/server -port 4774
+go run ./cmd/server_load -url ws://127.0.0.1:4774 -bots hard -start 3 -max-games 3 -game-timeout 40m
+```
+
+With one core, only one hard bot thinks at a time. A hard bot that gets no turn to think within its budget (`-bot_think`, 1.5 s) plays that move as a standard bot, so it still answers in about 3 s.
+
+Measured on 2026-11-17, 3 tables of 1 client and 3 bots, `GOMAXPROCS=1 GOMEMLIMIT=512MiB`. The machine was shared with other jobs, so the times are upper bounds:
+
+| | Hard | Standard |
+|---|---|---|
+| Load average (start → end) | 12.0 → 5.4 | 9.2 → 1.5 |
+| Games | 3 of 3 in 18 min | 3 of 3 in 21 min |
+| Response median / p99 / max | 8.9 / 32 / 40 ms | 0.85 / 20 / 38 ms |
+| Longest bot move | 3.1 s | 192 ms |
+| Bot turn median / max | 49 s / 2 min 49 s | 21 s / 50 s |
+| Peak memory (RSS) | 35 MB | 34 MB |
+| GC share of the CPU | 5% | under 1% |
+| Server's share of the core | 98% | 4% |
+| Hard moves played as standard (no slot) | 54% | – |
+
+Hard bots think for their whole budget on every move, so three hard tables keep one core busy for the whole game. On a 1-CPU host that also serves a website, prefer `-bots standard`, or a shorter `-bot_think`.
+
 ## Things to know
 
 * A bot ends its turn after 500 steps of it, as a player would. A game that still does not end fails, and the error names its turn and step.

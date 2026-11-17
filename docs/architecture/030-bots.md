@@ -316,7 +316,10 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       3. One limit for the whole hub (`thinkSlots`); standard thinks without a slot.
    3. A waiting thinker still answers before the response timer.
       1. A hard thinker that gets no slot within its budget plays that move as standard (21.10): it answers in about twice the budget, far under the shortest response timer (60 s).
-   4. Load test: `cmd/server_load` gets tables with bots (21.10; its numbers wait for the check phase).
+   4. Load test: `cmd/server_load` gets tables with bots (21.10).
+      1. Check phase (2026-11-17), `GOMAXPROCS=1 GOMEMLIMIT=512MiB`, 3 tables of 1 client and 3 bots, on a machine shared with other jobs.
+      2. Hard (load average 12.0 → 5.4): response p99 32 ms, max 40 ms; longest move 3.1 s; peak RSS 35 MB; GC 5% of the CPU; the server took 98% of the core. 54% of hard moves found no slot and played standard; no search ended with 0 playouts (at least 179).
+      3. Standard (load average 9.2 → 1.5): response p99 20 ms, max 38 ms; longest move 192 ms; peak RSS 34 MB; GC under 1%; the server took 4% of the core.
 18. Arena: how strength is checked
    1. `cmd/bot_arena`: whole games between levels, seeded, seats rotated.
    2. It prints wins by level, unfinished games, steps and time per move.

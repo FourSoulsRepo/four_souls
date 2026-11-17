@@ -220,6 +220,10 @@ Rules for this step (owner, 2026-11-16):
       2. Numbers taken under load never go into the wiki.
 3. Done when:
    1. 20 tables of 1 human and 3 hard bots: no room stall over 100 ms; every bot answers before the response timer.
+      1. Check phase (2026-11-17): `GOMAXPROCS=1 GOMEMLIMIT=512MiB`, `server_load -players 4 -bots LEVEL -start 3 -max-games 3`, one machine shared with other jobs; 20 tables not run, 3 tables by the lead's order.
+      2. 3 tables of 1 client and 3 hard bots (load average 12.0 at the start, 5.4 at the end): 3 of 3 finished in 18 min, no error, no reconnect. Response median 8.9 ms, p99 32 ms, max 40 ms. Longest bot move 3.1 s; longest bot turn 2 min 49 s, median 49 s. Peak RSS 35 MB; GC 33002 runs, 1.4 s of pauses in all, 5% of the CPU. The server took 98% of the core for the whole run.
+      3. Hard bots: 1751 moves; 951 (54%) found no thinker slot within the budget and played standard. Every search played at least 179 playouts (median 498); none ended with 0 and every candidate was tried, so no hard bot only passed for lack of time. 70% of searches chose a pass or an end of turn.
+      4. 3 tables of 1 client and 3 standard bots (load average 9.2 at the start, 1.5 at the end): 3 of 3 finished in 21 min. Response median 0.85 ms, p99 20 ms, max 38 ms. Longest bot move 192 ms; longest bot turn 50 s, median 21 s. Peak RSS 34 MB; GC 2216 runs, 76 ms of pauses, under 1% of the CPU. The server took 4% of the core.
 4. Decisions (rule 12, 2026-11-17):
    1. `checkMaxHP`: one pass lists the cards in play and their HP statics; each player and monster sums its boosts and those statics (`hpBonus`, the same sum as `bonus`); the last max HP is updated in place, objects that left the check are deleted. No cache across steps: a static's `Applies` and `Value` read the game, so a cache would need every change to invalidate it.
    2. Thinker limit: one channel of `max(1, GOMAXPROCS/2)` slots in the hub; a hard thinker that gets none within its budget plays the move as standard (no slot), so it answers in about twice the budget.
@@ -227,6 +231,7 @@ Rules for this step (owner, 2026-11-16):
    4. Hard's allocations, the simple part: `eachPart`, behind every stat read, walked a new `inPlay()` slice and a new `facesOf` slice for each card; it now walks them in place (`eachInPlay`, `eachFace`; `inPlay` and `facesOf` build their lists from them, so the order is defined once). The playout copy (about 240 KB) is not reused: that needs a copy into an existing game, which the lead ruled out.
    5. Measure in the check phase: tasks 2.2 (`cmd/server_load` with bots), 2.3 (wiki Load-test), 2.5 (longest bot turn), 2.6 (latency, `GOMAXPROCS=1`, `GOMEMLIMIT`), and the Done when; also the effect of the `checkMaxHP` change and hard's allocations.
    6. Check phase (lead, 2026-11-17): measure the share of hard moves with ≤ 2 candidates and the time spent on them (639e595 plays the full budget); if notable, cut the budget for few candidates.
+      1. Measured in the 1-CPU load test (Done when 1.3): 348 of 702 searches (50%) had ≤ 2 candidates and took 529 s of the 1066 s of search. Not cut here: the lead decides.
    7. A hard bot with no thinker slot within its budget plays that move as standard (55be6e6); written in ADR 030, Decision 17.3.1.
 
 ### [~] 21.11 Lobby screen
