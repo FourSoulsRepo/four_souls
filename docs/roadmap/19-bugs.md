@@ -6177,7 +6177,7 @@ Totals by system (209 items):
 1. Goal: on a 1-CPU server, a table whose humans all left costs no CPU (lead, 2026-11-17).
 2. Report (owner's review).
 3. Found: not a bug. A player who disconnects and was not kicked is away (`Room.away`); any away seat pauses the game (`paused`), and `drive` then cancels every thinker and starts none. So with no human connected the bots do not think; the game goes on when one comes back.
-   1. All humans can never be kicked: a kick needs a human's vote, and bots never vote (ADR 033, Decision 13).
+   1. All humans can never be kicked: a kick needs a human's vote, and bots never vote (ADR 033, Decision 11.3).
    2. The empty game ends by its idle limit as before (`TestBotsEmptyGameEnds`).
 4. Tasks:
    1. [x] Covered by `TestBotsWaitWhilePausedVotingOver` (the only player leaves: no thinker, a late answer dropped, the bot thinks again on return); no code change.
