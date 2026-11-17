@@ -74,7 +74,7 @@ The hard level (`internal/bot/hard.go`, Decision 9) lists the candidates as stan
 
 Hard's score (Decision 7.6) weighs the opponents by strength, not as an average: each opponent's weight is `exp(sum / 100)` over its full sum, so one soul ahead counts e times as much; equal opponents count as their average. Its answers have a holding value: the loot cards and abilities `Allowed` shows it on another seat's turn (on its own turn, the abilities of its cards but rooms'). Each answer still held at the end of a playout (in hand; in play and charged, or recharging as its turn starts) counts its base value (`cardValue`, the one function that values a loot card in hand and an item in play) times 1 + `wHold` × (1 + `wHoldLead` × lead): an item answer 3 to 9 more than a spent one, more as one opponent pulls away. So it keeps Godhead when a weak seat kills a monster with no soul, and spends it when the strong seat kills one with a soul.
 
-`Budget{Playouts, Time}`: whichever ends first. `Playouts` 0 means no playout cap, `Time` 0 no time limit; both 0 think 1.5 s. With a time budget the first world measures a playout and the rounds share out what the time leaves. The search checks `ctx` before each playout, yields the core after each (`runtime.Gosched`) and, when stopped, plays the best so far. A playout takes about 4 ms on one core, most of it the engine's `checkMaxHP`; a move of 150 playouts about 0.4 – 0.6 s and 200 MB of garbage (Decision 9.8).
+`Budget{Playouts, Time}`: whichever ends first. `Playouts` 0 means no playout cap, `Time` 0 no time limit; both 0 think 1.5 s. With a time budget the first world measures a playout and the rounds share out what the time leaves; with no playout cap the last candidates meet further worlds until the time runs out, so a move with two candidates thinks as long as one with twenty. The search checks `ctx` before each playout, yields the core after each and every 16 steps within one (`runtime.Gosched`, `yieldSteps`) and, when stopped, plays the best so far. Measured at the end of line 1 of step 21, before 21.10's `checkMaxHP` change: a playout about 3 ms on one core, half of it then the engine's `checkMaxHP`; a move of 150 playouts about 0.4 – 0.6 s and 200 MB of garbage (Decision 9.8). The numbers after 21.10 come from the check phase.
 
 ## Card values
 
@@ -82,16 +82,42 @@ A flat value misprices cards: a bomb or a cancel is worth more than a penny. So 
 
 The tool plays arena games of the `flat` level (2, 3 and 4 players), keeps positions of them, and measures each card on positions where its card lies in its deck: up to 32 for a loot card, 64 for an item. It puts the card into a copy with `enginetest.PlaceFromDeck` (a quiet move from the deck, `CheckInvariants` after; the server and the bot never import `enginetest`, a depguard rule):
 
-* a loot card into the hand of the seat to move: where the seat may play it, stack positions too, its best play and doing nothing are settled as standard settles a candidate, on the same draws; the value is the mean of max(0, play − nothing). Nothing keeps the card at 0.75, so the value is what playing adds over holding it;
+* a loot card into the hand of the seat to move: where the seat may play it, stack positions too, its best play and doing nothing are settled as standard settles a candidate, on the same 6 draws (`lootDraws`; standard itself settles 12 since its tuning); the value is the mean of max(0, play − nothing). Nothing keeps the card at 0.75, so the value is what playing adds over holding it;
 * an item into the seat's play area: the copy with it and the copy without are played out by the policy to the end of the seat's next turn on the same seeds; the value is the difference. An active item is also measured as a loot card, by max(0, use − nothing) where the seat may use it, and the larger measure counts: the policy uses items at random, so its playouts miss what an answer is worth.
 
 Each paired difference counts at most one soul either way (`ValueClip`): a game won in one copy and not the other would else be the whole mean.
 
-Both score with the flat values: one pass, no iterations. The same seed gives the same file; `BOT_VALUES=-missing` measures only the cards the table lacks, `BOT_VALUES='-cards a,b'` only those.
+Both score with the flat values (`wItemFlat`, `wLootFlat`): one pass, no iterations. The same seed gives the same file; `BOT_VALUES=-missing` measures only the cards the table lacks, `BOT_VALUES='-cards a,b'` only those.
+
+```sh
+make bot-values                          # every card: 12 games of each table size, up to 60 turns; about 11 minutes on 12 cores
+make bot-values BOT_VALUES=-missing      # only the cards the table lacks
+```
+
+Its flags: `-seed` (1), `-games` (12 of each table size), `-cap` (60 game turns), `-every` (one position in about 23 steps), `-per_game` (60), `-samples` (32 positions a loot card), `-item_samples` (64 an item), `-draws` (4 seeds an item is played out on, a position), `-out`, `-missing`, `-cards`.
 
 `cardValue` reads the table: each card's value weighed against its kind's mean by precision, `(v/se² + mean/τ²) / (1/se² + 1/τ²)`, where τ² is the spread of the kind's values less their noise (at least 0.01). Items are then scaled so the average item is worth `wItem` (15): they were measured over about one round, but stay for the game. A loot card in hand counts half its value (`wHand`): it is not played yet, it can be discarded or stolen, and a turn has few loot plays; so playing a card that does its usual work beats holding it. The kinds are loot, active item (a ↷ ability) and passive item; a card the table lacks (a starting item, a challenge's card) gets its kind's mean. Only the seat's own hand and cards in play count by card: a card in another seat's hand counts half its kind's mean, as the bot cannot tell a remembered card from one its world dealt. The bot reads a card's identity in one function, `tableKey`, to look it up; `TestBotRules` allows it there alone. The hard level's holding value multiplies this base value.
 
-**After cards are added: `make bot-values` (or `BOT_VALUES=-missing`), then `make bots`.** `TestValuesFile` fails while a card a deck holds is missing from the table.
+## A new card set
+
+**After cards are added: `make bot-values` (or `BOT_VALUES=-missing` for the new cards only), then `make bots`** (ADR 030, Decision 20.10). The first gives the new cards their measured values; the second checks the bots still finish their games and keep their win gates with them. `TestValuesFile` fails while a card a deck holds is missing from the table. Commit the new `internal/bot/values.json` with the cards. No bot code changes for a card: if a bot plays it badly, the fix goes into the score or the policy, for every such card (step 21, rule 4).
+
+## In the server
+
+Players meet two levels, `standard` and `hard`; the host seats them per seat in the lobby. How the lobby and the room drive them is in [Server](Server) (Bots in the lobby, Bots in the room). For an operator:
+
+| Flag | ENV | Config | Default | What it does |
+|---|---|---|---|---|
+| `-bots` | `FOUR_SOULS_BOTS` | `bots` | `all` | levels a host may seat: `off`, `standard` or `all`; any other value stops the start |
+| `-bot_think` | `FOUR_SOULS_BOT_THINK` | `bot_think` | `1.5s` | a hard bot's time budget a move, a Go duration from `100ms` to `10s`; any other value stops the start |
+
+* Standard thinks with no budget and no slot: a few milliseconds to a few tens a move.
+* Hard thinks for `-bot_think` and needs a thinker slot: the hub has `max(1, GOMAXPROCS/2)` (`thinkLimit`), shared by every room. A hard bot that gets none within its budget plays that move as standard, so it answers in about twice the budget, far under the shortest response timer (60 s). ADR 030, Decision 17.
+* Each move waits out the pace, with its thinking inside it: 0.7 s for a pass or an answer, 1 to 2 s for an action in its own turn (Decision 13).
+* A hard seat's memory lives in the room, is fed every step and starts over after a load, a restart or a rollback; it is never saved.
+* The app's own server allows every level and keeps the default budget.
+
+The options table for operators is in [Dedicated server on a VPS](Dedicated-server-on-a-VPS); `deploy/docker/.env.example` and the compose file carry both variables.
 
 ## Memory
 
@@ -117,6 +143,8 @@ A new engine move of a deck card out of sight that keeps the deck's size needs a
 ## Arena
 
 `cmd/bot_arena` plays whole seeded games with every set: bonus souls on, the room deck in odd seeds, deck ratios in every third. Each `-match` is one line-up of levels; game `k` plays seed `-seed`+k and rotates the line-up by `k` seats, so each level plays from each seat. Games run side by side on every core; the results do not depend on it.
+
+Its flags: `-games` (50 a line-up; `make bots` passes `BOT_GAMES`), `-seed` (1), `-cap` (150 game turns), `-playouts` (150 a hard move), `-memory` (true: each hard seat remembers), `-match` and `-challenge` (repeat them). Without `-match` and `-challenge` it plays the default line-ups below.
 
 ```sh
 make bots                     # BOT_GAMES=50 per default line-up: standard against random, standard against flat, hard against standard, one hard among three standard, standard×2–4, policy×2–4

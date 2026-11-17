@@ -186,6 +186,7 @@ bots: ## Play whole games between bot levels and print wins (BOT_GAMES); then th
 # The bots' card values (ADR 030, Decision 20): measures every loot card
 # and item on positions of arena games and writes internal/bot/values.json.
 # After cards are added: make bot-values (or BOT_VALUES=-missing), then
-# make bots. Local; a full run takes about half an hour.
+# make bots. Local; a full run takes at most half an hour (11 minutes on
+# 12 cores, 2026-11-17).
 bot-values: ## Measure the bots' card values into internal/bot/values.json (BOT_VALUES)
 	@go run ./cmd/bot_values $(BOT_VALUES)

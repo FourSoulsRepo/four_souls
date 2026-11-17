@@ -14,6 +14,12 @@ Download the archive for your system from
 The app is not code-signed: `README.txt` inside, or the wiki page
 [First start](docs/wiki/First-start.md), shows how to open it the first time.
 
+Not enough players? The host seats bots on free seats, standard or hard;
+one player and three bots make a full table, a bot can be the partner in a
+challenge, and the app's own server needs no internet. Server operators
+choose the allowed levels and the hard bot's thinking time with `-bots` and
+`-bot_think` ([Dedicated server on a VPS](docs/wiki/Dedicated-server-on-a-VPS.md)).
+
 Besides the regular game there are co-op challenges for 2 players:
 [Challenges](docs/wiki/Challenges.md).
 

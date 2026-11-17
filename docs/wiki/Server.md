@@ -90,7 +90,7 @@ Bans and picks (Decision 14): on a bot's ban turn the room bans a random charact
 
 Saves and restarts (Decision 16, 21.9): `savedSeat` keeps a bot's `bot` and `bot_n`, with no token, in a save and in a game's restart file. A loaded save's table seats its bots at once, ready; `claim` never gives a player a bot's seat, not even one called "Bot 1", so the game starts when its players are back. A save with a level the server does not allow is not loaded (`error.bot_level`, `error.bots_off`, `bad_setup`). A kept game keeps its bots whatever `-bots` says now; it waits paused for its players, and once they are back the bots think again from the kept step, with no notice on the same engine (`TestBotsRestartMidTurn`). Memory is not saved. The idle limit's "no player connected" counts players only, and an idle end or a lost game tells only players. Each match record's seat names a bot's `bot` and `bot_n` (ADR 007, item 2.20).
 
-Two places wait for line 1 of step 21: `botLevel` maps a level `internal/bot` does not know yet to the policy (marked "stand-in until line 1 merges"), and `remember`, where the hard seat's memory is fed (marked "memory from 21.15").
+`botLevel` maps the protocol's levels to `internal/bot`'s; any other level is an error, so the seat gets its fallback move. `remember` feeds each hard seat's memory after every applied step (ADR 030, Decision 12.13); `known` hands it to `world.For`. The levels, the arena and the card values are in [Bots](Bots).
 
 ## Server name
 

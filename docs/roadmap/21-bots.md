@@ -278,7 +278,7 @@ Rules for this step (owner, 2026-11-16):
    5. Test for refused intents: `TestChallenges`, random seats whole games, standard and hard two turns (8 playouts), so plain `go test` stays fast.
    6. The e2e (Krampus with one bot) is written after `step-21-bots-ui` merges, as the bot seat's UI is there; the Done-when numbers come in the check phase.
 
-### [ ] 21.14 Docs and review
+### [~] 21.14 Docs and review
 
 1. Goal: the step is ready for the owner.
 2. Tasks:
@@ -291,6 +291,20 @@ Rules for this step (owner, 2026-11-16):
    7. Rule for new card sets in `Bots.md` and the developer wiki: after cards are added, `make bot-values`, then `make bots` (ADR 030, Decision 20).
 3. Done when:
    1. **Owner** plays a game against three hard bots and approves the merge.
+4. Waits: UI merge (players' page, UC-44 link, Home/_Sidebar), check phase, owner's game.
+5. Done now (2026-11-17, non-UI parts):
+   1. `Bots.md`: sections "A new card set" and "In the server" (flags, thinker slots, pace, memory), the arena's and `bot_values`' flags, hard's time budget and the numbers before 21.10 marked as such.
+   2. `Server.md`: the stale line-1 paragraph replaced; `Dedicated-server-on-a-VPS.md`, the compose page and `deploy/docker` already carried `-bots` and `-bot_think` alike: no change.
+   3. `Adding-a-card.md`: `make bot-values`, then `make bots`, in the card steps, the fan set and the checklist.
+   4. ADR 030 checked Decision by Decision against the code: 9.8.2.1, 9.8.4, 9.9.1, 17.4, 18.3, 18.6.2, 20.4.4, 20.10 corrected or completed; numbers that wait for the check phase say so.
+   5. `README.md` and `CHANGELOG.md` (Unreleased): bots in network games, the server flags; the lobby's part as one line.
+6. After the UI merge:
+   1. Task 1: UC-44 "Play with bots" comes from `step-21-bots-ui`; only its index entry and links are checked here, no second use case.
+   2. Task 2: the players' wiki page on playing with bots, in the players' group of `Home.md` and `_Sidebar.md`; `Bots.md` and `README.md` link to it.
+   3. Tasks 5 and 6: the check phase.
+7. Decisions (rule 12, 2026-11-17):
+   1. No new developer or admin wiki page: the server part of the bots goes into `Bots.md` ("In the server") and links to `Server.md` and the operators' options table, so Home and `_Sidebar` stay as they are now; only the Home line of Bots names its new sections.
+   2. The measure keeps 6 draws a loot play (`lootDraws`) after standard's 12, as it keeps the flat values: the table stays as it was measured (ADR 030, 20.4.4.1).
 
 ### [x] 21.15 Memory of the hard bot
 

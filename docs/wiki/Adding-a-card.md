@@ -175,6 +175,15 @@ cd pkg/rules_engine
 go test -run '^$' -fuzz=FuzzSets -fuzztime=2m -fuzzminimizetime=5s ./cards/
 ```
 
+Then give the bots its value (see [Bots](Bots), "A new card set"): a loot card or an item needs a measured value, and `TestValuesFile` (`internal/bot`) fails until it has one. Measure the new cards, then check the bots still play their games:
+
+```sh
+make bot-values BOT_VALUES=-missing   # or make bot-values for every card
+make bots
+```
+
+Commit `internal/bot/values.json` with the card. Bot code never names a card: a card the bots play badly is fixed in their score or policy, for every such card.
+
 ## 4. A fan-made set
 
 A set is a Go package under `pkg/rules_engine/cards/` with one variable, `Set`.
@@ -199,11 +208,14 @@ A fan set is played together with the Base Game, so it may be small: one card is
 
 If the set also has display data (names, text, images), add `pkg/card_db/data/myset.json` in the card data format (ADR 004); then `go run ./cmd/cardgen -set myset` writes the stubs for you and the status report counts the set. Without card data the set plays, but the client shows its cards as their IDs.
 
+After the set's cards are in: `make bot-values`, then `make bots`, as for one card.
+
 ## Checklist
 
 * The file has no `TODO(card):` line.
 * `<card>_test.go` exists and passes.
 * The status report is regenerated.
+* A loot card or item has its bot value: `make bot-values`, then `make bots`; `values.json` is committed with it.
 * `make lint` passes (see [Linters](Linters)).
 * A card that takes from a player no target names sets `Takes`.
 * Its questions and options are keys with lines in `en.json`; `server-keys.json` is rewritten.

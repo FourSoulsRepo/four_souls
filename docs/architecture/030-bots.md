@@ -205,12 +205,13 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    8. Budget: `Budget{Playouts, Time}`, whichever ends first.
       1. `Playouts` 0: no cap on playouts; `Time` 0: no time limit; both 0: 1.5 s. The server passes the time only.
       2. With a time budget the first world measures a playout; the rounds share out the playouts that time leaves.
+         1. With a time budget and no playout cap the last candidates meet further worlds until the time runs out (639e595): a move uses its whole budget, even with two candidates. The share of such moves and their time wait for the check phase (21.10).
       3. Measured (21.6, i7-8750H, one core, `BenchmarkPlayout`, `BenchmarkHardMove`): a playout 2.2 – 5.3 ms by load, 3.9 ms on a quiet machine, about 260 a second; a move of 150 playouts with its worlds 0.34 – 0.40 s, 375 – 440 playouts a second (playouts on the stack end sooner).
-      4. So 1.5 s gives about 400 – 650 playouts on this core, perhaps half that on a weak server core; "3000 playouts" was wrong. Half of a playout is the engine's `checkMaxHP` (21.10).
+      4. So 1.5 s gives about 400 – 650 playouts on this core, perhaps half that on a weak server core; "3000 playouts" was wrong. Half of a playout was the engine's `checkMaxHP`; 21.10 computes it in one pass, and its effect waits for the check phase.
       5. A move of 150 playouts allocates 142 – 153 MB in 2.4 – 2.6 million allocations, all garbage when it returns: each playout copies its world (about 240 KB) and the engine allocates as it plays (a playout 0.8 – 1.3 MB). A standard move: 4.9 MB, 79 000 allocations.
       6. Again at the end of line 1 (2026-11-17, after 21.16, machine loaded, `go test -bench . -benchmem`, 3 runs): a playout 2.7 – 2.9 ms, 1.0 MB, 22 000 allocations; a hard move of 150 playouts 0.43 – 0.61 s, 196 – 198 MB, 3.8 – 3.9 million allocations; a standard move 6.7 – 7.5 ms, 2.9 – 3.3 MB, 42 000 – 46 000 allocations. In the arena, 12 games side by side: hard 0.56 s a move at 150 playouts, 0.19 s at 50, 1.67 s at 500; standard 10 – 25 ms.
    9. `ctx` ends it early; it then answers with the best so far.
-      1. It checks `ctx` before each playout and yields the core after each (`runtime.Gosched`): one core holds many tables.
+      1. It checks `ctx` before each playout and yields the core after each and every 16 steps within one (`runtime.Gosched`, `yieldSteps`): one core holds many tables.
       2. Tests: a cancelled `ctx` answers an allowed intent within 50 ms; with `GOMAXPROCS=1` another goroutine gets the core at least every 20 ms while hard thinks.
    10. The arena uses the playout count only, so its results repeat.
 10. Lobby and protocol
@@ -315,11 +316,11 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       3. One limit for the whole hub (`thinkSlots`); standard thinks without a slot.
    3. A waiting thinker still answers before the response timer.
       1. A hard thinker that gets no slot within its budget plays that move as standard (21.10): it answers in about twice the budget, far under the shortest response timer (60 s).
-   4. Load test: `cmd/server_load` gets tables with bots.
+   4. Load test: `cmd/server_load` gets tables with bots (21.10; its numbers wait for the check phase).
 18. Arena: how strength is checked
    1. `cmd/bot_arena`: whole games between levels, seeded, seats rotated.
    2. It prints wins by level, unfinished games, steps and time per move.
-   3. `make bots` runs it; `BOT_GAMES` sets the count.
+   3. `make bots` runs it; `BOT_GAMES` sets the count (50 a line-up). Then it replays the standard games that once looped (`TestStandardNoLoop`, Decision 8.6.2.2).
    4. Gate: 95% of games end with a winner within the turn cap.
       1. The cap: 150 game turns (`Turn.Number`); a game past it is unfinished.
       2. For line-ups of the levels players meet (standard from 21.5, hard from 21.6) with no `random` seat, each player count on its own: standard×2, ×3 and ×4 each finish 95%.
@@ -331,7 +332,7 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
    5. Gate: standard wins at least 70% of 2-player games against random.
    6. Gate: hard wins at least 60% of 2-player games against standard.
       1. Hard's strength is measured at the playouts a weak server gives: `-playouts`, 150 by default; never by time.
-      2. Hard against standard is also reported at 50 and 500 playouts a move; the gate must hold at 150. The sweep runs with the tuning after 21.16 (owner, 2026-11-16).
+      2. Hard against standard is also reported at 50 and 500 playouts a move; the gate must hold at 150 (owner, 2026-11-16). End of line 1 (2026-11-17, 50 games, 2 players): 64% at 50, 68% at 150, 82% at 500; again in the check phase, after the tuning.
    7. Gate: one hard among three standard wins over 30%; chance is 25%.
    8. Gate: no bot intent is refused, on every set, 2 to 4 players.
    9. CI plays a few games for the last gate only; win rates are a local check.
@@ -387,7 +388,8 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       1. Loot: in positions where the card can be played, stack positions included, so answers are not zero: mean of max(0, play − nothing).
       2. The positive part assumes a card is played only when it helps.
       3. "Nothing" keeps the card in hand at the flat 0.75: the value is what playing adds over holding it. So a card worth 5¢ now is worth 4.25 held, and the bot plays it; a card whose play never helps is worth 0, or its kind's mean with few samples.
-      4. Each play and doing nothing are settled as standard settles a candidate (Decision 8.4 – 8.5): 6 draws when dice roll, the same for both; the best play's mean gain counts.
+      4. Each play and doing nothing are settled as standard settles a candidate (Decision 8.4 – 8.5): 6 draws when dice roll (`lootDraws`), the same for both; the best play's mean gain counts.
+         1. Standard settles 12 since the tuning of 2026-11-17; the measure keeps 6, as it keeps the flat values (20.6.1), so the table stays as it was measured.
       5. Item: a clone with the item and one without it; a policy playout to the end of the seat's next turn; the difference.
       6. The item is added, never removed: no destroy is needed.
       7. The playout runs to the end of the seat's next turn that starts after the position, at most 1500 steps; every seat moves by the policy, the seat's own choices get its best option; dice and choices come from the same seeds in both copies. With the item the item counts its flat 12 there (`wItemFlat`, Decision 20.6.1), so the value is 12 plus what the item does in that time.
@@ -423,7 +425,8 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
          2. The measure is what playing adds; at full value a card in hand was worth as much as playing it, and standard stopped playing loot (a dime: +10¢ against −10, below `wAct`).
    9. The bot code still names no card: the table is generated data; a test checks every card of every set is in it or falls back.
       1. The table is `internal/bot/values.json`, embedded (`go:embed`). To look a card up the bot reads its identity in one function, `tableKey`; `TestBotRules` allows `Card` there alone, and only for the seat's own hand and cards in play.
-   10. After cards are added: `make bot-values`, then `make bots`.
+   10. After cards are added: `make bot-values` (`BOT_VALUES=-missing` for the new cards only), then `make bots` (21.14: in `Bots.md` and `Adding-a-card.md`).
+      1. `TestValuesFile` fails while a card a deck holds is missing from the table.
    11. Gate: 200 games of 2 players, standard with the table wins at least 55% against standard without it (`flat`, with the flat values of 20.6.1); time per move does not grow.
       1. `make bots` plays `standard,flat` and gates it (`winGates` in `cmd/bot_arena`).
 
