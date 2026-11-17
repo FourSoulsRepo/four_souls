@@ -5987,7 +5987,7 @@ Totals by system (195 items):
    1. Find what scales the monster at that moment.
    2. Wait for the exact state, not a time (5.16.10).
 
-### [ ] 19.197 e2e: Godmode Undo names a deck attack's choice, not the declaration
+### [x] 19.197 e2e: Godmode Undo names a deck attack's choice, not the declaration
 
 1. Goal: `rollback.spec.ts` "in Godmode each Undo undoes one move" passes whatever the deal.
 2. Report (23.11 `make e2e`, 2026-11-17)
@@ -6021,6 +6021,8 @@ Totals by system (195 items):
    2. Every Chromium spec that uses `turn.ts`, 5 workers: 202 passed, 1 failed: `rooms.spec.ts:72`, the open 19.156, outside this change (`.cache/e2e-evidence/19.160-specs/`).
    3. `make frontend` passes.
    4. WebKit not run: `libavif13` is missing on this machine.
+7. Owner notes (2026-11-17)
+   1. Owner marks 19.197 solved.
 
 ### [ ] 19.198 A load right after "saved" goes to the old room
 
