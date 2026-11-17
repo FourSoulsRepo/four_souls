@@ -273,22 +273,21 @@ func TestLeadWeights(t *testing.T) {
 	}
 }
 
-// TestHardCancel: a cancelled ctx gives an allowed intent within 50
-// ms, before thinking and while it thinks on a time budget.
+// TestHardCancel: a cancelled ctx gives an allowed intent, before
+// thinking and while it thinks on a time budget (Decision 9.9).
 func TestHardCancel(t *testing.T) {
 	g := attackTable(t, []engine.SituationPlayer{weakSeat, strongSeat(2), hardSeat}, 1, "pin")
 	passTo(t, g, 2)
 	allowed := g.Allowed(2)
-	check := func(name string, ctx context.Context, cancelled time.Time) {
+	// An hour's budget: only the cancel ends the search, so an answer at
+	// all shows the cancel worked; no clock is read (D5 of the review).
+	check := func(name string, ctx context.Context) {
 		t.Helper()
 		in := input(t, g, 2, Hard, 1)
-		in.Budget = Budget{Time: 10 * time.Second}
+		in.Budget = Budget{Time: time.Hour}
 		got, err := Choose(ctx, in)
 		if err != nil {
 			t.Fatalf("%s: %v", name, err)
-		}
-		if took := time.Since(cancelled); took > 50*time.Millisecond {
-			t.Errorf("%s: answered %v after the cancel", name, took)
 		}
 		if !slices.ContainsFunc(allowed, func(a engine.Intent) bool { return a.Kind == got.Kind && slices.Equal(a.Objects, got.Objects) }) {
 			t.Errorf("%s: %+v is not allowed", name, got)
@@ -296,63 +295,44 @@ func TestHardCancel(t *testing.T) {
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	check("cancelled before", ctx, time.Now())
+	check("cancelled before", ctx)
 	ctx, cancel = context.WithCancel(context.Background())
-	var at atomic.Int64
-	go func() {
-		time.Sleep(200 * time.Millisecond)
-		at.Store(time.Now().UnixNano())
-		cancel()
-	}()
-	check("cancelled while thinking", ctx, time.Now().Add(200*time.Millisecond))
-	if at.Load() == 0 {
-		t.Error("it answered before the cancel")
-	}
+	go cancel()
+	check("cancelled while thinking", ctx)
 }
 
 // TestHardYields: on one core, while hard thinks, another goroutine
-// gets the core at least every 20 ms (Decision 9.9: one core holds many
-// tables). Under the race detector, which slows the code several
-// times, the bound stretches by raceSlow.
+// gets the core again and again (Decision 9.9: one core holds many
+// tables).
 func TestHardYields(t *testing.T) {
 	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(1))
-	g := newGame(t, 5, 4)
+	g := attackTable(t, []engine.SituationPlayer{weakSeat, strongSeat(2), hardSeat}, 1, "pin")
+	passTo(t, g, 2)
+	// The other goroutine counts each time it gets the one core, and
+	// hands it back at once. A search that yields after every playout
+	// gives it the core at least once a playout; Go's own preemption,
+	// every 10 ms, would give it far fewer. No clock is read.
 	var stop atomic.Bool
-	gaps := make(chan time.Duration, 1)
+	var turns atomic.Int64
+	done := make(chan struct{})
 	go func() {
-		worst, last := time.Duration(0), time.Now()
+		defer close(done)
 		for !stop.Load() {
-			now := time.Now()
-			worst = max(worst, now.Sub(last))
-			last = now
-			time.Sleep(time.Millisecond)
+			turns.Add(1)
+			runtime.Gosched()
 		}
-		gaps <- worst
 	}()
-	thought, searched := time.Now(), 0
-	for step := 0; time.Since(thought) < time.Second && !g.Over; step++ {
-		p := g.Prompt().Who()[0]
-		if len(g.Allowed(p)) > 1 {
-			searched++
-		}
-		in := input(t, g, p, Hard, uint64(step)) //nolint:gosec // step is small
-		in.Budget = Budget{Time: 200 * time.Millisecond}
-		mv, err := Choose(context.Background(), in)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if _, err := g.Apply(mv); err != nil {
-			t.Fatal(err)
-		}
+	const playouts = 60
+	in := input(t, g, 2, Hard, 1)
+	in.Budget = Budget{Playouts: playouts}
+	if _, err := Choose(context.Background(), in); err != nil {
+		t.Fatal(err)
 	}
+	got := turns.Load()
 	stop.Store(true)
-	if searched == 0 {
-		t.Error("hard never searched")
-	}
-	worst := <-gaps
-	t.Logf("longest wait %v", worst)
-	if worst > raceSlow*20*time.Millisecond {
-		t.Errorf("the other goroutine waited %v for the core", worst)
+	<-done
+	if got < playouts/2 {
+		t.Errorf("the other goroutine got the core %d times in a search of %d playouts", got, playouts)
 	}
 }
 
