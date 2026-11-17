@@ -16,6 +16,7 @@ type collector struct {
 	handshake   []time.Duration // connect and hello until welcome
 	response    []time.Duration // an intent until the next update its seat gets
 	ping        []time.Duration // WebSocket ping until its pong
+	botTurn     []time.Duration // a server bot's turn, as the host saw it (-bots)
 	updates     int
 	bytes       int
 	largest     int
@@ -40,6 +41,18 @@ func (c *collector) addResponse(d time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.response = append(c.response, d)
+}
+
+func (c *collector) addBotTurn(d time.Duration) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.botTurn = append(c.botTurn, d)
+}
+
+func (c *collector) botTurns() spread[time.Duration] {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return spreadOf(c.botTurn)
 }
 
 func (c *collector) addPing(d time.Duration) {

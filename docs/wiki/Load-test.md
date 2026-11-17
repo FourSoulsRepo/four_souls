@@ -46,6 +46,7 @@ With `-stop-at 30`, the stage stops its other games once 30% of its games have e
 | `-max-response` | 1s | a stage fails when a response takes longer |
 | `-seed` | clock | seed for the bots' moves |
 | `-stop-at` | 0 | percent of a stage's games that, once ended, stop the others; 0 waits for all |
+| `-bots` | none | `standard` or `hard`: the host seats the server's own bots in every other seat, and the tool plays the host's seat alone; the report adds the bots' turns |
 | `-ban` | blue_baby | characters the host bans, comma-separated; Blue Baby starts with Forever Alone, whose loop is 19.97; `-ban ""` bans none |
 
 ## What it measures

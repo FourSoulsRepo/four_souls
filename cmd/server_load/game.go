@@ -196,6 +196,9 @@ func openTable(ctx context.Context, cfg config, g *gameRun, col *collector) ([]*
 	if err := host.expect(protocol.TypeTable, &tb); err != nil {
 		return bots, err
 	}
+	if cfg.botLevel != "" {
+		return bots, seatServerBots(cfg, host)
+	}
 	for seat := 1; seat < cfg.players; seat++ {
 		b, err := open(seat)
 		if err != nil {
@@ -214,6 +217,21 @@ func openTable(ctx context.Context, cfg config, g *gameRun, col *collector) ([]*
 		}
 	}
 	return bots, nil
+}
+
+// seatServerBots has the host seat the server's bots of cfg.botLevel in
+// every other seat (ADR 030, Decision 10.4), then get ready: a bot's seat
+// is always ready, so the game starts.
+func seatServerBots(cfg config, host *bot) error {
+	for seat := 1; seat < cfg.players; seat++ {
+		if err := host.send(protocol.TypeBot, protocol.Bot{Seat: seat, Level: cfg.botLevel}); err != nil {
+			return err
+		}
+		if err := host.expect(protocol.TypeTable, nil); err != nil {
+			return err
+		}
+	}
+	return host.send(protocol.TypeReady, protocol.Ready{Ready: true})
 }
 
 // closeAll closes every bot's socket.

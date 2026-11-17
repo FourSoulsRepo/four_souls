@@ -114,6 +114,10 @@ func (st stage) report(p *printer, cfg config) {
 	line(p, "game time", "%s", spreadOf(lengths).text(ms))
 	resp := c.responses()
 	line(p, "response", "%d intents: %s", resp.n, resp.text(ms))
+	if cfg.botLevel != "" {
+		bt := c.botTurns()
+		line(p, "bot turns", "%d %s turns: %s", bt.n, cfg.botLevel, bt.text(ms))
+	}
 	ping := c.pings()
 	line(p, "ping", "%d pings: %s", ping.n, ping.text(ms))
 	hs := spreadOf(c.handshake)
