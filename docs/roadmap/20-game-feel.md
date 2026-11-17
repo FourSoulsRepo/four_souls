@@ -600,9 +600,9 @@ Swapping it is the owner's call; not part of this step.
    6. Without private images: plain backs with the deck name (6.9).
    7. Hover and pick look as in 20.18 "Choosing cards".
    8. UC-13 5a (choice dialog) gets the new look.
-5. Open questions for the owner:
-   1. Pick in the dialog, or the decks glow on the table (as V-53)?
-   2. Should a deck option show its card count?
+5. Owner picks (2026-11-17):
+   1. The pick stays in the dialog; no table pick.
+   2. A deck option shows no card count.
 6. Done when:
    1. Go test: deck and discard options carry their kind.
    2. Vitest: a deck option draws a back; other options stay buttons.
