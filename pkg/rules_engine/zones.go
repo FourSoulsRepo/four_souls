@@ -67,7 +67,7 @@ func (g *Game) refillDeck(d DeckKind) {
 	}
 	g.Discards[d] = nil
 	if n > 0 {
-		g.emit(Event{Kind: EvMovedToDeck, Player: NoPlayer, Amount: n, Text: d.String() + " deck"})
+		g.emit(Event{Kind: EvMovedToDeck, Player: NoPlayer, Amount: n, Text: DeckText(d, "")})
 	}
 	g.ShuffleDeck(d)
 }
