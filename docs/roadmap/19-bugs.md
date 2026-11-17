@@ -41,7 +41,7 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119, 19.167, 19.200 | 13 |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166, 19.198                          | 4     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194, 19.197 | 44 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194, 19.197, 19.217 | 45 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179, 19.189, 19.196, 19.202, 19.203 | 34 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91, 19.201                     | 5     |
@@ -56,9 +56,9 @@ This step never closes; new reports are appended.
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
-| X  | Bots: a bot or its driver wrong          | Bots       | 19.199, 19.204, 19.205, 19.206, 19.207, 19.208, 19.209, 19.210, 19.211, 19.212, 19.213 | 11 |
+| X  | Bots: a bot or its driver wrong          | Bots       | 19.199, 19.204, 19.205, 19.206, 19.207, 19.208, 19.209, 19.210, 19.211, 19.212, 19.213, 19.214, 19.215, 19.216 | 14 |
 
-Totals by system (205 items):
+Totals by system (209 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -66,13 +66,13 @@ Totals by system (205 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 54 |
 | Server    | H, N    | 5     |
-| e2e       | I, J    | 78    |
+| e2e       | I, J    | 79    |
 | Release   | K       | 5     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
 | Go tools  | Q       | 2     |
 | Vitest    | R       | 1     |
-| Bots      | X       | 11    |
+| Bots      | X       | 14    |
 
 ---
 
@@ -6209,3 +6209,39 @@ Totals by system (205 items):
 2. Report (owner's review): `Clone` copies `saved.since` (grows all game); `Imagine` then sets `tracking{off: true}`.
 3. Tasks:
    1. [ ] An inner clone without `saved` for Imagine; `Clone` unchanged. Benchmark after 300 and 3000 steps, before and after.
+
+### [ ] 19.214 A player named like a bot gets the robot
+
+1. Goal: the robot and the bot's level come from the seat (`Seat.bot`), never from a name's text.
+2. Report (owner's review): a player whose nickname is "Bot 1 (Standard)" gets a robot.
+3. Cause: `BotText` splits a line at the bot seats' names (`botNames`, `namePieces`); a human's name equal to one, or holding one, matched too.
+4. Fix (decision): lines arrive as text, so a line is still split at names, but at every seat's name, the humans' too. The longest name wins; on a tie the human's, so a player's name never gets the robot.
+   1. Not a server check of nicknames: the bot names are translated on each client, the server has no language files, and a later translation could match again.
+   2. Not marks in the events: the client builds each line from seat numbers, and an invisible mark would end up in titles, aria labels and the e2e texts.
+   3. The cost: in a line, a bot whose name a player also took shows no robot; in a seat's own place (its area, the table screen, the pick screen) it keeps it, read from the seat.
+5. Tasks:
+   1. [ ] `namePieces` by seats, with the level; Vitest.
+   2. [ ] Seat places draw the name from the seat.
+
+### [ ] 19.215 A bot's name with no robot in some places
+
+1. Goal: every place that prints a player's name gives a bot its robot (5.26).
+2. Report (owner's review): `StackPanel.tsx:123` (first roll), `Effects.tsx:548` (another player's loot play), `CardZoom.tsx:139` (a stack card's owner).
+3. Cause: those print the name as plain text, not through `BotText`.
+4. Tasks:
+   1. [ ] Those three, and every other place found; the list here.
+
+### [ ] 19.216 A replay of a game with bots shows "Bot N"
+
+1. Goal: a replay names a bot and draws its robot as the game did.
+2. Report (owner's review): `bindings/records` and `replay.ts:45` drop the record seats' `bot` and `bot_n`.
+3. Cause: the binding's `Seat` has only seat and name; the record header has both (ADR 033, 16.5).
+4. Tasks:
+   1. [ ] Carry `bot` and `bot_n` through the binding, the bridge and `replayUpdate`; the records list too. Go test and Vitest.
+
+### [ ] 19.217 e2e: the bot table test waits for icons, not for state
+
+1. Goal: `bots.spec.ts` waits for the game state (5.16.10, TS-08).
+2. Report (owner's review): `bots.spec.ts:170` polls the badge and stack for robot icons.
+3. Tasks:
+   1. [ ] A named store wait: a bot's turn with its item on the stack.
