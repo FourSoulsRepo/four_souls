@@ -12,7 +12,7 @@ var boil = engine.CardDef{
 	HP:      2,
 	DC:      4,
 	ATK:     1,
-	Rewards: []engine.Reward{{Kind: engine.RewardLoot, Amount: 3}},
+	Rewards: []engine.Reward{{Kind: engine.RewardCents, Amount: 3}},
 	Abilities: []engine.Ability{{
 		Kind:    engine.Triggered,
 		Text:    "Each time this deals combat damage, it heals 1 HP.",

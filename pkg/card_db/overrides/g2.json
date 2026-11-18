@@ -1,4 +1,9 @@
 {
+  "boil": {
+    "rewards": [
+      {"count": "3x", "kind": "Coin"}
+    ]
+  },
   "moms_knife": {
     "text": {
       "en": {

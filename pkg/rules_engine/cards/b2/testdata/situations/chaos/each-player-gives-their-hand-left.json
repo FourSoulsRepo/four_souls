@@ -1,0 +1,11 @@
+{
+  "title": "Isaac (A Dime!!) uses Chaos with Cain (two Bomb!s): do they swap hands?",
+  "source": ["card chaos", "R-TURN-01", "R-MECH-37"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["chaos"], "hand": ["a_dime"]}, {"character": "cain", "hand": ["bomb", "bomb"]}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "chaos"},
+  "expect": {"allowed": true, "after": [{"player": 0, "hand_cards": ["bomb", "bomb"]}, {"player": 1, "hand_cards": ["a_dime"]}]}
+}

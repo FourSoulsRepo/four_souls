@@ -1,0 +1,19 @@
+{
+  "title": "Cain's roll of 2 is on the stack: Isaac uses The D6, Cain rerolls a 5; does The D6 recharge at the end of Isaac's turn?",
+  "source": ["card the_d6", "R-MECH-47", "R-DICE-06", "R-ABIL-24"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_d6"]}, {"character": "cain"}],
+    "active": 0,
+    "stack": [{"dice_roll": 2, "owner": 1}],
+    "priority": 0,
+    "rolls": [5]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "the_d6", "choices": ["ask.roll_of 2"],
+     "expect": {"allowed": true, "resolved_rolls": [5], "after": [{"player": 0, "deactivated": ["the_d6"]}]}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "deactivated": []}]}}
+  ],
+  "expect": {"allowed": true}
+}

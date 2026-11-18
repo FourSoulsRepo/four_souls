@@ -1275,6 +1275,20 @@
   gap: 0.5rem;
 }
 
+/* A dice value option is a die (18.27); hover lifts it like a card. */
+.choice button.choice-dice {
+  display: block;
+  padding: 0;
+  border: none;
+  background: none;
+  transition: translate 0.15s ease-out;
+}
+
+.choice button.choice-dice:hover,
+.choice button.choice-dice:focus-visible {
+  translate: 0 -0.5rem;
+}
+
 .choice-pile-name {
   font-family: var(--font-title);
   font-size: 1.125rem;

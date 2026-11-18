@@ -1,0 +1,12 @@
+{
+  "title": "Blue Baby uses Forever Alone to discard A Dime!!, then loots the Bomb!",
+  "source": ["card forever_alone", "R-MECH-25", "R-CARD-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "blue_baby", "items": ["forever_alone"], "hand": ["a_dime"]}, {"character": "cain"}],
+    "active": 0,
+    "decks": {"loot": ["bomb"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "forever_alone", "choices": ["Discard a loot card, then loot 1.", "a_dime"]},
+  "expect": {"allowed": true, "discards": {"loot": ["a_dime"]}, "after": [{"player": 0, "hand_cards": ["bomb"]}]}
+}

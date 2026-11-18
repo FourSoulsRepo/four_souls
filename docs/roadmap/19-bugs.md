@@ -33,9 +33,9 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223 | 25 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226 | 27 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193 | 18 |
-| C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
+| C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45, 19.224                                   | 3     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141, 19.191 | 16 |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119, 19.167, 19.200 | 13 |
@@ -57,14 +57,15 @@ This step never closes; new reports are appended.
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 | X  | Bots: a bot or its driver wrong          | Bots       | 19.199, 19.204, 19.205, 19.206, 19.207, 19.208, 19.209, 19.210, 19.211, 19.212, 19.213, 19.214, 19.215, 19.216, 19.221 | 15 |
+| Y  | A left game: its step state kept         | Client     | 19.227                                                 | 1     |
 
-Totals by system (215 items):
+Totals by system (218 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U, W | 46 |
+| Engine    | A, B, T, U, W | 48 |
 | Card data | C       | 2     |
-| Client    | D–G, O, P, S, V | 54 |
+| Client    | D–G, O, P, S, V, Y | 55 |
 | Server    | H, N    | 5     |
 | e2e       | I, J    | 81    |
 | Release   | K       | 6     |
@@ -6384,3 +6385,121 @@ Totals by system (215 items):
    4. The D6 test and the Lil Battery file expect R-ABIL-40.
    5. Wiki `Client.md` cites R-ABIL-40.
 7. Renumbered from 19.198 at the merge with bots (owner, 2026-11-18).
+
+### [x] 19.224 Wrong reward: Boil gives 3 loot, not 3¢
+
+1. Goal: Boil pays what its printed card shows.
+2. Report (owner, 2026-11-18)
+   1. Boil's reward is wrong; it must be 3¢.
+3. Cause (card data)
+   1. The printed card shows 3¢ (`images/en/g2/boil.webp`).
+   2. foursouls.com shows "3x" with the loot icon.
+   3. `scraper build` copied it into `data/g2.json` as 3x Loot.
+   4. `cardgen` gave the engine card `RewardLoot`, 3.
+   5. Not a possible steal: Boil steals nothing (unlike 19.24).
+   6. So `scraper build` had no reason to stop on it.
+4. Tasks:
+   1. Override in `pkg/card_db/overrides/g2.json`; rebuild `data/g2.json`.
+   2. Engine card: 3¢.
+   3. Check every monster's printed reward box, all sets (5.24).
+   4. Rules engine version up: a kill of Boil pays differently.
+5. Done (2026-11-18)
+   1. Override sets Boil's printed reward box: 3¢.
+   2. `scraper build -origin g2` changed only Boil in `data/g2.json`.
+   3. `boil.go`: `RewardCents`, 3.
+   4. `TestBoilReward`: a kill pays 3¢ and no loot; fails on the old card.
+   5. Checked all 170 monsters with a reward, every set (5.24).
+   6. Each printed reward strip next to its `card_db` value, by eye.
+   7. Boil was the only one that differed.
+   8. Every monster has a reward in `card_db`; none to check apart.
+   9. Rules engine 0.5.6.
+   10. Old records replay apart from a Boil kill on.
+   11. Engine and data only; no screen change, no screenshots.
+6. Owner notes (2026-11-18)
+   1. Owner marks 19.224 solved.
+
+### [ ] 19.225 A forced attack is refused by R-ABIL-12, a static ability rule
+
+1. Goal: a forced attack's refusal cites the rule that says it.
+2. Report (24.14 bulk move, 2026-11-18)
+   1. Monster Manual on the Leech; Isaac ends the turn first.
+   2. Refused by R-ABIL-12: static abilities, always true.
+   3. Monster Manual's ↷ is an activated ability (R-ABIL-27 effect).
+   4. R-ATK-03: a forced attack on a target must be obeyed.
+3. Cause (the engine)
+   1. `prompt.go` denies an end of turn with R-ABIL-12.
+   2. Three denials: `MustAttack`, `MustAttacks`, the random attack (Q-31).
+4. Tasks:
+   1. Each denial cites the rule that fits: R-ATK-03, R-ABIL-21, …
+   2. Check every card that sets them, all sets (5.24).
+   3. The Monster Manual file then checks `"rule": "R-ATK-03"`.
+   4. File: `cards/b2/testdata/situations/monster_manual/forces-an-attack-on-the-monster.json`.
+5. Done (2026-11-18)
+   1. `MustAttack` and `MustAttacks` denials cite R-ATK-03.
+   2. Checked cards: Monster Manual, Ambush, Lust for Blood, Sisters Vis.
+   3. Also Friendly Ball, Blind Rage, Blood Lust, Curse of Blood Lust.
+   4. Each forces an attack; R-ATK-22 builds on R-ATK-03 too.
+   5. The random minion attack cites R-KRAMPUS-13, its own rule (Q-31).
+   6. The Monster Manual file expects R-ATK-03.
+   7. Other R-ABIL-12 denials are a card's static "can't"; they fit.
+
+### [ ] 19.226 The Bone's soul is refused by R-ABIL-09, a controller rule
+
+1. Goal: the refusal cites the rule that says it.
+2. Report (24.14 bulk move, 2026-11-18)
+   1. The Bone becomes a soul and "loses all abilities".
+   2. Its ↷ is then refused by R-ABIL-09.
+   3. R-ABIL-09: only the controller uses an item's abilities.
+   4. The Forgotten is its controller.
+   5. R-CARD-38: such a soul keeps its abilities unless it says so.
+   6. So the card text and R-CARD-38 say why, not R-ABIL-09.
+3. Cause (the engine)
+   1. `activatable` in `activate.go` denies a soul with R-ABIL-09.
+   2. Unless `soulKeepsAbilities`; so the role decides, not the text.
+4. Tasks:
+   1. A soul with no abilities: cite the rule that fits (R-CARD-38).
+   2. Check every refusal with R-ABIL-09, all sets (5.24).
+   3. `TestTheBoneSoulHasNoAbilities` then expects that rule.
+   4. Then it can move to a situation file.
+5. Done (2026-11-18)
+   1. `activatable` denies an item soul with no abilities by R-CARD-38.
+   2. Other R-ABIL-09 denials: a card the player doesn't control; they fit.
+   3. `TestTheBoneSoulHasNoAbilities` moved to a step in
+      `the_bone/deals-damage-then-becomes-a-soul.json`.
+
+### [x] 19.227 The next roller gets no Throw button; everyone sees "throwing…"
+
+1. Goal: the player the game waits on always gets the Throw button.
+2. Report (owner, 2026-11-18)
+   1. Sometimes the second player to roll gets no Throw button.
+   2. That player waits; every other player sees them "throwing…".
+   3. The first-player roll, no tie, on a dedicated server.
+   4. Their own die shakes; no button.
+   5. Close and reconnect: the button comes.
+3. Cause (the client)
+   1. `sent` is the step an intent was sent at (`act` in `store.ts`).
+   2. The buttons wait while `sent` equals the step shown.
+   3. Leaving a game never cleared it; only a `welcome` did (19.86).
+   4. A dedicated server keeps the connection between games: no `welcome`.
+   5. The next game counts steps from 0 again.
+   6. A seat asked at the old `sent` step is blocked for good.
+   7. 2 players: the second roller is asked at step 1.
+   8. A reconnect sends a `welcome`; that is why it helps.
+4. Not the cause of 19.53 and 19.162
+   1. Those e2e pages are new: `sent` starts empty.
+   2. They are left open as they were.
+5. Tasks:
+   1. Leaving a game clears every state keyed on its steps.
+   2. 5.26: check every step-keyed client state.
+   3. Vitest: the next game's step 1 lets the player act.
+6. Fix (2026-11-18)
+   1. `stopPlayback` in `store.ts` clears the step-keyed state.
+   2. Every way out of a game runs it: Leave, `table`, `saved`, an ending notice.
+   3. Cleared: `sent`, `aimed`, `aiming`, `selected`, `explained`, `behind`.
+   4. Cleared: `serverStep`, `explainedStep`; `forgetDeals` in `animations.ts`.
+   5. Checked, no change: `TurnActions`, `EndTurn` (component state; unmounts).
+   6. Checked, no change: `ChoiceBack` kept card (one flight), `ModeDialog` key.
+   7. Vitest: `a left game forgets its steps`; `forgetDeals` in `animations.test.ts`.
+   8. Wiki: `Client.md`, next to the 19.86 line.
+7. Owner notes (2026-11-18)
+   1. Owner marks 19.227 solved.

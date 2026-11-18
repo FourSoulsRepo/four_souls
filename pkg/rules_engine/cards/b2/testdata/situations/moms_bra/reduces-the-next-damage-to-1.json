@@ -1,0 +1,17 @@
+{
+  "title": "Isaac uses Mom's Bra on himself, then misses the Leech (2 ATK): does he take only 1 damage?",
+  "source": ["card moms_bra", "card leech", "R-ATK-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["moms_bra"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech"],
+    "rolls": [1, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "moms_bra", "choices": ["player 1 (isaac)"]},
+    {"player": 0, "kind": "attack", "choices": ["leech"],
+     "expect": {"allowed": true, "monsters": [{"card": "leech", "dead": true}], "after": [{"player": 0, "damage": 1, "hand": 1}]}}
+  ],
+  "expect": {"allowed": true}
+}

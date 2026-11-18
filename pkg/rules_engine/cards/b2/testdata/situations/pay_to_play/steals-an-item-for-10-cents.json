@@ -1,0 +1,11 @@
+{
+  "title": "Isaac pays 10¢ for Pay To Play and steals Cain's Breakfast",
+  "source": ["card pay_to_play", "R-ABIL-07", "R-MECH-38"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["pay_to_play"], "cents": 10}, {"character": "cain", "items": ["breakfast"]}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "pay_to_play", "choices": ["breakfast"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 0, "items": ["pay_to_play", "breakfast"]}, {"player": 1, "items": []}]}
+}

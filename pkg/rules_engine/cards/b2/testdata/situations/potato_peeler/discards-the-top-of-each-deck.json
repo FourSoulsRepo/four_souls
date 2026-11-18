@@ -1,0 +1,13 @@
+{
+  "title": "Isaac uses Potato Peeler: do Dinner, A Penny! and Pooter go from the deck tops into their discards?",
+  "source": ["card potato_peeler", "R-ZONE-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["potato_peeler"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"treasure": ["dinner"], "loot": ["a_penny"], "monster": ["pooter"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "potato_peeler"},
+  "expect": {"allowed": true, "discards": {"treasure": ["dinner"], "loot": ["a_penny"], "monster": ["pooter"]}}
+}

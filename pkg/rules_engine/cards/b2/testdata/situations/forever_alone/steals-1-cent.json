@@ -1,0 +1,11 @@
+{
+  "title": "Blue Baby uses Forever Alone to steal 1¢ from Cain, who has 3¢",
+  "source": ["card forever_alone", "R-MECH-38"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "blue_baby", "items": ["forever_alone"]}, {"character": "cain", "cents": 3}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "forever_alone", "choices": ["Steal 1¢ from another player.", "player 2 (cain)"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 1, "deactivated": ["forever_alone"]}, {"player": 1, "cents": 2}]}
+}

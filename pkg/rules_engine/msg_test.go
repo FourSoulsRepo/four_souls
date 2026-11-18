@@ -19,3 +19,17 @@ func TestPileOptionKeys(t *testing.T) {
 		}
 	}
 }
+
+// TestDiceOptionKey: a dice value option has its own key, apart from an
+// amount. The client draws it as a die, an amount as a button (18.27).
+func TestDiceOptionKey(t *testing.T) {
+	if got := DiceOption(6).Key; got != AskDice {
+		t.Errorf("DiceOption(6) key = %q, want ask.dice", got)
+	}
+	if got := NumberOption(2).Key; got != AskNumber {
+		t.Errorf("NumberOption(2) key = %q, want ask.number", got)
+	}
+	if got := (&Game{}).Plain(DiceOption(6)); got != "6" {
+		t.Errorf("Plain(DiceOption(6)) = %q, want 6", got)
+	}
+}

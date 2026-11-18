@@ -1,0 +1,13 @@
+{
+  "title": "Cain's roll of 3 is on the stack: Judas starts Book of Belial but cancels at the mode choice. Is it still charged, and the roll a 3?",
+  "source": ["card book_of_belial", "R-ABIL-04", "R-ABIL-10"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "judas", "items": ["book_of_belial"]}, {"character": "cain"}],
+    "active": 0,
+    "stack": [{"dice_roll": 3, "owner": 1}],
+    "priority": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "book_of_belial", "choices": ["ask.cancel"]},
+  "expect": {"allowed": true, "resolved_rolls": [3], "after": [{"player": 0, "deactivated": []}]}
+}

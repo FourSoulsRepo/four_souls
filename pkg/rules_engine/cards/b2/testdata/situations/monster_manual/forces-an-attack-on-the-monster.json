@@ -1,0 +1,21 @@
+{
+  "title": "Isaac uses Monster Manual on the Leech: may he end the turn without attacking, and may he attack anything else?",
+  "source": ["card monster_manual", "card leech", "R-ATK-03"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["monster_manual"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "monster_manual", "choices": ["leech"]},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": false, "rule": "R-ATK-03"}},
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["leech"]}}},
+    {"kind": "choose", "choices": ["leech"],
+     "expect": {"allowed": true, "monsters": [{"card": "leech", "dead": true}], "after": [{"player": 0, "hand": 1}]}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ATK-03"}
+}

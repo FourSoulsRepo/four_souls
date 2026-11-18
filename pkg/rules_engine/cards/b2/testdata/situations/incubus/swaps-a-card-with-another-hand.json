@@ -1,0 +1,11 @@
+{
+  "title": "Lilith (A Nickel!) looks at Cain's hand with Incubus and swaps for his A Dime!!",
+  "source": ["card incubus", "R-MECH-39"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "lilith", "items": ["incubus"], "hand": ["a_nickel"]}, {"character": "cain", "hand": ["a_dime"]}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "incubus", "choices": ["Look at a player's hand. You may swap a card from your hand with one of theirs.", "player 2 (cain)", "a_dime", "a_nickel"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "hand_cards": ["a_dime"]}, {"player": 1, "hand_cards": ["a_nickel"]}]}
+}

@@ -1,0 +1,17 @@
+{
+  "title": "Eve's turn starts: The Curse mills A Penny!, she loots the Bomb!; then her ↷ puts A Penny! back on the loot deck",
+  "source": ["card the_curse", "R-TURN-03", "R-TURN-04"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "eve", "items": ["the_curse"]}, {"character": "cain"}],
+    "active": 1,
+    "decks": {"loot": ["a_penny", "bomb", "a_nickel"]}
+  },
+  "steps": [
+    {"player": 1, "kind": "end_turn", "choices": ["ask.deck.loot"],
+     "expect": {"allowed": true, "active": 0, "discards": {"loot": ["a_penny"]}, "decks": {"loot": ["a_nickel"]}, "after": [{"player": 0, "hand_cards": ["bomb"]}]}},
+    {"player": 0, "kind": "activate", "card": "the_curse", "ability": 1, "choices": ["ask.discard.loot"],
+     "expect": {"allowed": true, "discards": {"loot": []}, "decks": {"loot": ["a_penny", "a_nickel"]}, "after": [{"player": 0, "deactivated": ["the_curse"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

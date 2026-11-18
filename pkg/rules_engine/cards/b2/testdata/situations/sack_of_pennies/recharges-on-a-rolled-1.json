@@ -1,0 +1,19 @@
+{
+  "title": "Isaac gains 1¢ with Sack of Pennies, then rolls a 1 with Mystery Sack: does he loot 1 and recharge Sack of Pennies?",
+  "source": ["card sack_of_pennies", "card mystery_sack", "R-ABIL-16"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["sack_of_pennies", "mystery_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"loot": ["bomb"]},
+    "rolls": [1]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "sack_of_pennies",
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 1, "deactivated": ["sack_of_pennies"]}]}},
+    {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["ask.yes"],
+     "expect": {"allowed": true, "resolved_rolls": [1], "after": [{"player": 0, "cents": 1, "hand_cards": ["bomb"], "deactivated": ["mystery_sack"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

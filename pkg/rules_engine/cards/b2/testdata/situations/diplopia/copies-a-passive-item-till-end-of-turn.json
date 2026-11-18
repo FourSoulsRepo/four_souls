@@ -1,0 +1,18 @@
+{
+  "title": "Isaac uses Diplopia; Cain has Breakfast and Jawbone: is only Breakfast offered, and does Isaac have 3 HP this turn and 2 after?",
+  "source": ["card diplopia", "card breakfast", "card jawbone", "card isaac", "R-MECH-08", "R-ABIL-27", "R-ABIL-04"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["diplopia"]}, {"character": "cain", "items": ["breakfast", "jawbone"]}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "diplopia",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["breakfast", "ask.cancel"]}}},
+    {"kind": "choose", "choices": ["breakfast"],
+     "expect": {"allowed": true, "after": [{"player": 0, "hp": 3}]}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "hp": 2}]}}
+  ],
+  "expect": {"allowed": true}
+}

@@ -1,0 +1,16 @@
+{
+  "title": "Isaac uses Decoy on Cain, who has Breakfast and the eternal Sleight of Hand: is only Breakfast offered, and are they swapped?",
+  "source": ["card decoy", "card sleight_of_hand", "R-ABIL-04", "R-ABIL-18", "R-MECH-39"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["decoy"]}, {"character": "cain", "items": ["breakfast", "sleight_of_hand"]}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "decoy",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["breakfast", "ask.cancel"]}}},
+    {"kind": "choose", "choices": ["breakfast"],
+     "expect": {"allowed": true, "after": [{"player": 0, "items": ["breakfast"]}, {"player": 1, "items": ["decoy", "sleight_of_hand"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

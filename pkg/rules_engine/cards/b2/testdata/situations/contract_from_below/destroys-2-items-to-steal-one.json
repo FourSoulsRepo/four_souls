@@ -1,0 +1,18 @@
+{
+  "title": "Isaac destroys Breakfast and Dinner for Contract From Below: does he steal Cain's Steamy Sale!?",
+  "source": ["card contract_from_below", "R-ABIL-07", "R-MECH-23", "R-MECH-38"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["contract_from_below", "breakfast", "dinner"]},
+      {"character": "cain", "items": ["steamy_sale"]}
+    ],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "contract_from_below", "choices": ["breakfast", "dinner", "steamy_sale"]},
+  "expect": {
+    "allowed": true,
+    "discards": {"treasure": ["breakfast", "dinner"]},
+    "after": [{"player": 0, "items": ["contract_from_below", "steamy_sale"]}, {"player": 1, "items": []}]
+  }
+}

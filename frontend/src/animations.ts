@@ -149,6 +149,13 @@ export function claimDeal(step: number, cards: { card: string; object?: number |
   return ok;
 }
 
+// forgetDeals forgets the deals of a left game: the next game counts its
+// steps from 0 again, and an old deal at the same step would keep its
+// cards from flying in (19.227).
+export function forgetDeals(): void {
+  dealt.clear();
+}
+
 // claimed tells if an animation already brought the card in this beat:
 // the view's pop-in then stays still. It keys on the card's name: a
 // copy that no effect brought then stays still too, which shows nothing

@@ -1,0 +1,18 @@
+{
+  "title": "Isaac flushes the monsters: are the Fly and the Leech at the bottom of the monster deck, and the slots refilled with Dip and Pooter?",
+  "source": ["card flush", "R-SHOP-06", "Q-22"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["flush"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["dip", "pooter"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "flush", "choices": ["Put each monster not being attacked on the bottom of the monster deck."]},
+  "expect": {
+    "allowed": true,
+    "deck_bottoms": {"monster": ["fly", "leech"]},
+    "monsters": [{"card": "dip", "dead": false}, {"card": "pooter", "dead": false}],
+    "events": [{"kind": "deck_bottom", "none": true}]
+  }
+}

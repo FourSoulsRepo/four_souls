@@ -1,0 +1,11 @@
+{
+  "title": "Isaac rerolls Cain's The Chest with The D20: it would be destroyed, so it becomes Cain's soul instead",
+  "source": ["card the_chest", "card the_d20", "R-MECH-48", "R-MECH-03", "R-ABIL-30", "R-CARD-18"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_d20"]}, {"character": "cain", "items": ["the_chest"]}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "the_d20", "choices": ["the_chest"]},
+  "expect": {"allowed": true, "after": [{"player": 1, "souls": 1, "soul_cards": ["the_chest"], "items": []}]}
+}

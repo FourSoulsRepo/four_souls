@@ -1,0 +1,17 @@
+{
+  "title": "The Forgotten's Bone has no counters: may he remove 2 to deal damage? Then his ↷ puts a counter on it",
+  "source": ["card the_bone", "R-ABIL-07", "R-ABIL-10"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "the_forgotten", "items": ["the_bone"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "the_bone", "ability": 2,
+     "expect": {"allowed": false, "rule": "R-ABIL-07"}},
+    {"player": 0, "kind": "activate", "card": "the_bone",
+     "expect": {"allowed": true, "after": [{"player": 0, "counters": [{"card": "the_bone", "count": 1}], "deactivated": ["the_bone"]}]}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-07"}
+}

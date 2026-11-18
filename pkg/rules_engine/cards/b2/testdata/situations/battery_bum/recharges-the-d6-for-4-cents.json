@@ -1,0 +1,19 @@
+{
+  "title": "Isaac pays 4¢ to Battery Bum to recharge The D6; with no ¢ left, may he use it again?",
+  "source": ["card battery_bum", "R-ABIL-07", "R-ABIL-11", "R-MECH-22"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["battery_bum", "the_d6"], "cents": 4, "deactivated": ["the_d6"]},
+      {"character": "cain"}
+    ],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "battery_bum", "choices": ["the_d6"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 0, "deactivated": []}]}},
+    {"player": 0, "kind": "activate", "card": "battery_bum",
+     "expect": {"allowed": false, "rule": "R-ABIL-07"}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-07"}
+}

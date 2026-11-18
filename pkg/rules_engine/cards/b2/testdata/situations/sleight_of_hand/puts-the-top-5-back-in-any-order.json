@@ -1,0 +1,12 @@
+{
+  "title": "Cain looks at the top 5 of the monster deck with Sleight of Hand and puts them back in reverse order",
+  "source": ["card sleight_of_hand"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "cain", "items": ["sleight_of_hand"]}, {"character": "isaac"}],
+    "active": 0,
+    "decks": {"monster": ["spider", "chub", "mulligan", "famine", "swarm_of_flies"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "sleight_of_hand", "choices": ["ask.deck.monster", "swarm_of_flies", "famine", "mulligan", "chub", "spider"]},
+  "expect": {"allowed": true, "decks": {"monster": ["swarm_of_flies", "famine", "mulligan", "chub", "spider"]}, "after": [{"player": 0, "deactivated": ["sleight_of_hand"]}]}
+}

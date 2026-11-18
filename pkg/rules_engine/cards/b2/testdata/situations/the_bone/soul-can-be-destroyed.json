@@ -1,0 +1,20 @@
+{
+  "title": "The Forgotten's starting Bone becomes a soul and loses all abilities, Eternal too: can XX. Judgement destroy it?",
+  "source": ["card the_bone", "card xx_judgement", "Q-23", "R-CARD-38", "R-MECH-23"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "the_forgotten", "items": ["the_bone"], "eternal": ["the_bone"], "counters": [{"card": "the_bone", "count": 5}]},
+      {"character": "isaac", "hand": ["xx_judgement"]}
+    ],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "the_bone", "ability": 3,
+     "expect": {"allowed": true, "after": [{"player": 0, "souls": 1, "soul_cards": ["the_bone"]}]}},
+    {"player": 0, "kind": "end_turn"},
+    {"player": 1, "kind": "play", "card": "xx_judgement", "choices": ["player 1 (the_forgotten)", "the_bone"],
+     "expect": {"allowed": true, "discards": {"treasure": ["the_bone"]}, "after": [{"player": 0, "souls": 0, "soul_cards": []}]}}
+  ],
+  "expect": {"allowed": true}
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Isaac holds A Dime!! and uses Bum Friend: he loots the Bomb!, then puts A Dime!! on top of the loot deck",
+  "source": ["card bum_friend", "R-CARD-06", "R-MECH-02"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["bum_friend"], "hand": ["a_dime"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"loot": ["bomb"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "bum_friend", "choices": ["a_dime"]},
+  "expect": {"allowed": true, "decks": {"loot": ["a_dime"]}, "after": [{"player": 0, "hand_cards": ["bomb"], "deactivated": ["bum_friend"]}]}
+}

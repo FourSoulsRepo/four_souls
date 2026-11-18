@@ -84,6 +84,8 @@ export interface ChoiceOption extends Action {
   outcome?: OutcomeView;
   // pile is the deck or discard pile the option is, if it is one (20.26).
   pile?: Pile;
+  // dice is the dice value the option is, if it is one (18.27).
+  dice?: number;
 }
 
 // Pile is a deck option ("ask.deck.loot") or a discard pile option
@@ -269,12 +271,14 @@ export function actionsFor(u: Update, names: MsgNames, explained: Block[] = []):
         const target = u.view.options?.at(i);
         const card = optionCard(option);
         const pile = optionPile(option, u.view.discards);
+        const dice = optionDice(option);
         const trigger = w.purpose === Purpose.triggerOrder ? triggerLabel(option) : undefined;
         return {
           label,
           intent,
           ...(card ? { card } : {}),
           ...(pile ? { pile } : {}),
+          ...(dice ? { dice } : {}),
           ...trigger,
           ...(target && (target.object || target.is_player || target.deck || target.stack_id) ? { target } : {}),
           ...(target?.outcome ? { outcome: target.outcome } : {}),
@@ -338,6 +342,14 @@ export function shownByChoice(u: Update | null | undefined, you: number): Set<st
 function optionCard(m?: Msg): string | undefined {
   const v = m?.key === 'ask.card' ? m.args?.card : undefined;
   return typeof v === 'object' && 'card' in v ? v.card : undefined;
+}
+
+// optionDice is the dice value an option is, if it is one ("ask.dice",
+// 18.27): God Head's 1 or 6, a number chosen before a roll. An amount
+// ("ask.number") is not one.
+function optionDice(m?: Msg): number | undefined {
+  const n = m?.key === 'ask.dice' ? m.args?.n : undefined;
+  return typeof n === 'number' && n >= 1 && n <= 6 ? n : undefined;
 }
 
 // pileKinds are the engine's decks in Go's order (DeckKind), as the

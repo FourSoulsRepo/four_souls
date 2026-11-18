@@ -1,0 +1,20 @@
+{
+  "title": "Isaac misses the Fly and takes 1 damage, so The Poop gets a counter; he removes it, then Bomb!s himself: is that damage prevented?",
+  "source": ["card the_poop", "card fly", "card bomb", "card isaac", "R-ATK-13", "R-MECH-46"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_poop"], "hand": ["bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "rolls": [1, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "after": [{"player": 0, "damage": 1, "counters": [{"card": "the_poop", "count": 1}]}]}},
+    {"player": 0, "kind": "activate", "card": "the_poop", "ability": 1,
+     "expect": {"allowed": true, "after": [{"player": 0, "counters": [{"card": "the_poop", "count": 0}]}]}},
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["player 1 (isaac)"],
+     "expect": {"allowed": true, "events": [{"kind": "prevented", "player": 0}], "after": [{"player": 0, "damage": 1, "dead": false, "counters": [{"card": "the_poop", "count": 0}]}]}}
+  ],
+  "expect": {"allowed": true}
+}

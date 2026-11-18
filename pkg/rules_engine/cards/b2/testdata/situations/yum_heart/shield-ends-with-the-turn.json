@@ -1,0 +1,17 @@
+{
+  "title": "Maggy uses Yum Heart on herself but takes no damage; on Cain's turn he Bomb!s her: is that damage prevented?",
+  "source": ["card yum_heart", "card bomb", "R-TURN-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "maggy", "items": ["yum_heart"]}, {"character": "cain", "hand": ["bomb"]}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "yum_heart", "choices": ["player 1 (maggy)"]},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1}},
+    {"player": 1, "kind": "play", "card": "bomb", "choices": ["player 1 (maggy)"],
+     "expect": {"allowed": true, "events": [{"kind": "prevented", "none": true}], "after": [{"player": 0, "damage": 1}]}}
+  ],
+  "expect": {"allowed": true}
+}

@@ -321,6 +321,12 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    3. Instead each option shows that deck's back image.
    4. A discard pile option shows its top card.
    5. Planned in 20.26.
+57. V-57. A dice value choice shows dice, not buttons (owner, 2026-11-18).
+   1. E.g. God Head: "change the result of a dice roll to a 1 or 6".
+   2. Today the dialog shows one text button per number.
+   3. Instead each option is a die showing that value.
+   4. The die has the chooser's own dice look (V-19).
+   5. Planned in 18.27.
 
 ## Rules
 

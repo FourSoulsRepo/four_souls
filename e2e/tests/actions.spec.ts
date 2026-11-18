@@ -3,6 +3,7 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
+import { giveLooks } from './looks';
 import { appURL, serverPort } from './server';
 import { shot } from './shot';
 import {
@@ -748,34 +749,6 @@ test('an attack waits for the roller to throw; the die shows the engine\'s value
   }
   await shot(active, 'last-roll');
 });
-
-// giveLooks gives the page two dice looks of plain colors, so a test
-// tells them apart without the private textures, and picks one as the
-// viewer's own. The game's seats keep the looks sent in hello.
-async function giveLooks(page: Page, own: string): Promise<Record<string, string>> {
-  return page.evaluate((own) => {
-    interface S {
-      settings: { dice: string };
-    }
-    const store = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (p: object) => void } } }).fourSouls.store;
-    const paint = (color: string) => {
-      const c = document.createElement('canvas');
-      c.width = c.height = 96;
-      const g = c.getContext('2d');
-      if (g) {
-        g.fillStyle = color;
-        g.fillRect(0, 0, 96, 96);
-      }
-      return c.toDataURL();
-    };
-    const images = { tear: paint('#b33'), gold: paint('#db3') };
-    store.setState({
-      dice: Object.entries(images).map(([id, image]) => ({ id, name: id, image })),
-      settings: { ...store.getState().settings, dice: own },
-    });
-    return images;
-  }, own);
-}
 
 test("every screen draws a roll with the roller's dice look (15.6)", async ({ browser }) => {
   // Animations on: the thrown die is an effect.

@@ -1,0 +1,13 @@
+{
+  "title": "Cain's roll of 5 is on the stack: Isaac subtracts 2 with Mini Mush, so it resolves as 3",
+  "source": ["card mini_mush", "R-DICE-04", "R-DICE-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["mini_mush"]}, {"character": "cain"}],
+    "active": 0,
+    "stack": [{"dice_roll": 5, "owner": 1}],
+    "priority": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "mini_mush", "choices": ["ask.roll_of 5", "-2"]},
+  "expect": {"allowed": true, "resolved_rolls": [3], "after": [{"player": 0, "deactivated": ["mini_mush"]}]}
+}

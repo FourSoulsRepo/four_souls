@@ -1,0 +1,12 @@
+{
+  "title": "Isaac uses Mr. Boom on the Fly (1 HP): does it die?",
+  "source": ["card mr_boom", "card fly", "R-ATK-07", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["mr_boom"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "mr_boom", "choices": ["fly"]},
+  "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "cents": 1, "deactivated": ["mr_boom"]}]}
+}

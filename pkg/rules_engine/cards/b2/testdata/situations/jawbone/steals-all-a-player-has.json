@@ -1,0 +1,12 @@
+{
+  "title": "Isaac uses Jawbone on Cain, who has only 2¢: does Isaac get all 2?",
+  "source": ["card jawbone", "R-MECH-38", "R-MECH-44"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["jawbone"]}, {"character": "cain", "cents": 2}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "jawbone", "choices": ["player 2 (cain)"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 2, "deactivated": ["jawbone"]}, {"player": 1, "cents": 0}]}
+}

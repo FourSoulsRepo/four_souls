@@ -6,6 +6,14 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+## 0.6.1 - 2026-11-18
+
+- Boil gives 3¢, as printed, instead of 3 loot cards.
+- A choice of a dice value shows dice, not buttons (God Head, Crystal Ball, I - The Magician, Red Candle, picking one of many dice).
+- On a dedicated server, a new game after leaving one no longer misses its Throw and other buttons.
+- A refused forced attack, and a soul that lost its abilities, now name the rule that applies.
+- Rules engine 0.5.6.
+
 ## 0.6.0 - 2026-11-18
 
 - Bots: the host seats a bot on any free seat, standard or hard (lobby: add bots per seat); one player and three bots make a full table. A bot sees only what a player in its seat sees.
