@@ -6385,7 +6385,7 @@ Totals by system (215 items):
    5. Wiki `Client.md` cites R-ABIL-40.
 7. Renumbered from 19.198 at the merge with bots (owner, 2026-11-18).
 
-### [ ] 19.224 Wrong reward: Boil gives 3 loot, not 3¢
+### [x] 19.224 Wrong reward: Boil gives 3 loot, not 3¢
 
 1. Goal: Boil pays what its printed card shows.
 2. Report (owner, 2026-11-18)
@@ -6414,3 +6414,5 @@ Totals by system (215 items):
    9. Rules engine 0.5.6.
    10. Old records replay apart from a Boil kill on.
    11. Engine and data only; no screen change, no screenshots.
+6. Owner notes (2026-11-18)
+   1. Owner marks 19.224 solved.
