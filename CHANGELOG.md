@@ -6,6 +6,11 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+## 0.6.3 - 2026-11-19
+
+- Linux: the game always draws with the GPU; on a tested laptop the menu went from 6 to 60 frames a second. If the window stays black, start it with `FOURSOULS_GPU_POLICY=ondemand` (or `never`).
+- `--diagnose` no longer names every GPU "Apple GPU" on Linux and macOS; WebKit hides the name, and the report now says so.
+
 ## 0.6.2 - 2026-11-18
 
 - Diagnostics: start the app with `--diagnose` to see how fast it draws and what slows it. On Linux it tries each known WebKitGTK switch, names the fastest, and finds problems such as no GPU access or no MP3 sound. The report is also saved to a file; see the wiki page Diagnostics.

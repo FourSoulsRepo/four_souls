@@ -29,7 +29,7 @@ func Write(w io.Writer, s System, outs []Outcome) {
 	}
 	p.line("Switches:   %s", orNone(strings.Join(s.Switches, " ")))
 	p.line("")
-	writeProbes(p, outs)
+	writeProbes(p, s.OS, outs)
 	p.line("")
 	writeVerdict(p, s, outs)
 }
@@ -50,7 +50,7 @@ func writeGPUs(p *printer, s System) {
 	}
 }
 
-func writeProbes(p *printer, outs []Outcome) {
+func writeProbes(p *printer, goos string, outs []Outcome) {
 	p.line("Main menu, %dx%d window, frames over 5 s:", ProbeWidth, ProbeHeight)
 	tw := tabwriter.NewWriter(p.w, 0, 0, 2, ' ', 0)
 	_, _ = fmt.Fprintln(tw, "variant\tfps\tslow\tworst\tscale\tsky\trenderer") //nolint:errcheck // see printer
@@ -65,7 +65,7 @@ func writeProbes(p *printer, outs []Outcome) {
 			slow = r.Slow * 100 / r.Frames
 		}
 		_, _ = fmt.Fprintf(tw, "%s\t%.1f\t%d%%\t%.0f ms\t%.2g\t%s\t%s\n", //nolint:errcheck // see printer
-			o.Variant.ID, r.FPS(), slow, r.WorstMs, r.PixelRatio, sky(r), orUnknown(r.Renderer))
+			o.Variant.ID, r.FPS(), slow, r.WorstMs, r.PixelRatio, sky(r), renderer(goos, r))
 	}
 	_ = tw.Flush() //nolint:errcheck // see printer
 }
@@ -112,7 +112,21 @@ func tryHint(v Variant) string {
 	case len(v.Env) > 0:
 		return strings.Join(v.Env, " ") + " ./FourSouls"
 	}
-	return "no switch for this yet; send the report to the developers"
+	return ""
+}
+
+// Masked tells that the webview hides the GPU from pages (19.228): WebKit
+// (Linux, macOS) answers "Apple GPU" on every computer.
+func Masked(goos string) bool {
+	return goos == "linux" || goos == "darwin"
+}
+
+// renderer is a probe's GPU as the report shows it.
+func renderer(goos string, r *Result) string {
+	if Masked(goos) {
+		return "hidden by WebKit"
+	}
+	return orUnknown(r.Renderer)
 }
 
 // Flags lists what looks wrong (ADR 035, item 4.4).
@@ -122,6 +136,9 @@ func Flags(s System, outs []Outcome) []string {
 		if len(s.GPUs) == 0 {
 			flags = append(flags, "No GPU render node in /dev/dri: the webview draws on the CPU.")
 		}
+		if slices.Contains(s.Switches, "LIBGL_ALWAYS_SOFTWARE=1") {
+			flags = append(flags, "LIBGL_ALWAYS_SOFTWARE=1 is set: OpenGL draws on the CPU.")
+		}
 		for _, g := range s.GPUs {
 			if !g.Opens {
 				flags = append(flags, fmt.Sprintf("%s does not open (%s): add the user to the render group and log in again.", g.Node, g.Err))
@@ -129,7 +146,7 @@ func Flags(s System, outs []Outcome) []string {
 		}
 	}
 	if d, ok := defaultResult(outs); ok {
-		flags = append(flags, resultFlags(d)...)
+		flags = append(flags, resultFlags(s.OS, d)...)
 	}
 	if best, ok := Best(outs); ok && best.Result.FPS() < lowFPS {
 		flags = append(flags, fmt.Sprintf("Every variant is slow: under %d fps.", lowFPS))
@@ -137,11 +154,12 @@ func Flags(s System, outs []Outcome) []string {
 	return flags
 }
 
-// resultFlags are the problems the default start shows.
-func resultFlags(r *Result) []string {
+// resultFlags are the problems the default start shows. A masked
+// renderer says nothing (19.228); the GPU lines and frame rates do.
+func resultFlags(goos string, r *Result) []string {
 	var flags []string
 	renderer := strings.ToLower(r.Renderer)
-	if slices.ContainsFunc(softwareRenderers, func(s string) bool { return strings.Contains(renderer, s) }) {
+	if !Masked(goos) && slices.ContainsFunc(softwareRenderers, func(s string) bool { return strings.Contains(renderer, s) }) {
 		flags = append(flags, fmt.Sprintf("The webview draws on the CPU (%s): check the GPU driver (Mesa).", r.Renderer))
 	}
 	if !slices.Contains(r.Sounds, "mp3") {

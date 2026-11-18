@@ -39,7 +39,7 @@ Ideas: B-09.
 3. Result (2026-11-18)
    1. ADR 035; roadmap row and section 25; idea B-09.
 
-### [ ] 25.2 The `--diagnose` flag
+### [x] 25.2 The `--diagnose` flag
 
 1. Goal: one command tells what the webview runs on and how fast it draws.
 2. Tasks:
@@ -78,20 +78,39 @@ Ideas: B-09.
       1. `make e2e`: 633 passed, 1 failed, 22 skipped.
       2. Failure: `arrow.spec.ts:62`, chromium; logged under 19.153.
       3. Rerun: 5 separate runs of the spec, 30 of 30 passed.
+5. Owner's Linux run (0.6.2, 2026-11-18)
+   1. WebKitGTK 2.54.2, Wayland, Intel `i915`; the GPU opens; scale 1.
+   2. `default`, `no-dmabuf`, `no-compositing`, `gpu-never`: 6.2–6.3 fps, every frame slow.
+   3. `gpu-always`: 60.0 fps, no slow frame.
+   4. So `OnDemand` draws on the CPU here; the switches change nothing.
+   5. Renderer "Apple GPU" everywhere: WebKit masks it; logged as 19.228.
+   6. "No MP3 playback": GStreamer can't play `audio/mpeg`; owner to confirm.
 
-### [ ] 25.3 Self-repair in the game (later)
+### [ ] 25.3 Linux webview always on the GPU
+
+1. Goal: the game draws at full speed on the owner's Linux laptop.
+2. Owner answers (2026-11-18)
+   1. Which switches helped? `gpu-always` only (25.2 item 5).
+   2. `Always` becomes the Linux default; no self-repair now.
+   3. Keep `--diagnose`; it may help later.
+3. Tasks:
+   1. ADR 036: the default and `FOURSOULS_GPU_POLICY`.
+   2. `--diagnose`: `gpu-always` becomes `gpu-ondemand`; variants are env only.
+   3. Fix 19.228 in the same change.
+   4. Wiki Diagnostics, First start; UC-48; changelog.
+4. Done when:
+   1. The owner's laptop runs the menu smoothly in a normal start.
+   2. The owner checks the sound (the MP3 warning, 25.2 item 5.6).
+
+### [ ] 25.4 Self-repair in the game (parked)
 
 1. Goal: the game finds a slow webview and fixes itself.
-2. Waits for the owner's 25.2 results; not to start before the owner's go.
+2. Parked (owner, 2026-11-18): waits for a report `Always` does not fix.
 3. Draft, to settle then:
    1. First start: the menu measures its own frame rate.
-   2. Low: offer "compatibility mode"; it saves the best switch.
+   2. Low: offer a switch; save the best one.
    3. The app restarts with it; `main.go` sets it before the window.
    4. A setting turns it off again.
    5. Still low: show what the report found, with a fix per distro.
-4. **Owner** questions:
-   1. Which switches helped on the laptop?
-   2. Ask the player first, or switch by itself?
-   3. Still slow after the switch: Electron, or lighter effects?
-5. Done when:
-   1. A new ADR or an update of ADR 035 holds the decision.
+4. Done when:
+   1. A new ADR holds the decision.

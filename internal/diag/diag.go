@@ -44,19 +44,40 @@ func Args(args []string) (diagnose bool, probe string) {
 	return diagnose, probe
 }
 
-// Variant is one way to start the webview: switches in the environment
-// and the Wails GPU policy.
+// GPUPolicyEnv sets the Linux webview's GPU policy (ADR 036): "always"
+// (the default), "ondemand" or "never".
+const GPUPolicyEnv = "FOURSOULS_GPU_POLICY"
+
+// The GPU policies GPUPolicyEnv takes.
+const (
+	GPUAlways   = "always"
+	GPUOnDemand = "ondemand"
+	GPUNever    = "never"
+)
+
+// GPUPolicy reads a GPUPolicyEnv value: unset is "always"; an unknown
+// value is "always" too, and ok is false so the app can say so.
+func GPUPolicy(value string) (policy string, ok bool) {
+	switch v := strings.ToLower(strings.TrimSpace(value)); v {
+	case "":
+		return GPUAlways, true
+	case GPUAlways, GPUOnDemand, GPUNever:
+		return v, true
+	}
+	return GPUAlways, false
+}
+
+// Variant is one way to start the webview: switches added to the
+// environment, so the report can print how to start the game with it.
 type Variant struct {
 	ID string
 	// Env holds NAME=value pairs added to the probe's environment.
 	Env []string
-	// GPU is the Wails WebviewGpuPolicy: "" keeps the default
-	// (OnDemand), or "always", "never". Linux only.
-	GPU string
 }
 
 // Variants lists what the report tries on this system (ADR 035, item
-// 3.1): the switches only mean something to WebKitGTK.
+// 3.1): the switches only mean something to WebKitGTK. The default is
+// the GPU always on (ADR 036); gpu-ondemand is the Wails default.
 func Variants(goos string) []Variant {
 	if goos != "linux" {
 		return []Variant{{ID: "default"}}
@@ -65,8 +86,8 @@ func Variants(goos string) []Variant {
 		{ID: "default"},
 		{ID: "no-dmabuf", Env: []string{"WEBKIT_DISABLE_DMABUF_RENDERER=1"}},
 		{ID: "no-compositing", Env: []string{"WEBKIT_DISABLE_COMPOSITING_MODE=1"}},
-		{ID: "gpu-always", GPU: "always"},
-		{ID: "gpu-never", GPU: "never"},
+		{ID: "gpu-ondemand", Env: []string{GPUPolicyEnv + "=" + GPUOnDemand}},
+		{ID: "gpu-never", Env: []string{GPUPolicyEnv + "=" + GPUNever}},
 	}
 }
 
@@ -88,7 +109,8 @@ type Result struct {
 	Seconds float64 `json:"seconds"`
 	Slow    int     `json:"slow"`
 	WorstMs float64 `json:"worstMs"`
-	// The WebGL renderer and vendor; "llvmpipe" means no GPU.
+	// The WebGL renderer and vendor; "llvmpipe" means no GPU. WebKit
+	// hides both (Masked).
 	Renderer string `json:"renderer"`
 	Vendor   string `json:"vendor"`
 	// The window as the page sees it.

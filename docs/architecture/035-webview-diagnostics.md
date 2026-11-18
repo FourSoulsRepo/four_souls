@@ -15,7 +15,7 @@
 3. WebKitGTK speed depends on its setup.
    1. Its version; Wayland or X11; the GPU driver; access to `/dev/dri`.
    2. Switches read at start: `WEBKIT_DISABLE_DMABUF_RENDERER`, `WEBKIT_DISABLE_COMPOSITING_MODE`.
-   3. Wails `WebviewGpuPolicy`: `OnDemand` (default), `Always`, `Never`.
+   3. Wails `WebviewGpuPolicy`: `OnDemand`, `Always` (the default since ADR 036), `Never`.
 4. No switch is right for every computer; it must be measured.
 5. A switch only works before the webview starts.
    1. One process cannot try several.
@@ -53,7 +53,7 @@ Use options 1, 3, 5 and 6.
    5. Linux: the user's `render` and `video` groups.
    6. Switches already set in the environment.
 3. Probe part: the app starts itself with `--diagnose-probe=<variant>`.
-   1. Linux variants: `default`, `no-dmabuf`, `no-compositing`, `gpu-always`, `gpu-never`.
+   1. Linux variants: `default`, `no-dmabuf`, `no-compositing`, `gpu-ondemand`, `gpu-never`.
    2. Other systems: `default` only.
    3. A probe opens a 1280×800 window on the main menu over the sky.
    4. It skips the splash and the nickname screen.
@@ -61,11 +61,16 @@ Use options 1, 3, 5 and 6.
    6. It waits 1 s, then counts frames for 5 s.
    7. It sends back: frames per second, slow frames, WebGL renderer, pixel ratio, sound formats.
    8. The parent waits at most 30 s per probe.
+   9. Each variant is environment switches only (ADR 036 item 4).
+   10. WebKit (Linux, macOS) hides the WebGL renderer: "Apple GPU" (19.228).
+       1. The report says "hidden by WebKit" there; only Windows shows it.
 4. Report
    1. Plain text, to stdout and to `diagnose-<time>.txt` in the app folder.
    2. The last line names the file.
    3. It ends with the variant with the most frames per second.
    4. Red flags: software rendering (`llvmpipe`), no render node, no group access.
+      1. `llvmpipe` only where the renderer is not hidden (19.228).
+      2. Also `LIBGL_ALWAYS_SOFTWARE=1` in the environment.
 5. The binding `bindings/probe` is always bound (ADR 030).
    1. `Variant()`: `""` in a normal start.
    2. `Report(result)`: only in a probe; prints and quits.

@@ -61,7 +61,8 @@ func runDiagnose() int {
 
 // runProbe is one window of `--diagnose`: the main menu, measured by the
 // page, which reports through the probe binding and quits. It holds no
-// instance slot and only reads the first copy's settings.
+// instance slot and only reads the first copy's settings. Its switches
+// come in the environment, as a player would set them.
 func runProbe(id string) {
 	v, ok := diag.VariantByID(runtime.GOOS, id)
 	if !ok {
@@ -73,14 +74,20 @@ func runProbe(id string) {
 	}
 }
 
-// linuxOptions sets the webview GPU policy of a probe; nil keeps the
-// Wails default (OnDemand), as in every normal start.
-func linuxOptions(gpu string) *linux.Options {
-	switch gpu {
-	case "always":
-		return &linux.Options{WebviewGpuPolicy: linux.WebviewGpuPolicyAlways}
-	case "never":
+// linuxOptions sets the webview's GPU policy (ADR 036): always on,
+// unless FOURSOULS_GPU_POLICY asks for "ondemand" or "never". WebKitGTK
+// drew the menu on the CPU at 6 fps with the Wails default, OnDemand
+// (25.2). Other systems ignore it.
+func linuxOptions(value string) *linux.Options {
+	policy, ok := diag.GPUPolicy(value)
+	if !ok {
+		log.Print(diag.GPUPolicyEnv + ": unknown value; using " + diag.GPUAlways)
+	}
+	switch policy {
+	case diag.GPUOnDemand:
+		return &linux.Options{WebviewGpuPolicy: linux.WebviewGpuPolicyOnDemand}
+	case diag.GPUNever:
 		return &linux.Options{WebviewGpuPolicy: linux.WebviewGpuPolicyNever}
 	}
-	return nil
+	return &linux.Options{WebviewGpuPolicy: linux.WebviewGpuPolicyAlways}
 }
