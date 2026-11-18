@@ -6,6 +6,9 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- Boil gives 3¢, as printed, instead of 3 loot cards.
+- Rules engine 0.5.6.
+
 ## 0.6.0 - 2026-11-18
 
 - Bots: the host seats a bot on any free seat, standard or hard (lobby: add bots per seat); one player and three bots make a full table. A bot sees only what a player in its seat sees.
