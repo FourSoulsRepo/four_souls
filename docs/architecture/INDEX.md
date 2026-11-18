@@ -36,3 +36,4 @@
 | [032](032-fixed-deals-in-e2e.md) | Fixed deals in e2e tests | Accepted |
 | [033](033-bots.md) | Bots in network games | Accepted |
 | [034](034-situation-files-as-card-tests.md) | Situation files as card tests | Accepted |
+| [035](035-webview-diagnostics.md) | Webview diagnostics | Accepted |

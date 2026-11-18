@@ -6,6 +6,10 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+## 0.6.2 - 2026-11-18
+
+- Diagnostics: start the app with `--diagnose` to see how fast it draws and what slows it. On Linux it tries each known WebKitGTK switch, names the fastest, and finds problems such as no GPU access or no MP3 sound. The report is also saved to a file; see the wiki page Diagnostics.
+
 ## 0.6.1 - 2026-11-18
 
 - Boil gives 3¢, as printed, instead of 3 loot cards.

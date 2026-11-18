@@ -70,3 +70,4 @@ Each sub-step is sized for one agent session.
 | 22 | [22-test-reliability.md](22-test-reliability.md) |
 | 23 | [23-bots.md](23-bots.md) |
 | 24 | [24-situation-tests.md](24-situation-tests.md) |
+| 25 | [25-diagnostics.md](25-diagnostics.md) |

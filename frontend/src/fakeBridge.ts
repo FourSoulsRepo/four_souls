@@ -436,6 +436,13 @@ let checkedUrl = '';
 const listeners = new Map<string, Set<(...data: unknown[]) => void>>();
 
 w.go = {
+  // A normal start: never a --diagnose probe (ADR 035).
+  probe: {
+    Probe: {
+      Variant: () => Promise.resolve(''),
+      Report: () => Promise.resolve(),
+    },
+  },
   about: {
     About: {
       Versions: () => Promise.resolve({ app: 'demo', engine: 'demo' }),

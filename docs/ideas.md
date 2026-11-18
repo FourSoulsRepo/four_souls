@@ -1202,6 +1202,13 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    4. Edition: full (card images) or for-poor (text cards).
    5. Checks only when the button is pressed.
    6. Shows progress while it downloads.
+9. B-09. Webview diagnostics and self-repair (owner, 2026-11-18).
+   1. Linux: the main menu is slow on an integrated Intel GPU.
+   2. Wails draws with the system webview; WebKitGTK is the weakest (B-02).
+   3. `--diagnose` reports the system and measures the real window.
+   4. It tries known WebKitGTK switches and compares frame rates.
+   5. Later: the game finds a slow setup and fixes itself.
+   6. A move to Electron waits for these results (owner, 2026-11-18).
 
 ## Legal
 

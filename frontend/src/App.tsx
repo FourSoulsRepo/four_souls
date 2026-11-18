@@ -14,6 +14,8 @@ import { Splash } from './screens/Splash';
 import { TableScreen } from './screens/TableScreen';
 import { UpdateScreen } from './screens/UpdateScreen';
 import { WelcomeScreen } from './screens/WelcomeScreen';
+import { probeVariant } from './bridge';
+import { runProbe } from './probe';
 import { onSky } from './sky';
 import { useApp, type Screen as ScreenName } from './store';
 
@@ -23,17 +25,28 @@ export function App() {
   // A new language draws every screen again (ADR 021): t() reads it then.
   useApp((s) => s.settings.language);
   const loadingRef = useRef<Promise<void> | null>(null);
+  const probingRef = useRef<Promise<string> | null>(null);
   // After the splash: the menu, or the nickname first on the first start
-  // (ST-06). The settings may still be loading.
+  // (ST-06). The settings may still be loading. A --diagnose probe shows
+  // the menu itself (ADR 035).
   const showMenu = useCallback(() => {
-    void (loadingRef.current ?? Promise.resolve()).then(() => {
-      show(useApp.getState().settings.nickname ? 'menu' : 'welcome');
+    void Promise.all([loadingRef.current, probingRef.current]).then(([, variant]) => {
+      if (!variant) {
+        show(useApp.getState().settings.nickname ? 'menu' : 'welcome');
+      }
     });
   }, [show]);
 
   useEffect(() => {
-    loadingRef.current = useApp.getState().loadSettings();
-    void useApp.getState().loadCards();
+    const settings = useApp.getState().loadSettings();
+    const cards = useApp.getState().loadCards();
+    loadingRef.current = settings;
+    probingRef.current = probeVariant().catch(() => '');
+    void probingRef.current.then((variant) => {
+      if (variant) {
+        void runProbe([settings, cards]);
+      }
+    });
   }, []);
 
   return (

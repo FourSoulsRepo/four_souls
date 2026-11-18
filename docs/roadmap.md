@@ -29,6 +29,7 @@ Each step ends in something that runs and is tested.
 | 22 | Test reliability | Bugs caught by tests before play tests (ADR 032) | 19 | Done |
 | 23 | Bots | Standard and hard bots fill free seats in network games (ADR 033) | 8, 14 | In progress |
 | 24 | Situation tests | Most card tests are situation files, not Go code (ADR 034) | 4 | In progress |
+| 25 | Diagnostics | `--diagnose` measures the webview; later the game repairs itself (ADR 035) | 8 | In progress |
 | 9 | Spectators | Viewers watch live | 8 | Not started |
 | 10 | Replays | Records screen and replay player | 8 | Done |
 | 11 | Learning | Rules viewer, sandbox, tutorial, bot | 8, 12 | Not started |
@@ -54,6 +55,7 @@ Step 10 done (owner, 2026-11-16); it merges with step 18.
 Step 23 added (owner, 2026-11-16) as step 21; it takes the bot from step 11.
 It became step 23 at the merge with main, whose steps 21 and 22 came first (2026-11-17).
 Situation tests were step 23; they became step 24 at the merge with bots (owner, 2026-11-18).
+Step 25 added (owner, 2026-11-18): Linux is slow; `--diagnose` first, self-repair after.
 
 ---
 
@@ -373,6 +375,14 @@ Situation tests were step 23; they became step 24 at the merge with bots (owner,
 5. Simple tests move to files; complicated ones stay in Go.
 6. Files grouped by card, interaction or rule area.
 7. Ideas: TS-13, LR-04, R-03.
+
+## 25. Diagnostics
+
+1. `--diagnose`: a system report and webview frame rates.
+2. Each known WebKitGTK switch runs in its own window and is compared.
+3. The report goes to the terminal and a file the player can send.
+4. Later: the game measures itself and offers the best switch.
+5. Ideas: B-09.
 
 ## Future
 
