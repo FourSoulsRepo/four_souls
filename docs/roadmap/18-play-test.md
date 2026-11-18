@@ -838,3 +838,38 @@ Ideas: B-04, B-05, B-08.
    6. Docs: UC-42 13.1–13.2, `Client.md`, `Challenges.md`, `Animations.md`.
    7. Gates: `make lint`, `make frontend`; `challenge-trick.spec.ts` 4 of 4 passed.
    8. **Owner** marks it solved (2026-11-15).
+
+### [ ] 18.27 Dice value choices show dice
+
+1. Goal: a card that asks for a dice value shows dice, not buttons (V-57).
+   1. Owner, 2026-11-18.
+   2. Example: God Head, "change the result of a dice roll to a 1 or 6".
+   3. Ours: the choice dialog shows one text button per number.
+2. Where it comes from today:
+   1. Options are `engine.NumberOption` (`ask.number`).
+   2. The same key is used for amounts (Jar of Flies, `ChangeRollBy`).
+   3. So the client cannot tell a dice value from an amount.
+3. Cards to check (5.24, all sets):
+   1. b2: God Head, Crystal Ball, I - The Magician.
+   2. fsp2: Red Candle; `cardkit.DieFaces`.
+   3. Many dice (R-DICE-11, `ActChooseDie`): Mutant Spider.
+   4. Every other `NumberOption`: an amount stays a button.
+4. Tasks:
+   1. Engine: a dice value option, `DiceOption`, key `ask.dice`.
+      1. One shared place; `DieFaces`, God Head and `ActChooseDie` use it.
+      2. Amounts keep `ask.number`.
+      3. Text "{n}" in `en.json` and every locale; `make i18n`.
+   2. Client: `actions.ts` reads the value from the option key.
+   3. The dialog draws each such option as a `Die` with that value.
+      1. The chooser's own dice look (`diceImage`, V-19).
+      2. Its name stays for screen readers and tests: the number.
+      3. Without private images: the plain die with a number (6.9).
+   4. Other options (e.g. "No") stay buttons.
+   5. Old records replay; an old `ask.number` option stays a button.
+   6. UC-13 gets the new look; wiki `Client.md`.
+5. Done when:
+   1. Go test: God Head and `DieFaces` options carry `ask.dice`.
+   2. Vitest: a dice option draws a die; an amount stays a button.
+   3. e2e: God Head's choice shows dice; a pick changes the roll.
+   4. Screenshots before and after.
+   5. `wails build -m -tags embed` and `make e2e` pass without images.

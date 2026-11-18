@@ -317,6 +317,7 @@ Situation tests were step 23; they became step 24 at the merge with bots (owner,
 10. Russian card images for the Base Game V2 (LO-07, 18.20).
 11. Update button in the main menu (B-08, 18.21–18.24).
 12. Host screen: a line before Detailed, options in groups (GS-10, 18.25).
+13. Dice value choices show dice, not buttons (V-57, 18.27).
 
 ## 19. Bugs
 
