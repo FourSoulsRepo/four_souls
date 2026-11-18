@@ -6557,3 +6557,12 @@ Totals by system (218 items):
 6. Confirmed (owner, 2026-11-19)
    1. With `gst-plugins-good` installed the game plays through the roll.
    2. So a missing audio sink hangs the page's web process.
+7. Owner (2026-11-19): do tasks 5.3 and 5.4 now.
+   1. 5.4: list every package found: WebKitGTK, good plugins, libav.
+   2. Tasks 5.1, 5.2 (sounds off, a notice) wait for the owner.
+8. Done (2026-11-19)
+   1. `diag.ReadAudio`: plugin files in the GStreamer folders and `GST_PLUGIN_*`.
+   2. Report line "Sound:"; flags name the packages per distro.
+   3. The probe's MP3 flag only where Go can't tell (not Linux).
+   4. Packages: wiki First-start, `release/README.txt`, `diag.Packages`.
+   5. Test: `TestAudio`; ADR 035 item 2.7; UC-48 item 2.3.

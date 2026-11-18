@@ -25,6 +25,8 @@ type System struct {
 	GroupsKnown bool
 	// Switches are the webview switches already set in the environment.
 	Switches []string
+	// Audio is what GStreamer can play sounds with (19.229).
+	Audio Audio
 }
 
 // GPU is one render node: the device the webview draws with.
@@ -76,6 +78,7 @@ func ReadSystem(app string) System {
 	s.Wayland = os.Getenv("WAYLAND_DISPLAY")
 	s.GPUs = gpus("/sys/class/drm", "/dev/dri")
 	s.Groups, s.GroupsKnown = userGroups()
+	s.Audio = ReadAudio()
 	return s
 }
 

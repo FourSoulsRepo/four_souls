@@ -53,6 +53,7 @@ Use options 1, 3, 5 and 6.
    4. Linux: each `/dev/dri/renderD*`, its driver, vendor, and if it opens.
    5. Linux: the user's `render` and `video` groups.
    6. Switches already set in the environment.
+   7. Linux: GStreamer plugin files: `autoaudiosink`, outputs, MP3 decoders (19.229).
 3. Probe part: the app starts itself with `--diagnose-probe=<variant>`.
    1. Linux variants: `default`, `no-dmabuf`, `no-compositing`, `gpu-ondemand`, `gpu-never`.
    2. Other systems: `default` only.

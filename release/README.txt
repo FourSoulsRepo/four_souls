@@ -42,10 +42,14 @@ Windows
      have it; if not, the game offers to install it.
 
 Linux
-  1. Install WebKitGTK 4.1, e.g. on Ubuntu or Debian:
-       sudo apt install libwebkit2gtk-4.1-0
-     Fedora: sudo dnf install webkit2gtk4.1
-     Arch: sudo pacman -S webkit2gtk-4.1
+  1. Install WebKitGTK 4.1 and the GStreamer plugins for sound
+     (without them the game hangs at its first sound):
+     Ubuntu, Debian:
+       sudo apt install libwebkit2gtk-4.1-0 gstreamer1.0-plugins-good gstreamer1.0-libav
+     Fedora:
+       sudo dnf install webkit2gtk4.1 gstreamer1-plugins-good gstreamer1-plugin-libav
+     Arch:
+       sudo pacman -S webkit2gtk-4.1 gst-plugins-good gst-libav
   2. Unpack: tar -xzf four-souls-*.tar.gz
   3. Run: ./FourSouls
      If it does not start: chmod +x FourSouls

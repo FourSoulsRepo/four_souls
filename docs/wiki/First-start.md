@@ -29,13 +29,15 @@ For the terminal: `xattr -dr com.apple.quarantine /Applications/FourSouls.app` r
 
 ## Linux
 
-The app uses WebKitGTK 4.1:
+The app draws with WebKitGTK 4.1 and plays sounds through GStreamer. Without the GStreamer good plugins the game hangs at its first sound, so install all three:
 
 | Distribution | Install |
 |---|---|
-| Ubuntu 22.04+, Debian 12+ | `sudo apt install libwebkit2gtk-4.1-0` |
-| Fedora | `sudo dnf install webkit2gtk4.1` |
-| Arch | `sudo pacman -S webkit2gtk-4.1` |
+| Ubuntu 22.04+, Debian 12+ | `sudo apt install libwebkit2gtk-4.1-0 gstreamer1.0-plugins-good gstreamer1.0-libav` |
+| Fedora | `sudo dnf install webkit2gtk4.1 gstreamer1-plugins-good gstreamer1-plugin-libav` |
+| Arch | `sudo pacman -S webkit2gtk-4.1 gst-plugins-good gst-libav` |
+
+The good plugins give the sound output; libav decodes the MP3 sounds.
 
 Then `tar -xzf four-souls-*.tar.gz` and `./FourSouls`. If it does not start, `chmod +x FourSouls`. If it runs slowly, see [Diagnostics](Diagnostics). If the window stays black, start it with `FOURSOULS_GPU_POLICY=never ./FourSouls`.
 

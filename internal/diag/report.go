@@ -26,6 +26,7 @@ func Write(w io.Writer, s System, outs []Outcome) {
 		p.line("Session:    %s, desktop %s", orUnknown(s.Session), orUnknown(s.Desktop))
 		p.line("Display:    DISPLAY=%s WAYLAND_DISPLAY=%s", orNone(s.Display), orNone(s.Wayland))
 		writeGPUs(p, s)
+		writeAudio(p, s.Audio)
 	}
 	p.line("Switches:   %s", orNone(strings.Join(s.Switches, " ")))
 	p.line("")
@@ -48,6 +49,19 @@ func writeGPUs(p *printer, s System) {
 	if s.GroupsKnown {
 		p.line("Groups:     %s", orNone(strings.Join(s.Groups, ", ")))
 	}
+}
+
+func writeAudio(p *printer, a Audio) {
+	if !a.Known() {
+		p.line("Sound:      GStreamer plugins not found")
+		return
+	}
+	sink := "missing"
+	if a.AutoSink {
+		sink = "yes"
+	}
+	p.line("Sound:      autoaudiosink %s, outputs %s, MP3 decoders %s",
+		sink, orNone(strings.Join(a.Outputs, ", ")), orNone(strings.Join(a.Decoders, ", ")))
 }
 
 func writeProbes(p *printer, goos string, outs []Outcome) {
@@ -144,9 +158,10 @@ func Flags(s System, outs []Outcome) []string {
 				flags = append(flags, fmt.Sprintf("%s does not open (%s): add the user to the render group and log in again.", g.Node, g.Err))
 			}
 		}
+		flags = append(flags, audioFlags(s.Audio)...)
 	}
 	if d, ok := defaultResult(outs); ok {
-		flags = append(flags, resultFlags(s.OS, d)...)
+		flags = append(flags, resultFlags(s, d)...)
 	}
 	if best, ok := Best(outs); ok && best.Result.FPS() < lowFPS {
 		flags = append(flags, fmt.Sprintf("Every variant is slow: under %d fps.", lowFPS))
@@ -156,17 +171,38 @@ func Flags(s System, outs []Outcome) []string {
 
 // resultFlags are the problems the default start shows. A masked
 // renderer says nothing (19.228); the GPU lines and frame rates do.
-func resultFlags(goos string, r *Result) []string {
+func resultFlags(s System, r *Result) []string {
 	var flags []string
 	renderer := strings.ToLower(r.Renderer)
-	if !Masked(goos) && slices.ContainsFunc(softwareRenderers, func(s string) bool { return strings.Contains(renderer, s) }) {
+	if !Masked(s.OS) && slices.ContainsFunc(softwareRenderers, func(s string) bool { return strings.Contains(renderer, s) }) {
 		flags = append(flags, fmt.Sprintf("The webview draws on the CPU (%s): check the GPU driver (Mesa).", r.Renderer))
 	}
-	if !slices.Contains(r.Sounds, "mp3") {
+	// Linux: audioFlags already named the missing plugins.
+	if !slices.Contains(r.Sounds, "mp3") && !s.Audio.Known() {
 		flags = append(flags, "No MP3 playback: install the GStreamer plugins (good, and libav).")
 	}
 	if r.ReducedMotion {
 		flags = append(flags, "The system asks for reduced motion: the sky stands still, so the frame rate means less.")
+	}
+	return flags
+}
+
+// audioFlags are the GStreamer plugins missing for the game's sounds
+// (19.229); each names the packages.
+func audioFlags(a Audio) []string {
+	install := " Install: " + Packages + "."
+	switch {
+	case !a.Known():
+		return []string{"GStreamer plugins not found: no sound, and the game may hang at its first sound." + install}
+	case !a.AutoSink:
+		return []string{"No GStreamer autoaudiosink (the good plugins): the game hangs at its first sound." + install}
+	}
+	var flags []string
+	if len(a.Outputs) == 0 {
+		flags = append(flags, "No GStreamer sound output (pulseaudio, pipewire or alsa): no sound."+install)
+	}
+	if len(a.Decoders) == 0 {
+		flags = append(flags, "No GStreamer MP3 decoder (libav or mpg123): no sound."+install)
 	}
 	return flags
 }
