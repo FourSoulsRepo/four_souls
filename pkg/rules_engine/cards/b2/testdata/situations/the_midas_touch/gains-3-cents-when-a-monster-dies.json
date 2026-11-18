@@ -1,0 +1,13 @@
+{
+  "title": "Isaac has The Midas Touch and kills the Fly: does he gain 3¢ besides its 1¢?",
+  "source": ["card the_midas_touch", "card fly", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_midas_touch"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "attack", "choices": ["fly"]},
+  "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "cents": 4}]}
+}

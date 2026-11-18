@@ -1,0 +1,16 @@
+{
+  "title": "Isaac has Bum-Bo! and plays A Dime!!: does Bum-Bo! go to level 10 instead of 10¢, giving +1 ATK?",
+  "source": ["card bum_bo", "card a_dime", "card isaac", "R-CARD-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["bum_bo"], "hand": ["a_dime"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "a_dime"},
+  "expect": {
+    "allowed": true,
+    "discards": {"loot": ["a_dime"]},
+    "after": [{"player": 0, "cents": 0, "atk": 2, "counters": [{"card": "bum_bo", "count": 10}]}]
+  }
+}

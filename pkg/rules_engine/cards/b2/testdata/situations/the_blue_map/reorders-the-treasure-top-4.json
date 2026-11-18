@@ -1,0 +1,13 @@
+{
+  "title": "Isaac has The Blue Map; at the end of his turn he puts the treasure deck's top 4 back in reverse order: are they in that order?",
+  "source": ["card the_blue_map", "R-TURN-10"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_blue_map"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"treasure": ["the_d4", "daddy_haunt", "glass_cannon", "goat_head"]}
+  },
+  "steps": [{"player": 0, "kind": "end_turn", "choices": ["goat_head", "glass_cannon", "daddy_haunt", "the_d4"]}],
+  "expect": {"allowed": true, "active": 1, "decks": {"treasure": ["goat_head", "glass_cannon", "daddy_haunt", "the_d4"]}}
+}

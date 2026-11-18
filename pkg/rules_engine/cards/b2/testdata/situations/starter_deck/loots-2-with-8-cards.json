@@ -1,0 +1,12 @@
+{
+  "title": "Isaac has Starter Deck and 8 loot cards: does he loot 2 at the end of his turn and keep 10, the hand limit?",
+  "source": ["card starter_deck", "R-TURN-10", "R-TURN-11"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["starter_deck"], "hand": ["a_dime", "a_dime", "a_dime", "a_dime", "a_dime", "a_dime", "a_dime", "a_dime"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "steps": [{"player": 0, "kind": "end_turn"}],
+  "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "hand": 10}]}
+}

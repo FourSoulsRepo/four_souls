@@ -502,9 +502,63 @@ Ideas: TS-13, LR-04, R-03.
    2. Its checks (hand 1, 2¢) hold in either order; the file checks the order.
 10. No rules bug found; `cardgen -report` unchanged.
 
-### [ ] 23.13 Bulk: b2 passive treasures
+### [x] 23.13 Bulk: b2 passive treasures
 
 1. Goal: Passive Treasure (about 58 tests).
+2. Counts (2026-11-18): 58 tests in 50 `_test.go` files of the family.
+   1. Eden's Blessing, Polydactyly, Tarot Cloth, The Habit: moved before.
+3. Moved: 52 tests, as 52 files.
+   1. TestBabyHaunt, TestBellyButton, TestBobsBrain, TestBreakfast, TestDinner.
+   2. TestBrimstone, TestIpecac, TestMeat, TestSynthoil, TestEmptyVessel.
+   3. TestBumBo, TestCambionConception, TestChampionBelt, TestTheDeadCat.
+   4. TestChargedBaby, TestCheeseGrater, TestEyeOfGreed, TestShinyRock.
+   5. TestDadsLostCoin, TestDadsLostCoinDeclined, TestDadsLostCoinTwice.
+   6. TestCurseOfTheTower, TestDaddyHaunt, TestDryBaby, TestFannyPack.
+   7. TestDarkBum, TestMomsCoinPurse, TestMomsPurse, TestThePolaroid.
+   8. TestDeadBird, TestFinger, TestMomsRazor, TestSpiderMod, TestTheRelic.
+   9. TestMomsBox, TestMomsBoxAnswersAreNotCards.
+   10. TestGoatHead, TestStarterDeck, TestMonstrosTooth, TestRestock.
+   11. TestGreedsGullet, TestShadowTakesThePenalty, TestSuicideKing.
+   12. TestSacredHeart, TestSteamySale, TestTheMidasTouch, TestTrinityShield.
+   13. TestTheBlueMap, TestTheCompass, TestTheMap, TestTheD10, TestTheD10Event.
+4. Split: 2, as 3 files.
+   1. TestBumBoWithCounterfeitPenny: a file per order (owner answer 11).
+   2. Its option outcomes are a view; they stay Go.
+   3. TestGuppysCollar: the file checks the prevented death.
+   4. The heal's amount stays Go: TestGuppysCollarHealsBack1HP.
+5. Stayed Go, complicated (ADR 033 1.5): 4, all views.
+   1. TestChampionBeltSourceDuringFirstRoll, TestChampionBeltInTheOdds.
+   2. TestDeadBirdShowsTheCardToTwo, TestTheresOptions.
+6. Needed a format change: 0 whole tests.
+   1. The Guppy's Collar split keeps an event field: `Amount`.
+7. Drafts: 37 of 55 files kept the dumped setup and steps.
+   1. Baby Haunt, Breakfast, Dinner: no step; an attack was added.
+   2. Trinity Shield: Jawbone starts on `setup.stack`, `priority` 1 (owner answer 7).
+   3. Random deck cards fixed in `setup.decks`, so the file names them.
+   4. Blue Map, Compass, Map, Suicide King, Goat Head, Mom's Box.
+   5. Also Cambion Conception, Cheese Grater, Spider Mod, The D10.
+   6. A check before a later event: the step stops at a throw or question.
+   7. Baby Haunt, Empty Vessel, both Bum-Bo! orders, Mom's Box answers.
+8. Checks added from the card text (owner answer 8):
+   1. Every attack: the monster died, its reward, the roll values.
+   2. Baby Haunt: a 2 misses and a 3 hits the Fly.
+   3. Cheese Grater: the top card is discarded; the next is on top.
+   4. The D10: the Fly is back on top when the Dip dies (R-ZONE-11).
+   5. Compass: Cain's loot step draws the new top card.
+   6. Deaths: `died`, the penalty's item and loot discards.
+   7. Guppy's Collar: `healed`, `turn_ended_early`, no `died`.
+   8. Trinity Shield: Cain's character is used, the Sack is not.
+9. Choices made here:
+   1. Champion Belt: the turn's `attacks` is 0, then a second attack is allowed.
+   2. It replaces the engine's `BonusAttacksUsed` count.
+   3. Mom's Box answers: options in any order; the order is the display (23.6).
+   4. The D10: no covered check; slot 1's card and the Fly's return say it.
+   5. Monstro's Tooth: a random player; one Breakfast in the treasure discard.
+10. Go tests that did not check what they claimed: 1.
+   1. TestCheeseGrater counted 1 treasure discard, not the top card.
+   2. The file names the discarded card and the next top.
+11. Trinity Shield's refusal cites R-ABIL-12, a static ability; it fits.
+12. No rules bug found; `cardgen -report` unchanged.
 
 ### [ ] 23.14 Bulk: b2 other treasures
 

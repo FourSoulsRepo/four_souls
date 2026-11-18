@@ -1,0 +1,22 @@
+{
+  "title": "Isaac has Baby Haunt and attacks the Fly (DC 2) on his turn: does it have DC 3, so a 2 misses and a 3 hits?",
+  "source": ["card baby_haunt", "card fly", "card isaac", "R-ATK-12", "R-ATK-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["baby_haunt"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [2, 3]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "monsters": [{"card": "fly", "evasion": 3}]}},
+    {"kind": "throw"}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [2, 3],
+    "monsters": [{"card": "fly", "dead": true}],
+    "after": [{"player": 0, "damage": 1, "cents": 1}]
+  }
+}

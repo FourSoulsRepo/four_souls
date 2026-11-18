@@ -1,0 +1,13 @@
+{
+  "title": "Isaac has The Relic and rolls a 1 with Mystery Sack: does he loot 1 for the Relic and 1 for the Sack?",
+  "source": ["card the_relic", "card mystery_sack", "R-ABIL-16"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_relic", "mystery_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [1]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack"},
+  "expect": {"allowed": true, "resolved_rolls": [1], "after": [{"player": 0, "hand": 2}]}
+}

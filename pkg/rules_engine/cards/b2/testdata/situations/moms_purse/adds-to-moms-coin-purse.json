@@ -1,0 +1,11 @@
+{
+  "title": "Cain has Mom's Purse and Mom's Coin Purse: does he loot 3 in his loot step?",
+  "source": ["card moms_purse", "card moms_coin_purse", "R-TURN-04"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "items": ["moms_purse", "moms_coin_purse"]}],
+    "active": 0
+  },
+  "steps": [{"player": 0, "kind": "end_turn"}],
+  "expect": {"allowed": true, "active": 1, "after": [{"player": 1, "hand": 3}]}
+}

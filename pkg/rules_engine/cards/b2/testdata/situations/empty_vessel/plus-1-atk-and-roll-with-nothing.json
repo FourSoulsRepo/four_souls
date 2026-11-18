@@ -1,0 +1,21 @@
+{
+  "title": "Isaac (1 ATK) has Empty Vessel, no loot cards and 0¢: does he have 2 ATK, and does a 3 hit the Leech (DC 4) as a 4?",
+  "source": ["card empty_vessel", "card isaac", "card leech", "R-ATK-12", "R-DICE-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["empty_vessel"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [3]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["leech"], "expect": {"allowed": true, "after": [{"player": 0, "atk": 2}]}},
+    {"kind": "throw"}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [4],
+    "monsters": [{"card": "leech", "dead": true}],
+    "after": [{"player": 0, "hand": 1, "atk": 1}]
+  }
+}

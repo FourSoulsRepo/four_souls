@@ -7,20 +7,9 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-func TestBumBo(t *testing.T) {
-	tb := itemTable(t, items("bum_bo"), "a_dime")
-	tb.Play(0, "a_dime")
-	bumbo := tb.G.Object(tb.Find(0, "bum_bo"))
-	if c, l := tb.G.Players[0].Cents, bumbo.CountersOf(""); c != 0 || l != 10 {
-		t.Errorf("cents %d level %d, want 0 and 10", c, l)
-	}
-	if a := tb.G.PlayerATK(0); a != 2 {
-		t.Errorf("ATK at level 10 = %d, want 2", a)
-	}
-}
-
 // Bum-Bo! and Counterfeit Penny both replace a gain of ¢. The player
 // picks which applies first; each option says what it gives (19.17).
+// The level each order reaches is in testdata/situations/bum_bo/.
 func TestBumBoWithCounterfeitPenny(t *testing.T) {
 	for _, tc := range []struct {
 		first  engine.CardRef
@@ -49,10 +38,6 @@ func TestBumBoWithCounterfeitPenny(t *testing.T) {
 		}
 		if tc.unused != "" && (o == nil || !slices.Equal(o.Unused, []engine.CardRef{tc.unused})) {
 			t.Errorf("%s first: unused %+v, want %s", tc.first, o, tc.unused)
-		}
-		tb.Settle(string(tc.first))
-		if l := tb.G.Object(tb.Find(0, "bum_bo")).CountersOf(""); l != tc.level {
-			t.Errorf("%s first: level %d, want %d", tc.first, l, tc.level)
 		}
 	}
 }

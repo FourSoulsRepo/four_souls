@@ -1,0 +1,13 @@
+{
+  "title": "Isaac has The Compass; at the end of his turn he puts the loot deck's top 4 back in reverse order: does Cain's loot step draw the new top, leaving the other 3 in that order?",
+  "source": ["card the_compass", "R-TURN-10", "R-TURN-04"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_compass"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"loot": ["ix_the_hermit", "three_cents", "two_cents", "dagaz"]}
+  },
+  "steps": [{"player": 0, "kind": "end_turn", "choices": ["dagaz", "two_cents", "three_cents", "ix_the_hermit"]}],
+  "expect": {"allowed": true, "active": 1, "decks": {"loot": ["two_cents", "three_cents", "ix_the_hermit"]}, "after": [{"player": 1, "hand_cards": ["dagaz"]}]}
+}

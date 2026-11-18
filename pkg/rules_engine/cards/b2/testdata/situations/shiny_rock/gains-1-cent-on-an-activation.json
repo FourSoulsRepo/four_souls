@@ -1,0 +1,13 @@
+{
+  "title": "Isaac has Shiny Rock and activates Mystery Sack, which rolls 6 and does nothing: does he gain 1¢?",
+  "source": ["card shiny_rock", "card mystery_sack"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["shiny_rock", "mystery_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack"},
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 1, "hand": 0, "deactivated": ["mystery_sack"]}]}
+}

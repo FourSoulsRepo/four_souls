@@ -1,0 +1,12 @@
+{
+  "title": "Isaac has Restock; at the start of his turn he puts Breakfast from the shop into discard and keeps Dinner: is Breakfast in the treasure discard?",
+  "source": ["card restock", "R-TURN-03"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["restock"]}, {"character": "cain"}],
+    "active": 1,
+    "shop": ["breakfast", "dinner"]
+  },
+  "steps": [{"player": 1, "kind": "end_turn", "choices": ["card.restock.discard breakfast", "card.restock.keep dinner"]}],
+  "expect": {"allowed": true, "active": 0, "discards": {"treasure": ["breakfast"]}}
+}
