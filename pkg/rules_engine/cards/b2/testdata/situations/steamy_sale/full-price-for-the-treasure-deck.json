@@ -1,0 +1,14 @@
+{
+  "title": "Isaac has Steamy Sale! and 5¢: does the top of the treasure deck cost 5¢?",
+  "source": ["card steamy_sale", "R-07 #6", "R-SHOP-03", "R-SHOP-04"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["steamy_sale"], "cents": 5},
+      {"character": "cain"}
+    ],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "purchase", "choices": ["ask.deck.treasure"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 5, "items": ["steamy_sale"]}]}
+}

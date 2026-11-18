@@ -1,0 +1,15 @@
+{
+  "title": "Eden's eternal Glass Cannon rolls a 1: is it destroyed?",
+  "source": ["card eden", "card glass_cannon", "R-07 #5", "R-ABIL-18"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "eden", "items": ["glass_cannon"], "eternal": ["glass_cannon"]},
+      {"character": "cain", "items": ["breakfast"]}
+    ],
+    "active": 0,
+    "rolls": [1]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "glass_cannon", "choices": ["breakfast"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "items": ["glass_cannon"], "hand": 2}, {"player": 1, "items": []}]}
+}

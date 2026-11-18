@@ -1,0 +1,18 @@
+{
+  "title": "Two of Clubs on Cain, then Isaac's Bum Friend loots 1: is Isaac's loot doubled?",
+  "source": ["card two_of_clubs", "card bum_friend", "Q-09"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["two_of_clubs", "bum_friend"], "hand": ["a_dime"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "two_of_clubs", "choices": ["player 2 (cain)"]},
+    {"player": 0, "kind": "activate", "card": "bum_friend", "choices": ["a_dime"]}
+  ],
+  "expect": {"allowed": true, "decks": {"loot": ["a_dime"]}, "after": [{"player": 0, "hand": 1}]}
+}

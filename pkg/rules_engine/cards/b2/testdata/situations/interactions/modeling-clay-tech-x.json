@@ -1,0 +1,18 @@
+{
+  "title": "Modeling Clay copies Tech X with 3 counters: can the copy remove 3 counters to kill?",
+  "source": ["card modeling_clay", "card tech_x", "R-07 #3", "R-MECH-08", "R-ABIL-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["modeling_clay", "tech_x"], "counters": [{"card": "tech_x", "count": 3}]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "modeling_clay", "choices": ["tech_x"], "expect": {"allowed": true}},
+    {"player": 0, "kind": "activate", "card": "modeling_clay", "ability": 1, "expect": {"allowed": false, "rule": "R-ABIL-07"}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-07"}
+}

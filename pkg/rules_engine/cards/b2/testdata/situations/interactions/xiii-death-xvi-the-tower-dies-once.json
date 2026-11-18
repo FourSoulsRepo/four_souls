@@ -1,0 +1,20 @@
+{
+  "title": "Isaac kills Cain with XIII. Death, then The Tower rolls a 5: does Cain die and pay the penalty again?",
+  "source": ["card xiii_death", "card xvi_the_tower", "R-07 #2", "R-DEATH-14", "R-DEATH-17", "Q-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["xiii_death", "xvi_the_tower"], "extra_loot_plays": 1},
+      {"character": "cain", "cents": 3}
+    ],
+    "active": 0,
+    "rolls": [5]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "xiii_death", "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "after": [{"player": 1, "dead": true, "cents": 2}]}},
+    {"player": 0, "kind": "play", "card": "xvi_the_tower",
+     "expect": {"allowed": true, "events": [{"kind": "died", "player": 0}, {"kind": "died", "player": 1, "none": true}]}}
+  ],
+  "expect": {"allowed": true, "after": [{"player": 1, "cents": 2}]}
+}
