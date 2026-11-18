@@ -5,7 +5,9 @@
 // and locks nothing; the buttons below stay live. The viewer's own turn
 // plays the turn-start sound as it shows (20.17).
 import { feel } from '../feel';
+import { botLead, namePieces, type SeatMark } from '../lobby';
 import { playSound } from '../sounds';
+import { botLook, botPaths } from './BotIcon';
 import { layer, still } from './lunge';
 
 // turnFrames are the banner's keyframes over its life: it fades in as
@@ -24,9 +26,39 @@ export function turnFrames(calm: boolean): Keyframe[] {
   ];
 }
 
+// botLine fills the label with the text, its level's robot before each
+// bot's name in it (seatMarks, 23.12), as BotText draws it.
+function botLine(label: HTMLElement, text: string, marks: readonly SeatMark[]): void {
+  for (const p of namePieces(text, marks)) {
+    if (!p.bot) {
+      label.append(p.text);
+      continue;
+    }
+    const name = document.createElement('span');
+    name.className = 'bot-name';
+    const lead = document.createElement('span');
+    lead.className = 'bot-lead';
+    const [first, rest] = botLead(p.text);
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'bot-icon');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.dataset.testid = 'bot-icon';
+    svg.dataset.level = botLook(p.bot);
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('fill-rule', 'evenodd');
+    path.setAttribute('d', botPaths[botLook(p.bot)]);
+    svg.append(path);
+    lead.append(svg, first);
+    name.append(lead, rest);
+    label.append(name);
+  }
+}
+
 // turnBanner shows the banner and calls done after feel.turn.wait. A
-// banner still on screen from a turn before goes at once.
-export function turnBanner(text: string, own: boolean, scale: number, done: () => void): void {
+// banner still on screen from a turn before goes at once. marks are the
+// table's seat names (seatMarks).
+export function turnBanner(text: string, marks: readonly SeatMark[], own: boolean, scale: number, done: () => void): void {
   const host = layer();
   for (const old of host.querySelectorAll('.effect-turn')) {
     old.remove();
@@ -36,7 +68,7 @@ export function turnBanner(text: string, own: boolean, scale: number, done: () =
   box.dataset.testid = 'turn-banner';
   const label = document.createElement('div');
   label.className = 'effect-banner effect-turn-text';
-  label.textContent = text;
+  botLine(label, text, marks);
   box.append(label);
   host.append(box);
   if (own) {

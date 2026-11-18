@@ -2,6 +2,7 @@ package rulesengine
 
 import (
 	"errors"
+	"strings"
 	"testing"
 )
 
@@ -101,9 +102,21 @@ func TestSaveAndLoadContinueIdentically(t *testing.T) {
 }
 
 func TestCanReplay(t *testing.T) {
-	for v, ok := range map[string]bool{"0.1.1": false, "0.2.0": false, "0.3.0": false, "0.3.1": false, "0.4.0": false, "0.4.1": false, "0.5.0": false, "0.5.1": false, "0.5.3": false, "x": false, Version: true, "1.0.0": true} {
+	for v, ok := range map[string]bool{"0.1.1": false, "0.2.0": false, "0.3.0": false, "0.3.1": false, "0.4.0": false, "0.4.1": false, "0.5.0": false, "0.5.1": false, "0.5.3": false, "0.5.4": false, "x": false, Version: true, "1.0.0": true} {
 		if err := CanReplay(v); (err == nil) != ok {
 			t.Errorf("CanReplay(%q) = %v, want ok %v", v, err, ok)
 		}
+	}
+}
+
+// TestCanReplayDeckVersion: a record from before deck_order is refused
+// with a reason that names it (19.212).
+func TestCanReplayDeckVersion(t *testing.T) {
+	err := CanReplay("0.5.4")
+	if err == nil || !strings.Contains(err.Error(), "deck_order") {
+		t.Fatalf("CanReplay(0.5.4) = %v, want a refusal that names deck_order", err)
+	}
+	if err := CanReplay(deckVersion); err != nil {
+		t.Fatalf("CanReplay(%s) = %v", deckVersion, err)
 	}
 }

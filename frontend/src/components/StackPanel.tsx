@@ -8,6 +8,7 @@ import { partsOf, playedCard, stackCard, stackIcon, stackParts, stackRows, stack
 import { useApp, type Zoom } from '../store';
 import { playerColor } from '../table';
 import { boxOf } from '../zoom';
+import { BotText, PlayerName } from './BotIcon';
 import { Card } from './Card';
 import { Die } from './Die';
 import { Row, Rows } from './Rows';
@@ -80,17 +81,17 @@ export function StackPanel({ view, you, names, pass, disabled, prompt, answer, w
       )}
       {prompt && (
         <p className="stack-wait" aria-label={t('stack.waiting_label')}>
-          {prompt}
+          <BotText text={prompt} />
         </p>
       )}
       {wait.responding.length > 0 && (
         <p className="stack-wait" aria-label={t('stack.waiting_label')}>
-          {t('stack.waiting', { players: wait.responding.join(', ') })}
+          <BotText text={t('stack.waiting', { players: wait.responding.join(', ') })} />
         </p>
       )}
       {wait.passed.length > 0 && (
         <p className="stack-wait stack-passed" aria-label={t('stack.passed_label')}>
-          {t('stack.passed', { players: wait.passed.join(', ') })}
+          <BotText text={t('stack.passed', { players: wait.passed.join(', ') })} />
         </p>
       )}
     </aside>
@@ -119,7 +120,7 @@ function FirstRollRow({ player, value, next, names }: { player: number; value: n
   return (
     <li className={`first-roll-row${next ? ' next' : ''}`} aria-label={value === undefined ? t('first_roll.not_rolled', { player: who }) : `${who}: ${String(value)}`}>
       <b className="stack-player" style={{ color: playerColor(player) }}>
-        {who}
+        <PlayerName player={player} fallback={who} />
       </b>
       {value === undefined ? <span className="first-roll-wait">{next ? t('first_roll.throwing') : '…'}</span> : <Die value={value} image={image} />}
     </li>
@@ -293,19 +294,23 @@ export function ItemIcon({ it }: { it: StackItem }) {
 // Part is one piece of a stack line, colored by its role (S-03).
 export function Part({ part }: { part: LinePart }) {
   if (part.role === 'target') {
-    return <b className="stack-target">{part.text}</b>;
+    return (
+      <b className="stack-target">
+        <BotText text={part.text} />
+      </b>
+    );
   }
   if (part.role === 'player') {
     return (
       <b className="stack-player" style={{ color: playerColor(part.player ?? -1) }}>
-        {part.text}
+        <BotText text={part.text} />
       </b>
     );
   }
   if (part.role === 'card') {
     return <b className="stack-card">{part.text}</b>;
   }
-  return <>{part.text}</>;
+  return <BotText text={part.text} />;
 }
 
 // DamageIcon is a blood drop (S-04).
@@ -339,7 +344,7 @@ function LastRollDie({ names }: { names: Names }) {
     <span className="last-roll" role="group" aria-label={t('stack.last_roll')} tabIndex={0}>
       <Die value={last.value} image={image} />
       <span className="last-roll-tip" role="tooltip">
-        {text}
+        <BotText text={text} />
       </span>
     </span>
   );

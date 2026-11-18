@@ -5,6 +5,7 @@
 import b2 from '../../pkg/card_db/data/b2.json?raw';
 import requiem from '../../pkg/card_db/data/r.json?raw';
 import challenge from '../../pkg/card_db/data/challenge.json?raw';
+import type { RecordSeat } from './bridge';
 import { fakeStep, type FakeRecording } from './fakeReplay';
 import { protocolVersion } from './protocol';
 
@@ -355,24 +356,26 @@ interface FakeRecord {
   path: string;
   name: string;
   started: number;
-  players: string[];
+  players: RecordSeat[];
   finished: boolean;
-  winners: string[];
+  winners: number[]; // seats
   steps: number;
   challenge: string;
   why: string;
 }
 
-// fakeRecord is a listed record in the fake records folder.
+// fakeRecord is a listed record in the fake records folder: players
+// in seat order.
 function fakeRecord(name: string, started: string, players: string[], more: Partial<FakeRecord> = {}): FakeRecord {
-  return { path: `/fake/records/${name}.fsrec`, name: `${name}.fsrec`, started: Date.parse(started), players, finished: false, winners: [], steps: 0, challenge: '', why: '', ...more };
+  const seats = players.map((n, seat) => ({ seat, name: n }));
+  return { path: `/fake/records/${name}.fsrec`, name: `${name}.fsrec`, started: Date.parse(started), players: seats, finished: false, winners: [], steps: 0, challenge: '', why: '', ...more };
 }
 
 // The fake records folder: one of each kind the screen shows.
 const fakeRecords = [
   fakeRecord('2026-11-16-200000-g3_Ann_Bo', '2026-11-16T20:00:00Z', ['Ann', 'Bo'], { steps: 12 }),
-  fakeRecord('2026-11-15-180000-g2_Ann_Bo_Cy', '2026-11-15T18:00:00Z', ['Ann', 'Bo', 'Cy'], { finished: true, winners: ['Bo'], steps: 840 }),
-  fakeRecord('2026-10-01-120000-g1_Ann_Bo', '2026-10-01T12:00:00Z', ['Ann', 'Bo'], { finished: true, winners: ['Ann'], steps: 500, why: 'before_replays' }),
+  fakeRecord('2026-11-15-180000-g2_Ann_Bo_Cy', '2026-11-15T18:00:00Z', ['Ann', 'Bo', 'Cy'], { finished: true, winners: [1], steps: 840 }),
+  fakeRecord('2026-10-01-120000-g1_Ann_Bo', '2026-10-01T12:00:00Z', ['Ann', 'Bo'], { finished: true, winners: [0], steps: 500, why: 'before_replays' }),
   fakeRecord('from-the-future', '', [], { started: 0, why: 'newer' }),
 ];
 
@@ -387,16 +390,16 @@ let opened: FakeRecording | FakeFile | null = null;
 // fakeSummary is what Open gives for a record: a turn every ten steps,
 // as its steps have them (fakeReplay.ts).
 function fakeSummary(path: string): Promise<unknown> {
-  const e = w.fakeRecords.find((r) => r.path === path) ?? (path === w.fakePick ? fakeRecord('picked', '2026-11-14T10:00:00Z', ['Dee', 'Eve'], { path, finished: true, winners: ['Eve'], steps: 40 }) : undefined);
+  const e = w.fakeRecords.find((r) => r.path === path) ?? (path === w.fakePick ? fakeRecord('picked', '2026-11-14T10:00:00Z', ['Dee', 'Eve'], { path, finished: true, winners: [1], steps: 40 }) : undefined);
   if (!e) {
     return Promise.reject(goError('error.record_unreadable'));
   }
   if (e.why) {
     return Promise.reject(goError(`error.record_${e.why}`));
   }
-  const seats = e.players.map((name, seat) => ({ seat, name }));
+  const seats = e.players;
   const turns = Array.from({ length: Math.ceil(e.steps / 10) }, (_, i) => ({ number: i + 1, active: i % seats.length, step: i * 10 }));
-  const winners = e.winners.map((n) => e.players.indexOf(n));
+  const winners = e.winners;
   opened = { players: seats.length, steps: e.steps, winners };
   return Promise.resolve({
     path,

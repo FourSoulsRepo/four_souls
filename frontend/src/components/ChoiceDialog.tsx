@@ -9,6 +9,7 @@ import { t } from '../i18n';
 import type { CardView, ModeView } from '../protocol';
 import { playSound } from '../sounds';
 import { seatOf, useApp, viewScale } from '../store';
+import { BotText } from './BotIcon';
 import { Card } from './Card';
 import { CardDialog } from './CardDialog';
 import { deckBox, flyBack, keepCard } from './ChoiceBack';
@@ -218,7 +219,7 @@ export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions[
                   act(o.intent);
                 }}
               >
-                {o.label}
+                <BotText text={o.label} />
               </button>
             )}
             {o.line && <p className="choice-line">{o.line}</p>}
@@ -606,7 +607,9 @@ export function LookDialog({ cards, you, name }: { cards: Looked[]; you: number;
         const label = g.owner === you ? t('look.your_hand') : t('look.hand_of', { player: name(g.owner) });
         return (
           <section key={g.owner} className="look-hand" role="group" aria-label={label}>
-            <h3>{label}</h3>
+            <h3>
+              <BotText text={label} />
+            </h3>
             {row(g.cards)}
           </section>
         );

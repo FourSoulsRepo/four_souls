@@ -198,6 +198,31 @@ func TestHostEndsGame(t *testing.T) {
 	}
 }
 
+// TestBotsEmptyGameEnds: "no player connected" counts players only; a
+// game of bots whose player left ends after 30 minutes like any (ADR
+// 030, Decision 11.7; 23.9).
+func TestBotsEmptyGameEnds(t *testing.T) {
+	h, clock := startLimitHub(t)
+	ann, w := arrive(t, h, "Ann", "")
+	ann.say(protocol.TypeCreate, protocol.Create{Seats: 3})
+	ann.next(protocol.TypeTable, nil)
+	ann.seatBot(1, protocol.BotStandard)
+	ann.seatBot(2, protocol.BotHard)
+	ann.say(protocol.TypeReady, protocol.Ready{Ready: true})
+	ann.next(protocol.TypeUpdate, nil)
+	ann.c.Leave()
+	time.Sleep(50 * time.Millisecond) // a check sees the game empty
+	clock.Add(31 * time.Minute)
+	untilNoGames(t, h)
+
+	back, _ := arrive(t, h, "Ann", w.Token)
+	var n protocol.Notice
+	back.next(protocol.TypeNotice, &n)
+	if n.Kind != protocol.NoticeIdle || n.Reason != protocol.IdleEmpty {
+		t.Errorf("notice %+v, want idle, empty", n)
+	}
+}
+
 // roomsLeft counts the hub's started games, finished ones too.
 func roomsLeft(h *Hub) (int, *Room) {
 	reply := make(chan *Room, 1)

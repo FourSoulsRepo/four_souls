@@ -9,12 +9,14 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	mrand "math/rand/v2"
 	"slices"
 	"strings"
 	"sync/atomic"
 	"time"
 
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
+	"github.com/FourSoulsRepo/four_souls/internal/world"
 	"github.com/FourSoulsRepo/record"
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
@@ -31,6 +33,11 @@ type roomSeat struct {
 	kicked  bool    // empty for good after a vote (N-08)
 	dice    string  // the dice look (V-19); kept while the player is away
 	sample  sampler // presence messages (15.35, 20.13)
+	// bot is the level of a bot's seat, "" for a player's; botN its
+	// number. A bot seat has no client and no token, and is never away
+	// (ADR 033, Decision 11).
+	bot  string
+	botN int
 }
 
 type request struct {
@@ -44,6 +51,8 @@ type request struct {
 	voteUp  int    // a Soft vote's time ran out (its number)
 	// presence: a seat's waiting presence may go (seat + 1, 20.13).
 	presence int
+	bot      *botAnswer // a bot's move (ADR 033, Decision 12.6)
+	botBan   int        // a bot's ban turn is due (its turn number)
 }
 
 // Room runs one game. Only its goroutine (Run) touches the game. It
@@ -66,19 +75,23 @@ type Room struct {
 
 	// The match record (6.9). path is fixed when the room is made; over
 	// is read by the hub for downloads and hellos (19.32).
-	recDir   string
-	recInfo  recordInfo
-	steps    int // applied steps, for the record of a saved game
-	saves    string
-	loaded   *saveFile // the save this room continues, if any
-	stopped  bool      // saved: the room ends, its players go back to the lobby
-	hub      *Hub
-	rec      *record.Writer
-	path     string
-	over     atomic.Bool
-	timer    *time.Timer // the response timer (N-07)
-	timerGen int
-	deadline time.Time
+	recDir  string
+	recInfo recordInfo
+	steps   int // applied steps, for the record of a saved game
+	saves   string
+	loaded  *saveFile // the save this room continues, if any
+	stopped bool      // saved: the room ends, its players go back to the lobby
+	// handedBack: backToLobby ran. A save or an end hands the players
+	// back before they hear of it, so their next message reaches the
+	// lobby, never this room (19.198).
+	handedBack bool
+	hub        *Hub
+	rec        *record.Writer
+	path       string
+	over       atomic.Bool
+	timer      *time.Timer // the response timer (N-07)
+	timerGen   int
+	deadline   time.Time
 
 	// pub is the public table presence checks against, for pubStep of
 	// pubGame (15.35).
@@ -118,6 +131,33 @@ type Room struct {
 	rbVote  *softVote
 	voteGen int
 	voteEnd *protocol.RollbackEnd
+
+	// Bots (ADR 033, Decisions 11 – 14): the open thinker of each seat,
+	// the last thinker's number, the bots' random source, each hard
+	// seat's memory (nil for the others; Decision 19), the hard bot's
+	// time budget,
+	// and the longest time the driver held the room, in nanoseconds.
+	// worldFor stands in for world.For when set: a test's bot panic.
+	thinkers []*thinker
+	due      []int // bot seats to think, for Run to start (startThinkers)
+	thinkN   int
+	botRand  *mrand.Rand
+	memory   []*world.Memory
+	botThink time.Duration
+	// botPlayouts caps a hard move's playouts (0: none); tests set it,
+	// with a long botThink, so a seeded bot game repeats under any load.
+	botPlayouts int
+	// botGuard counts each bot seat's panics this game and its moves this
+	// turn; a seat past either limit plays forced answers only (19.210,
+	// 19.211). Room goroutine only.
+	botGuard botGuard
+	// panicLogged: a bot panic of this room already logged its stack;
+	// later ones log one line (19.211). Any goroutine.
+	panicLogged atomic.Bool
+	// thinkSlots is the hub's limit on hard thinkers; nil: none.
+	thinkSlots chan struct{}
+	botWork    atomic.Int64
+	worldFor   func(*engine.Game, engine.PlayerID, engine.Known, uint64) (world.Func, error)
 }
 
 // NewRoom prepares a game for seated players; it starts in Run. The
@@ -126,7 +166,12 @@ func NewRoom(setup engine.Setup, opts protocol.Options, seats []roomSeat) (*Room
 	if setup.Players != len(seats) {
 		return nil, fmt.Errorf("server: %d seats for %d players", len(seats), setup.Players)
 	}
-	r := &Room{in: make(chan request, 64), done: make(chan struct{}), setup: setup, opts: opts, seats: seats, second: time.Second, now: time.Now, limitTick: time.Minute}
+	if len(seats) > 0 && seats[0].bot != "" {
+		// Seat 0 is the host's; a bot is never the host (ADR 033,
+		// Decision 10.12; 19.205). Every way a room is made checks here.
+		return nil, errors.New("server: a bot on seat 0, the host's")
+	}
+	r := &Room{in: make(chan request, 64), done: make(chan struct{}), setup: setup, opts: opts, seats: seats, second: time.Second, now: time.Now, limitTick: time.Minute, botThink: hardThink}
 	for i, s := range seats {
 		r.tokens = append(r.tokens, s.token)
 		if s.client != nil {
@@ -138,11 +183,17 @@ func NewRoom(setup engine.Setup, opts protocol.Options, seats []roomSeat) (*Room
 }
 
 // hasToken reports whether a seat belongs to the token. Safe from any
-// goroutine: tokens never change.
-func (r *Room) hasToken(token string) bool { return slices.Contains(r.tokens, token) }
+// goroutine: tokens never change. A bot's seat has the empty token, so
+// the empty token belongs to no seat: no token ever gets a bot's seat.
+func (r *Room) hasToken(token string) bool { return r.seatOf(token) >= 0 }
 
-// seatOf is the seat a token belongs to, or -1.
-func (r *Room) seatOf(token string) int { return slices.Index(r.tokens, token) }
+// seatOf is the seat a token belongs to, or -1; never a bot's.
+func (r *Room) seatOf(token string) int {
+	if token == "" {
+		return -1
+	}
+	return slices.Index(r.tokens, token)
+}
 
 // send passes a request to the room unless it has stopped.
 func (r *Room) send(req request) {
@@ -156,6 +207,7 @@ func (r *Room) send(req request) {
 // ends; then it closes every connection.
 func (r *Room) Run(ctx context.Context) {
 	defer func() {
+		r.stopThinkers()
 		r.closeRecord(false)
 		close(r.done)
 		if r.stopped {
@@ -184,6 +236,7 @@ func (r *Room) Run(ctx context.Context) {
 	tick := time.NewTicker(r.limitTick)
 	defer tick.Stop()
 	for !r.stopped {
+		r.startThinkers(ctx)
 		select {
 		case <-ctx.Done():
 			r.keep()
@@ -191,7 +244,11 @@ func (r *Room) Run(ctx context.Context) {
 		case req := <-r.in:
 			start := time.Now()
 			r.handle(req)
-			r.logStall("a request", start)
+			what := "a request"
+			if req.bot != nil || req.botBan > 0 {
+				what = "a bot's move"
+			}
+			r.logStall(what, start)
 		case <-tick.C:
 			start := time.Now()
 			r.checkLimits()
@@ -231,6 +288,12 @@ func (r *Room) handle(req request) {
 		return
 	case req.presence > 0:
 		r.flushPresence(req.presence - 1)
+		return
+	case req.bot != nil:
+		r.botMove(req.bot)
+		return
+	case req.botBan > 0:
+		r.botBan(req.botBan)
 		return
 	}
 	env, err := protocol.Decode(req.msg)
@@ -272,7 +335,7 @@ func (r *Room) handle(req request) {
 
 // attach gives a returning player their seat back (N-08).
 func (r *Room) attach(c *Client, token, dice string) {
-	i := slices.Index(r.tokens, token)
+	i := r.seatOf(token)
 	if i < 0 || r.seats[i].kicked {
 		c.fail(0, protocol.ErrNotSeated, errNoSeat.Msg())
 		c.conn.Close()
@@ -353,13 +416,18 @@ func (r *Room) broadcast(events []engine.Event) {
 	for _, c := range r.clients {
 		r.update(c, events, base)
 	}
+	// Bots think (ADR 033, Decision 12.1); a hard seat's memory saw
+	// each step already (apply).
+	if r.hasBots() {
+		r.drive()
+	}
 }
 
 // seatViews lists the seats' nicknames and connections.
 func (r *Room) seatViews() []protocol.Seat {
 	seats := make([]protocol.Seat, len(r.seats))
 	for i, s := range r.seats {
-		seats[i] = protocol.Seat{Seat: i, Name: s.name, Connected: s.client != nil, Kicked: s.kicked, Dice: s.dice}
+		seats[i] = protocol.Seat{Seat: i, Name: s.name, Connected: s.client != nil, Kicked: s.kicked, Dice: s.dice, Bot: s.bot, BotN: s.botN}
 	}
 	return seats
 }
@@ -459,6 +527,10 @@ func newToken() string {
 
 // backToLobby hands the room's players back to the lobby after a save.
 func (r *Room) backToLobby() {
+	if r.handedBack {
+		return
+	}
+	r.handedBack = true
 	for _, c := range r.clients {
 		c.room.Store(nil)
 	}

@@ -73,6 +73,12 @@ FOUR_SOULS_SIMS=3000 go test -count=1 -timeout 30m -run TestSimulations ./cards/
 
 3000 games take a few minutes.
 
+`make sims` then runs `TestMemoryStress` (in `internal/world`): the bot memory's check of `TestMemoryIsTrue` (ADR 033, Decision 19.18) on 800 simulated games of every set and challenge, up to 2000 steps each; every seat's memory is checked against the real game at every step. Plain `go test` plays 100 games of 500 steps; the long run needs `FOUR_SOULS_MEMORY_STRESS` set and never runs with `-short`:
+
+```sh
+FOUR_SOULS_MEMORY_STRESS=1 go test -count=1 -timeout 60m -run TestMemoryStress ./internal/world
+```
+
 ## Running
 
 CI runs only the seed corpus, as normal tests (`go test ./...`). Real fuzzing runs on your machine. From the repo root:

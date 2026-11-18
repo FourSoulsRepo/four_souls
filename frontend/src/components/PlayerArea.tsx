@@ -11,6 +11,7 @@ import { Count, useCount, useFlip } from './Count';
 import { HandCard, useHandGap } from './HandCard';
 import type { Interact } from './Interact';
 import { HiddenHand, RevealedHand } from './Pile';
+import { BotText, PlayerName } from './BotIcon';
 import { Part } from './StackPanel';
 import './Table.css';
 import { rem } from '../uiScale';
@@ -82,7 +83,7 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
         <div className="opp-status">
           <b className="opp-name">
             <PlayerDot player={player.id} />
-            {name}
+            <PlayerName player={player.id} fallback={name} />
             {asked && <Hourglass player={player.id} />}
           </b>
           <span className="opp-line">
@@ -103,7 +104,7 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
           {active && nextAttack && <NextAttack line={nextAttack} />}
           {pick.onClick && (
             <button type="button" className="player-pick" onClick={pick.onClick}>
-              {t('table.choose', { player: name })}
+              <BotText text={t('table.choose', { player: name })} />
             </button>
           )}
         </div>
@@ -207,7 +208,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools, watched, de
         <div className="own-status">
           <b className="own-name">
             <PlayerDot player={player.id} />
-            {label}
+            {watched ? <PlayerName player={player.id} fallback={name} /> : label}
             {asked && <Hourglass player={player.id} />}
           </b>
           <OwnCents cents={player.cents} />

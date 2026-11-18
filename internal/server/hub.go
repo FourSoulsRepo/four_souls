@@ -106,7 +106,15 @@ type tableSeat struct {
 	token  string
 	client *Client
 	ready  bool
+	// bot is the level of a bot's seat, "" for a human's or a free one;
+	// botN is its number, from 1 (ADR 033, Decision 10.1). A bot seat
+	// has no token and no client, and is always ready.
+	bot  string
+	botN int
 }
+
+// taken reports whether a player or a bot sits here (Decision 10.9).
+func (s tableSeat) taken() bool { return s.token != "" || s.bot != "" }
 
 // started is a game that left the lobby.
 type started struct {
@@ -152,6 +160,17 @@ type Hub struct {
 	hostOnly bool
 	// presence relays live aiming and hover (15.35); off drops it.
 	presence bool
+	// bots are the bot levels a host may seat (ADR 033, Decision 17).
+	bots []string
+	// botThink is the hard bot's time budget per move (Decision 9.8);
+	// tests shorten it.
+	botThink time.Duration
+	// botPlayouts caps a hard move's playouts in every room (0: none);
+	// tests set it (Room.botPlayouts).
+	botPlayouts int
+	// thinkSlots holds one token per hard bot thinking now, in every
+	// room: at most thinkLimit at once (Decision 17.2).
+	thinkSlots chan struct{}
 	// name is the server's name for the welcome (N-18).
 	name string
 	// restart is the folder for restart files (N-20); "" keeps nothing.
@@ -170,7 +189,7 @@ type Hub struct {
 
 // NewHub makes a lobby with the card sets the engine knows.
 func NewHub() *Hub {
-	return &Hub{in: make(chan hubRequest, 64), done: make(chan struct{}), sets: cards.Sets(), second: time.Second, presence: true, now: time.Now, limitTick: time.Minute}
+	return &Hub{in: make(chan hubRequest, 64), done: make(chan struct{}), sets: cards.Sets(), second: time.Second, presence: true, bots: protocol.BotLevels(), botThink: hardThink, thinkSlots: make(chan struct{}, thinkLimit()), now: time.Now, limitTick: time.Minute}
 }
 
 // Connect adds a connection; its first message must be hello.
@@ -270,6 +289,8 @@ func (h *Hub) handle(req hubRequest) {
 		h.lobbyChanged()
 	case protocol.TypeLoad:
 		h.load(c, env)
+	case protocol.TypeBot:
+		h.bot(c, env)
 	default:
 		c.fail(env.ID, protocol.ErrBadMessage, errNotInGame.Msg(engine.Str("type", env.Type)))
 	}
@@ -295,7 +316,7 @@ func (h *Hub) hello(c *Client, env protocol.Envelope) {
 	}
 	c.hello, c.name, c.sets, c.dice = true, name, m.Sets, protocol.CleanDice(m.Dice)
 	v := version.Get()
-	welcome := protocol.Welcome{Protocol: protocol.Version, App: v.App, Engine: v.Engine, Seat: -1, Create: h.mayCreate(c), Presence: h.presence, Name: h.name}
+	welcome := protocol.Welcome{Protocol: protocol.Version, App: v.App, Engine: v.Engine, Seat: -1, Create: h.mayCreate(c), Presence: h.presence, Name: h.name, Bots: h.bots}
 	if m.Token != "" {
 		if t, i := h.tableSeat(m.Token); t != nil {
 			welcome.Token, welcome.Seat = m.Token, i
@@ -332,7 +353,12 @@ func (h *Hub) hello(c *Client, env protocol.Envelope) {
 	h.tellLost(c)
 }
 
+// tableSeat is the lobby seat a token holds. A free seat and a bot's
+// seat have the empty token, which holds none.
 func (h *Hub) tableSeat(token string) (*table, int) {
+	if token == "" {
+		return nil, -1
+	}
 	for _, t := range h.tables {
 		for i, s := range t.seats {
 			if s.token == token {
@@ -442,7 +468,7 @@ func (h *Hub) join(c *Client, env protocol.Envelope) {
 		c.fail(env.ID, protocol.ErrPassword, reason.Msg())
 		return
 	}
-	free := slices.IndexFunc(t.seats, func(s tableSeat) bool { return s.token == "" })
+	free := slices.IndexFunc(t.seats, func(s tableSeat) bool { return !s.taken() })
 	if free < 0 {
 		c.fail(env.ID, protocol.ErrRoomFull, errRoomFull.Msg())
 		return
@@ -480,8 +506,14 @@ func (h *Hub) ready(c *Client, env protocol.Envelope) {
 			t.seats[i].ready = m.Ready
 		}
 	}
+	h.startIfReady(t)
+}
+
+// startIfReady starts a table whose every seat is taken and whose every
+// human is ready (ADR 033, Decision 10.7); else it sends the table.
+func (h *Hub) startIfReady(t *table) {
 	for _, s := range t.seats {
-		if s.client == nil || !s.ready {
+		if s.bot == "" && (s.client == nil || !s.ready) {
 			h.tableChanged(t)
 			return
 		}
@@ -489,11 +521,105 @@ func (h *Hub) ready(c *Client, env protocol.Envelope) {
 	h.start(t)
 }
 
+// bot seats, changes or takes away a bot (ADR 033, Decision 10.4):
+// only the host, only at a free seat or a bot's seat, only a level this
+// server allows.
+func (h *Hub) bot(c *Client, env protocol.Envelope) {
+	var m protocol.Bot
+	if err := env.Unpack(&m); err != nil {
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
+		return
+	}
+	t := c.table
+	if t != nil && t.loaded == nil {
+		from := slices.IndexFunc(t.seats, func(s tableSeat) bool { return s.token != "" })
+		if t.promoteHost() {
+			h.tableChanged(t) // the host left before this table had bots
+			if m.Seat == 0 {
+				// The sender saw seat 0 free and offered a bot there; it
+				// is now the sender's own, so the bot takes the seat the
+				// sender left (Decision 10.12.4 – 5; 19.206).
+				m.Seat = from
+			}
+		}
+	}
+	switch {
+	case t == nil:
+		c.fail(env.ID, protocol.ErrNotSeated, errSitFirst.Msg())
+		return
+	case t.seats[0].client != c:
+		c.fail(env.ID, protocol.ErrNotHost, errHostBots.Msg())
+		return
+	case t.loaded != nil:
+		// A saved game's seats wait for its players (N-11).
+		c.fail(env.ID, protocol.ErrBadSetup, errBotSaved.Msg())
+		return
+	case m.Seat < 1 || m.Seat >= len(t.seats) || t.seats[m.Seat].token != "":
+		c.fail(env.ID, protocol.ErrBadSetup, errBotSeat.Msg())
+		return
+	}
+	s := &t.seats[m.Seat]
+	switch {
+	case m.Level == "" && s.bot == "":
+		return // no bot to take away
+	case m.Level == "":
+		*s = tableSeat{}
+	case len(h.bots) == 0:
+		c.fail(env.ID, protocol.ErrBadSetup, errBotsOff.Msg())
+		return
+	case !slices.Contains(h.bots, m.Level):
+		c.fail(env.ID, protocol.ErrBadSetup, errBotLevel.Msg())
+		return
+	case s.bot != "":
+		s.bot = m.Level // a new level; the bot keeps its number and name
+	default:
+		n := freeBotN(t)
+		*s = tableSeat{name: botName(n), bot: m.Level, botN: n, ready: true}
+	}
+	h.lobbyChanged()
+	h.startIfReady(t)
+}
+
+// botName is a bot seat's name in records and logs; the app shows a
+// translated one (ADR 033, Decision 10.2).
+func botName(n int) string { return "Bot " + strconv.Itoa(n) }
+
+// freeBotN is the smallest bot number no seat of t uses, by number or
+// by name: a player may be called "Bot 1".
+func freeBotN(t *table) int {
+	for n := 1; ; n++ {
+		if !slices.ContainsFunc(t.seats, func(s tableSeat) bool { return s.botN == n || s.name == botName(n) }) {
+			return n
+		}
+	}
+}
+
+// promoteHost moves the next human into seat 0, the host's, when it has
+// none: the host left (ADR 033, Decision 10.12). Bots keep their seats.
+// It reports whether it moved anyone.
+func (t *table) promoteHost() bool {
+	if t.seats[0].token != "" {
+		return false
+	}
+	i := slices.IndexFunc(t.seats, func(s tableSeat) bool { return s.token != "" })
+	if i < 0 {
+		return false
+	}
+	t.seats[0], t.seats[i] = t.seats[i], tableSeat{}
+	t.host = t.seats[0].name
+	return true
+}
+
+// hasBots reports whether a bot sits at t.
+func (t *table) hasBots() bool {
+	return slices.ContainsFunc(t.seats, func(s tableSeat) bool { return s.bot != "" })
+}
+
 // start turns a table into a running game.
 func (h *Hub) start(t *table) {
 	seats := make([]roomSeat, len(t.seats))
 	for i, s := range t.seats {
-		seats[i] = roomSeat{name: s.name, token: s.token, client: s.client}
+		seats[i] = roomSeat{name: s.name, token: s.token, client: s.client, bot: s.bot, botN: s.botN}
 		if s.client != nil {
 			seats[i].dice = s.client.dice
 		}
@@ -512,7 +638,9 @@ func (h *Hub) start(t *table) {
 	room, err := NewRoom(setup, t.opts, seats)
 	if err != nil {
 		for _, s := range t.seats {
-			s.client.fail(0, protocol.ErrBadSetup, errBadMessage.Msg(engine.Str("error", err.Error())))
+			if s.client != nil { // a bot's seat has none
+				s.client.fail(0, protocol.ErrBadSetup, errBadMessage.Msg(engine.Str("error", err.Error())))
+			}
 		}
 		return
 	}
@@ -521,15 +649,18 @@ func (h *Hub) start(t *table) {
 	room.loaded, room.path, room.born = t.loaded, recordPath(h.records, t.id, seats, now), now
 	h.tables = slices.DeleteFunc(h.tables, func(x *table) bool { return x == t })
 	for _, s := range t.seats {
-		s.client.table = nil
-		s.client.room.Store(room)
+		if s.client != nil { // a bot's seat has none
+			s.client.table = nil
+			s.client.room.Store(room)
+		}
 	}
 	h.run(room, gameInfo(t.id, t.host, len(t.seats), len(t.seats), t.sets, t.opts))
 }
 
 // setUpRoom gives a new room the server's settings.
 func (h *Hub) setUpRoom(room *Room, n int, id, host string, sets []string) {
-	room.second, room.hub, room.saves = h.second, h, h.saves
+	room.second, room.hub, room.saves, room.botThink, room.thinkSlots = h.second, h, h.saves, h.botThink, h.thinkSlots
+	room.botPlayouts = h.botPlayouts
 	room.presenceOn = h.presence
 	room.recDir = h.records
 	room.recInfo = recordInfo{game: id, server: h.name, sets: sets, cards: h.cards}
@@ -565,10 +696,16 @@ func (h *Hub) leaveTable(c *Client) {
 			}
 		}
 	}
+	// Bots have no token: a table of bots alone closes (Decision 10.8).
 	someone := func(s tableSeat) bool { return s.token != "" && (t.loaded == nil || s.client != nil) }
 	if slices.IndexFunc(t.seats, someone) < 0 {
 		h.tables = slices.DeleteFunc(h.tables, func(x *table) bool { return x == t })
 		return
+	}
+	// A table with bots needs its host in seat 0 to start; one without
+	// keeps seat 0 for the next player, as before bots (Decision 10.12).
+	if t.loaded == nil && t.hasBots() {
+		t.promoteHost()
 	}
 	h.tableChanged(t)
 }
@@ -584,7 +721,7 @@ func (h *Hub) disconnect(c *Client) {
 func (h *Hub) tableChanged(t *table) {
 	seats := make([]protocol.Seat, len(t.seats))
 	for i, s := range t.seats {
-		seats[i] = protocol.Seat{Seat: i, Name: s.name, Connected: s.client != nil, Ready: s.ready}
+		seats[i] = protocol.Seat{Seat: i, Name: s.name, Connected: s.client != nil, Ready: s.ready, Bot: s.bot, BotN: s.botN}
 		if s.client != nil {
 			seats[i].Dice = s.client.dice
 		}
@@ -615,7 +752,7 @@ func (h *Hub) list() protocol.Games {
 	for _, t := range h.tables {
 		taken := 0
 		for _, s := range t.seats {
-			if s.token != "" {
+			if s.taken() {
 				taken++
 			}
 		}

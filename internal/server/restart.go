@@ -162,7 +162,7 @@ func (h *Hub) keepTables() {
 			Kind:     keptTable, N: t.n, Host: t.host, Password: t.password,
 		}
 		for _, s := range t.seats {
-			f.Seats = append(f.Seats, savedSeat{Name: s.name, Token: s.token})
+			f.Seats = append(f.Seats, savedSeat{Name: s.name, Token: s.token, Bot: s.bot, BotN: s.botN})
 		}
 		if err := writeRestart(h.restart, f); err != nil {
 			log.Printf("server: keep table %s: %v", t.id, err)
@@ -190,7 +190,15 @@ func (h *Hub) restoreTable(f *restartFile) {
 	t := &table{n: f.N, id: f.Game, host: f.Host, sets: f.Sets, opts: f.Options, password: f.Password, seats: make([]tableSeat, len(f.Seats))}
 	t.emptySince = f.Saved // the downtime counts (N-20)
 	for i, s := range f.Seats {
-		t.seats[i] = tableSeat{name: s.Name, token: s.Token}
+		switch {
+		case s.Bot == "":
+			t.seats[i] = tableSeat{name: s.Name, token: s.Token}
+		case slices.Contains(h.bots, s.Bot):
+			t.seats[i] = tableSeat{name: s.Name, bot: s.Bot, botN: s.BotN, ready: true}
+		default:
+			// The server allows that level no more (-bots): the seat is free.
+			log.Printf("server: table %s: a %s bot left; this server does not allow it", f.Game, s.Bot)
+		}
 	}
 	h.tables = append(h.tables, t)
 	if h.restart == "" {
@@ -212,7 +220,10 @@ func (h *Hub) restoreRoom(f *restartFile) {
 	}
 	seats := make([]roomSeat, len(f.Seats))
 	for i, s := range f.Seats {
-		seats[i] = roomSeat{name: s.Name, token: s.Token, kicked: s.Kicked, dice: s.Dice}
+		// A game keeps its bots whatever -bots says now: the flag is for
+		// seating new ones, and the game cannot go on without them. They
+		// think again once the players are back (ADR 033, Decision 16.4).
+		seats[i] = roomSeat{name: s.Name, token: s.Token, kicked: s.Kicked, dice: s.Dice, bot: s.Bot, botN: s.BotN}
 	}
 	setup := engineSetup(f.Seed, len(seats), f.Sets, f.Options)
 	room, err := NewRoom(setup, f.Options, seats)
@@ -240,7 +251,7 @@ func (r *Room) keep() {
 		N:        r.n, Host: r.host, Started: r.born, Seed: r.setup.Seed,
 	}
 	for _, s := range r.seats {
-		f.Seats = append(f.Seats, savedSeat{Name: s.name, Token: s.token, Kicked: s.kicked, Dice: s.dice})
+		f.Seats = append(f.Seats, savedSeat{Name: s.name, Token: s.token, Kicked: s.kicked, Dice: s.dice, Bot: s.bot, BotN: s.botN})
 	}
 	if r.game == nil {
 		f.Kind = keptSetup
@@ -281,6 +292,7 @@ func (r *Room) resumeKept() {
 	}
 	r.step, r.steps = f.Step, f.Steps
 	r.restoreHistory(f)
+	r.resetMemory() // no memory is kept over a restart (ADR 033, Decision 19.12)
 	r.grace = time.Now().Add(voteGrace * r.second)
 	if r.recDir != "" && f.Record != "" {
 		if w, err := record.Append(f.Record, f.Steps, time.Now().UTC()); err == nil {
@@ -314,7 +326,9 @@ func (h *Hub) lose(f *restartFile, why error) {
 	}
 	var tokens []string
 	for _, s := range f.Seats {
-		tokens = append(tokens, s.Token)
+		if s.Bot == "" { // a bot has no token and nobody to tell
+			tokens = append(tokens, s.Token)
+		}
 	}
 	h.remember(protocol.Notice{Kind: protocol.NoticeLost, Game: f.Game}, tokens)
 }
@@ -361,7 +375,7 @@ func (r *Room) forgetKept() {
 	}
 }
 
-// everyoneBack: every seat has its player again.
+// everyoneBack: every seat has its player again; bots never leave.
 func (r *Room) everyoneBack() bool {
-	return !slices.ContainsFunc(r.seats, func(s roomSeat) bool { return s.client == nil })
+	return !slices.ContainsFunc(r.seats, func(s roomSeat) bool { return s.client == nil && s.bot == "" })
 }

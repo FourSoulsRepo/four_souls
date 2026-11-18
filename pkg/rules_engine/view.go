@@ -669,7 +669,7 @@ func FilterEvents(events []Event, v Viewer) []Event {
 	out := make([]Event, 0, len(events))
 	for _, e := range events {
 		if e.Private && !v.sees(e.Player) && !slices.ContainsFunc(e.SeenBy, v.sees) {
-			e.Card, e.Object = "", 0
+			e.Card, e.Object, e.Deck = "", 0, nil
 		}
 		out = append(out, e)
 	}

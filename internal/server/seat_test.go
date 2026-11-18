@@ -99,3 +99,33 @@ func TestShuffleSeats(t *testing.T) {
 		t.Errorf("seat 0 went to %v; want every player", first)
 	}
 }
+
+// TestShuffleSeatsKeepsBotOffSeat0: Random seats never put a bot on
+// seat 0, the host's; the swap is the seed's, so equal seeds seat alike
+// (ADR 033, Decision 10.12; 19.205).
+func TestShuffleSeatsKeepsBotOffSeat0(t *testing.T) {
+	for seed := uint64(1); seed <= 200; seed++ {
+		seats := []roomSeat{{name: "P"}, {name: "Bot 1", bot: "standard"}, {name: "Bot 2", bot: "hard"}, {name: "Bot 3", bot: "standard"}}
+		again := append([]roomSeat(nil), seats...)
+		shuffleSeats(seats, seed)
+		shuffleSeats(again, seed)
+		if seats[0].bot != "" {
+			t.Fatalf("seed %d: a bot on seat 0: %v", seed, seats)
+		}
+		if names(seats) != names(again) {
+			t.Fatalf("seed %d: orders differ: %v and %v", seed, seats, again)
+		}
+	}
+	if _, err := NewRoom(engineSetup(1, 2, []string{"b2"}, protocol.Options{}), protocol.Options{}, []roomSeat{{name: "Bot 1", bot: "standard"}, {name: "P"}}); err == nil {
+		t.Error("NewRoom took a bot on seat 0")
+	}
+}
+
+// names lists the seats' names in order.
+func names(seats []roomSeat) string {
+	out := ""
+	for _, s := range seats {
+		out += s.name + ","
+	}
+	return out
+}

@@ -59,6 +59,8 @@ Use options 1 and 5.
    18. Its card set is not among `sets`; the challenge brings it.
    19. A lost challenge ends finished with no `winners`.
    20. Format 2: each `step` also holds the judge view after it (ADR 031).
+   21. A bot's seat says `bot` (its level) and `bot_n` (its number); a human's leaves both out (ADR 033).
+       1. The format stays 2: a reader that does not know them skips them; an older record has none.
 3. Writing
    1. Lines are flushed once a second, and at every stop (18.17).
       1. A crash leaves a readable record without `end`, up to a second short.

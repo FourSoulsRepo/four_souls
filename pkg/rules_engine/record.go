@@ -110,6 +110,9 @@ func CanReplay(v string) error {
 	if older(v, eventVersion) {
 		return fmt.Errorf("replay: the record was made by rules engine %s; engines from %s on send an event for every state change, so its checksums differ and it cannot replay", v, eventVersion)
 	}
+	if older(v, deckVersion) {
+		return fmt.Errorf("replay: the record was made by rules engine %s; engines from %s on tell where deck cards lie (deck_order, a look's deck), so its checksums differ and it cannot replay", v, deckVersion)
+	}
 	return nil
 }
 

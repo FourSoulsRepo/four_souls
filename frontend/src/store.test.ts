@@ -205,6 +205,15 @@ describe('server notices (N-20)', () => {
   });
 });
 
+describe('bots (ADR 033)', () => {
+  it('seats, changes and takes away a bot with the bot message', () => {
+    useApp.getState().seatBot(2, 'hard');
+    expect(send).toHaveBeenCalledWith('bot', { seat: 2, level: 'hard' });
+    useApp.getState().seatBot(2, '');
+    expect(send).toHaveBeenCalledWith('bot', { seat: 2, level: '' });
+  });
+});
+
 describe('LAN Join (19.149)', () => {
   const game = { id: 'g1', host: 'Ann', seats: 2, taken: 1, sets: ['b2'], started: false, locked: true };
 

@@ -677,6 +677,22 @@
     "text": "Shop",
     "note": "Board: screen-reader name of the shop slots."
   },
+  "bot.level.hard": {
+    "text": "Hard",
+    "note": "A bot's level, on the table screen and after a bot's name (ADR 033): the stronger bot, which thinks ahead."
+  },
+  "bot.level.standard": {
+    "text": "Standard",
+    "note": "A bot's level, on the table screen and after a bot's name (ADR 033): the plain bot."
+  },
+  "bot.name": {
+    "text": "Bot {n} ({level})",
+    "note": "A bot's seat name, after a robot icon (ADR 033). n: the bot's number at this table, from 1; level: its level, bot.level.*."
+  },
+  "bot.number": {
+    "text": "Bot {n}",
+    "note": "Table screen, for the host: a bot's name before its level menu (ADR 033). n: the bot's number at this table, from 1."
+  },
   "card.angelic_intervention.cancel_the_attack": {
     "text": "Cancel the attack?",
     "note": "Card question while Angelic Intervention resolves."
@@ -1553,6 +1569,22 @@
     "text": "A game has 2 to 4 seats.",
     "note": "Error from the server, shown in the lobby or on the table. A new game asked for another number of seats."
   },
+  "error.bot_level": {
+    "text": "This server doesn't allow bots of this level.",
+    "note": "Error from the server, shown in the lobby or on the table. The host seats a bot of a level the server's operator turned off (ADR 033)."
+  },
+  "error.bot_saved": {
+    "text": "A saved game's seats wait for its players; bots can't sit there.",
+    "note": "Error from the server, shown in the lobby or on the table. The host tries to seat a bot at the table of a loaded saved game."
+  },
+  "error.bot_seat": {
+    "text": "A bot can sit only in a free seat or another bot's seat.",
+    "note": "Error from the server, shown in the lobby or on the table. The host tries to seat a bot in a player's seat, their own, or a seat that does not exist."
+  },
+  "error.bots_off": {
+    "text": "This server doesn't allow bots.",
+    "note": "Error from the server, shown in the lobby or on the table. The host tries to seat a bot; the server's operator turned bots off."
+  },
   "error.card_data": {
     "text": "Card data: {error}",
     "note": "Status line when the app could not load its card data. error: the message from the app, in English."
@@ -1568,6 +1600,10 @@
   "error.deck_ratios": {
     "text": "{error}",
     "note": "Host screen: why the deck ratios can't be checked; error: the rules engine's words, in English."
+  },
+  "error.host_bots": {
+    "text": "Only the host can seat bots.",
+    "note": "Error from the server, shown in the lobby or on the table. A player who is not the host tries to seat or remove a bot."
   },
   "error.host_ends": {
     "text": "Only the host ends the game.",
@@ -2934,6 +2970,22 @@
   "lobby.back": {
     "text": "Back",
     "note": "Button at the bottom of the Host, LAN, Online and game list screens: one screen back."
+  },
+  "lobby.bots.add": {
+    "text": "Add bot",
+    "note": "Table screen, for the host: on a free seat, before one button per bot level; also the screen-reader name of that group (ADR 033)."
+  },
+  "lobby.bots.add_level": {
+    "text": "Add bot: {level}",
+    "note": "Table screen, for the host: screen-reader name of a button that seats a bot of this level on the free seat. level: bot.level.*."
+  },
+  "lobby.bots.level": {
+    "text": "Level of {name}",
+    "note": "Table screen, for the host: screen-reader name of a bot's level menu; a new pick changes the level. name: bot.number."
+  },
+  "lobby.bots.remove": {
+    "text": "Remove {name}",
+    "note": "Table screen, for the host: the × button and its tooltip; takes the bot away and frees its seat. name: bot.number."
   },
   "lobby.connect": {
     "text": "Connect",

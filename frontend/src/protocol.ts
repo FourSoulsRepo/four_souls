@@ -8,7 +8,7 @@ import type { Msg } from './locale';
 
 export type { Msg } from './locale';
 
-export const protocolVersion = 6;
+export const protocolVersion = 7;
 export const defaultPort = 4774;
 
 export interface Envelope {
@@ -40,6 +40,8 @@ export interface Welcome {
   presence?: boolean;
   // name is the server's name, shown instead of its address (N-18).
   name?: string;
+  // bots lists the bot levels a host may seat here (ADR 033); none: no bots.
+  bots?: string[];
 }
 
 // Presence is what a player points at now (15.35, ADR 016): the card
@@ -185,6 +187,15 @@ export interface Seat {
   kicked?: boolean;
   // dice is the seat's dice look (V-19); none draws the default one.
   dice?: string;
+  // bot is a bot seat's level, bot_n its number: name is "Bot N" (ADR 033).
+  bot?: string;
+  bot_n?: number;
+}
+
+// Bot seats, changes or removes (level "") a bot; the host only (ADR 033).
+export interface Bot {
+  seat: number;
+  level: string;
 }
 
 export interface Table {
@@ -701,6 +712,15 @@ export interface GameEvent {
   item?: StackItem;
   // sources: what changed a resolved roll, on roll_resolved (15.94).
   sources?: StatSource[];
+  // deck: where a looked-at deck card lies, for a bot seat's memory
+  // (ADR 033, Decision 19.11); hidden with card.
+  deck?: DeckPlace;
+}
+
+// DeckPlace is a deck card's place: its deck and depth cards above it.
+export interface DeckPlace {
+  deck: number;
+  depth: number;
 }
 
 export interface Vote {

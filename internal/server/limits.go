@@ -15,6 +15,8 @@ import (
 // checkLimits ends the game when it ran into an idle limit.
 func (r *Room) checkLimits() {
 	now := r.now()
+	// Only players count: a bot has no client, so a game of bots alone
+	// is empty (ADR 033, Decision 11.7).
 	connected := slices.ContainsFunc(r.seats, func(s roomSeat) bool { return s.client != nil })
 	if r.over.Load() {
 		// A finished game stays while a player is on its end screen,
@@ -64,11 +66,12 @@ func (r *Room) end(c *Client, env protocol.Envelope) {
 // endWith ends the game unfinished. Connected players hear why at once,
 // the others when they come back; everyone goes back to the lobby.
 func (r *Room) endWith(n protocol.Notice) {
+	r.backToLobby() // before the notice: the next message reaches the lobby (19.198)
 	var away []string
 	for _, s := range r.seats {
 		if s.client != nil {
 			s.client.send(protocol.TypeNotice, 0, n)
-		} else if !s.kicked {
+		} else if !s.kicked && s.bot == "" { // a bot has nobody to tell
 			away = append(away, s.token)
 		}
 	}

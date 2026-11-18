@@ -3,9 +3,13 @@
 //
 //	server_load -url ws://game.example.com:4774/ws
 //	server_load -url ws://127.0.0.1:4774 -max-games 8 -max-response 500ms
+//	server_load -url ws://127.0.0.1:4774 -bots hard -start 3 -max-games 3
 //
 // Each game seats -players bots at one table and plays it to the end with
-// random legal moves, as the headless tests do. A bot whose connection drops
+// random legal moves, as the headless tests do. With -bots the client
+// plays only the host's seat; the host seats the server's own bots of
+// that level in the others (ADR 033), and the report adds how long their
+// turns took. A bot whose connection drops
 // takes its seat back with its token, as the app does, and the report counts
 // those reconnects. The games run in stages: -start
 // games at once, then twice as many, up to -max-games. A stage passes when
@@ -28,6 +32,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/FourSoulsRepo/four_souls/internal/protocol"
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
@@ -52,6 +57,7 @@ type config struct {
 	seed        uint64
 	stopAt      int // percent of a stage's games that stops the rest; 0 waits for all
 	bans        []engine.CardRef
+	botLevel    string // the server's bots in every seat but the host's; empty: none
 }
 
 func main() {
@@ -102,6 +108,7 @@ func parse(args []string) (config, error) {
 	fs.DurationVar(&cfg.maxResponse, "max-response", time.Second, "a stage fails when a response takes longer")
 	fs.Uint64Var(&cfg.seed, "seed", 0, "seed for the bots' moves; 0 uses the clock")
 	bans := fs.String("ban", "blue_baby,smelter,portable_slot_machine", "cards the host bans, comma-separated; Blue Baby starts with Forever Alone (19.97), and the Smelter and Portable Slot Machine loop (19.109)")
+	fs.StringVar(&cfg.botLevel, "bots", "", "seat the server's bots of this level (standard or hard) in every seat but the host's; empty: none")
 	fs.IntVar(&cfg.stopAt, "stop-at", 0, "when this percent of a stage's games has ended, end the others at once; 0 waits for all")
 	if err := fs.Parse(args); err != nil {
 		return cfg, fmt.Errorf("flags: %w", err)
@@ -137,6 +144,8 @@ func (cfg *config) check() error {
 		return errors.New("-stop-at: 0 to 100 percent")
 	case cfg.gameTimeout <= 0 || cfg.maxResponse <= 0:
 		return errors.New("-game-timeout and -max-response must be positive")
+	case cfg.botLevel != "" && cfg.botLevel != protocol.BotStandard && cfg.botLevel != protocol.BotHard:
+		return fmt.Errorf("-bots %s: standard or hard", cfg.botLevel)
 	}
 	if u.Path == "" || u.Path == "/" {
 		u.Path = "/ws"

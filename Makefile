@@ -22,6 +22,13 @@ FOCUS ?=
 SIMS ?= 3000
 SETS ?=
 
+# Games per line-up of make bots (ADR 033, Decision 18.3).
+BOT_GAMES ?= 50
+
+# Flags of make bot-values, e.g. BOT_VALUES=-missing after a new set
+# (ADR 033, Decision 20.7).
+BOT_VALUES ?=
+
 # How many Playwright workers e2e and screenshots run at once (19.38).
 E2E_WORKERS ?= 5
 
@@ -33,14 +40,14 @@ LOCALE ?=
 AREA ?=
 
 .DEFAULT_GOAL := help
-.PHONY: help doctor update-deps test vet build wasm site lint i18n frontend e2e e2e-games screenshots internal server-archives fuzz fuzz-engine fuzz-focused fuzz-sets fuzz-new fuzz-challenge sims
+.PHONY: help doctor update-deps test vet build wasm site lint i18n frontend e2e e2e-games screenshots internal server-archives fuzz fuzz-engine fuzz-focused fuzz-sets fuzz-new fuzz-challenge sims bots bot-values
 
 help: ## Show this help
 	@echo "Usage: make <target> [VAR=value]"
 	@echo
 	@awk 'BEGIN {FS = ":.*## "} /^[a-z0-9-]+:.*## / {printf "  %-14s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 	@echo
-	@echo "Variables: TAGS, GOLANGCI, PLATFORM, VERSION, FUZZTIME=$(FUZZTIME), MINIMIZE=$(MINIMIZE), FOCUS=$(FOCUS), SIMS=$(SIMS), SETS=$(SETS), E2E_WORKERS=$(E2E_WORKERS), LOCALE=$(LOCALE), AREA=$(AREA), PROFILE=$(PROFILE)"
+	@echo "Variables: TAGS, GOLANGCI, PLATFORM, VERSION, FUZZTIME=$(FUZZTIME), MINIMIZE=$(MINIMIZE), FOCUS=$(FOCUS), SIMS=$(SIMS), SETS=$(SETS), BOT_GAMES=$(BOT_GAMES), BOT_VALUES=$(BOT_VALUES), E2E_WORKERS=$(E2E_WORKERS), LOCALE=$(LOCALE), AREA=$(AREA), PROFILE=$(PROFILE)"
 
 # Tools and versions: scripts/versions.env, go.mod, e2e/package.json.
 doctor: ## Check the tools make needs, with versions (PROFILE=translator)
@@ -88,7 +95,8 @@ site: ## Build the rules website into frontend/dist-site: site.wasm.gz (size che
 		echo "site.wasm: $$raw bytes raw, $$gz bytes gzip (budget $(SITE_BUDGET))" && \
 		if [ $$gz -gt $(SITE_BUDGET) ]; then echo "site.wasm.gz is above the $(SITE_BUDGET)-byte budget (ADR 026)"; exit 1; fi
 	@node cmd/website/smoke.mjs "$$(go env GOROOT)/lib/wasm/wasm_exec.js" $(SITE_DIR)/site.wasm.gz
-	@cp "$$(go env GOROOT)/lib/wasm/wasm_exec.js" $(SITE_DIR)/wasm_exec.js
+	@# install sets its own mode: the toolchain's copy is read-only (19.201).
+	@install -m 644 "$$(go env GOROOT)/lib/wasm/wasm_exec.js" $(SITE_DIR)/wasm_exec.js
 	@cd frontend && npx vite build --mode site --logLevel warn && mv dist-site/site.html dist-site/index.html
 	@echo "site: frontend/dist-site/index.html"
 
@@ -163,5 +171,25 @@ fuzz-new: ## Fuzz with only the SETS card sets, rooms mostly on (FuzzFocusedSets
 fuzz-challenge: ## Fuzz a test challenge with a final boss and minions, Krampus and Trick or Treat (FuzzChallengeSets)
 	@cd pkg/rules_engine && go test -run '^$$' -fuzz=FuzzChallengeSets -fuzztime=$(FUZZTIME) -fuzzminimizetime=$(MINIMIZE) ./cards/
 
-sims: ## Play SIMS whole random games with the real sets, then the challenges
+sims: ## Play SIMS whole random games with the real sets, then the challenges; then the bot memory's long run
 	@cd pkg/rules_engine && FOUR_SOULS_SIMS=$(SIMS) go test -count=1 -timeout 60m -run '^TestSimulations$$' -v ./cards/
+	@FOUR_SOULS_MEMORY_STRESS=1 go test -count=1 -timeout 60m -run '^TestMemoryStress$$' -v ./internal/world
+
+# The bot arena (ADR 033, Decision 18): whole games between bot levels,
+# BOT_GAMES per line-up; fails on a refused bot intent or when under 95%
+# of games end with a winner within the turn cap, or a loop guard. Then
+# TestStandardNoLoop: whole standard games that once looped (Decision
+# 8.6), too long for go test's timeout; and TestBotsGame's twenty games
+# of a player and bots on the server (23.8). Local.
+bots: ## Play whole games between bot levels and print wins (BOT_GAMES); then the loop replays
+	@go run ./cmd/bot_arena -games $(BOT_GAMES)
+	@FOUR_SOULS_ARENA_GAMES=1 go test -count=1 -timeout 60m -run '^TestStandardNoLoop$$' -v ./internal/arena
+	@FOUR_SOULS_BOT_GAMES=1 go test -count=1 -timeout 60m -run '^TestBotsGame$$' ./internal/server
+
+# The bots' card values (ADR 033, Decision 20): measures every loot card
+# and item on positions of arena games and writes internal/bot/values.json.
+# After cards are added: make bot-values (or BOT_VALUES=-missing), then
+# make bots. Local; a full run takes at most half an hour (11 minutes on
+# 12 cores, 2026-11-17).
+bot-values: ## Measure the bots' card values into internal/bot/values.json (BOT_VALUES)
+	@go run ./cmd/bot_values $(BOT_VALUES)

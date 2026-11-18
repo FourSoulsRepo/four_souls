@@ -32,6 +32,40 @@ There are no maps in the saved state (map order is random). The card index is no
 
 Every card is an object with an ID. Moving a card to another zone gives it a new ID, as the rules treat it as a new object. So `g.Objects` only grows. Code that looks at "what is in play" must use `g.inPlay()` (characters, play areas, slot tops), not scan all objects.
 
+### Copies and new state fields
+
+`Game.Clone` (`clone.go`) is a deep copy written by hand, no JSON (ADR 033, Decision 3): a bot copies the game for every move it tries, so it must stay cheap (`BenchmarkClone` in `cards/clone_test.go`: under 0.3 ms for a 4-player game with every set). The copy saves to the same bytes and has the same checksum, and shares no slice, map or pointer with the game; only the card definitions are shared. Like a save and a load, it drops the last step's events and the test dice.
+
+A new field of `Game`, or of any type inside it, must add:
+
+1. a copy line in `Game.Clone` when it holds a slice, map or pointer (`slices.Clone`, or the type's own `clone`); a plain value is copied with its struct;
+2. its name in `CloneRules` (`enginetest/clone.go`), in field order: `Name` for a plain value, `Name*` for one Clone copies, `Name!` for one shared or left out on purpose;
+3. a new struct type inside the state: its own line in `CloneRules`.
+
+`TestCloneCoversEveryField` fails until the list matches the types. `TestCloneCopiesEveryField` fills every slice, map and pointer of a game, at every depth, and fails when the copy shares one: a `*` field Clone forgets. Both game tests check sharing with `enginetest.NoSharing`, which skips the `!` fields. `TestCloneSavesTheSame` (simulated games of every set and challenge) fails when the copy saves differently or shares memory with the game, and `TestCloneLeavesTheGame` plays 50 steps on a copy and checks the game is unchanged.
+
+A new place that hides a card from a seat (a new face-down zone, a new peek) also needs a line in `hiddenFrom` or `seenBy` (`imagine.go`); see below.
+
+### Imagined game
+
+`Game.Imagine(p, seed, known)` (`imagine.go`) is the game as seat `p` may imagine it (ADR 033, Decision 2). A bot gets games only from it, never the real one. It clones the game and then:
+
+1. lists the objects whose card `p` cannot see now (`hiddenFrom`): every deck card, bottom up; the hands of the other players, unless `p`'s view shows them (a revealed hand, or any hand in a co-op challenge); a challenge's face-down presents;
+2. leaves out what `p` looks at now (`seenBy`), as `ViewFor` shows it: the treasure peek, and the cards of `p`'s own open question (its options' cards and targets, its subject, its order, its deck look at the top);
+3. pools the hidden cards by deck (a card of no deck by its kind), so a hand keeps its kinds of cards: a monster card and an event card share the monster deck's pool;
+4. deals `known` first: each remembered card goes to the hand or deck place `p` remembers, when that place is hidden and the card's pool still holds a copy; else it is skipped. The memory is never checked against the real game, so a wrong memory tells the bot nothing;
+5. sorts each pool, shuffles the rest of it with a generator from `seed` and deals it to the remaining places in order; objects keep their IDs and every other field, only `Card` changes. Sorted first, the deal depends only on the pool's cards, `seed` and `known`, never on where the real cards lie (ADR 033, Decision 2.14);
+6. renames each hidden card where the copy still names it, to a card drawn from its pool: past objects (`ZoneGone`) that nothing in the state points at (a card drawn unseen leaves its old object behind), and the option labels of another player's prompt; and the ability of a loot card another player is playing from hand (`Activating`, 19.221), which names the card dealt to its source. A past object the state still points at, say a trigger of a monster that left play, keeps its card: the stack shows it;
+7. reseeds the copy's RNG from the same generator: no real dice or draws.
+
+`Known` holds the cards of each hand by seat, and of each deck's top (top first) and bottom (bottom up); `""` is a place not remembered. Its zero value remembers nothing.
+
+What stays as it is, because `p` sees it or may know it: everything in play, slots and covered cards, discards, below the top too (open by R-ZONE-07; the view sends only the top, but every card went there in sight), bonus souls, cards outside the game, the revealed monster of a deck attack, deck and hand sizes, `p`'s own hand. Events are not part of the state; what they showed is the memory's work (`Known`, `world.Memory`, step 23.15). For it a `looked_at` of a deck card names the card's deck and depth (`Event.Deck`, hidden with the card), and a deck whose cards change places out of sight tells it: `ShuffleDeck` (a refill from the discard and setup too) sends `shuffled` (19.178); `SetDeckTop` and `DeckToBottom` send `deck_order`. Moves told by their own event (`top_choice`, `deck_bottom`: `deckToBottom`) send neither. A new such move needs `emitDeckOrder` (see [Bots](Bots), Memory).
+
+A new move into `ZoneOutside` or an `Under` list from a hand or a deck, face down, needs a line in `hiddenFrom`: today only a challenge's presents do that.
+
+Tests in `cards/imagine_test.go`: `TestImagineKeepsTheView` imagines every step of simulated games of every set, 2 to 4 players, and each challenge, for every seat, and checks that the seat's `ViewFor` and, when it must answer, its `Allowed` are the game's, that the copy holds the same cards and passes `CheckInvariants`, and that the game's checksum stays. `TestImagineForgetsTheDeal` imagines the same steps twice, once from an imagined copy, and checks that one seed gives the same save, view and allowed intents: the copy does not depend on the real layout; `TestImagineForgetsTheDealKnown` does it with remembered cards. `TestImagineNamesNoHiddenCard` scans each copy's state as JSON for a card the seat cannot know (in a deck, another hand or outside the game, and not in its view or a discard), outside the redealt places; a copy with another player's play open must then play 60 random steps (19.221). `TestImaginePlayout` plays 200 random steps on imagined games. `TestImagineSeedsDiffer` and `TestImagineKnown` check the deal.
+
 ## Where things happen
 
 | File | What |

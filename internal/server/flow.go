@@ -185,11 +185,12 @@ func (r *Room) paused() bool {
 	return r.game != nil && !r.game.Over && len(r.away()) > 0
 }
 
-// away lists the seats whose player left and was not kicked.
+// away lists the seats whose player left and was not kicked. A bot's
+// seat is never away (ADR 033, Decision 11.2).
 func (r *Room) away() []int {
 	var out []int
 	for i, s := range r.seats {
-		if s.client == nil && !s.kicked {
+		if s.client == nil && !s.kicked && s.bot == "" {
 			out = append(out, i)
 		}
 	}

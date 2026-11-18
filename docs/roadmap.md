@@ -27,6 +27,8 @@ Each step ends in something that runs and is tested.
 | 18 | Play-test | New-user check, play-test, docs check | 14 | In progress |
 | 21 | Bindings by domain | Wails bindings split into packages under `bindings/` | 8 | Done |
 | 22 | Test reliability | Bugs caught by tests before play tests (ADR 032) | 19 | Done |
+| 23 | Bots | Standard and hard bots fill free seats in network games (ADR 033) | 8, 14 | In progress |
+| 24 | Situation tests | Most card tests are situation files, not Go code (ADR 034) | 4 | In progress |
 | 9 | Spectators | Viewers watch live | 8 | Not started |
 | 10 | Replays | Records screen and replay player | 8 | Done |
 | 11 | Learning | Rules viewer, sandbox, tutorial, bot | 8, 12 | Not started |
@@ -49,6 +51,8 @@ Step 21 added (owner, 2026-11-15); it runs on the step 18 branch.
 Step 21 done (owner, 2026-11-16); it merges with step 18.
 Step 10 starts now, before 9 (owner, 2026-11-16); it runs on the step 18 branch.
 Step 10 done (owner, 2026-11-16); it merges with step 18.
+Step 23 added (owner, 2026-11-16) as step 21; it takes the bot from step 11.
+It became step 23 at the merge with main, whose steps 21 and 22 came first (2026-11-17).
 Situation tests were step 23; they became step 24 at the merge with bots (owner, 2026-11-18).
 
 ---
@@ -177,7 +181,7 @@ Situation tests were step 23; they became step 24 at the merge with bots (owner,
 1. Rules text viewer in the app.
 2. Sandbox on the game table; export payload and link.
 3. Tutorial lessons.
-4. Simple random bot; seeded and free practice games.
+4. Seeded and free practice games; the bot moved to step 23.
 5. FAQ from frequent rules questions: moved to 12.6.
 6. Ideas: LR-01 – LR-06.
 7. Any event on the stack in payloads: moved to 12.5.
@@ -348,6 +352,16 @@ Situation tests were step 23; they became step 24 at the merge with bots (owner,
 5. e2e waits name the exact store state they need.
 6. Long games stay under a size and speed limit.
 7. Ideas: TS-07 – TS-12.
+
+## 23. Bots
+
+1. Bots of two levels, standard and hard, on free seats of a network game.
+2. Honest: a bot plays an imagined game built from its own view.
+3. Moves are judged by trying them on copies; no per-card advice.
+4. The host adds bots in the lobby; solo play runs on the app's server.
+5. Bots in challenges, saves, restarts and records.
+6. An arena measures strength: hard over standard over random.
+7. Ideas: N-21, LR-06; decision: ADR 033.
 
 ## 24. Situation tests
 

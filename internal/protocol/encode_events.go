@@ -59,6 +59,13 @@ func appendEvent(b []byte, e engine.Event) []byte {
 	if len(e.Sources) > 0 {
 		b = appendMarshaled(b, `,"sources":`, e.Sources)
 	}
+	if e.Deck != nil {
+		b = append(b, `,"deck":{"deck":`...)
+		b = strconv.AppendInt(b, int64(e.Deck.Deck), 10)
+		b = append(b, `,"depth":`...)
+		b = strconv.AppendInt(b, int64(e.Deck.Depth), 10)
+		b = append(b, '}')
+	}
 	return append(b, '}')
 }
 
@@ -118,6 +125,14 @@ func appendSeats(b []byte, ss []Seat) []byte {
 		if s.Dice != "" {
 			b = append(b, `,"dice":`...)
 			b = appendString(b, s.Dice)
+		}
+		if s.Bot != "" {
+			b = append(b, `,"bot":`...)
+			b = appendString(b, s.Bot)
+		}
+		if s.BotN != 0 {
+			b = append(b, `,"bot_n":`...)
+			b = strconv.AppendInt(b, int64(s.BotN), 10)
 		}
 		b = append(b, '}')
 	}

@@ -65,6 +65,44 @@ func TestParse(t *testing.T) {
 	if _, lerr := parse([]string{"-game_hours", "-1"}); lerr == nil {
 		t.Error("a negative limit accepted")
 	}
+	// Bots (ADR 033, Decision 17): every level by default; off, standard
+	// or all; nothing else.
+	if b, berr := parse(nil); berr != nil || b.Bots != "all" {
+		t.Fatalf("bots default %+v, %v", b, berr)
+	}
+	for _, mode := range []string{"off", "standard", "all"} {
+		if b, berr := parse([]string{"-bots", mode}); berr != nil || b.Bots != mode {
+			t.Errorf("-bots %s: %+v, %v", mode, b, berr)
+		}
+	}
+	if _, berr := parse([]string{"-bots", "hard"}); berr == nil {
+		t.Error("-bots hard accepted")
+	}
+	if werr := os.WriteFile(file, []byte(`{"bots": "off"}`), 0o600); werr != nil {
+		t.Fatal(werr)
+	}
+	if b, berr := parse([]string{"-config", file}); berr != nil || b.Bots != "off" {
+		t.Fatalf("bots off in the file: %+v, %v", b, berr)
+	}
+	// The hard bot's think time (Decision 17.2.1): 1.5 s by default; a
+	// duration from 100 ms to 10 s.
+	if b, berr := parse(nil); berr != nil || b.BotThink != "1.5s" {
+		t.Fatalf("bot_think default %+v, %v", b, berr)
+	}
+	if b, berr := parse([]string{"-bot_think", "800ms"}); berr != nil || b.BotThink != "800ms" {
+		t.Errorf("-bot_think 800ms: %+v, %v", b, berr)
+	}
+	for _, bad := range []string{"50ms", "11s", "fast", "0"} {
+		if _, berr := parse([]string{"-bot_think", bad}); berr == nil {
+			t.Errorf("-bot_think %s accepted", bad)
+		}
+	}
+	if werr := os.WriteFile(file, []byte(`{"bot_think": "3s"}`), 0o600); werr != nil {
+		t.Fatal(werr)
+	}
+	if b, berr := parse([]string{"-config", file}); berr != nil || b.BotThink != "3s" {
+		t.Fatalf("bot_think in the file: %+v, %v", b, berr)
+	}
 }
 
 // TestParseTestSeeds: test seeds are off unless the flag or ENV turns
@@ -121,6 +159,8 @@ func TestParseEnv(t *testing.T) {
 	t.Setenv("FOUR_SOULS_RETENTION", "")
 	t.Setenv("FOUR_SOULS_EMPTY_MINUTES", "45")
 	t.Setenv("FOUR_SOULS_GAME_HOURS", "0")
+	t.Setenv("FOUR_SOULS_BOTS", "standard")
+	t.Setenv("FOUR_SOULS_BOT_THINK", "2s")
 	cfg, err := parse(nil)
 	if err != nil {
 		t.Fatal(err)
@@ -128,7 +168,7 @@ func TestParseEnv(t *testing.T) {
 	want := cfg
 	want.Addr, want.Port, want.Records, want.Saves, want.Presence, want.Name = "127.0.0.1", 5001, "/data/records", "/data/saves", false, "Basement"
 	want.Retention = 7 // an empty variable is unset: the file's value stays
-	want.EmptyMinutes, want.GameHours = 45, 0
+	want.EmptyMinutes, want.GameHours, want.Bots, want.BotThink = 45, 0, "standard", "2s"
 	if cfg != want {
 		t.Fatalf("env over the file: got %+v, want %+v", cfg, want)
 	}

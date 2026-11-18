@@ -52,6 +52,8 @@ type bot struct {
 	sentAt      time.Time // when the intent went out
 	turnNo      int       // the turn this seat last saw
 	turnStep    int       // the step that turn began at
+	turnAt      time.Time // when this seat saw that turn begin
+	turnActive  int       // that turn's active seat
 }
 
 // dial opens a connection for one seat and says hello; the welcome gives the
@@ -319,15 +321,26 @@ func (b *bot) update(env protocol.Envelope, size int) (bool, error) {
 	}
 	b.g.progress(u.Step, u.View.Turn.Number)
 	if u.View.Over {
+		b.endTurn()
 		return true, b.g.finish(u.Step, winnersOf(u.View.Winners))
 	}
 	if u.View.Turn.Number != b.turnNo {
+		b.endTurn()
 		b.turnNo, b.turnStep = u.View.Turn.Number, u.Step
+		b.turnAt, b.turnActive = time.Now(), int(u.View.Turn.Active)
 	}
 	if b.pending || u.Pause != nil || len(u.Allowed) == 0 {
 		return false, nil
 	}
 	return false, b.act(u)
+}
+
+// endTurn records how long the turn this seat last saw took, when it
+// was a server bot's turn (-bots); the host's seat records them all.
+func (b *bot) endTurn() {
+	if b.cfg.botLevel != "" && b.seat == 0 && !b.turnAt.IsZero() && b.turnActive != b.seat {
+		b.col.addBotTurn(time.Since(b.turnAt))
+	}
 }
 
 // act sends one allowed intent. A turn that has run for turnLimit steps is

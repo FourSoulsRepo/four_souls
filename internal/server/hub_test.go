@@ -5,6 +5,7 @@ import (
 	"math/rand/v2"
 	"net"
 	"net/http/httptest"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -639,6 +640,455 @@ func TestServerName(t *testing.T) {
 	t.Cleanup(cancel)
 	if _, w := arrive(t, h, "Ann", ""); w.Name != "Basement" {
 		t.Errorf("welcome name %q", w.Name)
+	}
+}
+
+// refusal waits for an error and returns its code and its text's key.
+func (p *player) refusal() (string, string) {
+	p.t.Helper()
+	var er protocol.Error
+	p.next(protocol.TypeError, &er)
+	if er.Text == nil {
+		return er.Code, ""
+	}
+	return er.Code, er.Text.Key.String()
+}
+
+// openTable seats a host at a new table of n seats and returns them and
+// the table.
+func openTable(t *testing.T, h *Hub, n int) (*player, protocol.Table) {
+	t.Helper()
+	host, w := arrive(t, h, "Ann", "")
+	if !slices.Equal(w.Bots, protocol.BotLevels()) {
+		t.Errorf("welcome bots %q, want every level", w.Bots)
+	}
+	host.say(protocol.TypeCreate, protocol.Create{Seats: n})
+	var tb protocol.Table
+	host.next(protocol.TypeTable, &tb)
+	return host, tb
+}
+
+// seatBot sends bot and returns the first table that shows it; tables
+// sent before, as on a join, are skipped.
+func (p *player) seatBot(seat int, level string) protocol.Table {
+	p.t.Helper()
+	p.say(protocol.TypeBot, protocol.Bot{Seat: seat, Level: level})
+	for {
+		var tb protocol.Table // a new one each time: omitted fields stay zero
+		p.next(protocol.TypeTable, &tb)
+		if tb.Seats[seat].Bot == level {
+			return tb
+		}
+	}
+}
+
+// TestBotSeats: the host seats, changes and removes bots; a bot is
+// named "Bot N", is ready, and its seat counts as taken; a joining
+// player gets a free seat, never a bot's (ADR 033, Decision 10).
+func TestBotSeats(t *testing.T) {
+	h := startHub(t)
+	ann, _ := openTable(t, h, 4)
+	tb := ann.seatBot(1, protocol.BotStandard)
+	if s := tb.Seats[1]; s.Name != "Bot 1" || s.Bot != protocol.BotStandard || s.BotN != 1 || !s.Ready || s.Connected {
+		t.Fatalf("bot seat %+v", s)
+	}
+	tb = ann.seatBot(2, protocol.BotHard)
+	if s := tb.Seats[2]; s.Name != "Bot 2" || s.Bot != protocol.BotHard || s.BotN != 2 {
+		t.Fatalf("second bot %+v", s)
+	}
+	tb = ann.seatBot(1, protocol.BotHard)
+	if s := tb.Seats[1]; s.Name != "Bot 1" || s.Bot != protocol.BotHard || s.BotN != 1 {
+		t.Fatalf("a new level keeps the bot's number: %+v", s)
+	}
+
+	bo, _ := arrive(t, h, "Bo", "")
+	var games protocol.Games
+	bo.next(protocol.TypeGames, &games)
+	if len(games.Games) != 1 || games.Games[0].Taken != 3 {
+		t.Fatalf("games %+v: bot seats count as taken", games)
+	}
+	bo.say(protocol.TypeJoin, protocol.Join{Game: tb.Game})
+	bo.next(protocol.TypeTable, &tb)
+	if tb.You != 3 {
+		t.Fatalf("Bo sits in seat %d, want the free seat 3", tb.You)
+	}
+	cy, _ := arrive(t, h, "Cy", "")
+	cy.say(protocol.TypeJoin, protocol.Join{Game: tb.Game})
+	if code := cy.failure(); code != protocol.ErrRoomFull {
+		t.Errorf("a full table of bots and players: %s", code)
+	}
+
+	tb = ann.seatBot(2, "")
+	if s := tb.Seats[2]; s.Name != "" || s.Bot != "" || s.Ready {
+		t.Fatalf("a removed bot leaves a free seat: %+v", s)
+	}
+	tb = ann.seatBot(2, protocol.BotStandard)
+	if s := tb.Seats[2]; s.Name != "Bot 2" || s.BotN != 2 {
+		t.Fatalf("a new bot takes the smallest free number: %+v", s)
+	}
+}
+
+// TestBotNames: a bot never takes the name of a player called "Bot 1".
+func TestBotNames(t *testing.T) {
+	h := startHub(t)
+	ann, tb := openTable(t, h, 3)
+	b1, _ := arrive(t, h, "Bot 1", "")
+	b1.say(protocol.TypeJoin, protocol.Join{Game: tb.Game})
+	b1.next(protocol.TypeTable, nil)
+	ann.next(protocol.TypeTable, nil)
+	tb = ann.seatBot(2, protocol.BotStandard)
+	if s := tb.Seats[2]; s.Name != "Bot 2" || s.BotN != 2 {
+		t.Fatalf("bot %+v next to a player called Bot 1", s)
+	}
+}
+
+// TestBotRefusals: only the host, only a free seat or a bot's, only a
+// level the server allows; each refusal is a translated message.
+func TestBotRefusals(t *testing.T) {
+	h := startHub(t)
+	lone, _ := arrive(t, h, "Lone", "")
+	lone.say(protocol.TypeBot, protocol.Bot{Seat: 1, Level: protocol.BotStandard})
+	if code, key := lone.refusal(); code != protocol.ErrNotSeated || key != "error.sit_first" {
+		t.Errorf("a bot from the lobby: %s %s", code, key)
+	}
+
+	ann, tb := openTable(t, h, 4)
+	bo, _ := arrive(t, h, "Bo", "")
+	bo.say(protocol.TypeJoin, protocol.Join{Game: tb.Game})
+	bo.next(protocol.TypeTable, nil)
+	bo.say(protocol.TypeBot, protocol.Bot{Seat: 2, Level: protocol.BotStandard})
+	if code, key := bo.refusal(); code != protocol.ErrNotHost || key != "error.host_bots" {
+		t.Errorf("a bot from a guest: %s %s", code, key)
+	}
+	for _, seat := range []int{-1, 0, 1, 4} {
+		ann.say(protocol.TypeBot, protocol.Bot{Seat: seat, Level: protocol.BotStandard})
+		if code, key := ann.refusal(); code != protocol.ErrBadSetup || key != "error.bot_seat" {
+			t.Errorf("a bot in seat %d: %s %s", seat, code, key)
+		}
+	}
+	ann.say(protocol.TypeBot, protocol.Bot{Seat: 1}) // "take away the bot" from Bo's seat
+	if code, key := ann.refusal(); code != protocol.ErrBadSetup || key != "error.bot_seat" {
+		t.Errorf("a player's seat taken as a bot's: %s %s", code, key)
+	}
+	for _, level := range []string{"random", "policy", "Standard", "nightmare"} {
+		ann.say(protocol.TypeBot, protocol.Bot{Seat: 2, Level: level})
+		if code, key := ann.refusal(); code != protocol.ErrBadSetup || key != "error.bot_level" {
+			t.Errorf("a %q bot: %s %s", level, code, key)
+		}
+	}
+	ann.say(protocol.TypeBot, protocol.Bot{Seat: 2}) // no bot there: nothing happens
+	ann.say(protocol.TypeBot, protocol.Bot{Seat: 2, Level: protocol.BotStandard})
+	var after protocol.Table
+	ann.next(protocol.TypeTable, &after)
+	if after.Seats[2].Bot != protocol.BotStandard {
+		t.Fatalf("table %+v", after.Seats)
+	}
+}
+
+// TestBotsServerLevels: the server allows bots of its -bots levels
+// only, and tells which in the welcome (ADR 033, Decision 17).
+func TestBotsServerLevels(t *testing.T) {
+	for _, tc := range []struct {
+		mode   string
+		levels []string
+	}{{BotsOff, nil}, {BotsStandard, []string{protocol.BotStandard}}, {BotsAll, protocol.BotLevels()}} {
+		t.Run(tc.mode, func(t *testing.T) {
+			h := NewHub()
+			h.bots, _ = botLevels(tc.mode)
+			ctx, cancel := context.WithCancel(context.Background())
+			go h.Run(ctx)
+			t.Cleanup(cancel)
+			ann, w := arrive(t, h, "Ann", "")
+			if !slices.Equal(w.Bots, tc.levels) {
+				t.Errorf("welcome bots %q, want %q", w.Bots, tc.levels)
+			}
+			ann.say(protocol.TypeCreate, protocol.Create{Seats: 3})
+			ann.next(protocol.TypeTable, nil)
+			for _, level := range protocol.BotLevels() {
+				ann.say(protocol.TypeBot, protocol.Bot{Seat: 1, Level: level})
+				if slices.Contains(tc.levels, level) {
+					var tb protocol.Table
+					ann.next(protocol.TypeTable, &tb)
+					if tb.Seats[1].Bot != level {
+						t.Errorf("%s bot: seat %+v", level, tb.Seats[1])
+					}
+					continue
+				}
+				want := "error.bot_level"
+				if len(tc.levels) == 0 {
+					want = "error.bots_off"
+				}
+				if code, key := ann.refusal(); code != protocol.ErrBadSetup || key != want {
+					t.Errorf("%s bot: %s %s, want %s", level, code, key, want)
+				}
+			}
+		})
+	}
+	if _, ok := botLevels("some"); ok {
+		t.Error("an unknown -bots value accepted")
+	}
+	cfg := DefaultConfig()
+	if cfg.Bots != BotsAll {
+		t.Errorf("default bots %q, want all: the app's own server allows every level", cfg.Bots)
+	}
+	cfg.Bots = "hard"
+	if cfg.Check() == nil {
+		t.Error("bots=hard accepted")
+	}
+}
+
+// TestBotsTableWaitsForHuman: a table of 1 player and 3 bots is full in
+// the game list and waits only for the player to be ready (23.7, Done
+// when); then it starts (23.8).
+func TestBotsTableWaitsForHuman(t *testing.T) {
+	h := startHub(t)
+	ann, tb := openTable(t, h, 4)
+	for i := 1; i < 4; i++ {
+		tb = ann.seatBot(i, protocol.BotStandard)
+	}
+	for i, s := range tb.Seats {
+		if s.Ready != (i > 0) {
+			t.Errorf("seat %d ready %v: only the player is not ready yet", i, s.Ready)
+		}
+	}
+	look, _ := arrive(t, h, "Look", "")
+	var games protocol.Games
+	look.next(protocol.TypeGames, &games)
+	if len(games.Games) != 1 || games.Games[0].Taken != 4 || games.Games[0].Seats != 4 {
+		t.Fatalf("games %+v: a table of 1 player and 3 bots is full", games.Games)
+	}
+	ann.say(protocol.TypeReady, protocol.Ready{Ready: true})
+	var u protocol.Update
+	ann.next(protocol.TypeUpdate, &u)
+	for i, s := range u.Seats {
+		if (s.Bot != "") != (i > 0) || (i > 0 && (s.BotN != i || s.Name != botName(i))) {
+			t.Errorf("seat %d: %+v", i, s)
+		}
+	}
+	if u.Pause != nil {
+		t.Errorf("bots paused the game: %+v", u.Pause)
+	}
+}
+
+// TestBotsHostLeaves: when the host leaves, the next player moves into
+// the host's seat and the table keeps its bots; when no player is left,
+// the table closes (23.7).
+func TestBotsHostLeaves(t *testing.T) {
+	h := startHub(t)
+	ann, tb := openTable(t, h, 4)
+	ann.seatBot(1, protocol.BotStandard)
+	bo, _ := arrive(t, h, "Bo", "")
+	bo.say(protocol.TypeJoin, protocol.Join{Game: tb.Game})
+	bo.next(protocol.TypeTable, &tb)
+	if tb.You != 2 {
+		t.Fatalf("Bo in seat %d, want 2", tb.You)
+	}
+	ann.say(protocol.TypeLeave, struct{}{})
+	bo.next(protocol.TypeTable, &tb)
+	if tb.You != 0 || tb.Seats[0].Name != "Bo" || tb.Seats[1].Bot != protocol.BotStandard || tb.Seats[2].Name != "" {
+		t.Fatalf("after the host left: %+v", tb)
+	}
+	var games protocol.Games
+	ann.next(protocol.TypeGames, &games)
+	if len(games.Games) != 1 || games.Games[0].Host != "Bo" || games.Games[0].Taken != 2 {
+		t.Fatalf("games %+v: Bo hosts now", games.Games)
+	}
+	tb = bo.seatBot(3, protocol.BotHard)
+	if tb.Seats[3].Bot != protocol.BotHard {
+		t.Fatalf("the new host seats a bot: %+v", tb.Seats)
+	}
+	bo.say(protocol.TypeLeave, struct{}{})
+	for {
+		ann.next(protocol.TypeGames, &games)
+		if len(games.Games) == 0 {
+			break
+		}
+		if games.Games[0].Taken == 0 {
+			t.Fatalf("games %+v", games.Games)
+		}
+	}
+}
+
+// TestBotsAfterHostLeft: a table without bots keeps seat 0 free when
+// its host leaves, as before bots; the first bot the next player seats
+// moves that player into seat 0 first (Decision 10.12).
+func TestBotsAfterHostLeft(t *testing.T) {
+	h := startHub(t)
+	ann, tb := openTable(t, h, 3)
+	bo, _ := arrive(t, h, "Bo", "")
+	bo.say(protocol.TypeJoin, protocol.Join{Game: tb.Game})
+	bo.next(protocol.TypeTable, nil)
+	ann.say(protocol.TypeLeave, struct{}{})
+	for {
+		var now protocol.Table
+		bo.next(protocol.TypeTable, &now)
+		if now.Seats[0].Name == "" {
+			if now.You != 1 {
+				t.Fatalf("Bo moved without bots: %+v", now)
+			}
+			break
+		}
+	}
+	tb = bo.seatBot(2, protocol.BotStandard)
+	if tb.You != 0 || tb.Seats[0].Name != "Bo" || tb.Seats[1].Name != "" {
+		t.Fatalf("Bo hosts the table of bots from seat 0: %+v", tb)
+	}
+}
+
+// TestBotsAddOnFreedHostSeat: after the host of a table without bots
+// left, the next player's "Add bot" on the free seat 0 works the first
+// time: the player moves into seat 0 and the bot takes the seat the
+// player left (Decision 10.12.4 – 5; 19.206).
+func TestBotsAddOnFreedHostSeat(t *testing.T) {
+	h := startHub(t)
+	ann, tb := openTable(t, h, 3)
+	bo, _ := arrive(t, h, "Bo", "")
+	bo.say(protocol.TypeJoin, protocol.Join{Game: tb.Game})
+	bo.next(protocol.TypeTable, nil)
+	ann.say(protocol.TypeLeave, struct{}{})
+	for {
+		var now protocol.Table
+		bo.next(protocol.TypeTable, &now)
+		if now.Seats[0].Name == "" {
+			break
+		}
+	}
+	bo.say(protocol.TypeBot, protocol.Bot{Seat: 0, Level: protocol.BotStandard}) // the free seat the screen showed
+	for {
+		tb = protocol.Table{}
+		bo.next(protocol.TypeTable, &tb)
+		if tb.Seats[1].Bot != "" {
+			break
+		}
+	}
+	if tb.You != 0 || tb.Seats[0].Name != "Bo" || tb.Seats[1].Bot != protocol.BotStandard {
+		t.Fatalf("the bot did not take the seat Bo left: %+v", tb)
+	}
+}
+
+// TestBotsKeptOverRestart: a lobby table's bots wait in its restart file
+// and sit down again; a level the new server does not allow leaves its
+// seat free (N-20, ADR 033, Decision 17).
+func TestBotsKeptOverRestart(t *testing.T) {
+	dir := t.TempDir()
+	srv := startKeeping(t, dir)
+	ann := dialBot(t, "ws://"+srv.Addr()+"/ws", "Ann", 1)
+	ann.send(protocol.TypeCreate, protocol.Create{Seats: 4})
+	var tb protocol.Table
+	ann.expect(protocol.TypeTable, &tb)
+	ann.send(protocol.TypeBot, protocol.Bot{Seat: 1, Level: protocol.BotStandard})
+	ann.expect(protocol.TypeTable, nil)
+	ann.send(protocol.TypeBot, protocol.Bot{Seat: 3, Level: protocol.BotHard})
+	ann.expect(protocol.TypeTable, nil)
+
+	srv = restart(t, srv, dir, ann)
+	ann.expect(protocol.TypeTable, &tb)
+	if s := tb.Seats[1]; s.Name != "Bot 1" || s.Bot != protocol.BotStandard || s.BotN != 1 || !s.Ready {
+		t.Fatalf("seat 1 after the restart %+v", s)
+	}
+	if s := tb.Seats[3]; s.Name != "Bot 2" || s.Bot != protocol.BotHard || s.BotN != 2 {
+		t.Fatalf("seat 3 after the restart %+v", s)
+	}
+
+	if err := srv.Shutdown(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	cfg := DefaultConfig()
+	cfg.Addr, cfg.Port, cfg.KeepGames, cfg.Bots = "127.0.0.1", freePort(t), true, BotsStandard
+	cfg.Records, cfg.Saves = filepath.Join(dir, "records"), filepath.Join(dir, "saves")
+	next, err := Start(context.Background(), cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = next.Shutdown(context.Background()) }) //nolint:errcheck // test
+	_ = ann.ws.Close()                                            //nolint:errcheck // test
+	ann.url = "ws://" + next.Addr() + "/ws"
+	ann.connect()
+	var last protocol.Table
+	ann.expect(protocol.TypeTable, &last)
+	if last.Seats[1].Bot != protocol.BotStandard || last.Seats[3].Bot != "" || last.Seats[3].Name != "" {
+		t.Fatalf("seats on a server of standard bots only: %+v", last.Seats)
+	}
+}
+
+// helloNoSeat says hello with token and checks the client gets no seat:
+// the welcome names none and the game list follows, no table or game.
+func helloNoSeat(t *testing.T, h *Hub, token, where string) {
+	t.Helper()
+	p, w := arrive(t, h, "Eve", token)
+	if w.Seat != -1 || w.Token == "" || w.Token == token {
+		t.Fatalf("%s: hello with token %q got seat %d, token %q", where, token, w.Seat, w.Token)
+	}
+	msg := <-p.conn.out
+	if e, err := protocol.Decode(msg); err != nil || e.Type != protocol.TypeGames {
+		t.Fatalf("%s: hello with token %q: then %s, want the game list", where, token, msg)
+	}
+	p.c.Leave()
+}
+
+// TestBotSeatsHoldNoToken: a bot's seat has the empty token. No hello,
+// attach or seat lookup with an empty, missing or invalid token gets a
+// bot's seat: at a lobby table, in a game, and after a server restart
+// (ADR 033, Decision 11.1; 23.7).
+func TestBotSeatsHoldNoToken(t *testing.T) {
+	r := botRoom(t, protocol.Options{}, "", protocol.BotStandard)
+	for _, token := range []string{"", " ", "not-a-token"} {
+		if r.hasToken(token) || r.seatOf(token) != -1 {
+			t.Errorf("room: token %q holds seat %d", token, r.seatOf(token))
+		}
+	}
+	eve := &Client{conn: newMemConn(), seat: -1}
+	r.attach(eve, "", "")
+	if eve.seat != -1 || r.seats[1].client != nil {
+		t.Fatalf("attach with the empty token took seat %d", eve.seat)
+	}
+
+	dir := t.TempDir()
+	h, stop := botHub(t, dir, time.Millisecond)
+	cy, _ := arrive(t, h, "Cy", "")
+	cy.say(protocol.TypeCreate, protocol.Create{Seats: 3})
+	cy.next(protocol.TypeTable, nil)
+	cy.seatBot(1, protocol.BotHard)
+	invalid := strings.Repeat("0", 31) + "g"
+	check := func(where string) {
+		t.Helper()
+		for _, token := range []string{"", invalid} {
+			helloNoSeat(t, h, token, where)
+			if info := askSeat(t, h, token); info.Live {
+				t.Errorf("%s: /seat with token %q: %+v", where, token, info)
+			}
+		}
+	}
+	check("a lobby table")
+	ann, w := arrive(t, h, "Ann", "")
+	ann.say(protocol.TypeCreate, protocol.Create{Seats: 2})
+	ann.next(protocol.TypeTable, nil)
+	ann.seatBot(1, protocol.BotStandard)
+	ann.say(protocol.TypeReady, protocol.Ready{Ready: true})
+	ann.next(protocol.TypeUpdate, nil)
+	check("a game and a lobby table")
+
+	stop()
+	h, _ = botHub(t, dir, time.Millisecond)
+	check("after a restart")
+	back, bw := arrive(t, h, "Ann", w.Token)
+	if bw.Seat != 0 {
+		t.Fatalf("Ann's own token after the restart: seat %d", bw.Seat)
+	}
+	back.next(protocol.TypeUpdate, nil)
+}
+
+// askSeat runs the hub's seat lookup for token, as /seat does.
+func askSeat(t *testing.T, h *Hub, token string) protocol.SeatInfo {
+	t.Helper()
+	reply := make(chan protocol.SeatInfo, 1)
+	h.send(hubRequest{run: func(h *Hub) { reply <- h.seatInfo(token) }})
+	select {
+	case info := <-reply:
+		return info
+	case <-time.After(5 * time.Second):
+		t.Fatal("the hub did not answer")
+		return protocol.SeatInfo{}
 	}
 }
 

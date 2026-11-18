@@ -11,6 +11,7 @@ Pick your group: players, people who run a game server, translators, or develope
 * [First start](First-start) — getting past the macOS and Windows warnings; Linux packages.
 * [Playing over the internet](Playing-over-the-internet) — virtual LAN (Tailscale, ZeroTier, Radmin VPN, Hamachi) or port forwarding.
 * [Challenges](Challenges) — two players together against Pilfering Krampus or Mischievous The Haunt: hosting, rules, the table.
+* [Playing with bots](Playing-with-bots) — seat standard or hard bots on free seats; how they show at the table.
 
 ## Server admins
 
@@ -48,5 +49,6 @@ Pick your group: players, people who run a game server, translators, or develope
 * [Situation payload](Situation-payload) — sandbox situations and rules tests.
 * [Website wasm](Website-wasm) — the rules website: the engine in the browser, the page, its routes and links, build, size, deploy.
 * [Fuzzing](Fuzzing) — random games that check the engine state.
+* [Bots](Bots) — bot levels, their worlds, card values, server options, a new set's rule, and the arena that measures them.
 * [Server](Server) — how the lobby, game rooms and transport fit together.
 * [Banned cards](Banned-cards) — cards no game deals, and how to lift a ban.

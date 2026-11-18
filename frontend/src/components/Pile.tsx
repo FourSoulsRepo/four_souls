@@ -6,6 +6,7 @@ import { bezier, feel } from '../feel';
 import { t } from '../i18n';
 import { scaleFor } from '../playback';
 import { Deck as DeckKind, type CardView } from '../protocol';
+import { seatNameOf } from '../lobby';
 import { seatOf, useApp } from '../store';
 import { Card, type CardSize } from './Card';
 import type { Handle } from './Interact';
@@ -117,7 +118,8 @@ function useOthersLook(kind: Kind): { n: number; who: number } {
 // the look starts and sink back into it as it ends.
 function LookBacks({ kind }: { kind: Kind }) {
   const { n, who } = useOthersLook(kind);
-  const name = useApp((s) => s.game?.seats?.find((x) => x.seat === who)?.name ?? '');
+  const seats = useApp((s) => s.game?.seats);
+  const name = who >= 0 ? seatNameOf(seats, who) : '';
   const calm = useApp((s) => scaleFor(s.settings.animation, 0, 0) === 0) || still();
   const scale = useApp((s) => scaleFor(s.settings.animation, 0, 0));
   const o = feel.choice;

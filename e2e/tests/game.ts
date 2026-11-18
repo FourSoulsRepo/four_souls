@@ -81,6 +81,17 @@ export function lobbyGame(page: Page, id: string): Locator {
   return page.locator(`li[data-game="${id}"]`);
 }
 
+// tableSeat is one row of the table screen's seat list.
+export function tableSeat(page: Page, i: number): Locator {
+  return page.getByRole('list', { name: tr('lobby.seats.seats') }).locator(`li[data-seat="${String(i)}"]`);
+}
+
+// addBot presses a free seat's Add bot button for the level, as the
+// host (23.11, ADR 033 Decision 10); level is its translated name.
+export async function addBot(page: Page, i: number, level: string): Promise<void> {
+  await tableSeat(page, i).getByRole('button', { name: tr('lobby.bots.add_level', { level }) }).click();
+}
+
 // startGame: the first name hosts a game with a seat per name, the others
 // join it by its id, so names may repeat across tests (19.31).
 // Everyone gets ready and waits for the table. Each player has its
@@ -116,6 +127,9 @@ export async function startGame(
     listed = (_: Locator) => Promise.resolve(),
     // seated runs on each guest page at the table, before Ready.
     seated = (_: Page) => Promise.resolve(),
+    // bots are the levels of bots the host seats after the players
+    // (23.12): 'standard' or 'hard', one more seat each.
+    bots = [] as string[],
     // animations keeps each page's own speed: its saved setting, or the
     // url's anim flag. By default every page plays at "off" from Ready
     // on (TS-10, 22.6): a test that checks a motion or sound sets it.
@@ -145,7 +159,7 @@ export async function startGame(
   await host.goto(url);
   await openHost(host);
   await host.getByLabel(tr('lobby.nickname')).fill(names[0] ?? '');
-  await host.getByLabel(tr('host.players')).selectOption(String(names.length));
+  await host.getByLabel(tr('host.players')).selectOption(String(names.length + bots.length));
   // Game tests play the Base Game only: they were written for its cards,
   // and a forced attack (Krampus) could keep a turn from ending.
   const sets = host.getByRole('group', { name: tr('host.sets') });
@@ -175,6 +189,12 @@ export async function startGame(
     await join.dispatchEvent('click');
     await expect(page.getByRole('list', { name: tr('lobby.seats.seats') })).toBeVisible();
     await seated(page);
+  }
+  // The bots take the seats after the players, in order.
+  for (const [i, level] of bots.entries()) {
+    const at = names.length + i;
+    await addBot(host, at, tr(`bot.level.${level}`));
+    await expect(tableSeat(host, at)).toContainText(tr('bot.number', { n: i + 1 }));
   }
   if (!animations) {
     await Promise.all(pages.map((page) => setSpeed(page, 'off')));

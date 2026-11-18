@@ -35,11 +35,13 @@ type saveForm struct {
 
 // tracking is what a game keeps in memory to save at a nested ask: a
 // clean saved state (origin), the steps applied since it, and how many
-// of them led to the last clean state.
+// of them led to the last clean state. off stops it: an imagined world
+// keeps no state to save (ADR 033, Decision 2).
 type tracking struct {
 	origin  []byte
 	since   []ReplayStep
 	cleanAt int
+	off     bool
 }
 
 // errNoCleanState: the game waits on a nested ask and has no clean
@@ -60,7 +62,7 @@ func (g *Game) clean() bool {
 // before the first applied intent, so changes made by direct calls
 // before it (a test table) are kept too.
 func (g *Game) beforeApply() {
-	if g.saved.origin != nil || !g.clean() {
+	if g.saved.origin != nil || g.saved.off || !g.clean() {
 		return
 	}
 	data, err := json.Marshal(g)

@@ -232,6 +232,10 @@ func (r *Room) startBanTurn() {
 	m := r.match
 	m.gen++
 	m.end = time.Time{}
+	if r.botBanTurn() {
+		r.broadcastSetup()
+		return
+	}
 	if m.opts.BanTimer > 0 {
 		d := time.Duration(m.opts.BanTimer) * r.second
 		m.end = time.Now().Add(d)
@@ -262,8 +266,15 @@ func (r *Room) ban(c *Client, env protocol.Envelope) {
 		c.fail(env.ID, protocol.ErrBadCard, errNotInPool.Msg(engine.CardArg("card", b.Card)))
 		return
 	}
+	r.banCard(c.seat, i)
+}
+
+// banCard bans the pool's character i on seat's ban turn.
+func (r *Room) banCard(seat, i int) {
+	m := r.match
+	card := m.pool[i]
 	m.pool = slices.Delete(m.pool, i, i+1)
-	m.banned = append(m.banned, protocol.Ban{Seat: c.seat, Card: b.Card})
+	m.banned = append(m.banned, protocol.Ban{Seat: seat, Card: card})
 	r.endBanTurn()
 }
 
@@ -307,6 +318,11 @@ func (r *Room) deal() {
 	for i := range n {
 		m.offers[i] = slices.Clone(m.pool[i*m.opts.DraftSize : (i+1)*m.opts.DraftSize])
 	}
+	r.botPicks()
+	if !slices.Contains(m.picks, "") {
+		r.play(m.picks) // no player picks: nothing to wait for
+		return
+	}
 	r.broadcastSetup()
 }
 
@@ -344,6 +360,7 @@ func (r *Room) play(characters []engine.CardRef) {
 	}
 	r.game, r.match = g, nil
 	r.setBase()
+	r.resetMemory()
 	r.openRecord(s)
 	r.after(startEvents(events), false) // the start is step 0
 }

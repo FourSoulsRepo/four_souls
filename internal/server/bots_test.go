@@ -1,0 +1,819 @@
+package server
+
+import (
+	"bytes"
+	"context"
+	"log"
+	"os"
+	"runtime"
+	"slices"
+	"strconv"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
+	botai "github.com/FourSoulsRepo/four_souls/internal/bot"
+	"github.com/FourSoulsRepo/four_souls/internal/protocol"
+	"github.com/FourSoulsRepo/four_souls/internal/world"
+	engine "github.com/FourSoulsRepo/rules_engine"
+)
+
+// Tests of the bot driver (ADR 033, Decisions 11 – 14; 23.8). They check
+// that bot moves are allowed and come in time, never how well bots play.
+
+// botRoom starts a game of the given seats on the test's goroutine: ""
+// is a player with a client, else a bot of that level. Nothing runs the
+// room: the test hands it its requests (serveBots), so it may look at
+// the room between them.
+func botRoom(t *testing.T, opts protocol.Options, seats ...string) *Room {
+	t.Helper()
+	codes := []string{"b2"}
+	if err := checkOptions(&opts, codes, len(seats)); err != nil {
+		t.Fatal(err)
+	}
+	rs := make([]roomSeat, len(seats))
+	for i, level := range seats {
+		if level != "" {
+			rs[i] = roomSeat{name: botName(i), bot: level, botN: i}
+			continue
+		}
+		rs[i] = roomSeat{name: "P" + string(rune('0'+i)), token: string(rune('a' + i)), client: &Client{conn: newMemConn()}}
+	}
+	r, err := NewRoom(engineSetup(7, len(seats), codes, opts), opts, rs)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Hard thinks by playout count, not by time: a 2 ms budget gave it
+	// no playout under -race or a loaded machine, so it only passed and
+	// whole games ran out of time (check phase of step 23).
+	r.second, r.botThink, r.botPlayouts = time.Millisecond, 10*time.Second, 2
+	r.recInfo.game = "g1"
+	t.Cleanup(r.stopThinkers)
+	r.play(characters(setsOf(codes))[:len(seats)])
+	wake(t, r)
+	return r
+}
+
+// wake starts the thinkers the room noted, as Run does after each
+// request.
+func wake(t *testing.T, r *Room) {
+	t.Helper()
+	r.startThinkers(t.Context())
+}
+
+// serveBots runs the room until done says so: it hands the room each
+// bot's move, and a player asked to answer passes or gives the forced
+// answer at once.
+func serveBots(t *testing.T, r *Room, done func() bool) {
+	t.Helper()
+	deadline := time.Now().Add(10 * time.Second)
+	for wake(t, r); !done(); wake(t, r) {
+		if time.Now().After(deadline) {
+			t.Fatal("the room did not get there in time")
+		}
+		if r.playerAnswers() {
+			continue
+		}
+		select {
+		case req := <-r.in:
+			r.handle(req)
+		case <-time.After(5 * time.Second):
+			t.Fatal("no bot move came")
+		}
+	}
+}
+
+// playerAnswers gives the forced answer for the first waiting player
+// seat (a pass or the end of the turn); false: no player is asked.
+func (r *Room) playerAnswers() bool {
+	if r.game == nil || r.game.Over || r.paused() || r.rbVote != nil {
+		return false
+	}
+	for _, p := range r.game.Prompt().Who() {
+		if r.seats[p].bot != "" || r.seats[p].client == nil {
+			continue
+		}
+		in, ok := r.forcedIntent(p)
+		if !ok {
+			continue
+		}
+		events, err := r.apply(in)
+		if err != nil {
+			continue
+		}
+		r.after(events, true)
+		return true
+	}
+	return false
+}
+
+// thinking: the bot seat has an open thinker.
+func thinking(r *Room, seat int) func() bool {
+	return func() bool { return len(r.thinkers) > seat && r.thinkers[seat] != nil }
+}
+
+// noBotMove hands the room what comes in for a while: an answer a bot
+// sent before its thinker was dropped is dropped, so no step is made.
+func noBotMove(t *testing.T, r *Room, when string) {
+	t.Helper()
+	step := r.step
+	end := time.After(30 * time.Millisecond)
+	for {
+		select {
+		case req := <-r.in:
+			r.handle(req)
+			if r.step != step {
+				t.Fatalf("a bot moved %s", when)
+			}
+		case <-end:
+			return
+		}
+	}
+}
+
+// TestBotsNeverAway: a bot seat is never away; a game of a player and
+// bots is not paused (ADR 033, Decision 11.2).
+func TestBotsNeverAway(t *testing.T) {
+	r := botRoom(t, protocol.Options{}, "", protocol.BotStandard, protocol.BotHard)
+	if r.paused() || len(r.away()) != 0 {
+		t.Fatalf("away %v: a bot seat is never away", r.away())
+	}
+	seats := r.seatViews()
+	if seats[1].Bot != protocol.BotStandard || seats[2].Bot != protocol.BotHard || seats[2].BotN != 2 {
+		t.Errorf("seats %+v", seats)
+	}
+}
+
+// TestBotsWaitWhilePausedVotingOver: no bot move while the game is
+// paused, during a rollback vote, or after the game end; an answer that
+// comes then is dropped, and the bot thinks again once the game goes on
+// (Decision 12.1, 12.9).
+func TestBotsWaitWhilePausedVotingOver(t *testing.T) {
+	r := botRoom(t, protocol.Options{Rollback: protocol.RollbackSoft}, "", protocol.BotStandard)
+	serveBots(t, r, thinking(r, 1))
+
+	// Paused: the player left.
+	th := r.thinkers[1]
+	step := r.step
+	ann := r.seats[0].client
+	ann.seat = 0
+	r.drop(ann)
+	if !r.paused() || r.thinkers[1] != nil || !closed(th.done) {
+		t.Fatal("the pause did not drop the thinker")
+	}
+	r.handle(request{bot: &botAnswer{seat: 1, id: th.id, step: th.step, intent: engine.Intent{Kind: engine.IntentPass}}})
+	if r.step != step {
+		t.Fatal("a bot moved while paused")
+	}
+	noBotMove(t, r, "while paused")
+	back := &Client{conn: newMemConn()}
+	r.attach(back, "a", "")
+	wake(t, r)
+	if r.paused() || r.thinkers[1] == nil {
+		t.Fatal("the bot does not think again after the pause")
+	}
+
+	// A rollback vote is open.
+	th, step = r.thinkers[1], r.step
+	r.rbVote = &softVote{author: 1}
+	r.broadcast(nil)
+	if r.thinkers[1] != nil || !closed(th.done) {
+		t.Fatal("the vote did not drop the thinker")
+	}
+	r.handle(request{bot: &botAnswer{seat: 1, id: th.id, step: th.step, intent: engine.Intent{Kind: engine.IntentPass}}})
+	if r.step != step {
+		t.Fatal("a bot moved during a rollback vote")
+	}
+	noBotMove(t, r, "during a rollback vote")
+	r.endVote(protocol.VoteCancelled)
+	wake(t, r)
+	if r.thinkers[1] == nil {
+		t.Fatal("the bot does not think again after the vote")
+	}
+
+	// The game is over.
+	th, step = r.thinkers[1], r.step
+	r.game.Over = true
+	r.broadcast(nil)
+	if r.thinkers[1] != nil || !closed(th.done) {
+		t.Fatal("the game end did not drop the thinker")
+	}
+	r.handle(request{bot: &botAnswer{seat: 1, id: th.id, step: th.step, intent: engine.Intent{Kind: engine.IntentPass}}})
+	if r.step != step {
+		t.Fatal("a bot moved after the game end")
+	}
+	noBotMove(t, r, "after the game end")
+}
+
+// TestBotsRollbackThinksAgain: a rollback of a bot's move drops the
+// bot's open thinker; its late answer is dropped, and the bot thinks
+// again on the restored game (Decision 12.8, 12.9).
+func TestBotsRollbackThinksAgain(t *testing.T) {
+	r := botRoom(t, protocol.Options{Rollback: protocol.RollbackGod}, "", protocol.BotHard)
+	botStep := func() int {
+		return slices.IndexFunc(r.live, func(s liveStep) bool { return s.rec.Intent.Player == 1 && r.isTarget(s) })
+	}
+	serveBots(t, r, func() bool { return botStep() >= 0 && thinking(r, 1)() })
+	old := r.thinkers[1]
+	if err := r.rollBackTo(0, botStep()); err != nil {
+		t.Fatal(err)
+	}
+	wake(t, r)
+	if !closed(old.done) {
+		t.Fatal("the rollback did not drop the open thinker")
+	}
+	again := r.thinkers[1]
+	if again == nil || again.id == old.id || again.step != r.step {
+		t.Fatalf("thinker after the rollback %+v; before %+v", again, old)
+	}
+	step, n := r.step, len(r.live)
+	r.handle(request{bot: &botAnswer{seat: 1, id: old.id, step: old.step, intent: engine.Intent{Kind: engine.IntentPass}}})
+	if r.step != step {
+		t.Fatal("the dropped thinker's answer was applied")
+	}
+	serveBots(t, r, func() bool { return len(r.live) > n })
+	if r.live[n].rec.Intent.Player != 1 {
+		t.Fatalf("the first step after the rollback %+v; want the bot's new move", r.live[n].rec.Intent)
+	}
+}
+
+// TestBotsVoteHumansOnly: a kick vote and a Soft vote count only the
+// players; bots never vote (ADR 033, Decision 11.3).
+func TestBotsVoteHumansOnly(t *testing.T) {
+	r := botRoom(t, protocol.Options{Rollback: protocol.RollbackSoft}, "", "", protocol.BotStandard, protocol.BotHard)
+	if got := r.voters(2); !slices.Equal(got, []int{0, 1}) {
+		t.Errorf("Soft voters on a bot's move %v, want the players only", got)
+	}
+	if got := r.voters(0); !slices.Equal(got, []int{1}) {
+		t.Errorf("Soft voters on a player's move %v, want the other player only", got)
+	}
+	ann, bob := r.seats[0].client, r.seats[1].client
+	ann.seat, bob.seat = 0, 1
+	r.drop(bob)
+	if !slices.Equal(r.away(), []int{1}) {
+		t.Fatalf("away %v", r.away())
+	}
+	msg, err := protocol.Encode(protocol.TypeVote, 1, protocol.Vote{Kick: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	env, err := protocol.Decode(msg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.vote(ann, env)
+	if !r.seats[1].kicked || r.paused() {
+		t.Fatal("one vote of the one connected player kicks; bots do not count")
+	}
+}
+
+// TestBotsRefusedIntent: an intent the engine refuses gives the forced
+// answer, and the server logs it; so does a bot with no move (Decision
+// 12.10).
+func TestBotsRefusedIntent(t *testing.T) {
+	var buf syncBuffer
+	prev := log.Writer()
+	log.SetOutput(&buf)
+	defer log.SetOutput(prev)
+	r := botRoom(t, protocol.Options{Rollback: protocol.RollbackGod}, "", protocol.BotStandard)
+	for _, a := range []botAnswer{
+		{intent: engine.Intent{Kind: engine.IntentAttack, Objects: []engine.ObjectID{99999}}},
+		{err: context.Canceled},
+	} {
+		serveBots(t, r, thinking(r, 1))
+		th := r.thinkers[1]
+		forced, ok := r.forcedIntent(1)
+		if !ok {
+			t.Fatal("no forced answer")
+		}
+		forced.Player = 1
+		n := len(r.live)
+		a.seat, a.id, a.step = 1, th.id, th.step
+		r.handle(request{bot: &a})
+		if len(r.live) <= n || !intentEqual(r.live[n].rec.Intent, forced) {
+			t.Fatalf("live %d → %d; want the forced answer %+v", n, len(r.live), forced)
+		}
+	}
+	out := buf.String()
+	if !strings.Contains(out, "Bot 1: the engine refused") || !strings.Contains(out, "Bot 1 has no move") {
+		t.Errorf("log %q: the refusal and the missing move are not logged", out)
+	}
+}
+
+// closed reports whether a thinker's context ended.
+func closed(done <-chan struct{}) bool {
+	select {
+	case <-done:
+		return true
+	default:
+		return false
+	}
+}
+
+// intentEqual compares intents by their JSON fields that matter here.
+func intentEqual(a, b engine.Intent) bool {
+	return a.Player == b.Player && a.Kind == b.Kind && slices.Equal(a.Objects, b.Objects) && a.Choice == b.Choice
+}
+
+// syncBuffer is a log buffer safe for goroutines.
+type syncBuffer struct {
+	mu  sync.Mutex
+	buf bytes.Buffer
+}
+
+func (b *syncBuffer) Write(p []byte) (int, error) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.Write(p) //nolint:wrapcheck // a test buffer
+}
+
+func (b *syncBuffer) String() string {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	return b.buf.String()
+}
+
+// TestBotsPace: a bot's pass or answer comes 0.7 of the room's second
+// after the prompt; an action in its own turn 1 to 2 (Decision 13).
+func TestBotsPace(t *testing.T) {
+	r := botRoom(t, protocol.Options{}, "", protocol.BotStandard)
+	r.second = 40 * time.Millisecond
+	r.stopThinkers()
+	r.drive() // think again at the new pace
+	wake(t, r)
+	for range 8 {
+		serveBots(t, r, thinking(r, 1))
+		th := r.thinkers[1]
+		began := time.Now()
+		var req request
+		for req.bot == nil || req.bot.id != th.id {
+			select {
+			case req = <-r.in:
+			case <-time.After(5 * time.Second):
+				t.Fatal("no bot move")
+			}
+		}
+		took := time.Since(began)
+		own := r.game.Turn.Active == 1 && r.game.PromptFor(1).Kind == engine.PromptPriority && req.bot.intent.Kind != engine.IntentPass
+		least := r.botSecond(botAnswerPace) * 3 / 4 // the thinker started a little before began
+		if own {
+			least = r.botSecond(botActionPace) * 3 / 4
+		}
+		if took < least || took > r.botSecond(botActionPace+1)+time.Second {
+			t.Errorf("a bot move after %v; own turn action %v", took, own)
+		}
+		r.handle(req)
+	}
+}
+
+// TestBotsBanAndPick: bots ban on their ban turns and pick from their
+// draft offers; the game starts once the player has done both
+// (Decision 14).
+func TestBotsBanAndPick(t *testing.T) {
+	h := startHubWith(t, time.Millisecond)
+	ann, _ := arrive(t, h, "Ann", "")
+	ann.say(protocol.TypeCreate, protocol.Create{Seats: 3, Options: &protocol.Options{BanRounds: 1, Picking: protocol.PickDraft, DraftSize: 2}})
+	for i := 1; i < 3; i++ {
+		ann.seatBot(i, protocol.BotHard)
+	}
+	ann.say(protocol.TypeReady, protocol.Ready{Ready: true})
+	var last protocol.Setup
+	for {
+		msg := <-ann.conn.out
+		e, err := protocol.Decode(msg)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if e.Type == protocol.TypeUpdate {
+			break
+		}
+		if e.Type != protocol.TypeSetup {
+			continue
+		}
+		var s protocol.Setup
+		if err := e.Unpack(&s); err != nil {
+			t.Fatal(err)
+		}
+		last = s
+		switch {
+		case s.Phase == protocol.PhaseBan && s.Turn == 0:
+			ann.say(protocol.TypeBan, protocol.BanCard{Card: s.Pool[0]})
+		case s.Phase == protocol.PhasePick && len(s.Offers) > 0 && !s.Picked[0]:
+			for i := 1; i < 3; i++ {
+				if !s.Picked[i] {
+					t.Errorf("bot %d has not picked yet", i)
+				}
+			}
+			ann.say(protocol.TypePick, protocol.PickCard{Card: s.Offers[0]})
+		}
+	}
+	var seats []int
+	for _, b := range last.Banned {
+		seats = append(seats, b.Seat)
+	}
+	slices.Sort(seats)
+	if !slices.Equal(seats, []int{0, 1, 2}) {
+		t.Errorf("bans by seat %v, want one each", seats)
+	}
+}
+
+// TestBotsGame plays seeded games of one player and three bots, of both
+// levels, to their end (23.8, Done when). The player only passes and
+// ends turns, or gives the forced answer. The bot driver, with its
+// copies for the thinkers, never holds the room over the stall limit.
+func TestBotsGame(t *testing.T) {
+	seeds := make([]uint64, 20)
+	for i := range seeds {
+		seeds[i] = uint64(1000 + i) //nolint:gosec // a small game number
+	}
+	switch {
+	case raceEnabled || testing.Short():
+		// The race detector slows whole games ten times: the two
+		// shortest, one of each line-up (17 and 16 turns).
+		seeds = []uint64{1002, 1015}
+	case os.Getenv("FOUR_SOULS_BOT_GAMES") == "":
+		// All twenty take minutes, most of this package's time: make
+		// bots plays them (FOUR_SOULS_BOT_GAMES=1); go test plays four,
+		// two of each line-up.
+		seeds = []uint64{1000, 1002, 1005, 1015}
+	}
+	games := len(seeds)
+	// A few games at a time: twenty at once load the machine so much
+	// that any request may stall, a player's as well as a bot's.
+	slots := make(chan struct{}, 4)
+	var mu sync.Mutex
+	var most time.Duration
+	for _, seed := range seeds {
+		levels := []string{protocol.BotStandard, protocol.BotHard, protocol.BotStandard}
+		if seed%2 == 1 { // the line-up by the seed, as when all twenty play
+			levels = []string{protocol.BotHard, protocol.BotStandard, protocol.BotHard}
+		}
+		t.Run(strconv.FormatUint(seed, 10), func(t *testing.T) {
+			t.Parallel()
+			slots <- struct{}{}
+			defer func() { <-slots }()
+			work, turns := playBotsGame(t, seed, levels)
+			mu.Lock()
+			most = max(most, work)
+			mu.Unlock()
+			t.Logf("seed %d, bots %v: %d turns; the bot driver held the room at most %v", seed, levels, turns, work)
+			if work > stallLimit {
+				t.Errorf("the bot driver held the room %v, over the stall limit %v", work, stallLimit)
+			}
+		})
+	}
+	t.Cleanup(func() { t.Logf("the bot driver held the room at most %v in %d games", most, games) })
+}
+
+// playBotsGame plays one game of a player and bots of the given levels
+// on a fresh hub. It returns the longest time the bot driver held the
+// room, and the game's turns.
+func playBotsGame(t *testing.T, seed uint64, levels []string) (time.Duration, int) {
+	t.Helper()
+	h := NewHub()
+	// Hard thinks by playout count, not by time: a 2 ms budget gave it
+	// no playout under -race or a loaded machine, so it only passed and
+	// whole games ran out of time (check phase of step 23).
+	h.second, h.seed, h.botThink, h.botPlayouts = time.Millisecond, seed, 10*time.Second, 2
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go h.Run(ctx)
+	ann, _ := arrive(t, h, "Ann", "")
+	ann.say(protocol.TypeCreate, protocol.Create{Seats: len(levels) + 1})
+	ann.next(protocol.TypeTable, nil)
+	for i, level := range levels {
+		ann.seatBot(i+1, level)
+	}
+	ann.say(protocol.TypeReady, protocol.Ready{Ready: true})
+	// A turn cap, not a time: the bots think by playout count, so the
+	// game repeats; a wall clock failed it on a loaded machine (check
+	// phase of step 23). A stuck game fails in ann.next.
+	const turnCap = 150 // the arena's (ADR 033, Decision 18.4.1)
+	for {
+		var u protocol.Update
+		ann.next(protocol.TypeUpdate, &u)
+		if u.Pause != nil {
+			t.Fatalf("seed %d: the game paused: %+v", seed, u.Pause)
+		}
+		if u.View.Over {
+			return time.Duration(ann.c.room.Load().botWork.Load()), u.View.Turn.Number
+		}
+		if u.View.Turn.Number > turnCap {
+			t.Fatalf("seed %d: no end within %d turns", seed, turnCap)
+		}
+		if in, ok := passOrForced(u); ok {
+			ann.say(protocol.TypeIntent, protocol.Intent{Intent: in})
+		}
+	}
+}
+
+// passOrForced is the player's answer to an update: a pass, the end of
+// the turn, or the first allowed intent, a discard of the fewest cards.
+func passOrForced(u protocol.Update) (engine.Intent, bool) {
+	if len(u.Allowed) == 0 {
+		return engine.Intent{}, false
+	}
+	for _, kind := range []engine.IntentKind{engine.IntentPass, engine.IntentEndTurn} {
+		if i := slices.IndexFunc(u.Allowed, func(x engine.Intent) bool { return x.Kind == kind }); i >= 0 {
+			return u.Allowed[i], true
+		}
+	}
+	in := u.Allowed[0]
+	if in.Kind == engine.IntentDiscard && u.View.Waiting.Count <= len(in.Objects) {
+		in.Objects = in.Objects[:u.View.Waiting.Count]
+	}
+	return in, true
+}
+
+// TestBotsMustAttackFallback: with the response timer off, a bot that
+// must attack (no pass, no end of turn: R-ABIL-12, R-TURN-09) and has
+// no move, or gives one the engine refuses, still moves: the forced
+// answer has none, so an allowed attack goes, and the game goes on.
+func TestBotsMustAttackFallback(t *testing.T) {
+	for _, a := range []botAnswer{
+		{err: context.Canceled},
+		{intent: engine.Intent{Kind: engine.IntentAttack, Objects: []engine.ObjectID{99999}}},
+	} {
+		r := botRoom(t, protocol.Options{ResponseTimer: 0, Rollback: protocol.RollbackGod}, "", protocol.BotStandard) // God mode keeps the steps to look at
+		serveBots(t, r, func() bool {
+			g := r.game
+			return thinking(r, 1)() && g.Turn.Active == 1 && slices.ContainsFunc(g.Allowed(1), func(x engine.Intent) bool { return x.Kind == engine.IntentEndTurn }) &&
+				slices.ContainsFunc(g.Allowed(1), func(x engine.Intent) bool { return x.Kind == engine.IntentAttack })
+		})
+		r.game.Turn.MustAttacks = 1
+		if _, ok := r.forcedIntent(1); ok {
+			t.Fatalf("a forced answer while the bot must attack: allowed %+v", r.game.Allowed(1))
+		}
+		th, step := r.thinkers[1], r.step
+		a.seat, a.id, a.step = 1, th.id, th.step
+		r.handle(request{bot: &a})
+		if r.step == step || r.live[len(r.live)-1].rec.Intent.Player != 1 {
+			t.Fatalf("no bot step after %+v: the bot stands", a)
+		}
+		if k := r.live[len(r.live)-1].rec.Intent.Kind; k != engine.IntentAttack {
+			t.Errorf("the fallback move %v, want an attack", k)
+		}
+	}
+}
+
+// TestBotsPanic: a bot panic, in the room's copy (world.For) or in the
+// thinker (an imagined world), is logged with its stack; the bot's
+// fallback move goes and the game goes on (Decision 12.12).
+func TestBotsPanic(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		worldFor func(*engine.Game, engine.PlayerID, engine.Known, uint64) (world.Func, error)
+	}{
+		{"copy", func(*engine.Game, engine.PlayerID, engine.Known, uint64) (world.Func, error) {
+			panic("a copy that breaks")
+		}},
+		{"world", func(*engine.Game, engine.PlayerID, engine.Known, uint64) (world.Func, error) {
+			return func(int) (*engine.Game, error) { panic("a world that breaks") }, nil
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var buf syncBuffer
+			prev := log.Writer()
+			log.SetOutput(&buf)
+			defer log.SetOutput(prev)
+			r := botRoom(t, protocol.Options{Rollback: protocol.RollbackGod}, "", protocol.BotStandard) // God mode keeps the steps to look at
+			r.stopThinkers()
+			r.worldFor = tc.worldFor
+			r.drive()
+			botSteps := func() int {
+				n := 0
+				for _, l := range r.live {
+					if l.rec.Intent.Player == 1 {
+						n++
+					}
+				}
+				return n
+			}
+			before := botSteps()
+			serveBots(t, r, func() bool { return botSteps() >= before+3 })
+			out := buf.String()
+			for _, want := range []string{"bot panic: seed 7", ", seat 1: a ", "goroutine ", "Bot 1 has no move: server: bot panic"} {
+				if !strings.Contains(out, want) {
+					t.Errorf("log %q: no %q", out, want)
+				}
+			}
+		})
+	}
+}
+
+// TestBotLevel: a seat's protocol level gives the bot package's level;
+// the server knows standard and hard only (ADR 033, Decision 1.2).
+func TestBotLevel(t *testing.T) {
+	for level, want := range map[string]botai.Level{protocol.BotStandard: botai.Standard, protocol.BotHard: botai.Hard} {
+		if got, err := botLevel(level); err != nil || got != want {
+			t.Errorf("botLevel(%q) = %q, %v; want %q", level, got, err, want)
+		}
+	}
+	for _, level := range []string{string(botai.Random), string(botai.Policy), string(botai.Flat), ""} {
+		if _, err := botLevel(level); err == nil {
+			t.Errorf("botLevel(%q) gives a level", level)
+		}
+	}
+}
+
+// TestThinkSlot: hard bots share the hub's slots (Decision 17.2): a
+// free slot is taken and given back; with none free a hard move turns
+// standard after the wait, so it still answers in time (17.3); a
+// cancelled ctx ends the wait; other levels need no slot. The hub has
+// max(1, GOMAXPROCS/2) slots.
+func TestThinkSlot(t *testing.T) {
+	if n := cap(NewHub().thinkSlots); n != thinkLimit() || n < 1 {
+		t.Fatalf("hub slots %d, limit %d", n, thinkLimit())
+	}
+	ctx := context.Background()
+	slots := make(chan struct{}, 1)
+	hard := botai.Input{Level: botai.Hard, Budget: botai.Budget{Time: time.Second}}
+	in, release, ok := thinkSlot(ctx, slots, hard, time.Millisecond)
+	if !ok || in.Level != botai.Hard || len(slots) != 1 {
+		t.Fatalf("free slot: %+v %v, %d taken", in, ok, len(slots))
+	}
+	start := time.Now()
+	in, release2, ok := thinkSlot(ctx, slots, hard, 20*time.Millisecond)
+	if !ok || in.Level != botai.Standard || in.Budget != (botai.Budget{}) || time.Since(start) < 20*time.Millisecond {
+		t.Errorf("no slot: %+v %v after %v", in, ok, time.Since(start))
+	}
+	release2()
+	if len(slots) != 1 {
+		t.Error("a standard move gave back a slot it never took")
+	}
+	cctx, cancel := context.WithCancel(ctx)
+	cancel()
+	if _, _, ok := thinkSlot(cctx, slots, hard, time.Hour); ok {
+		t.Error("a cancelled wait went on")
+	}
+	if in, _, ok := thinkSlot(ctx, slots, botai.Input{Level: botai.Standard}, time.Hour); !ok || in.Level != botai.Standard {
+		t.Error("standard waited for a slot")
+	}
+	release()
+	if len(slots) != 0 {
+		t.Error("the slot was not given back")
+	}
+	if in, _, ok := thinkSlot(ctx, nil, hard, time.Hour); !ok || in.Level != botai.Hard {
+		t.Error("no limit: hard waited")
+	}
+}
+
+// opaqueCtx is a context that is no cancel context of the standard
+// library: a WithCancel under it watches it from a goroutine of its own
+// until the child is cancelled, so a child nobody cancels shows as a
+// goroutine left behind. It ends when done closes.
+type opaqueCtx struct{ done <-chan struct{} }
+
+func (opaqueCtx) Deadline() (time.Time, bool) { return time.Time{}, false }
+func (c opaqueCtx) Done() <-chan struct{}     { return c.done }
+func (opaqueCtx) Value(any) any               { return nil }
+
+func (c opaqueCtx) Err() error {
+	select {
+	case <-c.done:
+		return context.Canceled
+	default:
+		return nil
+	}
+}
+
+// TestBotsThinkerContextsEnd: a bot move leaves no live context behind
+// once its answer is applied (19.204).
+func TestBotsThinkerContextsEnd(t *testing.T) {
+	r := botRoom(t, protocol.Options{}, "", "standard", "standard")
+	r.stopThinkers()
+	r.drive()
+	ctx := opaqueCtx{t.Context().Done()}
+	before := runtime.NumGoroutine()
+	moves := 0
+	for moves < 20 && !r.game.Over {
+		r.startThinkers(ctx)
+		if r.playerAnswers() {
+			continue
+		}
+		select {
+		case req := <-r.in:
+			if req.bot != nil {
+				moves++
+			}
+			r.handle(req)
+		case <-time.After(5 * time.Second):
+			t.Fatal("no bot move came")
+		}
+	}
+	r.stopThinkers()
+	n := runtime.NumGoroutine()
+	for range 200 {
+		if n <= before {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+		n = runtime.NumGoroutine()
+	}
+	t.Fatalf("%d bot moves left %d goroutines behind", moves, n-before)
+}
+
+// TestBotsTurnCap: a bot seat at botTurnActs moves in a turn gives only
+// forced answers until the turn ends, with one log line; the next turn
+// it plays again (Decision 12.14; 19.210).
+func TestBotsTurnCap(t *testing.T) {
+	var buf syncBuffer
+	prev := log.Writer()
+	log.SetOutput(&buf)
+	defer log.SetOutput(prev)
+	r := botRoom(t, protocol.Options{Rollback: protocol.RollbackGod}, "", protocol.BotStandard)
+	serveBots(t, r, func() bool { return r.game.Turn.Active == 1 })
+	r.stopThinkers()
+	turn := r.game.Turn.Number
+	for range botTurnActs {
+		r.noteAct(1, engine.Intent{Kind: engine.IntentAttack})
+	}
+	if !r.botHeld(1) {
+		t.Fatal("the seat is not held at the cap")
+	}
+	from := len(r.live)
+	r.drive()
+	serveBots(t, r, func() bool { return r.game.Turn.Number != turn })
+	for _, l := range r.live[from:] {
+		in := l.rec.Intent
+		// A forced answer may answer a prompt (a choice, a throw, a
+		// discard); it never plays loot, buys or uses an ability.
+		if in.Player == 1 && (in.Kind == engine.IntentPlayLoot || in.Kind == engine.IntentPurchase || in.Kind == engine.IntentActivate) {
+			t.Errorf("a held seat made %+v", in)
+		}
+	}
+	if r.botHeld(1) {
+		t.Error("the seat is still held in the next turn")
+	}
+	if n := strings.Count(buf.String(), "forced answers only until the turn ends"); n != 1 {
+		t.Errorf("%d cap lines, want 1:\n%s", n, buf.String())
+	}
+}
+
+// TestBotsPanicLimit: a bot that panics every move logs one stack, then
+// one line a panic; at botPanicLimit its seat gives forced answers only,
+// said once, and nothing of the bot runs for it; the game goes on
+// (Decision 12.12.5; 19.211).
+func TestBotsPanicLimit(t *testing.T) {
+	var buf syncBuffer
+	prev := log.Writer()
+	log.SetOutput(&buf)
+	defer log.SetOutput(prev)
+	r := botRoom(t, protocol.Options{Rollback: protocol.RollbackGod}, "", protocol.BotStandard)
+	r.stopThinkers()
+	calls := 0
+	r.worldFor = func(*engine.Game, engine.PlayerID, engine.Known, uint64) (world.Func, error) {
+		calls++
+		panic("a copy that breaks")
+	}
+	r.drive()
+	botSteps := func() int {
+		n := 0
+		for _, l := range r.live {
+			if l.rec.Intent.Player == 1 {
+				n++
+			}
+		}
+		return n
+	}
+	serveBots(t, r, func() bool { return botSteps() >= botPanicLimit+3 })
+	out := buf.String()
+	if calls != botPanicLimit {
+		t.Errorf("the bot ran %d times, want %d", calls, botPanicLimit)
+	}
+	if n := strings.Count(out, "[running]"); n != 1 {
+		t.Errorf("%d stacks, want 1", n)
+	}
+	if n := strings.Count(out, "bot panic: seed"); n != botPanicLimit {
+		t.Errorf("%d panic lines, want %d", n, botPanicLimit)
+	}
+	if n := strings.Count(out, "forced answers only for the rest of the game"); n != 1 {
+		t.Errorf("%d switch-off lines, want 1", n)
+	}
+}
+
+// TestBotsMemoryPanic: a panic in a seat's memory is logged and counted,
+// and never leaves observe: the room and the server go on (19.209). A
+// nil memory stands in for one that breaks.
+func TestBotsMemoryPanic(t *testing.T) {
+	var buf syncBuffer
+	prev := log.Writer()
+	log.SetOutput(&buf)
+	defer log.SetOutput(prev)
+	r := botRoom(t, protocol.Options{}, "", protocol.BotHard)
+	func() {
+		defer func() {
+			if v := recover(); v != nil {
+				t.Fatalf("observe let a panic through: %v", v)
+			}
+		}()
+		r.observe(1, nil, r.game.ViewBase(), nil)
+	}()
+	if r.botGuard.panics[1] != 1 {
+		t.Errorf("panics %v, want one for seat 1", r.botGuard.panics)
+	}
+	if !strings.Contains(buf.String(), "bot panic") {
+		t.Errorf("no log line: %q", buf.String())
+	}
+}

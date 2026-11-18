@@ -5,6 +5,7 @@ import type { GameView } from '../protocol';
 import { beforeStart, type Names } from '../stack';
 import { seatOf, useApp } from '../store';
 import { boxOf } from '../zoom';
+import { BotText } from './BotIcon';
 import './InfoPanels.css';
 
 // TurnBadge shows the turn number, whose turn it is and its step (V-05).
@@ -18,7 +19,7 @@ export function TurnBadge({ view, names }: { view: GameView; names: Names }) {
         ? t('turn_badge.first_roll')
         : beforeStart(view)
           ? t('turn_badge.start')
-          : t('turn_badge.turn', { n: turn.number, player: names.player(turn.active), step: stepName(turn.step) })}
+          : <BotText text={t('turn_badge.turn', { n: turn.number, player: names.player(turn.active), step: stepName(turn.step) })} />}
     </div>
   );
 }
@@ -87,7 +88,9 @@ export function HistoryPanel({ hide, name }: { hide: () => void; name: (p: numbe
             <span className="history-icon" aria-hidden="true">
               {e.icon}
             </span>
-            <span>{e.text}</span>
+            <span>
+              <BotText text={e.text} />
+            </span>
           </li>
         ))}
       </ol>

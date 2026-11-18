@@ -146,19 +146,19 @@ func (g *Game) eachPart(stat Stat, p PlayerID, subject ObjectID, f func(Part)) {
 			f(Part{Stat: stat, Source: b.Source, Amount: b.Amount, Lasts: b.lasts()})
 		}
 	}
-	for _, id := range g.inPlay() {
-		for _, face := range g.facesOf(id) {
+	g.eachInPlay(func(id ObjectID) {
+		g.eachFace(id, func(face CardRef) {
 			d, ok := g.cards.find(face)
 			if !ok {
-				continue
+				return
 			}
 			for _, s := range d.Statics {
 				if s.Stat == stat && s.Applies(g, id, p, subject) {
 					f(Part{Stat: stat, Source: id, Amount: s.amount(g, id), When: s.When})
 				}
 			}
-		}
-	}
+		})
+	})
 }
 
 // lasts is how long the boost lasts.

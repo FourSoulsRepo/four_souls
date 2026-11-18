@@ -12,6 +12,8 @@ The rules the app follows are in the rules file `challenges.md` (topics COOP, CH
 4. **Players** locks at 2. A challenge is for exactly two people, one character each.
 5. Press **Host**. The game list shows "Challenge: How the Krampus Stole Christmas" and the difficulty, so your friend knows what they join.
 
+No friend at hand? Seat a bot (standard or hard) in the second seat: it plays as your partner and wins or loses with you. It plays for the team: the partner's cents and items count for it as its own, and so does every HP the final boss loses (see [Bots](Bots)).
+
 **Detailed setup** keeps every option of a regular game (card sets, draft, timer, rooms, rollback), except bonus souls: a challenge plays without them. The host screen remembers the mode, challenge and difficulty for next time.
 
 ![Hosting the Krampus challenge at Hard](images/screen-host-challenge.png)

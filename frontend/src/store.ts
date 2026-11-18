@@ -39,7 +39,7 @@ import { cardLanguagesOf } from './locale';
 import { entriesFor, linkMarks, lookedAt, moveOf, restartCut, rolledBack, voteEnded, type Entry, type Looked, type Move, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
-import { autoJoinStep, emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, type AutoJoin, type Screen, type ServerUp, type Session } from './lobby';
+import { autoJoinStep, emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, seatNameOf, type AutoJoin, type Screen, type ServerUp, type Session } from './lobby';
 import { connectFirst, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
@@ -54,6 +54,7 @@ import {
   protocolVersion,
   recordURL,
   wsURLs,
+  type Bot,
   type Create,
   type Envelope,
   type Hello,
@@ -360,6 +361,9 @@ interface AppState extends Session {
   joinGame: (game: string, password?: string) => void;
   loadSave: (save: string) => void;
   setReady: (ready: boolean) => void;
+  // seatBot seats a bot of the level, changes its level, or with level
+  // '' takes it away; the host only (ADR 033, Decision 10.4).
+  seatBot: (seat: number, level: string) => void;
   // pick picks one of the player's draft offers (GS-01, 14.11).
   pick: (card: string) => void;
   leaveTable: () => Promise<void>;
@@ -474,7 +478,7 @@ export const useApp = create<AppState>()((set, get) => {
   let effectKey = 0;
   // names reads players from an update and cards from the card data.
   const names = (u: Update) => ({
-    player: (p: number) => u.seats?.find((s) => s.seat === p)?.name ?? t('table.player_n', { n: p + 1 }),
+    player: (p: number) => seatNameOf(u.seats, p),
     card: (ref: string) => get().cards.get(ref)?.name ?? ref,
   });
   // diedAt is where each dead card died, by its held object, until it
@@ -1271,6 +1275,9 @@ export const useApp = create<AppState>()((set, get) => {
     },
     setReady: (ready) => {
       send('ready', { ready });
+    },
+    seatBot: (seat, level) => {
+      send('bot', { seat, level } satisfies Bot);
     },
     pick: (card) => {
       send('pick', { card });

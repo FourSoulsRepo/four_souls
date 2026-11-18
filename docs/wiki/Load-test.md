@@ -46,6 +46,7 @@ With `-stop-at 30`, the stage stops its other games once 30% of its games have e
 | `-max-response` | 1s | a stage fails when a response takes longer |
 | `-seed` | clock | seed for the bots' moves |
 | `-stop-at` | 0 | percent of a stage's games that, once ended, stop the others; 0 waits for all |
+| `-bots` | none | `standard` or `hard`: the host seats the server's own bots in every other seat, and the tool plays the host's seat alone; the report adds the bots' turns |
 | `-ban` | blue_baby | characters the host bans, comma-separated; Blue Baby starts with Forever Alone, whose loop is 19.97; `-ban ""` bans none |
 
 ## What it measures
@@ -60,6 +61,37 @@ With `-stop-at 30`, the stage stops its other games once 30% of its games have e
 * **agreement**: every seat must see the same last step and winners, or the game fails.
 
 Progress is printed every 2 seconds. With up to 8 games it shows one part per game: its turn and step, then `done` or `FAILED`. With more, it shows counts of running, done and failed games.
+
+## Bots
+
+With `-bots standard` or `-bots hard`, the tool plays only the host's seat; the server's own bots play the others. The server must allow that level (`-bots` on the server, see [Server](Server)). The report gains a **bot turns** line: how long a bot's whole turn took, with the server's pauses between its actions.
+
+To see a small public server, give the server one core and a memory limit:
+
+```sh
+GOMAXPROCS=1 GOMEMLIMIT=512MiB go run ./cmd/server -port 4774
+go run ./cmd/server_load -url ws://127.0.0.1:4774 -bots hard -start 3 -max-games 3 -game-timeout 40m
+```
+
+With one core, only one hard bot thinks at a time. A hard bot that gets no turn to think within its budget (`-bot_think`, 1.5 s) plays that move as a standard bot, so it still answers in about 3 s.
+
+Measured on 2026-11-17 (i7-8750H, no other job on the machine), `GOMAXPROCS=1 GOMEMLIMIT=512MiB`, 1 client and 3 bots a table. Each run lasted 8 minutes (`-game-timeout 8m`); games still running then count as failed, which is expected here:
+
+| | 3 hard tables | 20 standard tables |
+|---|---|---|
+| Load average during the run | 1.9 – 3.2 | 1.3 – 3.1 |
+| Response median / p99 / max | 5.1 / 15 / 31 ms | 1.2 / 58 / 140 ms |
+| Room requests over 100 ms (server log) | none | none |
+| Longest bot move | 3.1 s | 293 ms |
+| Bot turn median / max | 47 s / 1 min 25 s | 21 s / 1 min 2 s |
+| Peak memory (RSS) | 34 MB | 95 MB |
+| GC | 24 795 runs, 0.6 s of pauses, 6% of the CPU | 1751 runs, 68 ms of pauses, 1% of the CPU |
+| Server's share of the core | 99% | 39% |
+| Hard moves played as standard (no slot) | 57% | – |
+
+So one core holds 3 hard tables with every response far under 100 ms, but no room for anything else. It holds 20 standard tables with 99% of responses under 60 ms; no single room request took over 100 ms, so the slowest response, 140 ms, was most likely a wait for the core behind other rooms.
+
+Hard bots think for their whole budget on every move, so three hard tables keep one core busy for the whole game. On a 1-CPU host that also serves a website, prefer `-bots standard`, or a shorter `-bot_think`.
 
 ## Things to know
 

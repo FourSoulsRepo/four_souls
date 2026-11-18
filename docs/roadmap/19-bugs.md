@@ -38,13 +38,13 @@ This step never closes; new reports are appended.
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141, 19.191 | 16 |
-| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119, 19.167 | 12 |
+| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119, 19.167, 19.200 | 13 |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
-| H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166                                  | 3     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194 | 43 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179, 19.189, 19.196 | 32 |
+| H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166, 19.198                          | 4     |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194, 19.197, 19.217 | 45 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179, 19.189, 19.196, 19.202, 19.203, 19.219, 19.220 | 36 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
-| K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
+| K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91, 19.201, 19.218             | 6     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63, 19.129                                          | 2     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 | N  | A missing control: no way to do it       | Server     | 19.84                                                  | 1     |
@@ -56,21 +56,23 @@ This step never closes; new reports are appended.
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
+| X  | Bots: a bot or its driver wrong          | Bots       | 19.199, 19.204, 19.205, 19.206, 19.207, 19.208, 19.209, 19.210, 19.211, 19.212, 19.213, 19.214, 19.215, 19.216, 19.221 | 15 |
 
-Totals by system (188 items):
+Totals by system (215 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U, W | 44 |
+| Engine    | A, B, T, U, W | 46 |
 | Card data | C       | 2     |
-| Client    | D–G, O, P, S, V | 53 |
-| Server    | H, N    | 4     |
-| e2e       | I, J    | 75    |
-| Release   | K       | 4     |
+| Client    | D–G, O, P, S, V | 54 |
+| Server    | H, N    | 5     |
+| e2e       | I, J    | 81    |
+| Release   | K       | 6     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
 | Go tools  | Q       | 2     |
 | Vitest    | R       | 1     |
+| Bots      | X       | 15    |
 
 ---
 
@@ -4929,6 +4931,10 @@ Totals by system (188 items):
    5. Rerun, webkit, 3 repeats: 3 of 3 passed; so the deal matters.
    6. Evidence: `.cache/e2e-evidence/14.36-run1/` (not in git).
    7. Again in the 19.157 full run, both browsers; evidence `.cache/e2e-evidence/19.157-full1/`.
+   8. Again in the 19.197 check (2026-11-17, Chromium, the specs that use `turn.ts`, 5 workers): timed out after 120 s on turn 1.
+      1. Record `g141_Ivo_Jun`: Jacob & Esau and Bethany; before the save, a dealt Laser Eye's trigger damaged a player.
+      2. After the save, Blood Donation resolved and paid its cents; the test never went on.
+      3. Evidence: `.cache/e2e-evidence/19.160-specs/` (not in git); not rerun.
 3. Cause: not found yet.
    1. `giveRoom` swaps the character, not the eternal or other cards.
    2. Something dealt took Isaac below 2 HP before the room.
@@ -5980,6 +5986,352 @@ Totals by system (188 items):
 4. Tasks:
    1. Find what scales the monster at that moment.
    2. Wait for the exact state, not a time (5.16.10).
+
+### [x] 19.197 e2e: Godmode Undo names a deck attack's choice, not the declaration
+
+1. Goal: `rollback.spec.ts` "in Godmode each Undo undoes one move" passes whatever the deal.
+2. Report (23.11 `make e2e`, 2026-11-17)
+   1. Chromium; WebKit could not start on this machine then (no `libavif13`; installed later, see 6.4).
+   2. `rollback.spec.ts:101`: after the first Undo, the title was "Undo: Hal's choice".
+   3. The test expects "Undo: Hal declares an attack".
+   4. Evidence: `.cache/e2e-evidence/21.11-full/` (not in git); record `g153_Gia_Hal` (port 4799).
+3. Cause (2026-11-17): the test helper, not the deal and not the app.
+   1. Step 7 declares the attack; step 10 picks option 2 of the target choice, the monster deck; Pestilence is revealed.
+   2. Step 11 puts Pestilence in a slot and makes it the target: a deck attack.
+   3. So a deck attack has one more move between the declaration and the target pick.
+   4. The first Undo undid step 11; the latest move was then step 10's pick, not the declaration.
+   5. The deal was plain: Mom's Eye and Horf lay in the slots, both open to an attack.
+   6. `settle` picks on the table: `uncovered` tried the board's glowing cards in order, by a trial click with a 300 ms timeout.
+   7. A trial click waits until the card is stable, two animation frames alike; under load that took longer than 300 ms.
+   8. A probe, 6 games, animations on, 5 workers: the slot monsters failed the trial in most tries, at random; the deck card passed in some.
+   9. So `settle` skipped both slots and attacked the deck: 3 of 10 repeats of the test alone failed so (`.cache/e2e-evidence/19.160-pre/`).
+   10. The app is right: the Undo title names the latest move; a pick with no history line is "Hal's choice" (17.8).
+4. Fix
+   1. `turn.ts`: `uncovered` and `reachable` share `reaches`, a hit test with no wait.
+   2. It reads the point in the target's middle once (`elementFromPoint`); a target is reached when that point is the target or inside it.
+   3. A target out of view is scrolled into it first, as a click does.
+   4. The press itself still waits for the card as any click does.
+   5. No ban: the test checks an attack on a slot monster, and every deal has one.
+5. Checked (5.24)
+   1. Every user of `uncovered` and `reachable`: `answer` in `turn.ts` (board picks, table picks, aims) and `games.spec.ts` (random picks among reachable cards).
+   2. Other specs that expect the declaration right before the target pick: `restart.spec.ts` "a rollback reaches past a server restart" uses `settle` the same way; the shared fix covers it.
+   3. No other spec uses a trial click to choose a target; `reasons.spec.ts` uses one only to check that a click is refused.
+6. Done when:
+   1. The spec, Chromium, 5 workers, 10 repeats: 10 of 10 passed (was 7 of 10; `.cache/e2e-evidence/19.160-after/`).
+   2. Every Chromium spec that uses `turn.ts`, 5 workers: 202 passed, 1 failed: `rooms.spec.ts:72`, the open 19.156, outside this change (`.cache/e2e-evidence/19.160-specs/`).
+   3. `make frontend` passes.
+   4. WebKit (check phase, 2026-11-17, after `libavif13` was installed): this test (`rollback.spec.ts:71`) passed in both full WebKit runs (5 workers, 19.220).
+7. Owner notes (2026-11-17)
+   1. Owner marks 19.197 solved.
+
+### [x] 19.198 A load right after "saved" goes to the old room
+
+1. Goal: `TestChallengeSaveAndLoad` passes under any load; a host may load a save at once.
+2. Report (step 23 check phase, 2026-11-17)
+   1. `go test -race ./internal/server`, 30 runs, 4 runs side by side (load about 24 on 12 cores): runs 17, 21, 25, 26 and 30 failed, all here.
+   2. `challenge_test.go:292: no table message`; the test took 5.06 – 5.07 s, the wait of `next`.
+   3. The other 25 race runs and all 30 plain runs passed.
+   4. Evidence: the step-21 check scratchpad, `flaky/server-race-{17,21,25,26,30}.log` (not in git).
+3. Cause (code, since 6.11, `f4545f9`):
+   1. `Room.save` sends `saved` to every client, then sets `r.stopped`.
+   2. Only when `Run` ends does `backToLobby` clear each client's `room`.
+   3. A `load` sent at once can reach `Client.Receive` while `room` is still set: it goes to the stopped room and gets no table.
+   4. The test sends `load` right after `saved`; so could a fast client.
+4. Tasks:
+   1. [x] Hand the clients back before `saved` goes out: `Room.save` calls `backToLobby` first, which now runs once (`handedBack`); its hub request (drop the game) is queued before any message the client sends after `saved`.
+   2. [x] Test: a `load` sent the moment `saved` arrives gets its table (`TestSaveAndLoadAtOnce`; `TestChallengeSaveAndLoad`).
+   3. [x] Checked (5.24), every reply after which a client may at once ask the lobby:
+      1. Save, a normal game and a challenge: fixed (one path, `Room.save`).
+      2. End by the host and end by an idle limit (`endWith`): the same race; fixed, `TestEndAndCreateAtOnce`.
+      3. A finished game closing (`checkLimits`): no message goes out first; unchanged.
+      4. Leaving a running game is a dropped connection (`Room.drop`): no reply goes out, so nothing races; a kick hits only away players.
+      5. Rollback, restart and a kept game's resume: the room goes on; no hand-back.
+   4. [x] `go test -race -count=50 -run 'SaveAndLoad|TestEndAndCreateAtOnce|TestBotsThinkerContextsEnd' ./internal/server`: 50 of 50 (2026-11-18, load 2 – 14 on 12 cores, 173 s).
+
+### [ ] 19.199 Standard bot: a settle cut off by its cap is scored as if it had ended
+
+1. Goal: a standard bot makes no move judged on settles that the cap cut short.
+2. Report (step 23 check phase, lead four-souls-35, 2026-11-17)
+   1. Arena standard×4, seed 28: the 30000-intent game guard at turn 110, souls [1 3 3 3].
+   2. Turn 98 (seat 1 active): seat 3 uses Portable Slot Machine 77 times out of turn, with 154 throws; 323 non-pass intents of 3602.
+   3. The uses grow: turn 92 31, turn 98 77, turn 106 121.
+3. Cause (replay of turn 98, `zz_` tests, deleted)
+   1. The stack on turn 98 is 20–36 items deep for about 2000 steps; 56 of the 77 uses are on a stack of 13 or more.
+   2. Every use adds 2 items (the ability, then Cursed Psy Horf's trigger); in a 4-player game each item takes 4 passes and its dice.
+   3. A settle (`settleSteps`, 150) then ends at the cap with the stack not empty: in 12 of 12 draws for both "pass" and "use" on 20 of 26 sampled positions.
+   4. The two settles stop at different items: "use" leaves 2–7 more items unresolved a draw.
+   5. Whatever those items would do is missing from one score only, so the gain is that difference, not the move's.
+   6. Measured, standard's judge, 40 draw sets of 12: step 19168 gain +6.1, use chosen 30 of 40; step 19977 +6.2, 22 of 40.
+   7. Same positions, settles run to their end: +0.00 (3 of 40) and −0.13 (1 of 40); step 18448 −15.3 cut, −0.23 to the end.
+   8. On an empty stack the ability's real gain is −2.06 a use (480 draws): 3¢ for a ⅓ chance of 4¢, a ⅓ chance of a loot card, a 1 damage.
+   9. Seat 3's cents went 24 → 0–29 → 4 over the turn: no farming; the uses stop only while it is short of 3¢.
+   10. Not a card bug: the engine resolves each item as written.
+4. Tasks:
+   1. [x] `settle` tells whether it ended (quiet, turn over, game over, no one to act) or hit the cap.
+   2. [x] Standard: a move does not beat doing nothing when any settle of it, or of doing nothing, was cut off.
+   3. [x] Go test: a cut settle never beats doing nothing; a finished one still can.
+   4. [x] ADR 033 Decision 8.4 and 8.6: the rule.
+   5. [x] Replay seed 28: finishes, or the guard hits elsewhere.
+5. Fix (2026-11-17)
+   1. `settle` returns false when `settleSteps` cut it off; `try` reports a cut over its draws.
+   2. `uncut` (standard only): such a move scores at most doing nothing less `wAct`; no number changed.
+   3. Tests: `TestUncut` (fails with the rule taken out), `TestSettleEnds`.
+   4. ADR 033 Decision 8.4.3.
+   5. Replay after the fix: seed 28 standard×4 ends with a winner at turn 69, 9017 intents (1443 not passes), no guard; longest turn 365 intents (was: guard at 30000, turn 110).
+6. Checked (5.24)
+   1. The fix is in `judge`'s input, by kind of prompt only: every paid or repeatable ability, loot play, and other move on a deep stack.
+   2. `measure.go` (the card values) uses `try` too; its table is not regenerated here (no number changes); its stack positions are few.
+   3. Hard plays out to the end of the turn (cap 120): every candidate is cut by design there; not changed, reported to the lead.
+
+### [x] 19.200 The corner Menu covers a long right-hand seat name
+
+1. Goal: the right column's seat name is never under the corner Menu, in any language.
+2. Report (step 23 check phase, part 2, 2026-11-17)
+   1. `make screenshots LOCALE=qps`, `screen-bots-table.png`: the Menu button covers the robot and most of "Bot 3 (Standard)" on the right.
+   2. English, same scene: the name wraps beside the Menu, clear of it.
+   3. Evidence: `screenshots/qps/screen-bots-table.png` in the check phase's scratchpad (not in git).
+3. Cause: `Table.css`, `.player-right .opp-name::before` (23.12).
+   1. The float that keeps the name clear of the Menu is 5.25rem wide, fit to the English "Menu".
+   2. A longer label (qps, a translation) makes the button wider than the float.
+4. Tasks:
+   1. [x] The Menu button gives its width to the page: `--game-menu-width` on the root, kept current by a `ResizeObserver` (`GameMenu.tsx`).
+   2. [x] The float takes that width plus the gap; English looks as before.
+   3. [x] Test: components have no Vitest tests (wiki Frontend-tests, rule 2), so `bots.spec.ts` checks that the right bot's robot is clear of the Menu.
+   4. [x] Screenshots: `bots.spec.ts`, English and qps.
+5. Fix (2026-11-17)
+   1. English Menu: 68 px; the float is that plus 1rem, 84 px, the old 5.25rem: English draws as before.
+   2. The e2e check fails with the old float in qps and passes with the new one; `bots`, `layers` and `table` specs: 34 of 34 (English), `bots` 5 of 5 (qps).
+   3. Screenshots: `screenshots/{en,qps}-after2-19.163/` in the check phase's scratchpad (not in git).
+
+### [x] 19.201 A second `make site` fails: `wasm_exec.js` is read-only
+
+1. Goal: `make site` (and so `make e2e`) runs again and again on one tree.
+2. Report (merge of main into `bots`, 2026-11-17)
+   1. `make site`, then `make e2e`: `cp: cannot create regular file '.cache/site/wasm_exec.js': Permission denied`; make stops, no e2e runs.
+   2. Evidence: `merge/e2e-1.log` in the merge's scratchpad (not in git).
+3. Cause (Makefile, since 12.1, `e75f2a43`)
+   1. `site` copies `wasm_exec.js` from `go env GOROOT`; a toolchain Go downloaded keeps it in the read-only module cache (`-r--r--r--`).
+   2. `cp` keeps the mode, so the copy is read-only too; the next `cp` cannot open it for writing.
+4. Tasks:
+   1. [x] Copy with a mode of its own: `install -m 644`, which replaces the file.
+   2. [x] Checked (5.24): no other Makefile target or script copies from `GOROOT` (`grep -rn GOROOT Makefile scripts`).
+5. Done when: `make site` twice in a row passes (2026-11-17: both runs passed); `make e2e` runs.
+
+### [ ] 19.202 e2e: the long-game check tests time out in a full run
+
+1. Goal: `growth.spec.ts` passes under a full parallel run.
+2. Report (merge of main into `bots`, Chromium `make e2e`, 5 workers, 2026-11-17)
+   1. Lines 59 and 67: "Test timeout of 30000ms exceeded" in `page.evaluate` (line 40).
+   2. Rerun alone, 1 worker: both passed; line 59 took 24.0 s of its 30 s.
+   3. Evidence: `merge/e2e-2.log` and `merge/e2e-2-evidence/` in the merge's scratchpad (not in git).
+3. Cause: not found yet; a guess: the test runs close to its timeout even alone, so a loaded machine pushes it over.
+4. Tasks:
+   1. Find what takes 24 s alone; shorten it or give the test a timeout of its own.
+
+### [ ] 19.203 e2e: the turn banner pass test misses its wait in a full run
+
+1. Goal: `playback.spec.ts:1975` passes under a full parallel run.
+2. Report (same run as 19.202)
+   1. Line 2003: `page.waitForFunction: Timeout 5000ms exceeded` while waiting for the accepted pass.
+   2. Rerun alone, 1 worker: passed (9.1 s).
+   3. Evidence: as 19.202.
+3. Cause: not found yet.
+4. Tasks:
+   1. Find which state the wait misses under load; wait for the exact state (5.16.10).
+
+### [x] 19.204 Bot thinker: each move's context stays alive until the room ends
+
+1. Goal: a bot move leaves nothing behind in the room.
+2. Report (owner's review of `bots`, 2026-11-17): `think` makes a `context.WithCancel` per move; on a normal answer nobody cancels it (`botMove` only clears `r.thinkers[seat]`).
+3. Cause: the child context stays registered with the room's context until the room ends: one per bot move, all game long.
+4. Tasks:
+   1. [x] `defer cancel()` in the thinker goroutine; `botMove` checks id and step, never the context.
+   2. [x] `TestBotsThinkerContextsEnd`: under a parent that holds a goroutine per live child, 20 bot moves leave none; without the fix 19 are left.
+
+### [x] 19.205 Random seats can put a bot on seat 0: nobody may save or end the game
+
+1. Goal: seat 0 is always a human; a bot is never the host, anywhere (owner, 2026-11-17).
+2. Report (owner's review): `shuffleSeats(seats, gameSeed)` (hub.go) shuffles bots too; save and end check `c.seat != 0`. One player and three bots: 3 deals in 4.
+3. Cause: ADR 033 10.12 says the host sits on seat 0 and a bot never does; the shuffle broke that.
+4. Tasks:
+   1. [x] After the shuffle, a bot on seat 0 swaps with a human chosen from the same seed (`shuffleSeats`); a table without bots shuffles as before.
+   2. [x] `NewRoom` refuses a bot on seat 0: every room, new, loaded or kept over a restart, is made there.
+   3. [x] Paths checked (5.24): the lobby (a bot is never offered seat 0: `error.bot_seat`; the host leaving moves the next human there, 10.12); game start with random seats (fixed); a load (the save keeps the room's seats, so seat 0 is a human); a restart (`NewRoom`); the human host leaving a running game (no one is reseated; seat 0 stays theirs, away); `GameInfo.Host` (the table's host, a human's name); the client's Save and End (seat 0, a human).
+   4. [x] `TestShuffleSeatsKeepsBotOffSeat0`; ADR 033 10.12.6.
+
+### [x] 19.206 "Add bot" after the host left a table without bots fails once
+
+1. Goal: "Add bot" works the first time after the host leaves.
+2. Report (owner's review): `TableScreen.tsx:51` and `Hub.bot`: the server moves the sender to seat 0 and answers `error.bot_seat`.
+3. Cause: the table showed seat 0 free with "Add bot"; `Hub.bot` first moves the sender into seat 0 (10.12.5), so the bot then asked for seat 0, now the sender's.
+4. Tasks:
+   1. [x] After that move, a `bot` for seat 0 seats the bot on the seat the sender left (10.12.5.1). `TestBotsAddOnFreedHostSeat`.
+
+### [x] 19.207 A standard bot's search cannot be cancelled
+
+1. Goal: a step, a pause or the room's end stops a standard bot's search at once.
+2. Report (owner's review): `standardPick` takes no context.
+3. Tasks:
+   1. [x] ctx into `standardPick` and `try`, checked between candidates and between dice draws; a cancelled search returns `ctx.Err()`. `TestStandardCancel`.
+
+### [x] 19.208 Bots think at a table no human is connected to
+
+1. Goal: on a 1-CPU server, a table whose humans all left costs no CPU (lead, 2026-11-17).
+2. Report (owner's review).
+3. Found: not a bug. A player who disconnects and was not kicked is away (`Room.away`); any away seat pauses the game (`paused`), and `drive` then cancels every thinker and starts none. So with no human connected the bots do not think; the game goes on when one comes back.
+   1. All humans can never be kicked: a kick needs a human's vote, and bots never vote (ADR 033, Decision 11.3).
+   2. The empty game ends by its idle limit as before (`TestBotsEmptyGameEnds`).
+4. Tasks:
+   1. [x] Covered by `TestBotsWaitWhilePausedVotingOver` (the only player leaves: no thinker, a late answer dropped, the bot thinks again on return); no code change.
+
+### [x] 19.209 A panic in a bot's memory crashes the server
+
+1. Goal: a bad step in `Memory.Observe` costs one seat's memory, not the server.
+2. Report (owner's review): `remember` runs on the room goroutine with no `recover`.
+3. Tasks:
+   1. [x] `Room.observe` recovers as `botWorlds` does: logged with replay data, that seat's memory `Reset`, counted as a panic (19.211), the game goes on. `TestBotsMemoryPanic`.
+
+### [ ] 19.210 A looping bot plays until the game's hour limit
+
+1. Goal: a bot that repeats a move without end stops within its turn.
+2. Report (owner's review): the room has no per-turn cap on a bot's moves (the arena has `MaxTurnIntents`).
+3. Tasks:
+   1. [x] `botTurnActs` (150): each bot seat's moves that are not passes in the current turn; past it only forced answers until the turn ends; one log line. A rollback in the turn keeps the count; a load or restart starts over. `TestBotsTurnCap`; ADR 033 12.14.
+   2. [ ] The arena's largest count of one seat in one turn, to check 150 is about 3× it: measured in the final check of the review fixes.
+
+### [x] 19.211 A bot that panics every move floods the log
+
+1. Goal: a repeated bot panic costs one stack, not one per move.
+2. Report (owner's review): `logBotPanic` writes a full stack each time; `deploy/` sets no log size limit.
+3. Tasks:
+   1. [x] Full stack only for a room's first panic, then one line; after 5 panics of one seat in a game (`botPanicLimit`), that seat plays forced answers only, said once. `Choose`, `botWorlds` and `remember` count alike. `TestBotsPanicLimit`; ADR 033 12.12.5–6.
+   2. [x] `deploy/`: systemd logs to journald, which caps itself; Docker keeps every line: 19.218.
+
+### [x] 19.212 The engine version did not move with deck_order
+
+1. Goal: a record replays only on an engine that makes the same steps.
+2. Report (owner's review): `version.go` is still 0.5.4, already tagged in main; `deck_order` and `looked_at.deck` enter the step checksum.
+3. Tasks:
+   1. [x] Version 0.5.5, `deckVersion`, CanReplay refuses 0.5.4 and older naming deck_order. `TestCanReplay`, `TestCanReplayDeckVersion`; new records replay (the record tests).
+   2. [x] StateMeaning stays 3: no saved field means something new; `deck_order` and the look's deck are events, not state.
+   3. [x] Other places: saves load only on the same engine version (N-11), so a 0.5.4 save is refused as any other; record files and the website read `Version`; go.mod files require `v0.0.0` with a replace; no testdata holds a version. CHANGELOG has a line. No tag: releases come from main.
+
+### [x] 19.213 Imagine copies the replay log, then drops it
+
+1. Goal: a bot's world costs no copy of the game's save tracking.
+2. Report (owner's review): `Clone` copies `saved.since` (grows all game); `Imagine` then sets `tracking{off: true}`.
+3. Tasks:
+   1. [x] `clone(keepSaved)`; `Imagine` uses `clone(false)`; `Clone` unchanged.
+   2. [x] `BenchmarkImagine`, 200 runs × 3, a loaded machine (time is noise there): after 300 steps 396 → 377 KB and 114 → 96 allocs a world; after 3000 steps 622 → 448 KB and 278 → 107 allocs.
+
+### [ ] 19.214 A player named like a bot gets the robot
+
+1. Goal: the robot and the bot's level come from the seat (`Seat.bot`), never from a name's text.
+2. Report (owner's review): a player whose nickname is "Bot 1 (Standard)" gets a robot.
+3. Cause: `BotText` splits a line at the bot seats' names (`botNames`, `namePieces`); a human's name equal to one, or holding one, matched too.
+4. Fix (decision): lines arrive as text, so a line is still split at names, but at every seat's name, the humans' too. The longest name wins; on a tie the human's, so a player's name never gets the robot.
+   1. Not a server check of nicknames: the bot names are translated on each client, the server has no language files, and a later translation could match again.
+   2. Not marks in the events: the client builds each line from seat numbers, and an invisible mark would end up in titles, aria labels and the e2e texts.
+   3. The cost: in a line, a bot whose name a player also took shows no robot; in a seat's own place (its area, the table screen, the pick screen) it keeps it, read from the seat.
+5. Tasks:
+   1. [x] `seatMarks` (every seat, a bot with its level) replaces `botNames`; `namePieces` takes them and gives each bot piece its level. Vitest in `lobby.test.ts`.
+   2. [x] Seat places draw the name from the seat: `SeatName` and `PlayerName` (`BotIcon.tsx`) in the player areas, the first-roll list, the pick screen; the table screen already did.
+
+### [ ] 19.215 A bot's name with no robot in some places
+
+1. Goal: every place that prints a player's name gives a bot its robot (5.26).
+2. Report (owner's review): `StackPanel.tsx:123` (first roll), `Effects.tsx:548` (another player's loot play), `CardZoom.tsx:139` (a stack card's owner).
+3. Cause: those print the name as plain text, not through `BotText`.
+4. Fix: those three, and every other place found:
+   1. `StackPanel` first-roll row (`PlayerName`), the last roll's tooltip, a line part with no role (a history line in the card zoom).
+   2. `Effects` "plays" label; `CardZoom` owner; the challenge end's reason (`Overlays`); the own area in a replay (`PlayerArea`).
+   3. The replay bar's seat line and the records list (19.216).
+5. Checked, already right: the turn badge, the history panel, the stack rows, the action bar, the throw window, the vote and pause windows, the game end title, the choice dialog, the start wait, the opponent areas, the turn banner.
+6. Checked, not drawn as text (title or aria label only): the history strip tiles, a deck's look, a present's label, Undo's title, a replay seat's hint. The rules website names no bot.
+7. Final check (2026-11-18): `bots.spec.ts:220` failed in Chromium and WebKit: its first stack robot sat in the hidden last-roll tooltip this item added. The test now looks for a visible one; the app is right.
+
+### [ ] 19.216 A replay of a game with bots shows "Bot N"
+
+1. Goal: a replay names a bot and draws its robot as the game did.
+2. Report (owner's review): `bindings/records` and `replay.ts:45` drop the record seats' `bot` and `bot_n`.
+3. Cause: the binding's `Seat` has only seat and name; the record header has both (ADR 033, 16.5).
+4. Tasks:
+   1. [x] `records.Seat` gets `bot` and `bot_n`; the list's `players` are seats and its `winners` seat numbers, so the list names a bot as the game did. The bridge, `replayUpdate` and the replay bar carry them. `pkg/record` already had both.
+   2. [x] Tests: `TestBotSeats` (Go), `records.test.ts`, and `replay.spec.ts` (a bot's name and robot in a replay).
+
+### [ ] 19.217 e2e: the bot table test waits for icons, not for state
+
+1. Goal: `bots.spec.ts` waits for the game state (5.16.10, TS-08).
+2. Report (owner's review): `bots.spec.ts:170` polls the badge and stack for robot icons.
+3. Tasks:
+   1. [x] A store check `botItemWaits`: a bot's turn, its item on the stack, waiting for the page's player; the bot seats read from the store. Then the DOM checks.
+   2. [x] Same fault in the Krampus test (a bot's turn by the badge's icon): now the store's active seat.
+
+### [ ] 19.218 Docker deploys keep the server log without a size limit
+
+1. Goal: a server that logs a lot cannot fill the host's disk.
+2. Report (owner's review of `bots`, 2026-11-17, with 19.211): `deploy/` sets no log size limit.
+3. Found: the systemd unit logs to journald, which caps its own size (`SystemMaxUse`, by default 10 % of the file system); the Docker files set no `logging` options, and Docker's default `json-file` driver keeps every line.
+4. Not a bot bug: any server log grows so; not fixed in step 23.
+5. Tasks:
+   1. [ ] Docker and compose: `max-size` and `max-file` for the server's log; a line in wiki Server.md.
+
+### [ ] 19.219 e2e: WebKit's turn banner pass test fails every time
+
+1. Goal: `playback.spec.ts:1975` passes in WebKit.
+2. Report (step 23 check phase, WebKit `make e2e`, 2026-11-17)
+   1. Failed in both full WebKit runs (5 workers) and in every rerun: the failures of the first run with 1 worker, and alone with `--repeat-each 3` (3 of 3 failed, load about 5 – 9).
+   2. Line 2003: `page.waitForFunction: Timeout 5000ms exceeded`; the wait for Pass live while the turn banner shows.
+   3. Seed 114790418 in every run; Chromium, the same test alone, `--repeat-each 3`: 3 of 3 passed (10 – 11 s).
+   4. Page at the failure: turn 2, "Start of turn", Pass enabled, no turn banner left.
+   5. So in WebKit Pass does not become live before the banner is gone.
+   6. Evidence: `.cache/e2e-evidence/23-webkit/alone-1975-evidence/` and `alone-1975*.log` (not in git).
+3. Cause: not found yet.
+   1. 19.203 is the same line, Chromium, only under a full run; this one is WebKit, also alone.
+4. Tasks:
+   1. Find what keeps Pass disabled during the banner in WebKit: the server's priority, or the client's playback.
+   2. Wait for the exact state (5.16.10).
+
+### [ ] 19.220 e2e: WebKit table tests time out under a full run
+
+1. Goal: a full WebKit `make e2e` (5 workers) passes on this machine.
+2. Report (step 23 check phase, 2026-11-17), WebKit only
+   1. Run 1 (b1546638, 22:52 – 23:22): 218 passed, 92 failed, 12 skipped, 4 did not run, 30.6 min. Load average up to 50 on 12 cores: another session's `go test` and `tsc` ran at the same time.
+   2. Its failures again, 5 workers: 26 passed, 66 failed (11.0 min, load 18 – 35).
+   3. Those 70 (66 and the 4 that did not run), 1 worker: 69 passed, 1 failed, 19.219 (17.9 min, load 4 – 18).
+   4. Run 2 (about bb089e32, 23:55 – 00:19): 295 passed, 18 failed, 12 skipped, 1 did not run, 24.2 min; load 6 – 26, WebKit's own processes most of it.
+   5. Its 19 again, 1 worker: 18 passed, 1 failed, 19.219 (5.1 min).
+   6. Kinds: no `main "Turn …"` within 5 s after `startGame` (most of them), then the 30 s test timeout with the page closed; a few animation checks (`effect-fly`, `card-zoom`, a deep-equal of arrow points) missed under load.
+   7. A WebKit test takes 15 – 35 s at 5 workers; the same tests 10 – 15 s alone.
+   8. Evidence: `.cache/e2e-evidence/23-webkit/` (`run1-evidence`, `rerun1-evidence`, `rerun2-evidence`, `run2-evidence`, `rerun3-evidence`, logs and load logs; not in git).
+3. Cause: not found yet; most likely the machine: five WebKit workers with two to four pages each fill the cores (19.189 saw the same at game start).
+4. Tasks:
+   1. Measure a full WebKit run on a quiet machine; if it still fails, find what blocks the pages at game start.
+   2. Or give WebKit fewer workers in `make e2e`; decide with the owner.
+
+### [x] 19.221 An imagined world names the loot card another seat is playing
+
+1. Goal: `Game.Imagine` names no card the seat cannot know (ADR 033, Decision 2.13).
+2. Report (owner's review of `bots`, 2026-11-18)
+   1. New test `TestImagineNamesNoHiddenCard` (`cards/imagine_test.go`).
+   2. It scans the imagined state's JSON for cards the seat cannot know.
+   3. Fails in `set b2` step 77, `set fsp2` 28, `set r` 62, `all sets, 2 players` 11.
+   4. Always `.activating.ability.card`; no other field, with it masked.
+3. Cause: `relabelHidden` leaves `Game.Activating` as it is.
+   1. A loot card stays in hand while its player picks mode and targets.
+   2. The view shows `Activating` to that player only (`activatingSource`).
+   3. So another seat's copy redeals the hand card, but `Ability.Card` keeps the real name.
+   4. The copy is also inconsistent: the source is one card, the ability another's.
+4. Reach: most likely none today.
+   1. A bot thinks only when the prompt is its own (`wantsMove`).
+   2. While `Activating` is open, the prompts are the activating player's.
+5. Tasks:
+   1. [x] `TestImagineNamesNoHiddenCard`: every step of `cloneSetups`, every seat.
+   2. [x] Fix (owner, 2026-11-18: rename to the redealt card): `relabelHidden` sets `Activating.Ability.Card` to the card dealt to its source, when the source is a hand the seat cannot see.
+   3. [x] The copy then holds a mode or targets picked for another card: the test plays 60 random steps on each such copy (168 of them), with `CheckInvariants`; no panic, no refusal.
+   4. [x] ADR 033, Decision 2.13.5 – 2.13.6; wiki Rules-engine.
+6. Owner notes (2026-11-18)
+   1. Owner marks 19.221 solved.
 
 ### [ ] 19.222 A room used off turn is refused by R-CARD-36, not R-CARD-33
 

@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { existsSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { locale } from './locale';
@@ -11,6 +11,13 @@ const outDir = join(root, '.cache', 'screenshots', ...(locale === 'en' ? [] : [l
 export async function shot(page: Page, name: string): Promise<void> {
   if (process.env.SCREENSHOTS) {
     await page.screenshot({ path: join(outDir, `screen-${name}.png`) });
+  }
+}
+
+// shotOf saves one element as screen-<name>.png when SCREENSHOTS is set.
+export async function shotOf(l: Locator, name: string): Promise<void> {
+  if (process.env.SCREENSHOTS) {
+    await l.screenshot({ path: join(outDir, `screen-${name}.png`) });
   }
 }
 

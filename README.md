@@ -27,6 +27,9 @@ Please [buy the physical game](https://foursouls.com).
   plus co-op [challenges](docs/wiki/Challenges.md) for 2 players.
 - **Play over the internet** through a virtual LAN, port forwarding,
   or your own [dedicated server](docs/wiki/Dedicated-server-on-a-VPS.md).
+- **Bots.** Not enough players? The host seats standard or hard bots on free
+  seats; one player and three bots make a full table. See
+  [Playing with bots](docs/wiki/Playing-with-bots.md).
 
 ## Download
 

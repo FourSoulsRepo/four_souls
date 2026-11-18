@@ -8,6 +8,7 @@ import {
   httpBases,
   recordURL,
   wsURLs,
+  type Bot,
   type Create,
   type Envelope,
   type Games,
@@ -34,12 +35,12 @@ const modeled: Record<string, Envelope | Envelope[]> = {
   hello: {
     type: 'hello',
     id: 1,
-    data: { protocol: 6, app: '0.1.0', name: 'Ann', role: 'player', sets: ['b2'], dice: 'tear' } satisfies Hello,
+    data: { protocol: 7, app: '0.1.0', name: 'Ann', role: 'player', sets: ['b2'], dice: 'tear' } satisfies Hello,
   },
   welcome: {
     type: 'welcome',
     id: 1,
-    data: { protocol: 6, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0, presence: true, name: 'Basement' } satisfies Welcome,
+    data: { protocol: 7, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0, presence: true, name: 'Basement' } satisfies Welcome,
   },
   error: [
     {
@@ -207,19 +208,43 @@ const modeled: Record<string, Envelope | Envelope[]> = {
   join: { type: 'join', id: 6, data: { game: 'g1' } satisfies Join },
   ready: { type: 'ready', id: 7, data: { ready: true } satisfies Ready },
   leave: { type: 'leave', id: 8, data: {} },
-  table: {
-    type: 'table',
-    data: {
-      game: 'g1',
-      you: 1,
-      seats: [
-        { seat: 0, name: 'Ann', connected: true, ready: true, dice: 'tear' },
-        { seat: 1, name: 'Bo', connected: true },
-      ],
-      sets: ['b2'],
-      options: { picking: 'random' },
-    } satisfies Table,
+  table: [
+    {
+      type: 'table',
+      data: {
+        game: 'g1',
+        you: 1,
+        seats: [
+          { seat: 0, name: 'Ann', connected: true, ready: true, dice: 'tear' },
+          { seat: 1, name: 'Bo', connected: true },
+        ],
+        sets: ['b2'],
+        options: { picking: 'random' },
+      } satisfies Table,
+    },
+    {
+      type: 'table',
+      data: {
+        game: 'g3',
+        you: 0,
+        seats: [
+          { seat: 0, name: 'Ann', connected: true },
+          { seat: 1, name: 'Bot 1', connected: false, ready: true, bot: 'standard', bot_n: 1 },
+          { seat: 2, name: '', connected: false },
+        ],
+        sets: ['b2'],
+        options: {},
+      } satisfies Table,
+    },
+  ],
+  // Bots (ADR 033).
+  'welcome#26': {
+    type: 'welcome',
+    id: 26,
+    data: { protocol: 7, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: -1, create: true, bots: ['standard', 'hard'] } satisfies Welcome,
   },
+  bot: { type: 'bot', id: 24, data: { seat: 2, level: 'hard' } satisfies Bot },
+  'bot#25': { type: 'bot', id: 25, data: { seat: 2, level: '' } satisfies Bot },
   saved: { type: 'saved', data: { save: 'g1' } satisfies Saved },
   load: { type: 'load', id: 14, data: { save: 'g1' } satisfies Load },
   wait_turn: { type: 'wait_turn', id: 15, data: { on: true } },

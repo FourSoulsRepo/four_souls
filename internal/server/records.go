@@ -5,7 +5,6 @@ import (
 	"mime"
 	"net/http"
 	"path/filepath"
-	"slices"
 	"time"
 
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
@@ -31,6 +30,7 @@ func (r *Room) apply(in engine.Intent) ([]engine.Event, error) {
 	}
 	r.steps++
 	r.keepLive(st)
+	r.remember(st.Events) // a hard bot's memory sees every step (ADR 033, Decision 19.17)
 	if r.rec != nil {
 		view := protocol.ViewJSON(r.game.View(engine.Viewer{Kind: engine.ViewJudge}))
 		if err := r.rec.Step(st.Intent, st.Events, view, st.Checksum); err != nil {
@@ -56,7 +56,7 @@ func (r *Room) openRecord(s engine.Setup) {
 	}
 	seats := make([]record.Seat, len(r.seats))
 	for i, st := range r.seats {
-		seats[i] = record.Seat{Seat: i, Name: st.name}
+		seats[i] = record.Seat{Seat: i, Name: st.name, Bot: st.bot, BotN: st.botN} // a bot's level and number (ADR 033, Decision 16.5)
 	}
 	v := version.Get()
 	now := time.Now()
@@ -116,7 +116,7 @@ func (h *Hub) downloadRecord(w http.ResponseWriter, req *http.Request) {
 	switch {
 	case room == nil:
 		http.Error(w, "no such game", http.StatusNotFound)
-	case !slices.Contains(room.tokens, token) || token == "":
+	case !room.hasToken(token):
 		http.Error(w, "only the game's players get its record", http.StatusForbidden)
 	case !room.over.Load():
 		http.Error(w, "the record is ready when the game is over (RP-05)", http.StatusConflict)

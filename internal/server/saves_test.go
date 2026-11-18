@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
+	"time"
 
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
 	engine "github.com/FourSoulsRepo/rules_engine"
@@ -99,4 +101,162 @@ func TestLoadChecks(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, "g1"+saveExt)); !os.IsNotExist(err) {
 		t.Error("the save was not removed once the game went on")
 	}
+}
+
+// TestBotsSaveAndLoad: a saved game keeps its bots' levels and numbers.
+// Loaded, its table seats them at once, ready; nobody takes a bot's
+// seat, not even a player called "Bot 1"; the game starts when its
+// player is back, and the bots play on. A server that does not allow a
+// saved bot's level refuses the load, as it refuses seating that bot
+// (ADR 033, Decisions 16.1, 16.2, 17.1; 23.9).
+func TestBotsSaveAndLoad(t *testing.T) {
+	dir := t.TempDir()
+	h, _ := botHub(t, dir, time.Millisecond)
+	ann, _ := arrive(t, h, "Ann", "")
+	ann.say(protocol.TypeCreate, protocol.Create{Seats: 3})
+	ann.next(protocol.TypeTable, nil)
+	ann.seatBot(1, protocol.BotStandard)
+	ann.seatBot(2, protocol.BotHard)
+	ann.say(protocol.TypeReady, protocol.Ready{Ready: true})
+	saved, asked := "", false
+	for saved == "" {
+		e := ann.nextOf(protocol.TypeUpdate, protocol.TypeSaved)
+		if e.Type == protocol.TypeSaved {
+			var s protocol.Saved
+			if err := e.Unpack(&s); err != nil {
+				t.Fatal(err)
+			}
+			saved = s.Save
+			continue
+		}
+		var u protocol.Update
+		if err := e.Unpack(&u); err != nil {
+			t.Fatal(err)
+		}
+		if u.View.Over {
+			t.Fatal("the game ended before the save")
+		}
+		if !asked && u.Step > 10 && u.View.Turn.Active != 0 {
+			ann.say(protocol.TypeSave, struct{}{}) // in a bot's turn
+			asked = true
+			continue
+		}
+		if in, ok := passOrForced(u); ok {
+			ann.say(protocol.TypeIntent, protocol.Intent{Intent: in})
+		}
+	}
+	f, err := readSave(filepath.Join(dir, "saves"), saved)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []savedSeat{{Name: "Ann", Token: f.Seats[0].Token}, {Name: "Bot 1", Bot: protocol.BotStandard, BotN: 1}, {Name: "Bot 2", Bot: protocol.BotHard, BotN: 2}}
+	if !slices.Equal(f.Seats, want) || f.Seats[0].Token == "" {
+		t.Fatalf("saved seats %+v, want %+v", f.Seats, want)
+	}
+
+	// A server of standard bots only refuses it.
+	strict := NewHub()
+	strict.saves, strict.bots = h.saves, []string{protocol.BotStandard}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go strict.Run(ctx)
+	sa, _ := arrive(t, strict, "Ann", "")
+	sa.say(protocol.TypeLoad, protocol.Load{Save: saved})
+	if code, key := sa.refusal(); code != protocol.ErrBadSetup || key != "error.bot_level" {
+		t.Errorf("a hard bot on a server of standard bots: %s %s", code, key)
+	}
+
+	// "Bot 1" is no player of the save.
+	impostor, _ := arrive(t, h, "Bot 1", "")
+	impostor.say(protocol.TypeLoad, protocol.Load{Save: saved})
+	if code := impostor.failure(); code != protocol.ErrNotInSave {
+		t.Errorf("a player called Bot 1 loads: %s", code)
+	}
+
+	ann.say(protocol.TypeLoad, protocol.Load{Save: saved})
+	var tb protocol.Table
+	ann.next(protocol.TypeTable, &tb)
+	for i, s := range tb.Seats[1:] {
+		if s.Bot != want[i+1].Bot || s.BotN != i+1 || s.Name != want[i+1].Name || !s.Ready {
+			t.Errorf("seat %d of the loaded table %+v, want a ready bot", i+1, s)
+		}
+	}
+	impostor.say(protocol.TypeJoin, protocol.Join{Game: tb.Game})
+	if code := impostor.failure(); code != protocol.ErrNotInSave {
+		t.Errorf("a player called Bot 1 joins: %s", code)
+	}
+	// A saved game's seats are its own: no bot changes there (Decision 16).
+	ann.say(protocol.TypeBot, protocol.Bot{Seat: 1, Level: protocol.BotHard})
+	if code, key := ann.refusal(); code != protocol.ErrBadSetup || key != "error.bot_saved" {
+		t.Errorf("a bot changed at a saved game's table: %s %s", code, key)
+	}
+	ann.say(protocol.TypeReady, protocol.Ready{Ready: true})
+	var u protocol.Update
+	ann.next(protocol.TypeUpdate, &u)
+	if u.Step != f.Step || u.Pause != nil {
+		t.Fatalf("the loaded game at step %d, pause %+v; want step %d, going on", u.Step, u.Pause, f.Step)
+	}
+	turn := u.View.Turn.Number
+	for u.View.Turn.Number < turn+3 { // a whole turn of a bot
+		if u.View.Over {
+			return
+		}
+		if in, ok := passOrForced(u); ok {
+			ann.say(protocol.TypeIntent, protocol.Intent{Intent: in})
+		}
+		u = protocol.Update{}
+		ann.next(protocol.TypeUpdate, &u)
+		if u.Pause != nil {
+			t.Fatalf("the loaded game paused: %+v", u.Pause)
+		}
+	}
+}
+
+// nextOf waits for the next message of one of the given types.
+func (p *player) nextOf(types ...string) protocol.Envelope {
+	p.t.Helper()
+	for {
+		select {
+		case msg := <-p.conn.out:
+			e, err := protocol.Decode(msg)
+			if err != nil {
+				p.t.Fatal(err)
+			}
+			if slices.Contains(types, e.Type) {
+				return e
+			}
+		case <-time.After(5 * time.Second):
+			p.t.Fatalf("no %v message", types)
+			return protocol.Envelope{}
+		}
+	}
+}
+
+// TestSaveAndLoadAtOnce: a load sent the moment saved arrives gets its
+// table, in a normal game as in a challenge (19.198).
+func TestSaveAndLoadAtOnce(t *testing.T) {
+	h := startHubWithSaves(t, t.TempDir())
+	players := startTableWith(t, h, protocol.Create{Seats: 2})
+	players[0].next(protocol.TypeUpdate, nil)
+	players[0].say(protocol.TypeSave, struct{}{})
+	var saved protocol.Saved
+	players[0].next(protocol.TypeSaved, &saved)
+	players[0].say(protocol.TypeLoad, protocol.Load(saved))
+	var tb protocol.Table
+	players[0].next(protocol.TypeTable, &tb)
+	if tb.Loaded != saved.Save {
+		t.Fatalf("loaded table %+v", tb)
+	}
+}
+
+// TestEndAndCreateAtOnce: a create sent the moment the end notice
+// arrives gets its table (19.198, 5.24).
+func TestEndAndCreateAtOnce(t *testing.T) {
+	h := startHubWithSaves(t, t.TempDir())
+	players := startTableWith(t, h, protocol.Create{Seats: 2})
+	players[0].next(protocol.TypeUpdate, nil)
+	players[0].say(protocol.TypeEnd, struct{}{})
+	players[0].next(protocol.TypeNotice, nil)
+	players[0].say(protocol.TypeCreate, protocol.Create{Seats: 2})
+	players[0].next(protocol.TypeTable, nil)
 }

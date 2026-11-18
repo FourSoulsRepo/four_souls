@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -455,5 +456,111 @@ func TestRestartVoteGrace(t *testing.T) {
 	bots[0].expect(protocol.TypeError, &e)
 	if e.Code != protocol.ErrBadMessage {
 		t.Errorf("kick vote: %q, want refused", e.Code)
+	}
+}
+
+// botHub runs a hub with bots, second as its second, that keeps its
+// games in dir's restart folder, with records and saves in dir (N-20);
+// stop ends it as a server stop does, once every room kept its game.
+func botHub(t *testing.T, dir string, second time.Duration) (h *Hub, stop func()) {
+	t.Helper()
+	h = NewHub()
+	// Hard thinks by playout count, not by time: a 2 ms budget gave it
+	// no playout under -race or a loaded machine, so it only passed and
+	// whole games ran out of time (check phase of step 23).
+	h.second, h.seed, h.botThink, h.botPlayouts = second, 21, 10*time.Second, 2
+	h.restart, h.records, h.saves = filepath.Join(dir, restartFolder), filepath.Join(dir, "records"), filepath.Join(dir, "saves")
+	ctx, cancel := context.WithCancel(context.Background())
+	stopped := make(chan struct{})
+	go func() { h.Run(ctx); close(stopped) }()
+	var once sync.Once
+	stop = func() { once.Do(func() { cancel(); <-stopped }) }
+	t.Cleanup(stop)
+	return h, stop
+}
+
+// TestBotsRestartMidTurn: a server restart in the middle of a bot's
+// turn, with its thinker open. The restart file keeps the bot seats;
+// the player comes back with no notice, the game goes on at the same
+// step, and the bot thinks again and moves (23.9, Done when; ADR 033,
+// Decision 16.3, 16.4).
+func TestBotsRestartMidTurn(t *testing.T) {
+	dir := t.TempDir()
+	// A bot answers 0.7 of a second after the prompt: 70 ms here, so the
+	// stop comes while its thinker is open.
+	h, stop := botHub(t, dir, 100*time.Millisecond)
+	ann, w := arrive(t, h, "Ann", "")
+	ann.say(protocol.TypeCreate, protocol.Create{Seats: 2})
+	ann.next(protocol.TypeTable, nil)
+	ann.seatBot(1, protocol.BotHard)
+	ann.say(protocol.TypeReady, protocol.Ready{Ready: true})
+	for {
+		var u protocol.Update
+		ann.next(protocol.TypeUpdate, &u)
+		if u.View.Over || u.Pause != nil {
+			t.Fatalf("the game ended or paused before the bot's turn: %+v", u.Pause)
+		}
+		if u.View.Turn.Active == 1 && len(u.Allowed) == 0 {
+			break // the bot's turn, and the game waits for the bot
+		}
+		if in, ok := passOrForced(u); ok {
+			ann.say(protocol.TypeIntent, protocol.Intent{Intent: in})
+		}
+	}
+	stop()
+
+	_, f := keptFile(t, dir)
+	if f.Kind != keptGame || len(f.Seats) != 2 {
+		t.Fatalf("restart file %s with %d seats, want a game of two", f.Kind, len(f.Seats))
+	}
+	if s := f.Seats[1]; s.Bot != protocol.BotHard || s.BotN != 1 || s.Name != "Bot 1" || s.Token != "" {
+		t.Fatalf("the bot's seat in the restart file %+v", s)
+	}
+	g, err := engine.Resume(f.State, f.Meaning, gameSets(f.Sets, f.Options)...)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if g.Turn.Active != 1 {
+		t.Fatalf("kept in seat %d's turn, want the bot's", g.Turn.Active)
+	}
+
+	h, _ = botHub(t, dir, time.Millisecond)
+	back, _ := arrive(t, h, "Ann", w.Token)
+	step, moved := -1, false
+	for !moved {
+		var msg []byte
+		select {
+		case msg = <-back.conn.out:
+		case <-time.After(5 * time.Second):
+			t.Fatal("the game did not go on after the restart")
+		}
+		e, derr := protocol.Decode(msg)
+		if derr != nil {
+			t.Fatal(derr)
+		}
+		switch e.Type {
+		case protocol.TypeNotice:
+			t.Fatalf("a notice after a restart on the same engine: %s", msg)
+		case protocol.TypeUpdate:
+		default:
+			continue
+		}
+		var u protocol.Update
+		if uerr := e.Unpack(&u); uerr != nil {
+			t.Fatal(uerr)
+		}
+		if u.Seats[1].Bot != protocol.BotHard || u.Seats[1].BotN != 1 {
+			t.Fatalf("the bot's seat after the restart %+v", u.Seats[1])
+		}
+		switch {
+		case u.Step > step && step >= 0:
+			moved = true // Ann sent nothing: the bot moved
+		case u.Step != f.Step:
+			t.Fatalf("step %d after the restart, want %d", u.Step, f.Step)
+		case len(u.Allowed) > 0:
+			t.Fatalf("Ann is asked at step %d; the kept game waited for the bot", u.Step)
+		default:
+			step = u.Step
+		}
 	}
 }

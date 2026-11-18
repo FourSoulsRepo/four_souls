@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/FourSoulsRepo/four_souls/internal/protocol"
 	"github.com/FourSoulsRepo/four_souls/internal/server"
 )
 
@@ -47,6 +48,8 @@ func TestParseChecks(t *testing.T) {
 		"max below":     {args: []string{"-url", "ws://host", "-start", "8", "-max-games", "4"}, ok: false},
 		"no host":       {args: []string{"-url", "ws:///ws"}, ok: false},
 		"plain address": {args: []string{"-url", "ws://host:4774"}, ok: true},
+		"unknown bots":  {args: []string{"-url", "ws://host", "-bots", "random"}, ok: false},
+		"hard bots":     {args: []string{"-url", "ws://host", "-bots", "hard"}, ok: true},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -99,6 +102,42 @@ func TestRunAgainstServer(t *testing.T) {
 	}
 	if !strings.Contains(text, "2 finished, 0 failed") {
 		t.Fatalf("games did not finish:\n%s", text)
+	}
+}
+
+// TestServerBotsStartTheGame: with -bots the host seats the server's
+// bots in the other seats, and the game starts with the host alone.
+func TestServerBotsStartTheGame(t *testing.T) {
+	dir := t.TempDir()
+	scfg := server.DefaultConfig()
+	scfg.Addr, scfg.Port, scfg.Records, scfg.Saves = "127.0.0.1", freePort(t), filepath.Join(dir, "records"), filepath.Join(dir, "saves")
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	srv, err := server.Start(ctx, scfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if serr := srv.Shutdown(context.Background()); serr != nil {
+			t.Log(serr)
+		}
+	}()
+
+	cfg, err := parse([]string{"-url", "ws://" + srv.Addr(), "-players", "3", "-bots", "standard", "-seed", "3"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	g := &gameRun{number: 1, start: time.Now(), cancel: cancel}
+	bots, err := openTable(ctx, cfg, g, newCollector())
+	defer closeAll(bots)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(bots) != 1 {
+		t.Fatalf("%d client seats, want the host alone", len(bots))
+	}
+	if err := bots[0].expect(protocol.TypeUpdate, nil); err != nil {
+		t.Fatalf("the game did not start: %v", err)
 	}
 }
 

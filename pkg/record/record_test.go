@@ -1,6 +1,7 @@
 package record
 
 import (
+	"bufio"
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
@@ -359,6 +360,93 @@ func TestChallengeSetup(t *testing.T) {
 			}
 		}
 	}
+}
+
+// TestBotSeats: a bot seat keeps its level and number; a human's seat
+// leaves both out, so its line is the old one (ADR 033, Decision 16.5).
+// Both ways: this reader reads a record of the format before bots, and
+// a reader of that format reads this record's seats (23.9).
+func TestBotSeats(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "g1"+Ext)
+	h := header()
+	h.Seats[1] = Seat{Seat: 1, Name: "Bot 1", Bot: "hard", BotN: 1}
+	w, err := Create(path, h)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cerr := w.Close(End{Finished: true, Winners: []int{1}}); cerr != nil {
+		t.Fatal(cerr)
+	}
+	rec, err := ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []Seat{{Seat: 0, Name: "Ann"}, {Seat: 1, Name: "Bot 1", Bot: "hard", BotN: 1}}
+	if fmt.Sprint(rec.Header.Seats) != fmt.Sprint(want) {
+		t.Errorf("seats %+v, want %+v", rec.Header.Seats, want)
+	}
+	human, err := json.Marshal(rec.Header.Seats[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(human) != `{"seat":0,"name":"Ann"}` {
+		t.Errorf("a human's seat %s, want the old line", human)
+	}
+
+	// A reader of the format before bots: its Seat had only seat and name,
+	// and it checks the format number, which bots leave unchanged.
+	type oldSeat struct {
+		Seat int    `json:"seat"`
+		Name string `json:"name"`
+	}
+	var old struct {
+		Format int       `json:"format"`
+		Seats  []oldSeat `json:"seats"`
+	}
+	if jerr := json.Unmarshal(headerLine(t, path), &old); jerr != nil {
+		t.Fatalf("the old reader: %v", jerr)
+	}
+	if old.Format != Format || len(old.Seats) != 2 || old.Seats[1] != (oldSeat{Seat: 1, Name: "Bot 1"}) {
+		t.Errorf("the old reader got %+v", old)
+	}
+
+	// A record of format 1, before views and bots: no bot fields anywhere.
+	var buf bytes.Buffer
+	gz := gzip.NewWriter(&buf)
+	lines := `{"kind":"header","format":1,"app":"0.9.0","engine":"0.9.0","protocol":6,"game":"g1","started":"2026-10-10T12:00:00Z","setup":{"seed":42,"players":2,"sets":["b2"],"bonus_souls":true},"seats":[{"seat":0,"name":"Ann"},{"seat":1,"name":"Bo"}]}` + "\n" +
+		`{"kind":"end","ended":"2026-10-10T13:00:00Z","finished":false}` + "\n"
+	if _, werr := gz.Write([]byte(lines)); werr != nil {
+		t.Fatal(werr)
+	}
+	if cerr := gz.Close(); cerr != nil {
+		t.Fatal(cerr)
+	}
+	rec, err = Read(&buf)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fmt.Sprint(rec.Header.Seats) != fmt.Sprint([]Seat{{Seat: 0, Name: "Ann"}, {Seat: 1, Name: "Bo"}}) {
+		t.Errorf("an old record's seats %+v", rec.Header.Seats)
+	}
+}
+
+// headerLine is the first line of a record file, as written.
+func headerLine(t *testing.T, path string) []byte {
+	t.Helper()
+	f, err := os.Open(path) //nolint:gosec // test
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close() //nolint:errcheck // reading only
+	gz, err := gzip.NewReader(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	line, err := bufio.NewReader(gz).ReadBytes('\n')
+	if err != nil {
+		t.Fatal(err)
+	}
+	return line
 }
 
 // TestReadBrief: a brief read has the header, the end and every step's

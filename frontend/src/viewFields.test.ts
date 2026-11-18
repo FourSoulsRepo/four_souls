@@ -47,6 +47,8 @@ const unread: Record<string, string> = {
   'Turn.room_replaced': 'the room replace comes as a prompt',
   'Turn.late_rooms': 'blocked says why such a room waits (R-TURN-18)',
   'Turn.entered': "the engine's own step state",
+  // A bot seat's memory reads it on the server (ADR 033, Decision 19.11).
+  'DeckPlace.depth': 'the look shows the card; only a bot remembers where it lies',
 };
 
 // viewFields lists every field reachable from Update in protocol.ts, as

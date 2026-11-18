@@ -251,13 +251,23 @@ type hpKey struct {
 // player or monster left at 0 HP this way gets its death on the stack
 // (R-DEATH-01). The last max HP is not saved: between Apply calls it is
 // always the current max HP.
+//
+// It runs before every automatic step, so it is kept cheap (23.10): the
+// cards in play and their HP statics are listed once per check, not
+// once per player and monster, and the last max HP is updated in place.
 func (g *Game) checkMaxHP() {
-	seen := make(map[hpKey]int, len(g.maxHP))
+	if g.maxHP == nil {
+		g.maxHP = make(map[hpKey]int, len(g.Players)+4)
+	}
+	in := g.inPlay()
+	var buf [8]hpStatic
+	hs := g.hpStatics(in, buf[:0])
 	for i := range g.Players {
 		p, pl := PlayerID(i), &g.Players[i]
-		k, m := hpKey{p: p}, g.playerMaxHP(p)
-		seen[k] = m
-		if was, ok := g.maxHP[k]; ok && m < was {
+		k, m := hpKey{p: p}, g.def(pl.Character).HP+g.hpBonus(hs, StatPlayerHP, p, 0)
+		was, ok := g.maxHP[k]
+		g.maxHP[k] = m
+		if ok && m < was {
 			alive := !pl.Dead && was > pl.Damage
 			g.logHPFell(k, pl.Damage, max(pl.Damage-(was-m), 0))
 			pl.Damage = max(pl.Damage-(was-m), 0)
@@ -266,14 +276,22 @@ func (g *Game) checkMaxHP() {
 			}
 		}
 	}
-	for _, id := range g.inPlay() {
+	var seenBuf [16]ObjectID
+	seen := seenBuf[:0]
+	for _, id := range in {
 		if _, ok := g.characterOf(id); ok || g.def(id).HP == 0 {
 			continue
 		}
 		o := g.Object(id)
-		k, m := hpKey{id: id}, g.objectMaxHP(id)
-		seen[k] = m
-		if was, ok := g.maxHP[k]; ok && m < was {
+		m := g.def(id).HP
+		if o.Role == RoleMonster {
+			m += g.hpBonus(hs, StatMonsterHP, NoPlayer, id)
+		}
+		k := hpKey{id: id}
+		was, ok := g.maxHP[k]
+		g.maxHP[k] = m
+		seen = append(seen, id)
+		if ok && m < was {
 			alive := was > o.Damage
 			g.logHPFell(k, o.Damage, max(o.Damage-(was-m), 0))
 			o.Damage = max(o.Damage-(was-m), 0)
@@ -282,7 +300,56 @@ func (g *Game) checkMaxHP() {
 			}
 		}
 	}
-	g.maxHP = seen
+	// Objects no longer checked are forgotten, as a new map would.
+	if len(g.maxHP) > len(g.Players)+len(seen) {
+		for k := range g.maxHP {
+			if k.id != 0 && !slices.Contains(seen, k.id) {
+				delete(g.maxHP, k)
+			}
+		}
+	}
+}
+
+// hpStatic is a static in play that changes a max HP, and its card.
+type hpStatic struct {
+	src ObjectID
+	s   *Static
+}
+
+// hpStatics appends to buf the HP statics of the cards in play, in,
+// in the order eachPart visits them.
+func (g *Game) hpStatics(in []ObjectID, buf []hpStatic) []hpStatic {
+	for _, id := range in {
+		g.eachFace(id, func(face CardRef) {
+			d, ok := g.cards.find(face)
+			if !ok {
+				return
+			}
+			for i := range d.Statics {
+				if st := d.Statics[i].Stat; st == StatPlayerHP || st == StatMonsterHP {
+					buf = append(buf, hpStatic{src: id, s: &d.Statics[i]})
+				}
+			}
+		})
+	}
+	return buf
+}
+
+// hpBonus is bonus(stat, p, subject) for an HP stat, from the statics
+// hs listed by hpStatics: the same boosts and statics, in one pass.
+func (g *Game) hpBonus(hs []hpStatic, stat Stat, p PlayerID, subject ObjectID) int {
+	total := 0
+	for _, b := range g.Boosts {
+		if b.Stat == stat && ((b.Object != 0 && b.Object == subject) || (b.Object == 0 && subject == 0 && b.Player == p)) {
+			total += b.Amount
+		}
+	}
+	for _, h := range hs {
+		if h.s.Stat == stat && h.s.Applies(g, h.src, p, subject) {
+			total += h.s.amount(g, h.src)
+		}
+	}
+	return total
 }
 
 // Evasion is the dice check to hit a monster, between 1 and 6 (R-ATK-18).

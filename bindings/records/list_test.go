@@ -95,11 +95,15 @@ func TestList(t *testing.T) {
 	}
 	var got []string
 	for _, e := range list {
-		got = append(got, fmt.Sprintf("%s %s %v %v %d %v", e.Name, e.Why, e.Players, e.Finished, e.Steps, e.Winners))
+		var names []string
+		for _, p := range e.Players {
+			names = append(names, p.Name)
+		}
+		got = append(got, fmt.Sprintf("%s %s %v %v %d %v", e.Name, e.Why, names, e.Finished, e.Steps, e.Winners))
 	}
 	want := []string{
 		"going.fsrec  [Ann Bo] false 2 []",
-		"won.fsrec  [Ann Bo] true 4 [Bo]",
+		"won.fsrec  [Ann Bo] true 4 [1]",
 		"old.fsrec before_replays [Ann Bo] false 1 []",
 		"broken.fsrec unreadable [] false 0 []",
 		"new.fsrec newer [] false 0 []",
@@ -113,6 +117,34 @@ func TestList(t *testing.T) {
 	empty, err := New(background{}, filepath.Join(dir, "none")).List()
 	if err != nil || empty == nil || len(empty) != 0 {
 		t.Errorf("a missing folder: %v, %v", empty, err)
+	}
+}
+
+// TestBotSeats: a bot seat keeps its level and number in the list and
+// in an opened record, so the app names it "Bot N (level)" with its
+// robot (19.216); a player's seat has neither.
+func TestBotSeats(t *testing.T) {
+	dir := t.TempDir()
+	day := time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC)
+	h := header("g1", day)
+	h.Seats[1] = record.Seat{Seat: 1, Name: "Bot 1", Bot: "hard", BotN: 1}
+	path := filepath.Join(dir, "bots"+record.Ext)
+	writeRecord(t, path, h, 1, &record.End{Ended: day.Add(time.Hour), Finished: true, Winners: []int{1}})
+	r := New(background{}, dir)
+	list, err := r.List()
+	if err != nil || len(list) != 1 {
+		t.Fatalf("list %v, %v", list, err)
+	}
+	want := []Seat{{Seat: 0, Name: "Ann"}, {Seat: 1, Name: "Bot 1", Bot: "hard", BotN: 1}}
+	if e := list[0]; fmt.Sprint(e.Players) != fmt.Sprint(want) || fmt.Sprint(e.Winners) != "[1]" {
+		t.Errorf("entry players %+v, winners %v", e.Players, e.Winners)
+	}
+	s, err := r.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fmt.Sprint(s.Seats) != fmt.Sprint(want) {
+		t.Errorf("summary seats %+v, want %+v", s.Seats, want)
 	}
 }
 

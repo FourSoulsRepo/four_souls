@@ -4,6 +4,7 @@ import { t } from '../i18n';
 import type { Update } from '../protocol';
 import { noticeText } from '../reconnect';
 import { useApp } from '../store';
+import { BotText } from './BotIcon';
 import './Overlays.css';
 
 // LostOverlay: the connection dropped during the game. The seat waits
@@ -115,12 +116,14 @@ export function PauseOverlay({ game, you, name }: { game: Update; you: number; n
   return (
     <div className="overlay" role="dialog" aria-label={t('pause.label')}>
       <div className="overlay-box">
-        <h2>{t('pause.title', { players: pause.away.map(name).join(', ') })}</h2>
+        <h2>
+          <BotText text={t('pause.title', { players: pause.away.map(name).join(', ') })} />
+        </h2>
         <p className="muted">{grace ? t('pause.restarted') : t('pause.left')}</p>
         <ul className="overlay-votes">
           {votes.map((v) => (
             <li key={v.seat}>
-              {name(v.seat)}: {v.kick ? t('pause.vote_kick') : t('pause.vote_wait')}
+              <BotText text={name(v.seat)} />: {v.kick ? t('pause.vote_kick') : t('pause.vote_wait')}
             </li>
           ))}
         </ul>
@@ -173,8 +176,14 @@ export function EndOverlay({ game, you, name }: { game: Update; you: number; nam
   return (
     <div className="overlay" role="dialog" aria-label={t('over.title')}>
       <div className="overlay-box">
-        <h2>{title}</h2>
-        {challenge?.reason && <p className="over-reason">{challenge.reason}</p>}
+        <h2>
+          <BotText text={title} />
+        </h2>
+        {challenge?.reason && (
+          <p className="over-reason">
+            <BotText text={challenge.reason} />
+          </p>
+        )}
         <p className="muted">{t('over.hint')}</p>
         <div className="overlay-buttons">
           <button

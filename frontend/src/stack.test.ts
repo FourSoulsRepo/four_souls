@@ -7,6 +7,7 @@ import {
   findCard,
   helpLine,
   playedCard,
+  seatNames,
   secondsLeft,
   stackBadge,
   stackCard,
@@ -281,6 +282,21 @@ describe('stackRows', () => {
     const rows = stackRows({ ...view, attack: { target: 9 }, stack: [a] }, names);
     expect(rows.map((r) => r.key)).toEqual(['declared', 'item-4']);
     expect(keys({ ...view, attack: { target: 9 } })).toEqual(['declared']);
+  });
+});
+
+describe('seatNames', () => {
+  it("names a bot seat by its translated name and level, as the lobby does (23.12)", () => {
+    const n = seatNames(
+      [
+        { seat: 0, name: 'Ann', connected: true },
+        { seat: 1, name: 'Bot 1', connected: false, bot: 'hard', bot_n: 1 },
+      ],
+      (ref) => ref,
+    );
+    expect(n.player(0)).toBe('Ann');
+    expect(n.player(1)).toBe('Bot 1 (Hard)');
+    expect(n.player(2)).toBe('Player 3');
   });
 });
 

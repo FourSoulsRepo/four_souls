@@ -93,6 +93,9 @@ Use options 1, 3, 5 and 10.
    11. Version 5 also: `rollback_steps` → `last`, a play's last answer (17.8).
    12. Version 6: texts are messages, a key and values (ADR 021, 16.4).
    13. Prompt questions and options, stack labels, reasons, `error` → `text`.
+   14. Version 7: bots (ADR 033, 23.7); an older client would take a bot's seat for a free one.
+   15. Version 7 also: event `deck_order` and `Event.deck` (ADR 033, 23.15); v7: bot seats, deck_order.
+   16. A client skips an event kind it does not know: no history line, no animation.
 6. Cards
    1. Messages carry card refs (`the_d6`, `the_d6@2`), never card text.
    2. A client shows an unknown ref as a blank card with the ref (SP-05).
@@ -144,6 +147,8 @@ Use options 1, 3, 5 and 10.
    36. The host sends `end`: the game stops unfinished (19.84).
    37. All get `notice` `game_ended`; an away player when they return.
    38. `create` options and `games` carry `challenge` and `difficulty` (ADR 028).
+   39. Bots (ADR 033, Decision 10): the host sends `bot` `{seat, level}`; an empty level takes the bot away.
+   40. `table` and `update` seats carry `bot` (the level) and `bot_n`; `welcome` → `bots` lists the levels the server allows.
 9. Playing over the internet, until a relay exists
    1. A virtual LAN (Tailscale, ZeroTier, Hamachi, Radmin VPN), or port forwarding.
    2. Or a dedicated server on a rented VPS.

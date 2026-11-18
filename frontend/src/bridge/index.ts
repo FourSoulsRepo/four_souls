@@ -329,12 +329,21 @@ export interface RecordEntry {
   path: string;
   name: string; // the file name
   started: number; // Unix ms; 0 when unreadable
-  players: string[];
+  players: RecordSeat[];
   finished: boolean;
-  winners: string[];
+  winners: number[]; // seats
   steps: number;
   challenge: string;
   why: RecordWhy;
+}
+
+// RecordSeat is one player of a record: bot is a bot seat's level and
+// bot_n its number (ADR 033, 16.5), as in the game's seats.
+export interface RecordSeat {
+  seat: number;
+  name: string;
+  bot?: string;
+  bot_n?: number;
 }
 
 // RecordSummary is an opened record, before its steps (ADR 031).
@@ -343,7 +352,7 @@ export interface RecordSummary {
   game: string;
   server: string;
   started: number; // Unix ms
-  seats: { seat: number; name: string }[];
+  seats: RecordSeat[];
   sets: string[];
   challenge: string;
   difficulty: string;

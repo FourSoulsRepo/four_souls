@@ -4,6 +4,7 @@ import { feel } from '../feel';
 import { t } from '../i18n';
 import type { GameView } from '../protocol';
 import { useApp, viewScale } from '../store';
+import { BotText } from './BotIcon';
 import { still } from './lunge';
 import './Throw.css';
 
@@ -34,7 +35,9 @@ export function StartWait({ view, you, name }: { view: GameView; you: number; na
     <div className="start-wait-layer">
       <div ref={ref} className="start-wait" role="status" aria-label={t('start.waiting_label')}>
         {lines.map((l) => (
-          <p key={l}>{l}</p>
+          <p key={l}>
+            <BotText text={l} />
+          </p>
         ))}
       </div>
     </div>

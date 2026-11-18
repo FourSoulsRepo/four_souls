@@ -437,20 +437,20 @@ var wideEvents = []WideEvent{
 	{
 		EvDeckBottom, "the cards that went under a deck are hidden; the event counts them (19.147)",
 		func(_ *Game, c Change, e Event) bool {
-			return c.To.Kind == ZoneDeck && e.Text == c.To.Deck.String()+" deck"
+			return c.To.Kind == ZoneDeck && e.Text == DeckText(c.To.Deck, "")
 		},
 	},
 	{
 		EvMovedToDeck, "an empty deck takes back its shuffled discard; the event counts the cards (R-ZONE-05, 19.174)",
 		func(_ *Game, c Change, e Event) bool {
 			return e.Object == 0 && c.What == "move" && c.From.Kind == ZoneDiscard &&
-				c.To == DeckZone(c.From.Deck) && e.Text == c.To.Deck.String()+" deck"
+				c.To == DeckZone(c.From.Deck) && e.Text == DeckText(c.To.Deck, "")
 		},
 	},
 	{
 		EvShuffled, "a shuffle reorders the whole deck; the event names the deck (19.178)",
 		func(_ *Game, c Change, e Event) bool {
-			return c.What == "shuffle" && e.Text == c.To.Deck.String()+" deck"
+			return c.What == "shuffle" && e.Text == DeckText(c.To.Deck, "")
 		},
 	},
 	{

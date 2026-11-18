@@ -7,6 +7,7 @@ import { outcomeGrid, type Outcome } from '../history';
 import { artistsOf, translatorsOf } from '../cards';
 import { counterColor } from '../counters';
 import type { CounterView } from '../protocol';
+import { BotText } from './BotIcon';
 import { Card, CardText } from './Card';
 import { Ghost } from './Ghost';
 import { starPolygon, still } from './lunge';
@@ -136,7 +137,7 @@ export function CardZoom() {
               )}
               {zoom.caption.owner && (
                 <p className="card-zoom-owner" style={{ color: zoom.caption.color }}>
-                  {zoom.caption.owner}
+                  <BotText text={zoom.caption.owner} />
                 </p>
               )}
             </figcaption>

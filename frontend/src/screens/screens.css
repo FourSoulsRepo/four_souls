@@ -457,6 +457,41 @@
   background: linear-gradient(#f7de8f, #c9a24a);
 }
 
+/* A seat's row wraps when its parts do not fit, as in a long language;
+   each part stays whole, and the right part stays on the right. */
+.seats li {
+  flex-wrap: wrap;
+  row-gap: 0.25rem;
+}
+
+.seat-state {
+  margin-left: auto;
+}
+
+/* A bot seat for the host (ADR 033): its level and a remove button; a
+   free seat's Add bot buttons. Small, so a seat stays one line. */
+.seat-bot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.seat-bot[role="group"] {
+  margin-left: auto;
+}
+
+.screen .seat-bot button {
+  padding: 0.125rem 0.625rem 0;
+  font-size: 0.9375rem;
+  line-height: 1.2;
+}
+
+.screen .seat-bot select {
+  padding-top: 0.1875rem;
+  padding-bottom: 0.1875rem;
+}
+
 /* The Records screen (M-01): a wider panel, each match on its own
    line with its buttons. */
 .records-panel {

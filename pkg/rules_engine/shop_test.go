@@ -91,7 +91,7 @@ func TestPurchaseOptionsCarryTheirPrice(t *testing.T) {
 	for i, o := range opts {
 		want := 5
 		if o.Deck {
-			want = basePrice
+			want = BasePrice
 		}
 		if o.Price == nil || *o.Price != want {
 			t.Errorf("option %d (deck %v): price %v, want %d", i, o.Deck, o.Price, want)

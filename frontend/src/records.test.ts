@@ -6,9 +6,12 @@ const entry: RecordEntry = {
   path: '/r/g1.fsrec',
   name: 'g1.fsrec',
   started: Date.UTC(2026, 10, 16, 12, 0),
-  players: ['Ann', 'Bo'],
+  players: [
+    { seat: 0, name: 'Ann' },
+    { seat: 1, name: 'Bo' },
+  ],
   finished: true,
-  winners: ['Bo'],
+  winners: [1],
   steps: 840,
   challenge: '',
   why: '',
@@ -37,5 +40,11 @@ describe('records', () => {
     expect(resultText(false, [])).toBe('Unfinished');
     expect(entryLine(entry)).toBe('Won by Bo · 840 steps');
     expect(entryLine({ ...entry, finished: false, steps: 1 })).toBe('Unfinished · 1 step');
+  });
+
+  it('names a bot as the game did, with its level (19.216)', () => {
+    const bots: RecordEntry = { ...entry, players: [{ seat: 0, name: 'Ann' }, { seat: 1, name: 'Bot 1', bot: 'hard', bot_n: 1 }] };
+    expect(recordTitle(bots)).toContain('Ann, Bot 1 (Hard)');
+    expect(entryLine(bots)).toBe('Won by Bot 1 (Hard) · 840 steps');
   });
 });

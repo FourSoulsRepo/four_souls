@@ -166,7 +166,7 @@ func (g *Game) PutIntoDeck(d DeckKind, id ObjectID, n int) {
 	deck := g.Decks[d]
 	at := max(len(deck)-n, 0)
 	g.Decks[d] = append(deck[:at:at], append([]ObjectID{nid}, deck[at:]...)...)
-	g.emit(Event{Kind: EvMovedToDeck, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Amount: n, Text: d.String() + " deck"})
+	g.emit(Event{Kind: EvMovedToDeck, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Amount: n, Text: DeckText(d, "")})
 }
 
 // PlaceFromDeck takes a card out of the monster deck and puts it on

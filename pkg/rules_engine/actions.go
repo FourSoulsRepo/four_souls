@@ -282,7 +282,7 @@ func (g *Game) perform(a Action) {
 	case ActGainTreasure:
 		ids := g.gainTreasure(a.Player, a.Amount)
 		if a.Purchase && len(ids) > 0 {
-			g.emit(Event{Kind: EvPurchased, Player: a.Player, Object: ids[0], Card: g.Object(ids[0]).Card, Text: "treasure deck"})
+			g.emit(Event{Kind: EvPurchased, Player: a.Player, Object: ids[0], Card: g.Object(ids[0]).Card, Text: DeckText(TreasureDeck, "")})
 		}
 	case ActBecomeSoul:
 		if g.Object(a.Object).Zone.Kind == ZoneGone {

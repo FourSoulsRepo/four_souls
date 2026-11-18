@@ -73,6 +73,11 @@ type Setup struct {
 type Seat struct {
 	Seat int    `json:"seat"`
 	Name string `json:"name"`
+	// Bot is a bot seat's level ("standard", "hard") and BotN its
+	// number, from 1; both are left out for a human (ADR 033, Decision
+	// 16.5). Readers that do not know them skip them: Format stays 1.
+	Bot  string `json:"bot,omitempty"`
+	BotN int    `json:"bot_n,omitempty"`
 }
 
 // Card is the text of one card.

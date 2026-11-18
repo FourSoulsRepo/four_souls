@@ -5,6 +5,7 @@
 * [First start](First-start)
 * [Playing over the internet](Playing-over-the-internet)
 * [Challenges](Challenges)
+* [Playing with bots](Playing-with-bots)
 
 **Server admins**
 
@@ -42,5 +43,6 @@
 * [Situation payload](Situation-payload)
 * [Website wasm](Website-wasm)
 * [Fuzzing](Fuzzing)
+* [Bots](Bots)
 * [Server](Server)
 * [Banned cards](Banned-cards)

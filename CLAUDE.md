@@ -68,6 +68,11 @@
        1. Fails above 3 MB gzip; then a Node smoke test.
        2. Details: `docs/wiki/Website-wasm.md` (ADR 026).
        3. Then the page: `frontend/dist-site/`; `make e2e` runs it first.
+   26. `make bots`: whole games between bot levels; prints wins (slow).
+       1. Details: `docs/wiki/Bots.md` (ADR 033).
+   27. `make bot-values`: measures the bots' card values into `internal/bot/values.json`.
+       1. Run it after adding cards: `BOT_VALUES=-missing` measures only the new ones.
+       2. Never edit the file by hand; `TestValuesFile` fails while a card is missing.
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.

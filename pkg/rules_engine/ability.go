@@ -701,7 +701,7 @@ func (sunEffect) apply(c *Ctx) {
 	}
 	nid := g.move(c.Source, DeckZone(LootDeck), NoPlayer)
 	g.Decks[LootDeck] = append([]ObjectID{nid}, g.Decks[LootDeck]...)
-	g.emit(Event{Kind: EvMovedToDeck, Player: c.Controller, Object: nid, Card: g.Object(nid).Card, Text: "loot deck bottom"})
+	g.emit(Event{Kind: EvMovedToDeck, Player: c.Controller, Object: nid, Card: g.Object(nid).Card, Text: DeckText(LootDeck, DeckTextBottom)})
 	if c.Controller == g.Turn.Active {
 		g.ExtraTurn = true
 	}

@@ -13,9 +13,12 @@ bindings/records/      Records: saves a match record
 bindings/updater/      Updater: checks, downloads and applies app updates
 cmd/server/            dedicated server (no UI)
 cmd/server_load/       load test: plays whole games against a running server
+cmd/bot_arena/         bot arena: whole games between bot levels (make bots)
 cmd/website/           rules website, js/wasm only
 cmd/cardgen/           writes engine card stubs from card_db data
+internal/arena/        plays and counts bot games for bot_arena and tests
 internal/assets/       app files, embedded or read from disk
+internal/bot/          a bot seat's move; sees only imagined games (ADR 033)
 internal/cardinfo/     card display info from card_db, for app and website
 internal/instance/     one slot per running app copy
 internal/lan/          finds hosted games on the LAN (ADR 009)
@@ -27,6 +30,7 @@ internal/server/       game rooms and the WebSocket transport (ADR 006)
 internal/settings/     the player's app settings file
 internal/version/      app version stamped at link time
 internal/website/      what the website's .wasm answers, testable in plain Go
+internal/world/        a seat's imagined games, for the arena and the server
 pkg/rules_engine/      Go module: the rules engine (package rulesengine)
 pkg/rules_engine/cards/  card sets: one package per set, one file per card
 pkg/card_db/           Go module: card display data; images/ is a private submodule

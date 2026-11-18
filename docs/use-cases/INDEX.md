@@ -48,3 +48,4 @@
 | UC-44 | Manage records | `bindings/records`, `internal/replay`, `frontend` | Implemented | [app/uc-44-manage-records.md](app/uc-44-manage-records.md) |
 | UC-45 | Watch a record | `bindings/records`, `internal/replay`, `frontend` | Implemented | [app/uc-45-watch-a-record.md](app/uc-45-watch-a-record.md) |
 | UC-46 | See what the turn owes | `frontend` | Implemented | [app/uc-46-see-what-the-turn-owes.md](app/uc-46-see-what-the-turn-owes.md) |
+| UC-47 | Play with bots | `frontend`, `internal/server` | Implemented | [app/uc-47-play-with-bots.md](app/uc-47-play-with-bots.md) |

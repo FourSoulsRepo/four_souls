@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { t } from '../i18n';
 import { SettingsForm } from '../screens/SettingsScreen';
 import { useApp } from '../store';
@@ -14,9 +14,30 @@ export function GameMenu({ host }: { host: boolean }) {
   const [open, setOpen] = useState(false);
   const [ending, setEnding] = useState(false);
   const [settings, setSettings] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  // The right column's seat name keeps clear of this button by its width
+  // (Table.css, --game-menu-width), which a translation changes (19.200).
+  // The last width stays while the menu is open.
+  useLayoutEffect(() => {
+    const b = buttonRef.current;
+    if (!b) {
+      return;
+    }
+    const measure = () => {
+      document.documentElement.style.setProperty('--game-menu-width', `${String(b.offsetWidth)}px`);
+    };
+    measure();
+    // The game font loads late and changes the button size.
+    const watch = typeof ResizeObserver === 'undefined' ? undefined : new ResizeObserver(measure);
+    watch?.observe(b);
+    return () => {
+      watch?.disconnect();
+    };
+  }, [open]);
   if (!open) {
     return (
       <button
+        ref={buttonRef}
         type="button"
         className="game-menu-button"
         onClick={() => {

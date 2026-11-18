@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { t } from '../i18n';
+import { BotText } from './BotIcon';
 import { useEscape } from '../keys';
 import { replaySpeeds, seatName, sliderFill, turnAt } from '../replay';
 import { useApp } from '../store';
@@ -208,7 +209,9 @@ export function ReplayBar() {
           {t('replay.hands')}
         </button>
       </div>
-      <p className="replay-seat">{t('replay.seat', { player: seatName(summary, seat) })}</p>
+      <p className="replay-seat">
+        <BotText text={t('replay.seat', { player: seatName(summary, seat) })} />
+      </p>
       <div className="replay-row">
         <button type="button" className="replay-leave" onClick={leave}>
           {t('replay.leave')}
