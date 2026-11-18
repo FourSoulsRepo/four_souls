@@ -144,11 +144,11 @@ func KeepOrBottom(card engine.CardRef) []engine.Msg {
 	return []engine.Msg{AskKeepOnTop.Msg(engine.CardArg("card", card)), AskPutOnBottom.Msg(engine.CardArg("card", card))}
 }
 
-// DieFaces are the options 1 to 6.
+// DieFaces are the options 1 to 6, as dice values (18.27).
 func DieFaces(*engine.Ctx, []int) []engine.Msg {
 	out := make([]engine.Msg, 6)
 	for i := range out {
-		out[i] = engine.NumberOption(i + 1)
+		out[i] = engine.DiceOption(i + 1)
 	}
 	return out
 }

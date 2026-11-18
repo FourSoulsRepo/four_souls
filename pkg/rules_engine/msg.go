@@ -337,7 +337,7 @@ func plain(m Msg, player func(PlayerID) string) string {
 			return fmt.Sprint(v)
 		}
 	}
-	if len(m.Args) == 1 && (m.Key == AskCard || m.Key == AskPlayer || m.Key == AskNumber || m.Key == AskWords) {
+	if len(m.Args) == 1 && (m.Key == AskCard || m.Key == AskPlayer || m.Key == AskNumber || m.Key == AskDice || m.Key == AskWords) {
 		return value(m.Args[0].Value)
 	}
 	if len(m.Args) == 2 && m.Key == AskAbility {
@@ -355,6 +355,7 @@ var (
 	AskCard   = NewKey("ask.card")   // an option that is a card: {card}
 	AskPlayer = NewKey("ask.player") // an option that is a player: {player}
 	AskNumber = NewKey("ask.number") // an option that is a number: {n}
+	AskDice   = NewKey("ask.dice")   // an option that is a dice value, 1 to 6: {n} (18.27)
 	AskYes    = NewKey("ask.yes")
 	AskNo     = NewKey("ask.no")
 	AskNone   = NewKey("ask.none")
@@ -389,6 +390,10 @@ func PlayerOption(p PlayerID) Msg { return AskPlayer.Msg(PlayerArg("player", p))
 
 // NumberOption is an option that is a number.
 func NumberOption(n int) Msg { return AskNumber.Msg(N("n", n)) }
+
+// DiceOption is an option that is a dice value: the client draws it as
+// a die (18.27). An amount stays a NumberOption.
+func DiceOption(n int) Msg { return AskDice.Msg(N("n", n)) }
 
 // SlotOption is a monster slot by number (from 1), with its top card if
 // it has one.

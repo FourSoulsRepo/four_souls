@@ -24,7 +24,7 @@ var godhead = engine.CardDef{
 			Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
 				c.G.SetRoll(c.Targets[0].StackID, []int{1, 6}[a[0]], c.Source)
 			}, engine.Question{Text: godheadChangeItTo, Options: func(*engine.Ctx, []int) []engine.Msg {
-				return []engine.Msg{engine.NumberOption(1), engine.NumberOption(6)}
+				return []engine.Msg{engine.DiceOption(1), engine.DiceOption(6)}
 			}})},
 		},
 	},

@@ -222,6 +222,13 @@
   * No card count; the piles grow in like other card options.
   * A click picks it; the deck stays on the table.
   * Without the private images: plain backs with the deck's word.
+* **5s. Pick a dice value (18.27):** e.g. God Head, Crystal Ball.
+  * Each value shows as a die with that face; no button.
+  * The die has the chooser's own dice look (V-19).
+  * Hover lifts it; a click picks it.
+  * Mutant Spider's pick of one of its dice looks the same.
+  * An amount (Jar of Flies, Mini Mush) stays a button.
+  * Without the private images: plain dice with the number.
 
 ## Postconditions
 

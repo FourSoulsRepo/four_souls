@@ -4,11 +4,12 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
+import { giveLooks } from './looks';
 import { cardName, tr, trRe } from './locale';
 import { editSave, saveAndContinue, saveEditContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, endTurn, holds, Intent, may, passButton, playLoot, question } from './turn';
+import { activePage, click, endTurn, holds, Intent, may, passButton, playLoot, question, throwButton, turnAction, untilAttackRoll, untilStackWaits } from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -587,4 +588,41 @@ test('The Curse\'s ↷ shows a discard pile by its top card (20.26)', async ({ b
   await shot(active, '20.26-curse-discard');
   await option.click();
   await expect(dialog).toHaveCount(0);
+});
+
+test('God Head asks for a 1 or 6 with dice in the chooser\'s look (18.27)', async ({ browser }) => {
+  const who = names(['Zed', 'Ama']);
+  const pages = await startGame(browser, who, { url: fast() });
+  await activePage(pages, click);
+  // Every slot gets a plain monster: none has a trigger that asks first.
+  await saveAndContinue(pages, who.join(', '), 'bomb', 'godhead', false, {}, undefined, ['fatty', 'pale_fatty', 'conjoined_fatty', 'monstro']);
+  const active = await activePage(pages, click);
+  await click(active, turnAction(active, 'Attack'));
+  await untilAttackRoll(pages, click, active);
+  await throwButton(active).click();
+  await untilStackWaits(pages);
+  // God Head aims; the attack roll on the stack is its target.
+  await click(active, active.getByRole('button', { name: cardName('godhead'), exact: true }).first());
+  await click(active, active.locator('.stack-row.hl-aim').first());
+  const text = 'card.godhead.change_it_to';
+  await passUntil(pages, active, text);
+  const dialog = active.getByRole('dialog', { name: tr(text) });
+  await expect(dialog).toBeVisible();
+  // Card text: "change the result of a dice roll to a 1 or 6": two
+  // dice, no text button.
+  await expect(dialog.locator('.choice-dice .die')).toHaveCount(2);
+  await shot(active, '18.27-godhead-dice');
+  // Each die has the chooser's own look (V-19): plain colours tell
+  // them apart without the private textures.
+  const images = await giveLooks(active, 'tear');
+  for (const n of ['1', '6']) {
+    const option = dialog.getByRole('button', { name: n, exact: true });
+    await expect(option).toHaveClass(/\bchoice-dice\b/);
+    await expect(option.locator('.die img')).toHaveAttribute('src', images.tear ?? '');
+  }
+  await dialog.getByRole('button', { name: '6', exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  // The roll is now a 6 (card text); the stack row's die shows it.
+  const stack = active.getByRole('complementary', { name: tr('stack.title') });
+  await expect(stack.locator(`.stack-icon .die[aria-label="${tr('dice.rolled', { n: '6' })}"]`)).toHaveCount(1);
 });

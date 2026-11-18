@@ -2,6 +2,7 @@ import { createContext, use, useLayoutEffect, useMemo, useRef, useState, type CS
 import { discardIntent, modeLines, orderIntent, outcomeLines, type Actions, type Pile } from '../actions';
 import { claimDeal, dealKey } from '../animations';
 import { deckKinds, type Kind } from '../cards';
+import { diceImage } from '../dice';
 import { choiceRow, confirmFirst, dealDelays, dealPose, keptZone, pickToggle } from '../choice';
 import { feel } from '../feel';
 import { lookGroups, type Looked } from '../history';
@@ -12,6 +13,7 @@ import { seatOf, useApp, viewScale } from '../store';
 import { BotText } from './BotIcon';
 import { Card } from './Card';
 import { CardDialog } from './CardDialog';
+import { Die } from './Die';
 import { deckBox, flyBack, keepCard } from './ChoiceBack';
 import { still } from './lunge';
 import './Actions.css';
@@ -204,6 +206,14 @@ export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions[
                     }
                   : {})}
               />
+            ) : o.dice ? (
+              <OptionDice
+                value={o.dice}
+                name={o.label}
+                pick={() => {
+                  act(o.intent);
+                }}
+              />
             ) : o.pile ? (
               <OptionPile
                 pile={o.pile}
@@ -348,6 +358,19 @@ function OptionCard({
       <DealCard kind={deck}>
         <Card cardRef={card} size="choice" highlight="pick" />
       </DealCard>
+    </button>
+  );
+}
+
+// OptionDice is a dice value option, as God Head asks (18.27): a die
+// showing the value, in the chooser's own dice look (V-19). Without a
+// texture it is the plain die with the number. name is the value, for
+// keys, tests and screen readers.
+function OptionDice({ value, name, pick }: { value: number; name: string; pick: () => void }) {
+  const image = useApp((s) => diceImage(s.dice, s.game?.seats, seatOf(s)));
+  return (
+    <button type="button" className="choice-dice" aria-label={name} onClick={pick}>
+      <Die value={value} image={image} label={name} />
     </button>
   );
 }

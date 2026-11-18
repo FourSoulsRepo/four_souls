@@ -356,7 +356,7 @@ func (g *Game) perform(a Action) {
 		md := g.ManyDice[0]
 		labels := make([]Msg, len(md.Values))
 		for i, v := range md.Values {
-			labels[i] = NumberOption(v)
+			labels[i] = DiceOption(v)
 		}
 		g.ask(Choice{Purpose: ChooseDie, Player: a.Player, Rule: "R-DICE-11", Slots: md.Values, Indexes: []int{md.StackID}, Question: promptWhichDie.Msg()}, labels)
 	case ActPushLingering:

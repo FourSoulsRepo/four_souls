@@ -195,6 +195,10 @@
     "text": "Destroy which soul?",
     "note": "Card question while a card resolves; several cards ask it."
   },
+  "ask.dice": {
+    "text": "{n}",
+    "note": "An option that is a dice value, 1 to 6; shown as a die. n: the value."
+  },
   "ask.discard.loot": {
     "text": "loot discard",
     "note": "Option that is the loot discard pile."
@@ -289,7 +293,7 @@
   },
   "ask.number": {
     "text": "{n}",
-    "note": "An option that is a number, e.g. a die face. n: the number."
+    "note": "An option that is a number, e.g. an amount. n: the number."
   },
   "ask.number.cents": {
     "text": "gain {n}¢",

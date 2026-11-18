@@ -839,7 +839,7 @@ Ideas: B-04, B-05, B-08.
    7. Gates: `make lint`, `make frontend`; `challenge-trick.spec.ts` 4 of 4 passed.
    8. **Owner** marks it solved (2026-11-15).
 
-### [ ] 18.27 Dice value choices show dice
+### [x] 18.27 Dice value choices show dice
 
 1. Goal: a card that asks for a dice value shows dice, not buttons (V-57).
    1. Owner, 2026-11-18.
@@ -873,3 +873,12 @@ Ideas: B-04, B-05, B-08.
    3. e2e: God Head's choice shows dice; a pick changes the roll.
    4. Screenshots before and after.
    5. `wails build -m -tags embed` and `make e2e` pass without images.
+6. Built (2026-11-18, main conversation):
+   1. Engine: `AskDice` key and `DiceOption` in `msg.go`.
+   2. God Head, `cardkit.DieFaces` and `ActChooseDie` use it.
+   3. Amounts keep `ask.number`: Jar of Flies, `ChangeRollBy` cards.
+   4. Client: `optionDice` in `actions.ts`; `OptionDice` in `ChoiceDialog.tsx`.
+   5. A `button.choice-dice` holds a `Die`; hover lifts it like a card.
+   6. e2e `giveLooks` moved to `e2e/tests/looks.ts`, shared.
+   7. Docs: UC-13 5s; wiki `Client.md`.
+   8. Screenshots: `18.27-godhead-before`, `18.27-godhead-dice`.

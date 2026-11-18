@@ -459,3 +459,30 @@ describe('pile options', () => {
     expect(o?.map((x) => x.pile)).toEqual([undefined, undefined, undefined]);
   });
 });
+
+// 18.27: a dice value option shows a die, not a button.
+describe('dice options', () => {
+  const choice = (options: Msg[]) =>
+    actionsFor(
+      update(
+        { waiting: { kind: PromptKind.choose, player: 0, options } },
+        options.map((_, i) => ({ player: 0, kind: IntentKind.choose, choice: i })),
+      ),
+      names,
+    ).choice;
+
+  // God Head: "change the result of a dice roll to a 1 or 6". The key is
+  // the engine's DiceOption (msg.go).
+  it('reads the dice value an option is', () => {
+    const o = choice([m('ask.dice', { n: 1 }), m('ask.dice', { n: 6 })])?.options;
+    expect(o?.map((x) => x.dice)).toEqual([1, 6]);
+    expect(o?.map((x) => x.label)).toEqual(['1', '6']);
+  });
+
+  // An amount (Jar of Flies: remove 1, 2 or 3 counters) is no dice value;
+  // it stays a button.
+  it('keeps an amount a button', () => {
+    const o = choice([m('ask.number', { n: 2 }), m('ask.no')])?.options;
+    expect(o?.map((x) => x.dice)).toEqual([undefined, undefined]);
+  });
+});
