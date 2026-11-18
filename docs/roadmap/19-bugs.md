@@ -6512,7 +6512,7 @@ Totals by system (218 items):
 7. Owner notes (2026-11-18)
    1. Owner marks 19.227 solved.
 
-### [ ] 19.228 `--diagnose` names every WebKit GPU "Apple GPU"
+### [x] 19.228 `--diagnose` names every WebKit GPU "Apple GPU"
 
 1. Goal: the report names the GPU that really draws.
 2. Report (owner, 2026-11-18, 0.6.2, Linux)
@@ -6533,6 +6533,9 @@ Totals by system (218 items):
    6. 5.26: `probe.ts` is the only reader of the WebGL renderer.
    7. Test: `TestBestAndFlags` (Linux ignores it, Windows flags it).
    8. ADR 035 items 3.10, 4.4.1 in place.
+6. Owner notes (2026-11-19)
+   1. The 0.6.3 Linux report shows "hidden by WebKit" in every row.
+   2. Owner marks 19.228 solved.
 
 ### [ ] 19.229 Linux: the app hangs when the first roll's dice fall
 
