@@ -6,6 +6,8 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+## 0.6.0 - 2026-11-18
+
 - Bots: the host seats a bot on any free seat, standard or hard (lobby: add bots per seat); one player and three bots make a full table. A bot sees only what a player in its seat sees.
 - Bots play challenges as your partner, stay through saves, server restarts and match records, and never vote on a rollback or a kick.
 - Dedicated server: `-bots` (`off`, `standard`, `all`) sets the levels a host may seat; `-bot_think` (100 ms to 10 s, default 1.5 s) a hard bot's time to think a move. At most half the CPU cores think for hard bots at once; a hard bot that waits plays that move as a standard one.
