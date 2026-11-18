@@ -1,0 +1,16 @@
+{
+  "title": "Samson uses Blood Lust on Cain: does Cain have 2 ATK, back to 1 after the turn, and does Blood Lust recharge?",
+  "source": ["card blood_lust", "card cain", "R-ABIL-27", "R-TURN-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "samson", "items": ["blood_lust"]}, {"character": "cain"}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "blood_lust", "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "after": [{"player": 0, "deactivated": ["blood_lust"]}, {"player": 1, "atk": 2}]}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "deactivated": []}, {"player": 1, "atk": 1}]}}
+  ],
+  "expect": {"allowed": true}
+}

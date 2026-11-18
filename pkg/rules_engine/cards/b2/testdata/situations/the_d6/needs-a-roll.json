@@ -1,0 +1,11 @@
+{
+  "title": "No dice roll is on the stack: may Isaac use The D6?",
+  "source": ["card the_d6", "R-ABIL-40"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_d6"]}, {"character": "cain"}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "the_d6"},
+  "expect": {"allowed": false, "rule": "R-ABIL-40", "after": [{"player": 0, "deactivated": []}]}
+}

@@ -1,0 +1,14 @@
+{
+  "title": "Isaac pays 3¢ for Portable Slot Machine and rolls a 1: does he loot 1?",
+  "source": ["card portable_slot_machine", "R-ABIL-07", "R-CARD-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["portable_slot_machine"], "cents": 3}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"loot": ["bomb"]},
+    "rolls": [1]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "portable_slot_machine"},
+  "expect": {"allowed": true, "resolved_rolls": [1], "after": [{"player": 0, "cents": 0, "hand_cards": ["bomb"]}]}
+}

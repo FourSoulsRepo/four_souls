@@ -1,0 +1,13 @@
+{
+  "title": "Isaac destroys Pandora's Box and rolls a 6: does it become his soul?",
+  "source": ["card pandoras_box", "R-CARD-18", "R-MECH-03"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["pandoras_box"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "pandoras_box"},
+  "expect": {"allowed": true, "resolved_rolls": [6], "discards": {"treasure": []}, "after": [{"player": 0, "souls": 1, "soul_cards": ["pandoras_box"], "items": []}]}
+}

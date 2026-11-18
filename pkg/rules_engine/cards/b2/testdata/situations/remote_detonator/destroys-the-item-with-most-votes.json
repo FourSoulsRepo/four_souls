@@ -1,0 +1,11 @@
+{
+  "title": "Remote Detonator: Isaac and Cain both vote for Cain's Breakfast: is it destroyed?",
+  "source": ["card remote_detonator", "R-MECH-49", "R-MECH-23"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["remote_detonator"]}, {"character": "cain", "items": ["breakfast"]}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "remote_detonator", "choices": ["breakfast", "breakfast"]},
+  "expect": {"allowed": true, "discards": {"treasure": ["breakfast"]}, "after": [{"player": 1, "items": []}]}
+}

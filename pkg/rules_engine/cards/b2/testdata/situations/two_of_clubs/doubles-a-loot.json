@@ -1,0 +1,17 @@
+{
+  "title": "Isaac uses Two of Clubs on himself, then Bum Friend: he loots 2 (the Bomb! and A Penny!) and puts A Dime!! back on top",
+  "source": ["card two_of_clubs", "card bum_friend", "R-CARD-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["two_of_clubs", "bum_friend"], "hand": ["a_dime"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"loot": ["bomb", "a_penny"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "two_of_clubs", "choices": ["player 1 (isaac)"]},
+    {"player": 0, "kind": "activate", "card": "bum_friend", "choices": ["a_dime"],
+     "expect": {"allowed": true, "decks": {"loot": ["a_dime"]}, "after": [{"player": 0, "hand": 2, "hand_cards": ["bomb", "a_penny"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

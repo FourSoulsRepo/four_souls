@@ -1,0 +1,16 @@
+{
+  "title": "Isaac copies Cain's Breakfast with Modeling Clay: does he keep 3 HP after the turn?",
+  "source": ["card modeling_clay", "card breakfast", "card isaac", "R-MECH-08", "R-ABIL-27"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["modeling_clay"]}, {"character": "cain", "items": ["breakfast"]}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "modeling_clay", "choices": ["breakfast"],
+     "expect": {"allowed": true, "after": [{"player": 0, "hp": 3}]}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "hp": 3}]}}
+  ],
+  "expect": {"allowed": true}
+}

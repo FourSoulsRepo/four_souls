@@ -1,0 +1,13 @@
+{
+  "title": "Isaac (2 HP) uses Book of Sin and rolls a 5: does he have 3 HP this turn?",
+  "source": ["card book_of_sin", "card isaac"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["book_of_sin"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [5]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "book_of_sin"},
+  "expect": {"allowed": true, "resolved_rolls": [5], "after": [{"player": 0, "hp": 3, "cents": 0, "hand": 0, "deactivated": ["book_of_sin"]}]}
+}

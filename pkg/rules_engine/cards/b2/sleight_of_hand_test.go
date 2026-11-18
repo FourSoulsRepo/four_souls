@@ -7,24 +7,6 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-func TestSleightOfHand(t *testing.T) {
-	tb := table(t, seat("cain", "sleight_of_hand"), seat("isaac"))
-	var names []string
-	for _, id := range tb.G.DeckTop(engine.MonsterDeck, 5) {
-		names = append(names, string(tb.G.Object(id).Card))
-	}
-	reversed := slices.Clone(names)
-	slices.Reverse(reversed)
-	tb.Activate(0, "sleight_of_hand", 0, append([]string{"ask.deck.monster"}, reversed...)...)
-	var got []string
-	for _, id := range tb.G.DeckTop(engine.MonsterDeck, 5) {
-		got = append(got, string(tb.G.Object(id).Card))
-	}
-	if !slices.Equal(got, reversed) {
-		t.Errorf("top 5 = %v, want %v", got, reversed)
-	}
-}
-
 // TestSleightOfHandAsksOneOrder: the five cards come in one order prompt
 // that only the chooser sees; the answer must hold each card once (19.16).
 func TestSleightOfHandAsksOneOrder(t *testing.T) {

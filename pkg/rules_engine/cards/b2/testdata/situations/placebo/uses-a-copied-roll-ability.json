@@ -1,0 +1,12 @@
+{
+  "title": "Isaac uses Placebo, which copies the ↷ of Cain's Mystery Sack, and rolls a 3: does he gain 4¢?",
+  "source": ["card placebo", "card mystery_sack", "R-MECH-11"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["placebo"]}, {"character": "cain", "items": ["mystery_sack", "the_d6"]}],
+    "active": 0,
+    "rolls": [3]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "placebo"},
+  "expect": {"allowed": true, "resolved_rolls": [3], "after": [{"player": 0, "cents": 4, "deactivated": ["placebo"]}, {"player": 1, "cents": 0, "deactivated": []}]}
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Isaac uses Mystery Sack and rolls a 3: does he gain 4¢?",
+  "source": ["card mystery_sack"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["mystery_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [3]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack"},
+  "expect": {"allowed": true, "resolved_rolls": [3], "after": [{"player": 0, "cents": 4, "hand": 0, "deactivated": ["mystery_sack"]}]}
+}

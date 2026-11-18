@@ -1,0 +1,19 @@
+{
+  "title": "Isaac uses Compost, plays A Dime!!, then loots with Bum Friend: does he loot A Dime!! from the discard, not the Bomb! on the deck?",
+  "source": ["card compost", "card bum_friend", "card a_dime", "R-CARD-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["compost", "bum_friend"], "hand": ["a_dime"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"loot": ["bomb"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "compost"},
+    {"player": 0, "kind": "play", "card": "a_dime",
+     "expect": {"allowed": true, "discards": {"loot": ["a_dime"]}, "after": [{"player": 0, "cents": 10}]}},
+    {"player": 0, "kind": "activate", "card": "bum_friend", "choices": ["a_dime"],
+     "expect": {"allowed": true, "discards": {"loot": []}, "decks": {"loot": ["a_dime", "bomb"]}, "after": [{"player": 0, "hand_cards": []}]}}
+  ],
+  "expect": {"allowed": true}
+}

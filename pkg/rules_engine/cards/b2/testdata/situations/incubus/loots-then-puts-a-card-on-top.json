@@ -1,0 +1,12 @@
+{
+  "title": "Lilith uses Incubus to loot the Bomb!, then puts A Nickel! on top of the loot deck",
+  "source": ["card incubus", "R-CARD-06", "R-MECH-02"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "lilith", "items": ["incubus"], "hand": ["a_nickel"]}, {"character": "cain", "hand": ["a_dime"]}],
+    "active": 0,
+    "decks": {"loot": ["bomb"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "incubus", "choices": ["Loot 1, then put a card from your hand on top of the loot deck.", "a_nickel"]},
+  "expect": {"allowed": true, "decks": {"loot": ["a_nickel"]}, "after": [{"player": 0, "hand_cards": ["bomb"]}]}
+}

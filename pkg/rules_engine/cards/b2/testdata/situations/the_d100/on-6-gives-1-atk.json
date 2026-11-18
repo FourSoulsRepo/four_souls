@@ -1,0 +1,13 @@
+{
+  "title": "Isaac (1 ATK) uses The D100 and rolls a 6: does he have 2 ATK?",
+  "source": ["card the_d100", "card isaac"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_d100"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "the_d100"},
+  "expect": {"allowed": true, "resolved_rolls": [6], "after": [{"player": 0, "atk": 2, "deactivated": ["the_d100"]}]}
+}

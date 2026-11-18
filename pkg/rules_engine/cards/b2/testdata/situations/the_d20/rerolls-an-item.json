@@ -1,0 +1,12 @@
+{
+  "title": "Isaac rerolls Cain's Breakfast with The D20: is it destroyed and replaced by Dinner, the treasure deck's top?",
+  "source": ["card the_d20", "R-MECH-48", "R-CARD-02"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_d20"]}, {"character": "cain", "items": ["breakfast"]}],
+    "active": 0,
+    "decks": {"treasure": ["dinner"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "the_d20", "choices": ["breakfast"]},
+  "expect": {"allowed": true, "discards": {"treasure": ["breakfast"]}, "after": [{"player": 1, "items": ["dinner"]}]}
+}

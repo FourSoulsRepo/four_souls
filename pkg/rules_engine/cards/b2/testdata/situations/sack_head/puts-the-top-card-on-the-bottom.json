@@ -1,0 +1,13 @@
+{
+  "title": "Isaac looks at the loot deck's top card, A Penny!, with Sack Head and puts it on the bottom",
+  "source": ["card sack_head"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["sack_head"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"loot": ["a_penny", "bomb"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "sack_head", "choices": ["ask.deck.loot", "ask.put_on_bottom a_penny"]},
+  "expect": {"allowed": true, "deck_bottoms": {"loot": ["a_penny"]}, "decks": {"loot": ["bomb"]}, "after": [{"player": 0, "deactivated": ["sack_head"]}]}
+}

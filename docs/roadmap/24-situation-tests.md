@@ -562,9 +562,81 @@ Ideas: TS-13, LR-04, R-03.
 11. Trinity Shield's refusal cites R-ABIL-12, a static ability; it fits.
 12. No rules bug found; `cardgen -report` unchanged.
 
-### [ ] 24.14 Bulk: b2 other treasures
+### [x] 24.14 Bulk: b2 other treasures
 
 1. Goal: Active, Paid, Eternal, Soul Treasure (about 60 tests).
+2. Counts (2026-11-18): 60 tests in 49 `_test.go` files of the family.
+   1. Blank Card, Glass Cannon, Golden Razor Blade: no Go test left.
+   2. Razor Blade, Smelter, The Battery, Tech X, The Shovel: the same.
+3. Moved: 54 tests, as 61 files.
+   1. TestBatteryBum, TestBloodLust, TestBloodLustOnAMonster.
+   2. TestBookOfBelial: 5 files, one per case (owner answer 11).
+   3. TestBookOfSin, TestBoomerang, TestBumFriend, TestCompost, TestChaos.
+   4. TestContractFromBelow, TestDecoy, TestDiplopia, TestDonationMachine.
+   5. TestFlush, TestForeverAloneSteals, TestForeverAloneDiscardsThenLoots.
+   6. TestForeverAloneRechargesOnDamage, TestGodhead, TestGuppysHead.
+   7. TestGuppysPaw, TestHostHat, TestIncubusSwaps, TestIncubusMayNotSwap.
+   8. TestIncubusLootsAndPutsBack, TestJawbone, TestLazarusRags.
+   9. TestLuckyFoot, TestMiniMush, TestMomsBra, TestModelingClay.
+   10. TestMonsterManual, TestNo, TestMysterySack, TestMrBoom.
+   11. TestPayToPlay, TestPortableSlotMachine, TestPotatoPeeler.
+   12. TestPandorasBox, TestRemoteDetonator: 2 files each, one per case.
+   13. TestSackHead, TestSackOfPennies, TestSleightOfHand, TestSpoonBender.
+   14. TestTheChest, TestTheD100, TestTheD20, TestTheCurse.
+   15. TestTheBoneAddsToARoll, TestTheBoneSoulCanBeDestroyed.
+   16. TestTheD6, TestTheD6NeedsARoll, TestThePoop, TestTwoOfClubs.
+   17. TestYumHeart: 2 files; see item 7.
+4. Split: 3, as 4 files.
+   1. TestCrystalBall: the loot 3 is a file.
+   2. Its view dice and `Chosen` stay Go: TestCrystalBallShowsTheGuess.
+   3. TestPlacebo: the use is a file.
+   4. `AbilitiesOf` stays Go: TestPlaceboBorrowsNoEternalAbility.
+   5. TestTheBone: 2 files; a counter set by hand starts the second.
+   6. The soul's refusal stays Go: TestTheBoneSoulHasNoAbilities.
+   7. It waits on 19.226: the engine cites R-ABIL-09.
+5. Stayed Go, complicated (ADR 034 1.5): 3.
+   1. Event fields (`Card`, `Private`): TestForeverAloneLooksAtADeck.
+   2. Views and event fields: TestSackHeadTellsEveryoneTheChoice.
+   3. Views, `Allowed`, bad intents: TestSleightOfHandAsksOneOrder.
+6. Needed a format change: 0.
+7. Go tests that did not check what they claimed: 2.
+   1. TestYumHeart: "shields last past the end of the turn".
+   2. The attack had used the shield up; no shield was left to end.
+   3. `yum_heart/shield-ends-with-the-turn.json` checks it for real.
+   4. TestPotatoPeeler counted 1 card per discard, not the top cards.
+   5. The file names the three top cards in their discards.
+8. Drafts: 31 of 65 files kept the dumped setup and steps.
+   1. Rolls on the stack (11): `priority` 0 instead of Cain's pass.
+   2. No!: the Jawbone steal starts on `setup.stack` (owner answer 7).
+   3. Random deck cards fixed in `setup.decks` (15), so the file names them.
+   4. Bum Friend, Compost, Crystal Ball, Flush, Incubus, Lazarus' Rags.
+   5. Also Potato Peeler, Sack Head, Sleight of Hand, The Curse, The D20.
+   6. Also Two of Clubs, Forever Alone, Portable Slot Machine, Sack of Pennies.
+   7. A prompt check splits a step: Decoy, Diplopia, Donation Machine.
+   8. Monster Manual: the refused end of turn is a step of its own.
+   9. The Poop: a Bomb! on Isaac proves the shield.
+   10. It replaces the Go check of `len(Shields)`.
+   11. New setups: The Bone's second file, Yum Heart's second file.
+9. Checks added from the card text (owner answer 8):
+   1. Every ↷ use: the item is spent; roll items: `resolved_rolls`.
+   2. Compost: A Dime!! back on top, the Bomb! under it.
+   3. Contract From Below, Remote Detonator, The D20: the treasure discard.
+   4. Flush: Dip and Pooter refill the slots.
+   5. Lazarus' Rags: the penalty can't destroy the new Dinner.
+   6. Pandora's Box: on 5 the box is in the discard; on 6 it is not.
+   7. The Chest: Cain gains no treasure (R-MECH-48, R-MECH-03).
+   8. The Curse: the milled card, the loot, the deck tops.
+   9. Guppy's Paw, Mom's Bra, Host Hat: the monster dies, its reward.
+   10. The Bone's soul: Judgement puts it in the treasure discard.
+10. Refusals: rules from the rules text.
+   1. Battery Bum, The Bone without counters: R-ABIL-07 fits.
+   2. The D6 with no roll: R-ABIL-40 fits.
+   3. Monster Manual's end of turn: R-ABIL-12 does not fit (19.225).
+   4. Its Go test checked no rule; the file checks `allowed` only.
+11. Bugs logged: 19.225 and 19.226; not fixed here.
+12. Helpers `rollTable`, `resolvedRoll`, `handCards` moved to `common_test.go`.
+   1. Other cards' tests use them; their files are gone.
+13. `cardgen -report` unchanged.
 
 ### [ ] 24.15 Bulk: b2 monsters
 

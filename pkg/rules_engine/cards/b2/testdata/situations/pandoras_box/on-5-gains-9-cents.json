@@ -1,0 +1,13 @@
+{
+  "title": "Isaac destroys Pandora's Box and rolls a 5: does he gain 9¢, with the box in the discard?",
+  "source": ["card pandoras_box", "R-MECH-03", "R-MECH-23"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["pandoras_box"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [5]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "pandoras_box"},
+  "expect": {"allowed": true, "resolved_rolls": [5], "discards": {"treasure": ["pandoras_box"]}, "after": [{"player": 0, "cents": 9, "items": [], "souls": 0}]}
+}

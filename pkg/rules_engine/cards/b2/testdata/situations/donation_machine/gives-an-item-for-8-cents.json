@@ -1,0 +1,17 @@
+{
+  "title": "Isaac uses Donation Machine with Breakfast and the eternal D6: is only Breakfast offered, and does giving it to Cain pay 8¢?",
+  "source": ["card donation_machine", "card the_d6", "R-ABIL-07", "R-ABIL-18", "R-MECH-37"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["donation_machine", "breakfast", "the_d6"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "donation_machine",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["breakfast", "ask.cancel"]}}},
+    {"kind": "choose", "choices": ["breakfast", "player 2 (cain)"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 8, "items": ["donation_machine", "the_d6"]}, {"player": 1, "items": ["breakfast"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

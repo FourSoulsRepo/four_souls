@@ -1,0 +1,16 @@
+{
+  "title": "Isaac's Jawbone steal from Cain (3¢) waits on the stack: Cain cancels it with No!, so he keeps his 3¢",
+  "source": ["card no", "card jawbone", "R-MECH-07", "R-STACK-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["jawbone"], "deactivated": ["jawbone"]},
+      {"character": "cain", "items": ["no"], "cents": 3}
+    ],
+    "active": 0,
+    "stack": [{"kind": "activate", "card": "jawbone", "owner": 0, "choices": ["player 2 (cain)"]}],
+    "priority": 1
+  },
+  "action": {"player": 1, "kind": "activate", "card": "no", "choices": ["jawbone: ↷: Steal 3¢ from a player."]},
+  "expect": {"allowed": true, "resolved": ["no"], "after": [{"player": 0, "cents": 0}, {"player": 1, "cents": 3, "deactivated": ["no"]}]}
+}

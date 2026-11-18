@@ -1,0 +1,11 @@
+{
+  "title": "Isaac uses Boomerang on Cain, who holds 2 loot cards: does Isaac steal one?",
+  "source": ["card boomerang", "R-MECH-38"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["boomerang"]}, {"character": "cain", "hand": ["a_dime", "bomb"]}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "boomerang", "choices": ["player 2 (cain)"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "hand": 1, "deactivated": ["boomerang"]}, {"player": 1, "hand": 1}]}
+}

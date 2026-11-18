@@ -229,3 +229,33 @@ func viewDice(tb *enginetest.Table, p int, ref engine.CardRef) []int {
 	tb.T.Fatalf("%s is not in play", ref)
 	return nil
 }
+
+// rollTable has a roll of n on the stack, owned by player 1.
+func rollTable(t *testing.T, n int, seats ...engine.SituationPlayer) *enginetest.Table {
+	t.Helper()
+	return enginetest.NewSetup(t, engine.SituationSetup{
+		Players: seats,
+		Stack:   []engine.SituationStack{{DiceRoll: n, Owner: 1}},
+	}, Set)
+}
+
+// resolvedRoll is the result of the first roll that resolved.
+func resolvedRoll(t *testing.T, events []engine.Event) int {
+	t.Helper()
+	for _, e := range events {
+		if e.Kind == engine.EvRollResolved {
+			return e.Amount
+		}
+	}
+	t.Fatal("no roll resolved")
+	return 0
+}
+
+// handCards are the cards in player p's hand, in order.
+func handCards(g *engine.Game, p int) []engine.CardRef {
+	var out []engine.CardRef
+	for _, id := range g.Players[p].Hand {
+		out = append(out, g.Object(id).Card)
+	}
+	return out
+}

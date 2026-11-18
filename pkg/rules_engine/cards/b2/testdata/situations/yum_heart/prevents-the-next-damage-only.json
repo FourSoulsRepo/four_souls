@@ -1,0 +1,20 @@
+{
+  "title": "Maggy uses Yum Heart on herself, then misses the Fly twice: only the first 1 damage is prevented; Yum Heart recharges at the end of her turn",
+  "source": ["card yum_heart", "card fly", "R-ATK-13", "R-MECH-46"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "maggy", "items": ["yum_heart"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "rolls": [1, 1, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "yum_heart", "choices": ["player 1 (maggy)"],
+     "expect": {"allowed": true, "after": [{"player": 0, "deactivated": ["yum_heart"]}]}},
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "events": [{"kind": "prevented", "player": 0}], "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "damage": 1}]}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "deactivated": []}]}}
+  ],
+  "expect": {"allowed": true}
+}

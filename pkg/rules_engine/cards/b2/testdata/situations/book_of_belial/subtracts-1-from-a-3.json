@@ -1,0 +1,13 @@
+{
+  "title": "Cain's roll of 3 is on the stack: Judas subtracts 1 with Book of Belial. Does it resolve as 2?",
+  "source": ["card book_of_belial", "R-DICE-04", "R-DICE-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "judas", "items": ["book_of_belial"]}, {"character": "cain"}],
+    "active": 0,
+    "stack": [{"dice_roll": 3, "owner": 1}],
+    "priority": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "book_of_belial", "choices": ["Subtract 1 from a roll.", "ask.roll_of 3"]},
+  "expect": {"allowed": true, "resolved_rolls": [2], "after": [{"player": 0, "deactivated": ["book_of_belial"]}]}
+}

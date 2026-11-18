@@ -1,0 +1,20 @@
+{
+  "title": "Lazarus (3¢) dies to the Fly: he pays the penalty (1¢), then gains Dinner from Lazarus' Rags, so the penalty can't destroy it",
+  "source": ["card lazarus_rags", "card fly", "R-DEATH-14", "R-ABIL-18", "R-CARD-02"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "lazarus", "items": ["lazarus_rags"], "cents": 3}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "decks": {"treasure": ["dinner"]},
+    "rolls": [1, 1]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true,
+       "events": [{"kind": "died", "player": 0}],
+       "resolved": ["death", "lazarus_rags"],
+       "after": [{"player": 0, "cents": 2, "items": ["lazarus_rags", "dinner"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

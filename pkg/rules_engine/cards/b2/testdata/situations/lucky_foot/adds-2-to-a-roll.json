@@ -1,0 +1,13 @@
+{
+  "title": "Cain's roll of 2 is on the stack: Isaac adds 2 with Lucky Foot, so it resolves as 4",
+  "source": ["card lucky_foot", "R-DICE-04", "R-DICE-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["lucky_foot"]}, {"character": "cain"}],
+    "active": 0,
+    "stack": [{"dice_roll": 2, "owner": 1}],
+    "priority": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "lucky_foot", "choices": ["ask.roll_of 2", "2"]},
+  "expect": {"allowed": true, "resolved_rolls": [4], "after": [{"player": 0, "deactivated": ["lucky_foot"]}]}
+}
