@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223 | 25 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226 | 27 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193 | 18 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45, 19.224                                   | 3     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
@@ -58,11 +58,11 @@ This step never closes; new reports are appended.
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 | X  | Bots: a bot or its driver wrong          | Bots       | 19.199, 19.204, 19.205, 19.206, 19.207, 19.208, 19.209, 19.210, 19.211, 19.212, 19.213, 19.214, 19.215, 19.216, 19.221 | 15 |
 
-Totals by system (215 items):
+Totals by system (217 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U, W | 46 |
+| Engine    | A, B, T, U, W | 48 |
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 54 |
 | Server    | H, N    | 5     |
@@ -6416,3 +6416,39 @@ Totals by system (215 items):
    11. Engine and data only; no screen change, no screenshots.
 6. Owner notes (2026-11-18)
    1. Owner marks 19.224 solved.
+
+### [ ] 19.225 A forced attack is refused by R-ABIL-12, a static ability rule
+
+1. Goal: a forced attack's refusal cites the rule that says it.
+2. Report (24.14 bulk move, 2026-11-18)
+   1. Monster Manual on the Leech; Isaac ends the turn first.
+   2. Refused by R-ABIL-12: static abilities, always true.
+   3. Monster Manual's ↷ is an activated ability (R-ABIL-27 effect).
+   4. R-ATK-03: a forced attack on a target must be obeyed.
+3. Cause (the engine)
+   1. `prompt.go` denies an end of turn with R-ABIL-12.
+   2. Three denials: `MustAttack`, `MustAttacks`, the random attack (Q-31).
+4. Tasks:
+   1. Each denial cites the rule that fits: R-ATK-03, R-ABIL-21, …
+   2. Check every card that sets them, all sets (5.24).
+   3. The Monster Manual file then checks `"rule": "R-ATK-03"`.
+   4. File: `cards/b2/testdata/situations/monster_manual/forces-an-attack-on-the-monster.json`.
+
+### [ ] 19.226 The Bone's soul is refused by R-ABIL-09, a controller rule
+
+1. Goal: the refusal cites the rule that says it.
+2. Report (24.14 bulk move, 2026-11-18)
+   1. The Bone becomes a soul and "loses all abilities".
+   2. Its ↷ is then refused by R-ABIL-09.
+   3. R-ABIL-09: only the controller uses an item's abilities.
+   4. The Forgotten is its controller.
+   5. R-CARD-38: such a soul keeps its abilities unless it says so.
+   6. So the card text and R-CARD-38 say why, not R-ABIL-09.
+3. Cause (the engine)
+   1. `activatable` in `activate.go` denies a soul with R-ABIL-09.
+   2. Unless `soulKeepsAbilities`; so the role decides, not the text.
+4. Tasks:
+   1. A soul with no abilities: cite the rule that fits (R-CARD-38).
+   2. Check every refusal with R-ABIL-09, all sets (5.24).
+   3. `TestTheBoneSoulHasNoAbilities` then expects that rule.
+   4. Then it can move to a situation file.
