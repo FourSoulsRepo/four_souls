@@ -41,7 +41,7 @@ import type { LinePart } from './stack';
 import type { Box } from './zoom';
 import { autoJoinStep, emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, seatNameOf, type AutoJoin, type Screen, type ServerUp, type Session } from './lobby';
 import { connectFirst, disconnect, drop, send } from './net';
-import { claimEffect, nextBeat } from './animations';
+import { claimEffect, forgetDeals, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
 import { bonusSlot, chargedIn, createPlayback, effectsFor, hpOf, playedEnds, scaleFor, seenBefore, shopSlot, slotZone, type Death, type Effect } from './playback';
 import { empty } from './presence';
@@ -680,13 +680,36 @@ export const useApp = create<AppState>()((set, get) => {
     set({ presence: {} });
   };
 
-  // stopPlayback drops queued updates and the effect on screen.
+  // stopPlayback drops queued updates and the effect on screen. Every
+  // way out of a game runs it, so it also forgets what was keyed on the
+  // game's steps: the next game counts from 0 again, and a step the old
+  // one acted at would hold its buttons (19.227).
   const stopPlayback = () => {
     playback.clear();
     get().playing?.done();
     clearPresence();
     diedAt.clear();
-    set({ history: [], moves: [], lastRoll: null, looking: [], placed: [], big: null, left: [], lifted: [], charged: [], cost: null });
+    forgetDeals();
+    serverStep = -1;
+    explainedStep = -1;
+    set({
+      history: [],
+      moves: [],
+      lastRoll: null,
+      looking: [],
+      placed: [],
+      big: null,
+      left: [],
+      lifted: [],
+      charged: [],
+      cost: null,
+      sent: null,
+      aimed: null,
+      aiming: null,
+      selected: null,
+      explained: [],
+      behind: false,
+    });
   };
 
   // A replay's moves (10.2): moved counts the jumps, so a late step

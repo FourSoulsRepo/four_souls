@@ -205,6 +205,30 @@ describe('server notices (N-20)', () => {
   });
 });
 
+// A dedicated server keeps the connection between games, and each game
+// counts its steps from 0: a step a left game acted at must not hold
+// the next game's buttons (19.227).
+describe('a left game forgets its steps (19.227)', () => {
+  const ended: Envelope[] = [
+    { type: 'table', data: { game: 'g2', you: 1, seats: [] } },
+    { type: 'saved', data: { save: 's1' } },
+    { type: 'notice', data: { kind: 'game_ended', game: 'g1' } },
+  ];
+  for (const env of ended) {
+    it(`after ${env.type}`, () => {
+      useApp.setState({ screen: 'game', connected: true, sent: 1, aimed: { step: 1, target: { object: 5, player: 0 } } });
+      useApp.getState().receive(env);
+      expect(useApp.getState()).toMatchObject({ sent: null, aimed: null });
+    });
+  }
+
+  it('after Leave', async () => {
+    useApp.setState({ screen: 'game', connected: true, sent: 1, aimed: { step: 1, target: { object: 5, player: 0 } } });
+    await useApp.getState().leaveTable();
+    expect(useApp.getState()).toMatchObject({ sent: null, aimed: null });
+  });
+});
+
 describe('bots (ADR 033)', () => {
   it('seats, changes and takes away a bot with the bot message', () => {
     useApp.getState().seatBot(2, 'hard');

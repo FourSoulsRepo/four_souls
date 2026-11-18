@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import doc from '../../docs/wiki/Animations.md?raw';
-import { arrivedBy, claim, claimDeal, claimEffect, claimed, clashes, dealKey, nextBeat, resetClaims } from './animations';
+import { arrivedBy, claim, claimDeal, claimEffect, claimed, clashes, dealKey, forgetDeals, nextBeat, resetClaims } from './animations';
 import type { Effect } from './playback';
 
 describe('claims', () => {
@@ -198,6 +198,13 @@ describe('one card revealed on its deck, then into a slot (19.191)', () => {
     claim('chest', 'show', 'reveal', { object: 54 });
     nextBeat();
     expect(claimDeal(10, cards)).toEqual(new Set([dealKey('chest', 55), 'fly']));
+  });
+
+  it("forgets a left game's deals: the next game's deal at that step flies (19.227)", () => {
+    expect(claimDeal(0, [{ card: 'old', object: 3 }])).toEqual(new Set([dealKey('old', 3)]));
+    forgetDeals();
+    nextBeat();
+    expect(claimDeal(0, [{ card: 'new', object: 3 }])).toEqual(new Set([dealKey('new', 3)]));
   });
 });
 

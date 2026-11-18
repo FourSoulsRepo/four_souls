@@ -57,14 +57,15 @@ This step never closes; new reports are appended.
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 | X  | Bots: a bot or its driver wrong          | Bots       | 19.199, 19.204, 19.205, 19.206, 19.207, 19.208, 19.209, 19.210, 19.211, 19.212, 19.213, 19.214, 19.215, 19.216, 19.221 | 15 |
+| Y  | A left game: its step state kept         | Client     | 19.227                                                 | 1     |
 
-Totals by system (217 items):
+Totals by system (218 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B, T, U, W | 48 |
 | Card data | C       | 2     |
-| Client    | D–G, O, P, S, V | 54 |
+| Client    | D–G, O, P, S, V, Y | 55 |
 | Server    | H, N    | 5     |
 | e2e       | I, J    | 81    |
 | Release   | K       | 6     |
@@ -6465,3 +6466,38 @@ Totals by system (217 items):
    2. Other R-ABIL-09 denials: a card the player doesn't control; they fit.
    3. `TestTheBoneSoulHasNoAbilities` moved to a step in
       `the_bone/deals-damage-then-becomes-a-soul.json`.
+
+### [ ] 19.227 The next roller gets no Throw button; everyone sees "throwing…"
+
+1. Goal: the player the game waits on always gets the Throw button.
+2. Report (owner, 2026-11-18)
+   1. Sometimes the second player to roll gets no Throw button.
+   2. That player waits; every other player sees them "throwing…".
+   3. The first-player roll, no tie, on a dedicated server.
+   4. Their own die shakes; no button.
+   5. Close and reconnect: the button comes.
+3. Cause (the client)
+   1. `sent` is the step an intent was sent at (`act` in `store.ts`).
+   2. The buttons wait while `sent` equals the step shown.
+   3. Leaving a game never cleared it; only a `welcome` did (19.86).
+   4. A dedicated server keeps the connection between games: no `welcome`.
+   5. The next game counts steps from 0 again.
+   6. A seat asked at the old `sent` step is blocked for good.
+   7. 2 players: the second roller is asked at step 1.
+   8. A reconnect sends a `welcome`; that is why it helps.
+4. Not the cause of 19.53 and 19.162
+   1. Those e2e pages are new: `sent` starts empty.
+   2. They are left open as they were.
+5. Tasks:
+   1. Leaving a game clears every state keyed on its steps.
+   2. 5.26: check every step-keyed client state.
+   3. Vitest: the next game's step 1 lets the player act.
+6. Fix (2026-11-18)
+   1. `stopPlayback` in `store.ts` clears the step-keyed state.
+   2. Every way out of a game runs it: Leave, `table`, `saved`, an ending notice.
+   3. Cleared: `sent`, `aimed`, `aiming`, `selected`, `explained`, `behind`.
+   4. Cleared: `serverStep`, `explainedStep`; `forgetDeals` in `animations.ts`.
+   5. Checked, no change: `TurnActions`, `EndTurn` (component state; unmounts).
+   6. Checked, no change: `ChoiceBack` kept card (one flight), `ModeDialog` key.
+   7. Vitest: `a left game forgets its steps`; `forgetDeals` in `animations.test.ts`.
+   8. Wiki: `Client.md`, next to the 19.86 line.
