@@ -6309,7 +6309,7 @@ Totals by system (212 items):
    1. Measure a full WebKit run on a quiet machine; if it still fails, find what blocks the pages at game start.
    2. Or give WebKit fewer workers in `make e2e`; decide with the owner.
 
-### [ ] 19.221 An imagined world names the loot card another seat is playing
+### [x] 19.221 An imagined world names the loot card another seat is playing
 
 1. Goal: `Game.Imagine` names no card the seat cannot know (ADR 033, Decision 2.13).
 2. Report (owner's review of `bots`, 2026-11-18)
@@ -6330,3 +6330,5 @@ Totals by system (212 items):
    2. [x] Fix (owner, 2026-11-18: rename to the redealt card): `relabelHidden` sets `Activating.Ability.Card` to the card dealt to its source, when the source is a hand the seat cannot see.
    3. [x] The copy then holds a mode or targets picked for another card: the test plays 60 random steps on each such copy (168 of them), with `CheckInvariants`; no panic, no refusal.
    4. [x] ADR 033, Decision 2.13.5 – 2.13.6; wiki Rules-engine.
+6. Owner notes (2026-11-18)
+   1. Owner marks 19.221 solved.
