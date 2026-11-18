@@ -48,7 +48,7 @@ func TestTheD6(t *testing.T) {
 
 func TestTheD6NeedsARoll(t *testing.T) {
 	tb := table(t, seat("isaac", "the_d6"), seat("cain"))
-	if rule := tb.Refused(0, "the_d6", 0); rule != "R-ABIL-06" {
-		t.Errorf("refused by %s, want R-ABIL-06 (no dice roll)", rule)
+	if rule := tb.Refused(0, "the_d6", 0); rule != "R-ABIL-40" { // R-ABIL-40: no valid target, can't be used
+		t.Errorf("refused by %s, want R-ABIL-40 (no dice roll)", rule)
 	}
 }

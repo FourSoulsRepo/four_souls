@@ -53,17 +53,17 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 	return g.targetsAvailable(a, p, src)
 }
 
-// targetsAvailable checks every target spec has something to choose; an
+// targetsAvailable checks every target spec has something to choose (R-ABIL-40); an
 // ability with modes needs one mode whose targets are there.
 func (g *Game) targetsAvailable(a Ability, p PlayerID, src ObjectID) error {
 	if len(a.Modes) > 0 {
 		if len(g.availableModes(a, p, src)) == 0 {
-			return deny("R-ABIL-06", refuseNoTarget.Msg(), "no option has a valid target")
+			return deny("R-ABIL-40", refuseNoTarget.Msg(), "no option has a valid target")
 		}
 		return nil
 	}
 	if !g.hasTargets(a.Targets, p, src) {
-		return deny("R-ABIL-06", refuseNoTarget.Msg(), "no valid target")
+		return deny("R-ABIL-40", refuseNoTarget.Msg(), "no valid target")
 	}
 	return nil
 }

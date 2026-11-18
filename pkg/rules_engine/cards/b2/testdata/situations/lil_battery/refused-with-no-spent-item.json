@@ -1,6 +1,6 @@
 {
   "title": "Isaac's only item, The D6, is charged: may he play Lil Battery with nothing to recharge?",
-  "source": ["card lil_battery", "R-MECH-22", "R-ABIL-06"],
+  "source": ["card lil_battery", "R-MECH-22", "R-ABIL-40"],
   "sets": ["b2"],
   "setup": {
     "players": [
@@ -12,7 +12,7 @@
   "action": {"player": 0, "kind": "play", "card": "lil_battery"},
   "expect": {
     "allowed": false,
-    "rule": "R-ABIL-06",
+    "rule": "R-ABIL-40",
     "loot_plays": 1,
     "after": [{"player": 0, "hand_cards": ["lil_battery"], "deactivated": []}]
   }
