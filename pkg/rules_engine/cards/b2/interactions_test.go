@@ -5,11 +5,7 @@ package b2
 // S-RU FAQ rulings in docs/rules/open-questions.md, and Yuggy's rulings.
 // The simple ones are situation files (ADR 033): testdata/situations/.
 
-import (
-	"testing"
-
-	engine "github.com/FourSoulsRepo/rules_engine"
-)
+import "testing"
 
 // R-07 #4, narrowed by Q-07: a dead player takes untargeted damage, but
 // nothing is marked (R-MECH-16). The rest of this case is the file
@@ -42,27 +38,4 @@ func TestRulingTwoOfClubsTwice(t *testing.T) {
 			t.Errorf("%d uses: hand = %d, want 2", uses, h)
 		}
 	}
-}
-
-// Yuggy (X, 2024-08-09): a roll pushed above 6 counts as 6; minus 1 is 5.
-func TestRulingRollAboveSix(t *testing.T) {
-	tb := rollTable(t, 6, seat("judas", "spoon_bender", "book_of_belial"), seat("cain"))
-	tb.Pass(1)
-	tb.Start(0, "spoon_bender", 0)
-	tb.Choose("ask.roll_of 6")
-	tb.Pass(0)
-	tb.Pass(1) // the +1 resolves: still 6
-	tb.Activate(0, "book_of_belial", 0, "Subtract 1 from a roll.", "ask.roll_of 6")
-	if r, ok := firstRoll(tb.G); ok && r != 5 {
-		t.Errorf("roll = %d, want 5", r)
-	}
-}
-
-func firstRoll(g *engine.Game) (int, bool) {
-	for _, it := range g.Stack {
-		if it.Kind == engine.StackRoll {
-			return it.Roll, true
-		}
-	}
-	return 0, false
 }

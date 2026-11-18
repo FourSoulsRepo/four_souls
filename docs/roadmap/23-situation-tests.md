@@ -408,7 +408,7 @@ Ideas: TS-13, LR-04, R-03.
       4. Attack: R-ATK-02, R-ATK-11; purchase: R-SHOP-01.
       5. New in `b2`: Bomb! (declared attack), Jawbone (declared purchase).
 
-### [ ] 23.11 Deck bottom and roll value checks
+### [x] 23.11 Deck bottom and roll value checks
 
 1. Goal: the checks the pilot (23.8) missed most.
 2. Tasks:
@@ -424,6 +424,24 @@ Ideas: TS-13, LR-04, R-03.
    10. Wiki `Situation-payload.md`; ADR 033 if it drifts.
 3. Done when:
    1. The 7 tests above are files; their Go tests are gone.
+4. Done (2026-11-18):
+   1. `expect.deck_bottoms`: a deck's bottom cards by deck name.
+   2. Compared in any order: several cards go to the bottom at random (Q-22).
+   3. So not "bottom last"; no rule gives that order.
+   4. `expect.resolved_rolls`: each roll's final value, in order.
+   5. Read from `roll_resolved` events; attack rolls too; `[]` expects none.
+   6. Moved: The Emperor, The Hermit, The Moon (`testOneOnTop` is gone).
+   7. Moved: TestXIITheHangedMan, TestITheMagician.
+   8. Moved: TestRulingRollAboveSix, as `interactions/spoon-bender-book-of-belial-roll-above-six.json`.
+   9. Its two items start on `setup.stack`, Spoon Bender on top (owner answer 7).
+   10. Its Go check never ran: the stack was empty by then.
+   11. Wheel of Fortune: 6 files, `x_wheel_of_fortune/on-<n>-….json`.
+   12. Also XIX. The Sun's Go bottom check: now in its file; Go test gone.
+   13. Stay Go: The Moon's and The Hanged Man's view and event-field tests.
+   14. Dump: hand-set state before a first direct `G.Apply` is in setup.
+   15. Read from the engine's save origin, the state before its first intent.
+   16. Unlocked across sets (count only): about 19 roll and 10 bottom tests.
+   17. No rules bug found; `cardgen -report` unchanged.
 
 ## Bulk move rules (owner, 2026-11-18)
 

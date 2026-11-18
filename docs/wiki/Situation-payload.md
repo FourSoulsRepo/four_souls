@@ -68,11 +68,13 @@ A counter entry is `{"card": …, "name": …, "count": …}`; `count` is 1 or m
 | `counters` | counters on cards no player controls, as `setup.counters` | `[{"card": "gaper", "name": "level", "count": 1}]` |
 | `decks` | the cards on top of a deck, top first, as `setup.decks` | `{"monster": ["fly"]}` |
 | `discards` | every card in a discard pile | `{"loot": ["a_dime"]}` |
+| `deck_bottoms` | the cards at the bottom of a deck, in any order | `{"loot": ["a_penny", "bomb"]}` |
 | `active`, `loot_plays`, `attacks` | the active seat, its loot plays and attacks left | `"attacks": 2` |
 | `over`, `winners` | the game has ended; the winning seats | `"over": true, "winners": [0]` |
 | `prompt` | the open question: `player` who is asked, every option in `options` | `{"player": 0, "options": ["the_d6", "ask.cancel"]}` |
 | `resolved` | stack items in the order they resolved; others may come between | `["lucky_foot", "bomb", "dice_roll"]` |
 | `events` | event kinds that happened, with `player`; `none: true` that did not | `[{"kind": "damaged", "player": 1}, {"kind": "died", "none": true}]` |
+| `resolved_rolls` | the value each roll resolved as, in order | `[5]` |
 
 * A list of cards (`items`, `hand_cards`, `soul_cards`, `deactivated`, `discards`, `winners`) names every card there, in any order: a card more or less is a mismatch, and `[]` expects none. The deck in `decks` is the exception: it holds the rest of the sets, so only its top cards are compared, in order.
 * `hand` and `souls` stay counts, as before 23.5; the cards are `hand_cards` and `soul_cards`.
@@ -83,6 +85,8 @@ A counter entry is `{"card": …, "name": …, "count": …}`; `count` is 1 or m
 * `resolved` (23.6) names stack items in the order they resolved (`stack_resolved` events, as `enginetest.ResolvedAt` reads them). It is an ordered subsequence: each name must resolve after the one before it, and other items may resolve between them, so a check of two cards ignores the damage a Bomb! puts on the stack. A loot card, an activated or a triggered ability is named by its card ref; any other item by its kind: `dice_roll`, `attack_roll`, `damage`, `death`, `death_penalty`, `death_step`. `[]` expects nothing resolved. Any other name is an error that lists the kinds.
 * `events` (23.6) checks event kinds, by the engine's names (`damaged`, `looked_at`, `turn_ended_early`, …; `stack_resolved` and the rest). Each entry needs `kind`; `player` (a seat) narrows it to that player's events, and without it any player's count. `none: true` expects no such event; without it, at least one. An unknown kind is an error that lists every kind.
 * A step's `resolved` and `events` read that step's events; the top-level `expect` reads every step's (the answer's `events`).
+* `deck_bottoms` (23.11) checks the bottom of a deck, by deck name as `decks`: as many cards as the list names, from the bottom up, compared in any order. Several cards put on the bottom go there in random order (Q-22), so no rule says their order; one card at the bottom is simply that card. The rest of the deck is the shuffled set cards, so the list names only cards an effect put there. `decks` still compares the top, top first.
+* `resolved_rolls` (23.11) lists the value every dice roll resolved as, in order: the final result after every change (Lucky Foot, I. The Magician, Book of Belial, continuous roll bonuses) and the 1 to 6 bounds (R-DICE-01, R-DICE-06), as its `roll_resolved` event says. The list holds every roll, attack rolls too, so its length counts them; `[]` expects none. The die thrown is `setup.rolls`; this is what that die became. A step's list reads that step's rolls; the top-level one every step's.
 
 Each mismatch says what it found and what was expected:
 
@@ -92,6 +96,8 @@ monster slot 1 is "gaper", expected "boss"
 monster gaper evasion is 3, expected 4
 player 0 counters on razor are 2, expected 3
 monster deck top is [gaper], expected [boss]
+loot deck bottom is [bomb_loot], expected [penny] in any order
+resolved_rolls are [4], expected [5]
 winners are [], expected [0]
 prompt options are ["the_d6" "ask.cancel"], expected ["the_d6"]
 resolved [lucky_foot bomb damage dice_roll], expected [bomb lucky_foot] in this order
@@ -411,6 +417,7 @@ What it records:
 * `rolls`: every die the test threw, in order, forced (`G.ForceRolls`, `Attack`'s rolls) or random, so the file throws the same dice.
 * A step per outermost helper, with its choices as the plain labels the test gave: `Activate`, `Start` and `Refused` are `activate`, `Play` is `play`, `Attack` and `Do` with an attack are `attack`, `EndTurn` is `end_turn`, `Pass` is `pass`, `Choose` is `choose`, `RevealFromDeck` is `reveal`, and `ThrowPending` a `throw` per die. `Settle`'s choices go to the step before it. `UntilChoose` adds nothing: the step before it stops at the question when a `choose` follows.
 * Intents the test applied itself (`tb.G.Apply`, `tb.G.Settle`) become steps too, read from the game's applied-intent log; passes and throws after a step are left out, since the runner settles each step.
+* State set by hand before a direct `tb.G.Apply` that is the test's first step (23.11): the engine keeps the game as it was just before its first applied intent (its save origin, 19.177), and the recorder reads the setup from that state, so `tb.G.Object(…).Eternal = true` before the first `G.Apply` lands in `eternal`. Should that state be missing (a `Save` moved it), a `todo` line says so.
 
 It never writes `expect`: an expected value comes from the rules, never from a run (CLAUDE.md 5.25, ADR 033). `source` is an empty list to fill.
 

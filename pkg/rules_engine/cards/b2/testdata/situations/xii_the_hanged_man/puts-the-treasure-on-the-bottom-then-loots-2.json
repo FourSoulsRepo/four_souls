@@ -1,0 +1,20 @@
+{
+  "title": "Isaac plays XII. The Hanged Man: he puts the treasure top on the bottom, keeps the loot and monster tops, then loots 2",
+  "source": ["card xii_the_hanged_man", "R-CARD-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["xii_the_hanged_man"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"treasure": ["boomerang"], "loot": ["a_penny", "bomb"], "monster": ["clotty"]}
+  },
+  "action": {"player": 0, "kind": "play", "card": "xii_the_hanged_man",
+    "choices": ["ask.put_on_bottom boomerang", "ask.keep_on_top a_penny", "ask.keep_on_top clotty"]},
+  "expect": {
+    "allowed": true,
+    "deck_bottoms": {"treasure": ["boomerang"]},
+    "decks": {"monster": ["clotty"]},
+    "discards": {"loot": ["xii_the_hanged_man"]},
+    "after": [{"player": 0, "hand": 2, "hand_cards": ["a_penny", "bomb"]}]
+  }
+}

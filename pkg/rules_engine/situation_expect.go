@@ -237,6 +237,52 @@ func (g *Game) checkDecks(c *checks, decks, discards map[string][]CardRef) {
 	}
 }
 
+// checkBottoms compares the cards at the bottom of decks, as many as
+// want names, in any order: several cards go to the bottom in random
+// order (Q-22).
+func (g *Game) checkBottoms(c *checks, bottoms map[string][]CardRef) {
+	for name := range bottoms {
+		if !slices.Contains(deckNames[:], name) {
+			c.add("%q is no deck, options %v", name, deckNames)
+		}
+	}
+	for d := range deckCount {
+		want, ok := bottoms[d.String()]
+		if !ok {
+			continue
+		}
+		deck := g.Decks[d]
+		got := []CardRef{}
+		for _, id := range deck[:min(len(want), len(deck))] {
+			got = append(got, g.Object(id).Card)
+		}
+		slices.Reverse(got) // bottom last, as the top is top first
+		a, b := slices.Clone(want), slices.Clone(got)
+		slices.Sort(a)
+		slices.Sort(b)
+		if !slices.Equal(a, b) {
+			c.add("%s deck bottom is %v, expected %v in any order", d, refList(got), refList(want))
+		}
+	}
+}
+
+// checkRolls compares the values the rolls resolved as (roll_resolved
+// events), in order; nil is not checked, an empty list expects none.
+func checkRolls(c *checks, want []int, events []Event) {
+	if want == nil {
+		return
+	}
+	got := []int{}
+	for _, e := range events {
+		if e.Kind == EvRollResolved {
+			got = append(got, e.Amount)
+		}
+	}
+	if !slices.Equal(got, want) {
+		c.add("resolved_rolls are %v, expected %v", got, want)
+	}
+}
+
 // checkGame compares the turn and the game's end.
 func (g *Game) checkGame(c *checks, e Expectation) {
 	c.int("active", e.Active, int(g.Turn.Active))

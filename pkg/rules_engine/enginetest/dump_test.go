@@ -132,3 +132,36 @@ func TestDumpOffWithoutEnv(t *testing.T) {
 		t.Error("a table records with no " + DumpEnv)
 	}
 }
+
+// State set by hand before a direct G.Apply as the first step is in
+// the setup too: the game keeps its state from before its first
+// applied intent (23.11; 23.8 pilot item 7.3, XX. Judgement's soul).
+func TestDumpHandSetBeforeDirectApply(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv(DumpEnv, dir)
+	t.Run("direct", func(t *testing.T) {
+		tb := bookOfSin(t)
+		tb.G.Object(tb.Find(0, "book_of_sin")).Eternal = true
+		tb.G.Players[1].Cents = 4
+		in := engine.Intent{Player: 0, Kind: engine.IntentActivate, Objects: []engine.ObjectID{tb.Find(0, "book_of_sin")}}
+		if _, err := tb.G.Apply(in); err != nil {
+			t.Fatal(err)
+		}
+		tb.Settle()
+	})
+	d, _ := readDump(t, dir, "TestDumpHandSetBeforeDirectApply/direct")
+	s := d.Setup
+	if !slices.Equal(s.Players[0].Eternal, []engine.CardRef{"book_of_sin"}) || s.Players[1].Cents != 4 {
+		t.Errorf("setup %+v; want an eternal book_of_sin and Cain's 4 cents", s)
+	}
+	if s.Players[0].Cents != 0 || len(s.Players[0].Deactivated) != 0 {
+		t.Errorf("setup %+v; want the state before the step, not after it", s)
+	}
+	want := []DumpStep{{Player: seatOf(0), Kind: "activate", Card: "book_of_sin"}}
+	if got := mustJSON(t, d.Steps); got != mustJSON(t, want) {
+		t.Errorf("steps %s; want %s", got, mustJSON(t, want))
+	}
+	if hasTodo(d, "not in setup") || hasTodo(d, "no setup field says it") {
+		t.Errorf("todo %q; want no hand-set state left out", d.Todo)
+	}
+}

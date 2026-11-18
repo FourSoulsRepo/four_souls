@@ -2,6 +2,7 @@ package enginetest
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os" //nolint:depguard // only tests import enginetest, so the wasm engine never does; the dump writes files (23.7)
 	"path/filepath"
@@ -250,9 +251,19 @@ func (r *recorder) boundary(final bool) {
 	r.logLen = len(log)
 	switch {
 	case !r.started && len(direct) > 0:
-		r.note("intents applied directly before the first helper: hand-set state before them is not in setup")
+		// The game kept its state from just before its first applied
+		// intent (Game.saved.origin), hand-set state included (23.11).
+		before, err := originGame(g, r.sets)
+		if err == nil && len(direct) != len(log) {
+			err = errors.New("helpers applied intents before them")
+		}
+		if err != nil {
+			r.note("intents applied directly before the first helper: hand-set state before them is not in setup (%v)", err)
+			break
+		}
+		r.fillSetup(before)
 	case !r.started:
-		r.fillSetup()
+		r.fillSetup(g)
 	case len(direct) == 0 && !final:
 		next := len(r.steps) + 1
 		r.todo = append(r.todo, diffFlat(r.last, flatten(g), func(group, parts string) string {
@@ -289,9 +300,9 @@ func (r *recorder) direct(log []engine.Intent) {
 }
 
 // fillSetup copies the hand-set state the setup can say into it, then
-// rebuilds the table from it: what still differs is a todo.
-func (r *recorder) fillSetup() {
-	g := r.tb.G
+// rebuilds the table from it: what still differs is a todo. g is the
+// table before its first step.
+func (r *recorder) fillSetup(g *engine.Game) {
 	cur := observe(g)
 	changed(reflect.ValueOf(&r.setup).Elem(), reflect.ValueOf(r.base), reflect.ValueOf(cur),
 		"Players", "Decks", "Stack", "Priority", "Phase", "Declared", "Rolls")
@@ -465,6 +476,25 @@ func appliedIntents(g *engine.Game) ([]engine.Intent, bool) {
 		}
 	}
 	return out, true
+}
+
+// originGame is the game as it was just before its first applied
+// intent: the engine keeps that state as its save origin (beforeApply,
+// Game.saved.origin, unexported), so a direct G.Apply as the test's
+// first step still shows the state the test set by hand before it.
+func originGame(g *engine.Game, sets []engine.CardSet) (*engine.Game, error) {
+	v := reflect.ValueOf(g).Elem().FieldByName("saved")
+	if v.IsValid() {
+		v = v.FieldByName("origin")
+	}
+	if !v.IsValid() || v.Kind() != reflect.Slice || v.Len() == 0 {
+		return nil, errors.New("the game kept no state from before them (Game.saved.origin)")
+	}
+	before, err := engine.Load(v.Bytes(), sets...)
+	if err != nil {
+		return nil, fmt.Errorf("the state from before them does not load: %w", err)
+	}
+	return before, nil
 }
 
 func logLen(g *engine.Game) (int, bool) {

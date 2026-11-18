@@ -213,3 +213,69 @@ func TestSituationExpectResolvedAndEvents(t *testing.T) {
 		t.Errorf("mismatch %q; want the event kinds listed", got)
 	}
 }
+
+// bottomGame: the test set's loot deck holds only pennies; bomb_loot is
+// put on top, then moved to the bottom, as a card that puts the rest
+// on the bottom does (Q-22).
+func bottomGame(t *testing.T) *Game {
+	t.Helper()
+	g, err := BuildTable(SituationSetup{
+		Players: []SituationPlayer{{Character: "hero_a"}, {Character: "hero_b"}},
+		Decks:   map[string][]CardRef{"loot": {"bomb_loot", "penny"}},
+	}, testSet, abilitySet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	g.ToBottomRandom(LootDeck, g.DeckTop(LootDeck, 1))
+	return g
+}
+
+// deck_bottoms names the bottom cards in any order (23.11): the rest of
+// the loot deck is pennies (testSet), and bomb_loot is the bottom card.
+func TestSituationExpectDeckBottoms(t *testing.T) {
+	g := bottomGame(t)
+	for _, right := range []map[string][]CardRef{
+		{"loot": {"bomb_loot"}},
+		{"loot": {"penny", "bomb_loot"}},
+		{"loot": {"bomb_loot", "penny"}, "treasure": {"trinket"}},
+	} {
+		if got := g.mismatches(true, "", nil, Expectation{Allowed: true, DeckBottoms: right}); len(got) != 0 {
+			t.Errorf("%v: mismatch %q; want none", right, got)
+		}
+	}
+	for _, c := range []struct {
+		bottoms map[string][]CardRef
+		want    string
+	}{
+		{map[string][]CardRef{"loot": {"penny"}}, "loot deck bottom is [bomb_loot], expected [penny] in any order"},
+		{map[string][]CardRef{"loot": {"bomb_loot", "bomb_loot"}}, "loot deck bottom is [penny bomb_loot], expected [bomb_loot bomb_loot] in any order"},
+		{map[string][]CardRef{"shop": {}}, `"shop" is no deck, options [treasure loot monster room]`},
+	} {
+		got := g.mismatches(true, "", nil, Expectation{Allowed: true, DeckBottoms: c.bottoms})
+		if len(got) != 1 || got[0] != c.want {
+			t.Errorf("%v: mismatch %q; want %q", c.bottoms, got, c.want)
+		}
+	}
+	// The top stays top first: the penny put on top is still there.
+	if got := g.mismatches(true, "", nil, Expectation{Allowed: true, Decks: map[string][]CardRef{"loot": {"penny"}}}); len(got) != 0 {
+		t.Errorf("mismatch %q; want none", got)
+	}
+}
+
+// resolved_rolls: the values the rolls resolved as, in order (23.11).
+// The stack's roll of 4 has no change on it, so it resolves as 4.
+func TestSituationExpectResolvedRolls(t *testing.T) {
+	if got := runExpect(t, stackTable(`{"allowed": true, "resolved_rolls": [4]}`)); len(got) != 0 {
+		t.Errorf("mismatch %q; want none", got)
+	}
+	for _, c := range []struct{ expect, want string }{
+		{`"resolved_rolls": [5]`, "resolved_rolls are [4], expected [5]"},
+		{`"resolved_rolls": []`, "resolved_rolls are [4], expected []"},
+		{`"resolved_rolls": [4, 4]`, "resolved_rolls are [4], expected [4 4]"},
+	} {
+		got := runExpect(t, stackTable(`{"allowed": true, `+c.expect+`}`))
+		if want := "step 1 (pass): " + c.want; len(got) != 1 || got[0] != want {
+			t.Errorf("%s: mismatch %q; want %q", c.expect, got, want)
+		}
+	}
+}

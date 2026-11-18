@@ -1,0 +1,13 @@
+{
+  "title": "Cain's roll of 2 is on the stack: Isaac plays I. The Magician on it and picks 5, so it resolves as 5",
+  "source": ["card i_the_magician", "R-DICE-04", "R-DICE-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["i_the_magician"]}, {"character": "cain"}],
+    "active": 0,
+    "stack": [{"dice_roll": 2, "owner": 1}],
+    "priority": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "i_the_magician", "choices": ["ask.roll_of 2", "5"]},
+  "expect": {"allowed": true, "resolved": ["i_the_magician", "dice_roll"], "resolved_rolls": [5], "discards": {"loot": ["i_the_magician"]}}
+}

@@ -261,3 +261,21 @@ func TestCheckSituationOrderUnknownField(t *testing.T) {
 		}
 	}
 }
+
+// The strict reader covers the 23.11 checks: deck bottoms, roll values.
+func TestCheckSituationBottomAndRollsUnknownField(t *testing.T) {
+	expect := `, "expect": {"allowed": true, "deck_bottom": {"loot": []}, "resolved_roll": [3]}`
+	got := check(enginetest.CardTree, "razor_blade/hits-cain.json", razorFile(cardSource, expect))
+	want := []string{
+		`expect: unknown field "deck_bottom"; did you mean "deck_bottoms"?`,
+		`expect: unknown field "resolved_roll"; did you mean "resolved_rolls"?`,
+	}
+	if len(got) != len(want)+1 {
+		t.Fatalf("problems %q; want %d fields and the field list", got, len(want))
+	}
+	for i, w := range want {
+		if !strings.HasSuffix(got[i], w) {
+			t.Errorf("problem %q; want it to end with %q", got[i], w)
+		}
+	}
+}

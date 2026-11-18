@@ -112,11 +112,15 @@ Use option 1.
    17. Everyone passes: the game moves on as in a game (R-STACK-07).
    18. Open action phase: `priority` on an empty stack is the active player's (R-TURN-09).
    19. `declared` may come with `setup.stack`: responses resolve before the choice.
+   20. `expect.deck_bottoms` names a deck's bottom cards, in any order (23.11).
+   21. Any order: several cards go to the bottom at random (Q-22).
+   22. `expect.resolved_rolls`: each roll's final value, in order (R-DICE-06).
 11. `expect` comes from the rules, never from a run (5.25).
    1. A tool may write `setup` and `steps`; never `expect` (23.7).
    2. `enginetest` dumps a Go test with `SITUATION_DUMP` (23.7).
    3. The dump adds `title`, `sets`, an empty `source`, and `todo`.
    4. `todo` lists what it can't say; the runner rejects it until removed.
+   5. Hand-set state before a first direct `G.Apply` is read from the save origin (23.11).
 12. Runner
    1. `enginetest.RunSituations` runs a set's tree in its `go test`.
    2. One subtest per file, named by its path in the tree.

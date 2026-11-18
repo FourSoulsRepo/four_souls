@@ -137,6 +137,9 @@ type Expectation struct {
 	// setup.decks; Discards the whole discard piles, any order.
 	Decks    map[string][]CardRef `json:"decks,omitempty"`
 	Discards map[string][]CardRef `json:"discards,omitempty"`
+	// DeckBottoms are the cards at the bottom of decks by name, in any
+	// order: several cards go to the bottom in random order (Q-22).
+	DeckBottoms map[string][]CardRef `json:"deck_bottoms,omitempty"`
 	// Active, LootPlays and Attacks check the turn, as in setup.
 	Active    *int `json:"active,omitempty"`
 	LootPlays *int `json:"loot_plays,omitempty"`
@@ -153,6 +156,9 @@ type Expectation struct {
 	Resolved []string `json:"resolved,omitempty"`
 	// Events are event kinds that must happen, or with None must not.
 	Events []ExpectedEvent `json:"events,omitempty"`
+	// ResolvedRolls are the values every roll resolved as, in order:
+	// the final result after changes (R-DICE-06); [] expects none (23.11).
+	ResolvedRolls []int `json:"resolved_rolls,omitempty"`
 }
 
 // ExpectedPlayer checks one player after everything resolved. Hand and
@@ -657,10 +663,12 @@ func (g *Game) mismatches(allowed bool, rule string, events []Event, e Expectati
 		g.checkMonster(&c, x)
 	}
 	g.checkDecks(&c, e.Decks, e.Discards)
+	g.checkBottoms(&c, e.DeckBottoms)
 	g.checkGame(&c, e)
 	g.checkPrompt(&c, e.Prompt)
 	g.checkResolved(&c, e.Resolved, events)
 	checkEvents(&c, e.Events, events)
+	checkRolls(&c, e.ResolvedRolls, events)
 	return c
 }
 

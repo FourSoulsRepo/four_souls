@@ -1,5 +1,5 @@
 {
-  "title": "Isaac plays XIX. The Sun on his turn, then ends it: he takes an extra turn",
+  "title": "Isaac plays XIX. The Sun on his turn, then ends it: it goes to the bottom of the loot deck, and he takes an extra turn",
   "source": ["card xix_the_sun"],
   "sets": ["b2"],
   "setup": {
@@ -8,7 +8,7 @@
     "monsters": ["fly", "leech"]
   },
   "steps": [
-    {"player": 0, "kind": "play", "card": "xix_the_sun", "expect": {"allowed": true, "discards": {"loot": []}}},
+    {"player": 0, "kind": "play", "card": "xix_the_sun", "expect": {"allowed": true, "discards": {"loot": []}, "deck_bottoms": {"loot": ["xix_the_sun"]}}},
     {"player": 0, "kind": "end_turn"}
   ],
   "expect": {"allowed": true, "active": 0}
