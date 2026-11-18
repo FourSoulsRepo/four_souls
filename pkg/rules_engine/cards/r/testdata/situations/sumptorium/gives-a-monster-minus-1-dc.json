@@ -1,0 +1,15 @@
+{
+  "title": "Sumptorium: The Curdled removes 2 counters, and the leech has 4 - 1 DC",
+  "source": ["card sumptorium", "card leech"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "the_curdled", "items": ["sumptorium"], "counters": [{"card": "sumptorium", "count": 2}]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["leech", "fly"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "sumptorium", "ability": 1, "choices": ["leech"]},
+  "expect": {"allowed": true, "monsters": [{"card": "leech", "evasion": 3}], "after": [{"player": 0, "counters": [{"card": "sumptorium", "count": 0}]}]}
+}

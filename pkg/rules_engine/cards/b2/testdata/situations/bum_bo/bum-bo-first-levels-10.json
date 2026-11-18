@@ -1,0 +1,16 @@
+{
+  "title": "Isaac has Bum-Bo! and Counterfeit Penny and plays A Dime!!; he applies Bum-Bo! first: does it go to level 10, with no ¢ left for the Penny?",
+  "source": ["card bum_bo", "card counterfeit_penny", "card a_dime"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["bum_bo", "counterfeit_penny"], "hand": ["a_dime"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "a_dime",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["bum_bo", "counterfeit_penny"]}}},
+    {"kind": "choose", "choices": ["bum_bo"]}
+  ],
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 0, "counters": [{"card": "bum_bo", "count": 10}]}]}
+}

@@ -1,12 +1,13 @@
 package r
 
 import (
+	"errors"
 	"testing"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-// Tests of the room rules (R-SETUP-16, R-TURN-12, R-TURN-17, R-CARD-36).
+// Tests of the room rules (R-SETUP-16, R-TURN-12, R-TURN-17, R-CARD-33, R-CARD-36).
 
 func TestRoomStep(t *testing.T) {
 	tb := roomTable(t, "blessing_of_greed")
@@ -72,8 +73,15 @@ func TestRoomsOption(t *testing.T) {
 
 func TestOnlyTheActivePlayerUsesRooms(t *testing.T) {
 	tb := roomTable(t, "blood_donation")
-	if _, err := tb.G.Apply(engine.Intent{Player: 1, Kind: engine.IntentActivate, Objects: []engine.ObjectID{room(tb)}}); err == nil {
-		t.Error("Cain used the room on Isaac's turn (R-CARD-36)")
+	// Isaac uses the room and passes with it on the stack, so Cain holds
+	// priority (R-PRIO-03); an empty stack would give him none (R-TURN-09).
+	if _, err := tb.G.Apply(engine.Intent{Player: 0, Kind: engine.IntentActivate, Objects: []engine.ObjectID{room(tb)}}); err != nil {
+		t.Fatal(err)
+	}
+	tb.Pass(0)
+	_, err := tb.G.Apply(engine.Intent{Player: 1, Kind: engine.IntentActivate, Objects: []engine.ObjectID{room(tb)}})
+	if re := (*engine.RuleError)(nil); !errors.As(err, &re) || re.Rule != "R-CARD-33" {
+		t.Errorf("Cain used the room on Isaac's turn: %v; want a refusal by R-CARD-33", err) // R-CARD-33: only the active player uses a room
 	}
 }
 

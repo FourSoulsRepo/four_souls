@@ -1,0 +1,17 @@
+{
+  "title": "There's Options: the turn's purchase is used, Isaac buys the top treasure for 10 cents",
+  "source": ["card theres_options", "R-SHOP-03", "R-SHOP-05"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["theres_options"], "cents": 10},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "purchases": 0,
+    "decks": {"treasure": ["breakfast"]}
+  },
+  "action": {"player": 0, "kind": "purchase", "choices": ["ask.deck.treasure"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 0}]}
+}

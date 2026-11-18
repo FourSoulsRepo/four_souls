@@ -173,7 +173,7 @@ func (c removeCountersCost) pay(g *Game, p PlayerID, self ObjectID) {
 }
 func (c removeCountersCost) label() string { return "remove counters" }
 
-// --- Targets (R-ABIL-04 to R-ABIL-06) ---
+// --- Targets (R-ABIL-04 to R-ABIL-06, R-ABIL-40) ---
 
 // TargetKind is what a target may be.
 type TargetKind int

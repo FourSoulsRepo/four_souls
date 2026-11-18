@@ -1,0 +1,16 @@
+{
+  "title": "Isaac has Trinity Shield and his Jawbone aims at Cain on the stack: is Cain refused Mystery Sack, but may he still use his character?",
+  "source": ["card trinity_shield", "card jawbone", "card cain", "R-ABIL-12"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["trinity_shield", "jawbone"], "deactivated": ["jawbone"]}, {"character": "cain", "items": ["mystery_sack"]}],
+    "active": 0,
+    "stack": [{"kind": "activate", "card": "jawbone", "owner": 0, "choices": ["player 2 (cain)"]}],
+    "priority": 1
+  },
+  "steps": [
+    {"player": 1, "kind": "activate", "card": "mystery_sack", "expect": {"rule": "R-ABIL-12"}},
+    {"player": 1, "kind": "activate", "card": "cain", "expect": {"allowed": true}}
+  ],
+  "expect": {"rule": "R-ABIL-12", "after": [{"player": 1, "deactivated": ["character"]}]}
+}

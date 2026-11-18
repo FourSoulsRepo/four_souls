@@ -1,0 +1,16 @@
+{
+  "title": "Cain has Shadow; Isaac (3¢, A Dime!! in hand, Breakfast) kills himself with XIII. Death: does Cain pick the Breakfast to destroy and gain A Dime!! and 1¢?",
+  "source": ["card shadow", "card xiii_death", "R-DEATH-14"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["breakfast"], "hand": ["xiii_death", "a_dime"], "cents": 3}, {"character": "cain", "items": ["shadow"]}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "xiii_death", "choices": ["player 1 (isaac)", "breakfast", "a_dime"]},
+  "expect": {
+    "allowed": true,
+    "events": [{"kind": "died", "player": 0}],
+    "after": [{"player": 0, "items": [], "hand": 0, "cents": 2}, {"player": 1, "hand_cards": ["a_dime"], "cents": 1}],
+    "discards": {"loot": ["xiii_death"], "treasure": ["breakfast"]}
+  }
+}

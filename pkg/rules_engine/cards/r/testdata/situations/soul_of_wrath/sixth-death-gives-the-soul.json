@@ -1,0 +1,17 @@
+{
+  "title": "Soul of Wrath with 5 counters: Cain dies, the active player Isaac gains it",
+  "source": ["card soul_of_wrath", "card xiii_death"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["xiii_death"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "bonus_souls": ["soul_of_wrath"],
+    "counters": [{"card": "soul_of_wrath", "count": 5}]
+  },
+  "action": {"player": 0, "kind": "play", "card": "xiii_death", "choices": ["player 2 (cain)"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "souls": 1, "soul_cards": ["soul_of_wrath"]}, {"player": 1, "dead": true}]}
+}

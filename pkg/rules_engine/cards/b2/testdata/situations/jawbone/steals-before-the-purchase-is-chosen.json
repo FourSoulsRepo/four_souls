@@ -1,0 +1,27 @@
+{
+  "title": "Isaac declared a purchase with 10¢: before he picks the item, Maggy steals 3¢ with Jawbone, so the purchase fails",
+  "source": ["card jawbone", "R-SHOP-02", "R-SHOP-03", "R-SHOP-04", "R-PRIO-02"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "cents": 10},
+      {"character": "maggy", "items": ["jawbone"]}
+    ],
+    "active": 0,
+    "monsters": ["clotty", "fly"],
+    "shop": ["lucky_foot"],
+    "declared": "purchase",
+    "priority": 1
+  },
+  "steps": [
+    {"player": 1, "kind": "activate", "card": "jawbone", "choices": ["player 1 (isaac)"],
+     "expect": {"allowed": true,
+       "after": [{"player": 0, "cents": 7}, {"player": 1, "cents": 3}],
+       "prompt": {"player": 0, "options": ["lucky_foot", "ask.deck.treasure"]}}},
+    {"kind": "choose", "choices": ["lucky_foot"],
+     "expect": {"allowed": true,
+       "after": [{"player": 0, "cents": 7, "items": []}],
+       "events": [{"kind": "purchase_failed", "player": 0}, {"kind": "purchased", "none": true}]}}
+  ],
+  "expect": {"allowed": true}
+}

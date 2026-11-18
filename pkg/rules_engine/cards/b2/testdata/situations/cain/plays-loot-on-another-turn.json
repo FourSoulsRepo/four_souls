@@ -1,0 +1,17 @@
+{
+  "title": "Isaac's loot step: Cain used his tap, so with priority he plays A Penny!",
+  "source": ["card cain", "card a_penny", "R-TURN-04", "R-PRIO-02", "R-CARD-08"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain", "hand": ["a_penny"], "deactivated": ["character"], "extra_loot_plays": 1}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "phase": "loot",
+    "priority": 1
+  },
+  "action": {"player": 1, "kind": "play", "card": "a_penny"},
+  "expect": {"allowed": true, "after": [{"player": 1, "cents": 1, "hand": 0, "deactivated": ["character"]}]}
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Isaac has Synthoil and rolls a 3 against the Leech (DC 4): does it resolve as a 4 and hit?",
+  "source": ["card synthoil", "card leech", "R-ATK-12", "R-DICE-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["synthoil"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [3]
+  },
+  "action": {"player": 0, "kind": "attack", "choices": ["leech"]},
+  "expect": {"allowed": true, "resolved_rolls": [4], "monsters": [{"card": "leech", "dead": true}], "after": [{"player": 0, "damage": 0, "hand": 1}]}
+}

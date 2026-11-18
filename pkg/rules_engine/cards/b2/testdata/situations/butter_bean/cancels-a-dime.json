@@ -1,0 +1,20 @@
+{
+  "title": "Isaac's A Dime!! is on the stack; Cain, with a loot play from his ↷, answers with Butter Bean!: is the Dime cancelled, so Isaac gains nothing?",
+  "source": ["card butter_bean", "card a_dime", "card cain", "R-CARD-07", "R-CARD-08", "R-STACK-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain", "hand": ["butter_bean"], "extra_loot_plays": 1}
+    ],
+    "active": 0,
+    "stack": [{"kind": "play", "card": "a_dime", "owner": 0}],
+    "priority": 1
+  },
+  "action": {"player": 1, "kind": "play", "card": "butter_bean", "choices": ["a_dime"]},
+  "expect": {
+    "allowed": true,
+    "after": [{"player": 0, "cents": 0}, {"player": 1, "cents": 0, "hand_cards": []}],
+    "discards": {"loot": ["a_dime", "butter_bean"]}
+  }
+}

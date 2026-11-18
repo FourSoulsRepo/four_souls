@@ -1,0 +1,31 @@
+{
+  "title": "Isaac declared a purchase with 10¢; Maggy's Jawbone waits on the stack: it resolves first, so with 7¢ the purchase fails",
+  "source": ["card jawbone", "R-SHOP-02", "R-SHOP-03", "R-SHOP-04", "R-STACK-03", "R-STACK-04", "R-STACK-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "cents": 10},
+      {"character": "maggy", "items": ["jawbone"], "deactivated": ["jawbone"]}
+    ],
+    "active": 0,
+    "monsters": ["clotty", "fly"],
+    "shop": ["lucky_foot"],
+    "declared": "purchase",
+    "stack": [
+      {"kind": "activate", "card": "jawbone", "owner": 1, "choices": ["player 1 (isaac)"]}
+    ],
+    "priority": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "pass",
+     "expect": {"allowed": true,
+       "resolved": ["jawbone"],
+       "after": [{"player": 0, "cents": 7}, {"player": 1, "cents": 3}],
+       "prompt": {"player": 0, "options": ["lucky_foot", "ask.deck.treasure"]}}},
+    {"kind": "choose", "choices": ["lucky_foot"],
+     "expect": {"allowed": true,
+       "after": [{"player": 0, "cents": 7, "items": []}],
+       "events": [{"kind": "purchase_failed", "player": 0}, {"kind": "purchased", "none": true}]}}
+  ],
+  "expect": {"allowed": true}
+}

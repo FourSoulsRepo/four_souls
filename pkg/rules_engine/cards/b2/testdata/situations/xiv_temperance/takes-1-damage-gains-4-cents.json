@@ -1,0 +1,12 @@
+{
+  "title": "Isaac picks XIV. Temperance's first mode: 1 damage and 4¢",
+  "source": ["card xiv_temperance"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["xiv_temperance"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "xiv_temperance", "choices": ["Take 1 damage and gain 4¢."]},
+  "expect": {"allowed": true, "after": [{"player": 0, "damage": 1, "cents": 4}]}
+}

@@ -1,0 +1,19 @@
+{
+  "title": "Isaac plays XVIII. The Moon and keeps A Dime of the top 5 loot cards: it stays on top, the other 4 go to the bottom with no order question",
+  "source": ["card xviii_the_moon", "Q-22", "R-CARD-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["xviii_the_moon"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"loot": ["a_penny", "bomb", "a_dime", "pills", "dagaz"]}
+  },
+  "action": {"player": 0, "kind": "play", "card": "xviii_the_moon", "choices": ["a_dime"]},
+  "expect": {
+    "allowed": true,
+    "decks": {"loot": ["a_dime"]},
+    "deck_bottoms": {"loot": ["a_penny", "bomb", "pills", "dagaz"]},
+    "discards": {"loot": ["xviii_the_moon"]},
+    "after": [{"player": 0, "hand_cards": []}]
+  }
+}

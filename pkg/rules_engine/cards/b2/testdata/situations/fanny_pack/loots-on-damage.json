@@ -1,0 +1,13 @@
+{
+  "title": "Isaac has Fanny Pack and the Fly hits him on a miss: does he loot 1?",
+  "source": ["card fanny_pack", "card fly", "R-ATK-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["fanny_pack"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [1, 6]
+  },
+  "action": {"player": 0, "kind": "attack", "choices": ["fly"]},
+  "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "hand": 1, "damage": 1, "cents": 1}]}
+}

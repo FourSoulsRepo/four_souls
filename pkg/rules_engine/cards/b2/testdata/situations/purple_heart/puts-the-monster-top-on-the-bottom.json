@@ -1,0 +1,19 @@
+{
+  "title": "Isaac has Purple Heart; at the start of his turn he looks at the monster deck's top card, Swarm of Flies, and puts it on the bottom: is the Leech on top then?",
+  "source": ["card purple_heart", "R-TURN-03"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["purple_heart"]}, {"character": "cain"}],
+    "active": 1,
+    "decks": {"monster": ["swarm_of_flies", "leech"]}
+  },
+  "steps": [
+    {"player": 1, "kind": "end_turn", "choices": ["ask.put_on_bottom swarm_of_flies"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 0,
+    "decks": {"monster": ["leech"]},
+    "deck_bottoms": {"monster": ["swarm_of_flies"]}
+  }
+}

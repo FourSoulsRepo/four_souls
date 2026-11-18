@@ -1,0 +1,19 @@
+{
+  "title": "Isaac has Spider Mod and rolls a 5 with Mystery Sack: may he put the Fly into discard and replace it with the monster deck's top card?",
+  "source": ["card spider_mod", "card mystery_sack", "R-ABIL-16"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["spider_mod", "mystery_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [5]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["fly"]},
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "fly", "dead": true}, {"slot": 1, "card": "clotty"}, {"slot": 2, "card": "leech"}],
+    "discards": {"monster": ["fly"]},
+    "after": [{"player": 0, "cents": 0}]
+  }
+}

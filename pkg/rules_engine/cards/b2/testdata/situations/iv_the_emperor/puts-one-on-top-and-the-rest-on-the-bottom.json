@@ -1,0 +1,19 @@
+{
+  "title": "Isaac plays IV. The Emperor and keeps Cod Worm of the top 5 monster cards: it stays on top, the other 4 go to the bottom with no order question",
+  "source": ["card iv_the_emperor", "Q-22", "R-CARD-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["iv_the_emperor"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["clotty", "chub", "cod_worm", "big_spider", "black_bony"]}
+  },
+  "action": {"player": 0, "kind": "play", "card": "iv_the_emperor", "choices": ["cod_worm"]},
+  "expect": {
+    "allowed": true,
+    "decks": {"monster": ["cod_worm"]},
+    "deck_bottoms": {"monster": ["clotty", "chub", "big_spider", "black_bony"]},
+    "discards": {"loot": ["iv_the_emperor"]},
+    "monsters": [{"slot": 1, "card": "fly"}, {"slot": 2, "card": "leech"}]
+  }
+}

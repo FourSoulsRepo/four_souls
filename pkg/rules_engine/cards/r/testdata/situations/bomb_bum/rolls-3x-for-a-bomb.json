@@ -1,0 +1,26 @@
+{
+  "title": "Bomb Bum: Isaac discards Bomb! and rolls 3x; 5 hurts him, 2 hurts Cain, 1 kills the leech",
+  "source": ["card bomb_bum", "R-CARD-36", "R-STACK-02", "card leech", "R-DEATH-06", "R-DEATH-09"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["bomb", "a_penny"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["bomb_bum"],
+    "decks": {"monster": ["clotty"], "loot": ["a_nickel"]},
+    "rolls": [1, 2, 5]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "bomb_bum", "choices": ["bomb", "player 2 (cain)", "leech"]},
+  "expect": {
+    "allowed": true,
+    "after": [
+      {"player": 0, "damage": 1, "hand_cards": ["a_penny", "a_nickel"]},
+      {"player": 1, "damage": 1}
+    ],
+    "monsters": [{"card": "leech", "dead": true}, {"slot": 2, "card": "clotty"}],
+    "discards": {"loot": ["bomb"], "monster": ["leech"]}
+  }
+}

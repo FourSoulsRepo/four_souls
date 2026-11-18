@@ -1,0 +1,20 @@
+{
+  "title": "Isaac has Swallowed Penny, misses the Fly and takes 1 damage, then kills it: does he have 1¢ for the damage and 1¢ from the Fly?",
+  "source": ["card swallowed_penny", "card fly", "R-ATK-11", "R-ATK-12", "R-ATK-13", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["swallowed_penny"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "rolls": [1, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 6],
+    "monsters": [{"card": "fly", "dead": true}],
+    "after": [{"player": 0, "cents": 2, "damage": 1}]
+  }
+}

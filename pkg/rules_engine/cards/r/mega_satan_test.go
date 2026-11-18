@@ -21,21 +21,3 @@ func TestMegaSatanIndomitable(t *testing.T) {
 		t.Error("Mega Satan in the new slot; slot 1 refilled with another card")
 	}
 }
-
-func TestMegaSatanWins(t *testing.T) {
-	tb := setup(t, engine.SituationSetup{
-		Players:  []engine.SituationPlayer{seat("isaac"), {Character: "cain", Dead: true}, {Character: "samson", Dead: true}},
-		Monsters: []engine.CardRef{"mega_satan", "fly"},
-	})
-	if _, err := tb.G.Apply(engine.Intent{Player: 0, Kind: engine.IntentEndTurn}); err != nil {
-		t.Fatal(err)
-	}
-	for range 20 {
-		if w := tb.G.Prompt(); w.Kind == engine.PromptPriority && !tb.G.Over {
-			tb.Pass(int(w.Player))
-		}
-	}
-	if !tb.G.Over || len(tb.G.Winners) != 1 || tb.G.Winners[0] != 0 {
-		t.Error("the only living player wins at the end of the turn")
-	}
-}

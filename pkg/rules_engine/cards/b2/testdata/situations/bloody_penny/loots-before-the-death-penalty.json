@@ -1,0 +1,22 @@
+{
+  "title": "Isaac has Bloody Penny and kills Cain with XIII. Death: does Isaac loot 1 before Cain pays the penalty of 1¢?",
+  "source": ["card bloody_penny", "card xiii_death", "R-DEATH-13", "R-DEATH-14", "R-CARD-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["bloody_penny"], "hand": ["xiii_death"]},
+      {"character": "cain", "cents": 3}
+    ],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "xiii_death", "choices": ["player 2 (cain)"]},
+  "expect": {
+    "allowed": true,
+    "resolved": ["bloody_penny", "death_penalty"],
+    "after": [
+      {"player": 0, "hand": 1, "items": ["bloody_penny"]},
+      {"player": 1, "dead": true, "cents": 2}
+    ],
+    "discards": {"loot": ["xiii_death"]}
+  }
+}

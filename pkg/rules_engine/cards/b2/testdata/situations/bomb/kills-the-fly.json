@@ -1,0 +1,17 @@
+{
+  "title": "Isaac plays Bomb! on the Fly (1 HP): does it die, and does Isaac get its 1¢?",
+  "source": ["card bomb", "card fly", "R-CARD-07", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "bomb", "choices": ["fly"]},
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "fly", "dead": true}, {"card": "leech", "slot": 2, "damage": 0}],
+    "after": [{"player": 0, "cents": 1}],
+    "discards": {"loot": ["bomb"]}
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "title": "Isaac has Finger! and Breakfast; Cain rolls a 2 with Mystery Sack: may Isaac swap his Breakfast for Cain's Dinner?",
+  "source": ["card finger", "card mystery_sack", "R-ABIL-16"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["finger", "breakfast"]}, {"character": "cain", "items": ["mystery_sack", "dinner"]}],
+    "active": 1,
+    "rolls": [2]
+  },
+  "action": {"player": 1, "kind": "activate", "card": "mystery_sack", "choices": ["breakfast", "dinner"]},
+  "expect": {
+    "allowed": true,
+    "after": [{"player": 0, "items": ["finger", "dinner"]}, {"player": 1, "items": ["mystery_sack", "breakfast"], "hand": 1}]
+  }
+}

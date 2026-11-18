@@ -1,0 +1,13 @@
+{
+  "title": "XVI. The Tower rolls a 3: each monster takes 1 damage, so the Fly and the Leech (1 HP each) die",
+  "source": ["card xvi_the_tower", "card fly", "card leech"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["xvi_the_tower"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [3]
+  },
+  "action": {"player": 0, "kind": "play", "card": "xvi_the_tower", "choices": ["ask.rest_in_slot_order"]},
+  "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}, {"card": "leech", "dead": true}]}
+}

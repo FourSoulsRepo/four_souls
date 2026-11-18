@@ -1,0 +1,19 @@
+{
+  "title": "A roll of 6: Spoon Bender's +1 resolves first, then Book of Belial's -1. Is it 6 or 5?",
+  "source": ["card spoon_bender", "card book_of_belial", "R-DICE-01", "R-DICE-04", "R-STACK-02"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "judas", "items": ["spoon_bender", "book_of_belial"], "deactivated": ["spoon_bender", "book_of_belial"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "stack": [
+      {"dice_roll": 6, "owner": 1},
+      {"kind": "activate", "card": "book_of_belial", "owner": 0, "choices": ["Subtract 1 from a roll.", "ask.roll_of 6"]},
+      {"kind": "activate", "card": "spoon_bender", "owner": 0, "choices": ["ask.roll_of 6"]}
+    ]
+  },
+  "action": {"player": 0, "kind": "pass"},
+  "expect": {"allowed": true, "resolved": ["spoon_bender", "book_of_belial", "dice_roll"], "resolved_rolls": [5]}
+}

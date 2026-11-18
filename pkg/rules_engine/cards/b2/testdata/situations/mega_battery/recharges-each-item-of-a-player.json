@@ -1,0 +1,18 @@
+{
+  "title": "Isaac plays Mega Battery on Cain, whose D6 and Blood Lust are spent: are both recharged?",
+  "source": ["card mega_battery", "R-MECH-22", "R-CARD-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["mega_battery"]},
+      {"character": "cain", "items": ["the_d6", "blood_lust"], "deactivated": ["the_d6", "blood_lust"]}
+    ],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "mega_battery", "choices": ["player 2 (cain)"]},
+  "expect": {
+    "allowed": true,
+    "after": [{"player": 1, "deactivated": [], "items": ["the_d6", "blood_lust"]}],
+    "discards": {"loot": ["mega_battery"]}
+  }
+}

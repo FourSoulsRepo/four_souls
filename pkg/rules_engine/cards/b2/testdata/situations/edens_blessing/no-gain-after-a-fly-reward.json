@@ -1,0 +1,21 @@
+{
+  "title": "Eden's Blessing: Isaac kills a fly for 1¢, then ends his turn and gains nothing",
+  "source": ["card edens_blessing", "card fly", "R-ATK-12"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["edens_blessing"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly"],
+    "decks": {"monster": ["leech"]},
+    "rolls": [2]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"], "expect": {"allowed": true, "after": [{"player": 0, "cents": 0}]}},
+    {"kind": "throw", "expect": {"allowed": true, "after": [{"player": 0, "cents": 1, "damage": 0}]}},
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 1}]}
+}

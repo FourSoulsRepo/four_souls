@@ -107,41 +107,6 @@ func testGain(t *testing.T, card engine.CardRef, n int) {
 	}
 }
 
-// testOneOnTop plays a "look at the top 5, put 1 on top, the rest on the
-// bottom" card, picking the third card by name.
-func testOneOnTop(t *testing.T, card engine.CardRef, d engine.DeckKind) {
-	t.Helper()
-	tb := lootTable(t, card)
-	top := tb.G.DeckTop(d, 5)
-	name := tb.G.Object(top[2]).Card
-	kept := -1 // options are names: the first card with the name is picked
-	for i, id := range top {
-		if kept < 0 && tb.G.Object(id).Card == name {
-			kept = i
-		}
-	}
-	var rest []engine.ObjectID
-	for i, id := range top {
-		if i != kept {
-			rest = append(rest, id)
-		}
-	}
-	// No order question: the rest go to the bottom at random (Q-22).
-	tb.Play(0, card, string(name))
-	if p := tb.G.Prompt(); p.Kind == engine.PromptChoose {
-		t.Errorf("prompt %+v after the top card, want no order question", p)
-	}
-	if got := tb.G.DeckTop(d, 1)[0]; got != top[kept] {
-		t.Errorf("top is %s, want the chosen %s", tb.G.Object(got).Card, name)
-	}
-	bottom := tb.G.Decks[d][:4]
-	for _, id := range rest {
-		if !slices.Contains(bottom, id) {
-			t.Errorf("%s is not on the bottom", tb.G.Object(id).Card)
-		}
-	}
-}
-
 // itemTable: player 0 (Isaac) has the items and the hand; player 1 is
 // Cain; a fly and a leech are in the monster slots.
 func itemTable(t *testing.T, items []engine.CardRef, hand ...engine.CardRef) *enginetest.Table {

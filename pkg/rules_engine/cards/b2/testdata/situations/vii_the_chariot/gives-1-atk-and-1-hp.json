@@ -1,0 +1,12 @@
+{
+  "title": "Isaac plays VII. The Chariot on Cain (1 ATK, 2 HP): Cain has 2 ATK and 3 HP",
+  "source": ["card vii_the_chariot", "card cain"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["vii_the_chariot"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "vii_the_chariot", "choices": ["player 2 (cain)"]},
+  "expect": {"allowed": true, "after": [{"player": 1, "atk": 2, "hp": 3}]}
+}

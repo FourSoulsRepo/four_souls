@@ -34,3 +34,4 @@
 | [030](030-bindings-by-domain.md) | Bindings by domain | Accepted |
 | [031](031-replays-without-the-engine.md) | Replays without the engine | Accepted |
 | [032](032-fixed-deals-in-e2e.md) | Fixed deals in e2e tests | Accepted |
+| [033](033-situation-files-as-card-tests.md) | Situation files as card tests | Accepted |

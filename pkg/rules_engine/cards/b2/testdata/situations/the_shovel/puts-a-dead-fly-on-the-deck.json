@@ -1,0 +1,18 @@
+{
+  "title": "Mr. Boom kills the fly; The Shovel puts it back on top of the monster deck",
+  "source": ["card mr_boom", "card fly", "card the_shovel"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["the_shovel", "mr_boom"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "mr_boom", "choices": ["fly"]},
+    {"player": 0, "kind": "activate", "card": "the_shovel", "choices": ["fly"]}
+  ],
+  "expect": {"allowed": true, "decks": {"monster": ["fly"]}}
+}

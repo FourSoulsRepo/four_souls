@@ -1,0 +1,18 @@
+{
+  "title": "Polydactyly: Isaac plays two A Penny! on his turn",
+  "source": ["card polydactyly", "card a_penny"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["polydactyly"], "hand": ["a_penny", "a_penny"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "a_penny"},
+    {"player": 0, "kind": "play", "card": "a_penny"}
+  ],
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 2}]}
+}

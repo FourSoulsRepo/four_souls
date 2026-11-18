@@ -1,0 +1,16 @@
+{
+  "title": "Isaac misses Conjoined Fatty and dies from its hit: does his attack go on?",
+  "source": ["card conjoined_fatty", "card isaac", "R-07 #10", "R-DEATH-12", "R-DEATH-16", "R-ATK-15"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["conjoined_fatty"],
+    "rolls": [1, 6, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["conjoined_fatty"],
+     "expect": {"allowed": true, "events": [{"kind": "died", "player": 0}]}}
+  ],
+  "expect": {"allowed": true, "active": 1, "monsters": [{"card": "conjoined_fatty", "dead": false}]}
+}

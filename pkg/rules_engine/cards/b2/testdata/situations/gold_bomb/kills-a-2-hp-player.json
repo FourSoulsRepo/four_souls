@@ -1,0 +1,17 @@
+{
+  "title": "Isaac plays Gold Bomb!! on Cain (2 HP): does 3 damage kill him?",
+  "source": ["card gold_bomb", "card cain", "R-CARD-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["gold_bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "gold_bomb", "choices": ["player 2 (cain)"]},
+  "expect": {
+    "allowed": true,
+    "events": [{"kind": "died", "player": 1}],
+    "after": [{"player": 0, "dead": false, "damage": 0}, {"player": 1, "dead": true}],
+    "discards": {"loot": ["gold_bomb"]}
+  }
+}

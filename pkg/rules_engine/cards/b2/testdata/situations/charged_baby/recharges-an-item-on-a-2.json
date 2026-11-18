@@ -1,0 +1,13 @@
+{
+  "title": "Isaac has Charged Baby and rolls a 2 with Mystery Sack: may he recharge the Sack?",
+  "source": ["card charged_baby", "card mystery_sack", "R-ABIL-16"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["charged_baby", "mystery_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [2]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["mystery_sack"]},
+  "expect": {"allowed": true, "resolved_rolls": [2], "after": [{"player": 0, "deactivated": [], "hand": 1}]}
+}

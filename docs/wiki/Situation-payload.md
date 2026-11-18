@@ -1,6 +1,6 @@
 # Situation payload
 
-A situation is a small JSON document: a table position, one action, and optionally what should happen. The same format is used by the in-app sandbox, the rules website and rules tests (LR-04, LR-07).
+A situation is a small JSON document: a table position, one action or several [steps](#steps), and optionally what should happen. The same format is used by the in-app sandbox, the rules website and rules tests (LR-04, LR-07).
 
 ```json
 {
@@ -25,13 +25,85 @@ A situation is a small JSON document: a table position, one action, and optional
 * `sets` — card sets the situation needs, by code (`b2`) or name (`Base Game V2`).
 * `seed` — optional; fixes shuffles and dice.
 * `setup.players[]` — `character`, `items`, `hand`, `cents`, `souls`, `damage`, `dead`, and `deactivated` (cards, or `"character"`, that start deactivated).
-* `setup.active` — the active player; the turn is in the open action phase with one loot play, attack and purchase left (`loot_plays` overrides the loot plays).
+* `setup.players[].counters` — counters on the player's cards: `[{"card": "tech_x", "count": 3}]`; `card` is an item or soul ref, or `"character"`; `name` names the counters (`{"card": "bum_friend", "name": "gold", "count": 1}`), none for plain counters. See [Counters](#counters).
+* `setup.players[].eternal` — items or souls that are eternal, as a starting item (R-ABIL-18): `["the_bone"]`.
+* `setup.players[].extra_loot_plays` — loot plays from abilities that work on any turn, as Cain's ↷ gives on another player's turn: `1`.
+* `setup.active` — the active player; the turn is in the open action phase with one loot play, attack and purchase left (`loot_plays`, `attacks` and `purchases` override them; bonus ones, as Champion Belt's, come on top), unless `setup.phase` or `setup.declared` names another window.
 * `setup.monsters`, `setup.shop` — the top card of each slot.
+* `setup.rooms` — the room in each room slot (R-SETUP-12); the active player uses its abilities (R-CARD-33, R-CARD-36).
+* `setup.monster_damage` — damage on a card in a monster, final boss, minion or room slot, by its ref: `{"gemini": 2}`. It must leave the card at least 1 HP.
+* `setup.counters` — counters on a card no player controls: a card in a slot or an active bonus soul, in the same form as a player's: `[{"card": "soul_of_wrath", "count": 5}]`.
+* `setup.decks` — cards put on top of decks, by deck name (`treasure`, `loot`, `monster`, `room`), top first: `{"monster": ["chest_2"], "loot": ["bomb", "a_penny"]}`. Each card must belong to that deck. The rest of the deck is every card of the sets, shuffled with `seed`.
+* `setup.rolls` — the next dice results, in order, each 1–6: `[6, 1]`. Any die rolled after them is random (from `seed`).
 * `setup.bosses`, `setup.minions` — a challenge's final boss and minion slots, one card each (R-CHAL-02, R-CHAL-07).
 * `setup.stack` — items already on the stack, bottom first: dice rolls, loot cards, abilities, triggers and attack rolls; see [Stacked items](#stacked-items).
-* `action.kind` — `play`, `activate`, `attack`, `purchase`, `end_turn` or `pass`; `card` and `ability` pick the card.
+* `setup.priority` — the seat that holds priority at the start, from 0: `1`. See [Priority](#priority).
+* `setup.phase` — the turn's window the situation starts in: `start`, `loot`, `action` (the default) or `end` (23.10). See [Windows](#windows).
+* `setup.declared` — `attack` or `purchase`: the active player has declared it in the action phase and not chosen the target or item yet (R-ATK-02, R-SHOP-02). See [Windows](#windows).
+* `action.kind` — `play`, `activate`, `attack`, `purchase`, `end_turn` or `pass`; `card` and `ability` pick the card. `activate` names a card the player controls, or a room in a room slot (23.6): only the active player may use a room, so another player's `activate` is refused by R-CARD-33, as in a game. Also `throw`, `choose` and `reveal`, which mostly make sense as [steps](#steps).
 * `action.choices` — answers to the prompts that follow, by option label: an option's plain form, with no language (`Game.Plain`, 16.4). A card is its ref (`"bomb"`), a player `"player 2 (hero_b)"`, a number its digits, a card's own words (a "choose one-" option) the words; any other option is its key, then its values (`"ask.deck.monster"`, `"ask.cancel"`, `"ask.yes"`, `"ask.slot_card 1 fly"`).
-* `expect` — optional: `allowed`, the refusal `rule`, and `after` checks per player (`cents`, `hand`, `damage`, `souls`, `dead`).
+* `steps` — several actions in a row, each with its own `choices` and an optional `expect`; a situation has `action` or `steps`, never both. See [Steps](#steps).
+* `expect` — optional: `allowed`, the refusal `rule`, `after` checks per player, and checks of monsters, decks, the turn, the game's end, the open question, the resolve order and events; see [Checks](#checks). `allowed` is a plain boolean: leaving it out expects a refusal.
+* `source` — optional for a payload, required in a test file: a list of what the `expect` values come from (ADR 033, CLAUDE.md 5.25); see [As tests](#as-tests). The engine does not read it.
+
+## Counters
+
+A counter entry is `{"card": …, "name": …, "count": …}`; `count` is 1 or more and `name` is optional. A ref names the first such card: in seat order for a player's cards, then in slot order (monster, final boss, minion, room slots) and the bonus souls for `setup.counters`. An unknown field, a card the player has not in play, or a card in no slot is an error that lists the options.
+
+## Checks
+
+`expect` checks what is true once the action, or the step it sits on, has settled (23.5). A field left out is not checked, so old payloads keep their meaning. Names follow `setup`, so a setup and an expect read alike.
+
+| Field | Checks | Example |
+|-------|--------|---------|
+| `after[].cents`, `damage`, `dead` | the player's cents, damage, dead | `{"player": 1, "damage": 1}` |
+| `after[].hand`, `souls` | counts: cards in hand, soul value | `{"player": 0, "hand": 2, "souls": 1}` |
+| `after[].hp`, `atk` | HP left (max HP minus damage), ATK | `{"player": 0, "hp": 1, "atk": 2}` |
+| `after[].items` | every item the player has in play | `{"player": 1, "items": []}` |
+| `after[].hand_cards` | every card in hand | `{"player": 0, "hand_cards": ["bomb"]}` |
+| `after[].soul_cards` | every soul card in play | `{"player": 0, "soul_cards": ["soul_of_wrath"]}` |
+| `after[].deactivated` | every deactivated item, and `"character"` | `{"player": 0, "deactivated": ["jawbone"]}` |
+| `after[].counters` | counters on the player's cards, as in setup | `{"player": 0, "counters": [{"card": "sumptorium", "count": 0}]}` |
+| `monsters[]` | a card in a slot: `card`, and `slot`, `damage`, `hp`, `atk`, `evasion`, `dead` | `{"slot": 1, "card": "fly", "damage": 1, "hp": 1}` |
+| `counters` | counters on cards no player controls, as `setup.counters` | `[{"card": "gaper", "name": "level", "count": 1}]` |
+| `decks` | the cards on top of a deck, top first, as `setup.decks` | `{"monster": ["fly"]}` |
+| `discards` | every card in a discard pile | `{"loot": ["a_dime"]}` |
+| `deck_bottoms` | the cards at the bottom of a deck, in any order | `{"loot": ["a_penny", "bomb"]}` |
+| `active`, `loot_plays`, `attacks` | the active seat, its loot plays and attacks left | `"attacks": 2` |
+| `over`, `winners` | the game has ended; the winning seats | `"over": true, "winners": [0]` |
+| `prompt` | the open question: `player` who is asked, every option in `options` | `{"player": 0, "options": ["the_d6", "ask.cancel"]}` |
+| `resolved` | stack items in the order they resolved; others may come between | `["lucky_foot", "bomb", "dice_roll"]` |
+| `events` | event kinds that happened, with `player`; `none: true` that did not | `[{"kind": "damaged", "player": 1}, {"kind": "died", "none": true}]` |
+| `resolved_rolls` | the value each roll resolved as, in order | `[5]` |
+
+* A list of cards (`items`, `hand_cards`, `soul_cards`, `deactivated`, `discards`, `winners`) names every card there, in any order: a card more or less is a mismatch, and `[]` expects none. The deck in `decks` is the exception: it holds the rest of the sets, so only its top cards are compared, in order.
+* `hand` and `souls` stay counts, as before 23.5; the cards are `hand_cards` and `soul_cards`.
+* A counter check names its card as in setup (`"character"` for the character); a `count` of 0 expects none.
+* A `monsters` check needs `card`. Without `slot`, `card` names the first such card in slot order (monster, final boss, minion, room slots), as `setup.monster_damage` does. With `slot` (from 1, a monster slot), that slot's top card must be `card`. `dead: true` means no slot holds the card and it is in a discard or a player's souls; `dead: false` that a slot holds it.
+* `hp` is what is left: max HP minus damage, for players and monsters.
+* `prompt` (23.6) checks the question open once the step settled, a choose or order question. `player` is the seat asked; `options` names every option by its label, as `choices` do, in any order. A target or mode question ends with `ask.cancel`: the player may back out before paying (R-ABIL-04). A field left out is not checked, so `"prompt": {}` only says a question is open. A prompt check also stops the step at that question; see [When a step settles](#when-a-step-settles).
+* `resolved` (23.6) names stack items in the order they resolved (`stack_resolved` events, as `enginetest.ResolvedAt` reads them). It is an ordered subsequence: each name must resolve after the one before it, and other items may resolve between them, so a check of two cards ignores the damage a Bomb! puts on the stack. A loot card, an activated or a triggered ability is named by its card ref; any other item by its kind: `dice_roll`, `attack_roll`, `damage`, `death`, `death_penalty`, `death_step`. `[]` expects nothing resolved. Any other name is an error that lists the kinds.
+* `events` (23.6) checks event kinds, by the engine's names (`damaged`, `looked_at`, `turn_ended_early`, …; `stack_resolved` and the rest). Each entry needs `kind`; `player` (a seat) narrows it to that player's events, and without it any player's count. `none: true` expects no such event; without it, at least one. An unknown kind is an error that lists every kind.
+* A step's `resolved` and `events` read that step's events; the top-level `expect` reads every step's (the answer's `events`).
+* `deck_bottoms` (23.11) checks the bottom of a deck, by deck name as `decks`: as many cards as the list names, from the bottom up, compared in any order. Several cards put on the bottom go there in random order (Q-22), so no rule says their order; one card at the bottom is simply that card. The rest of the deck is the shuffled set cards, so the list names only cards an effect put there. `decks` still compares the top, top first.
+* `resolved_rolls` (23.11) lists the value every dice roll resolved as, in order: the final result after every change (Lucky Foot, I. The Magician, Book of Belial, continuous roll bonuses) and the 1 to 6 bounds (R-DICE-01, R-DICE-06), as its `roll_resolved` event says. The list holds every roll, attack rolls too, so its length counts them; `[]` expects none. The die thrown is `setup.rolls`; this is what that die became. A step's list reads that step's rolls; the top-level one every step's.
+
+Each mismatch says what it found and what was expected:
+
+```
+player 0 items are [razor sword coin_bag], expected [razor sword]
+monster slot 1 is "gaper", expected "boss"
+monster gaper evasion is 3, expected 4
+player 0 counters on razor are 2, expected 3
+monster deck top is [gaper], expected [boss]
+loot deck bottom is [bomb_loot], expected [penny] in any order
+resolved_rolls are [4], expected [5]
+winners are [], expected [0]
+prompt options are ["the_d6" "ask.cancel"], expected ["the_d6"]
+resolved [lucky_foot bomb damage dice_roll], expected [bomb lucky_foot] in this order
+events: no "looked_at" for player 1, expected one
+events: 1 "damaged" for player 1, expected none
+```
 
 ## Stacked items
 
@@ -41,15 +113,17 @@ A situation is a small JSON document: a table position, one action, and optional
 |--------|------|--------|
 | none | a dice roll | `dice_roll` (1–6): `{"dice_roll": 4, "owner": 1}`, the first form |
 | `play` | a loot card | `card` (a loot card), `choices` |
-| `activate` | an activated ability | `card` (in play, the owner's), `ability` (as in `action`), `choices` |
+| `activate` | an activated ability | `card` (in play, the owner's, or a room in a room slot when the owner is the active player), `ability` (as in `action`), `choices` |
 | `trigger` | a triggered ability | `card` (the owner's, or a monster or room in a slot when the owner is the active player), `ability` |
 | `attack_roll` | an attack roll | `dice_roll` (1–6), `card` (a monster in play: a monster, final boss or minion slot); the owner is the active player |
 
 `choices` are the mode and targets chosen when the item went on the stack, in the order the prompts ask them, by the same labels as `action.choices`: `"player 2 (maggy)"`, `"bomb"`, a dice roll below it `"ask.roll_of 2"`, a mode its words. A target can be an item lower on the stack. Answers the item asks for while it resolves (an amount, a yes) go in `action.choices`.
 
+A room's ability works as an item's (23.6): the room's "you" is the active player (R-CARD-36), and only the active player uses its abilities (R-CARD-33), so its owner must be the active player, who activated it; another owner is an error that names the rule.
+
 Each item is as it is just after it went on the stack: its costs are paid and nothing is paid again. The setup shows what the costs left: a stacked loot card is in no hand, a tapped item is in `deactivated`, spent cents are not in `cents`. Nothing triggers as the items go on the stack. A trigger's event is the owner's ("when you …"). An attack roll means the active player attacks that monster: the attack is declared and used, and every attack roll attacks the same monster.
 
-The items are built with the engine's own stack items for a played loot, an activation, a trigger and an attack roll, so they resolve as in a game. Priority goes to the top item's owner; `{"kind": "pass"}` by them lets the whole stack resolve, top first, and `expect.after` checks the end.
+The items are built with the engine's own stack items for a played loot, an activation, a trigger and an attack roll, so they resolve as in a game. Priority goes to the top item's owner (or the seat in `setup.priority`); `{"kind": "pass"}` by them lets the whole stack resolve, top first, and `expect.after` checks the end.
 
 ```json
 {
@@ -68,18 +142,187 @@ The items are built with the engine's own stack items for a played loot, an acti
     ]
   },
   "action": {"player": 0, "kind": "pass", "choices": ["2"]},
-  "expect": {"allowed": true, "after": [{"player": 0, "hand": 0}, {"player": 1, "damage": 1}]}
+  "expect": {"allowed": true, "resolved": ["lucky_foot", "bomb", "dice_roll"], "after": [{"player": 0, "hand": 0}, {"player": 1, "damage": 1}]}
 }
 ```
 
 Lucky Foot resolves first and makes the roll a 4, then Bomb! deals 1 damage to Maggy, then the roll resolves as 4. An unknown field, kind, card, owner or target is an error that names the item and lists the options. A loot card that copies an ability as it is played (? Card) can't start on the stack.
 
+## Priority
+
+`setup.priority` names the seat that holds priority when the situation starts (23.4). Without it, priority goes to the top stacked item's owner, or to the active player.
+
+* With an empty stack, the players before that seat in turn order, counted from the active player, have already passed (R-PRIO-02). The engine counts those passes, so when the seat and the players after it pass too, the window closes as in a game (R-PRIO-05) and the game moves on (R-STACK-07); see [Windows](#windows).
+* In the open action phase (no `phase` or `"phase": "action"`, nothing declared, an empty stack) only the active player may hold priority: they can't pass there (R-TURN-09), so no other player ever gets it. Another seat is an error that names R-TURN-09; the active player's seat is fine (it is the default). Start the situation in a real window instead: `phase` `start`, `loot` or `end`, a `declared` attack or purchase, or a stack.
+* With a stack, it overrides the top item's owner; nobody has passed yet. This works in every window.
+* A seat outside the players is an error.
+
+So a player who may act on another player's turn needs no dice roll on the stack just to get priority:
+
+```json
+{
+  "title": "Isaac's loot step: Cain used his tap, so with priority he plays A Penny!",
+  "source": ["card cain", "card a_penny", "R-TURN-04", "R-PRIO-02", "R-CARD-08"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain", "hand": ["a_penny"], "deactivated": ["character"], "extra_loot_plays": 1}
+    ],
+    "active": 0,
+    "phase": "loot",
+    "priority": 1
+  },
+  "action": {"player": 1, "kind": "play", "card": "a_penny"},
+  "expect": {"allowed": true, "after": [{"player": 1, "cents": 1, "hand": 0, "deactivated": ["character"]}]}
+}
+```
+
+## Windows
+
+A real game has an empty stack with priority passing around in several moments (23.10). `setup.phase` and `setup.declared` start the situation in one of them; the step's own work is already done, and the setup shows the table as it is then.
+
+| Setup | The moment | Turn counts | When everyone passes |
+|-------|------------|-------------|----------------------|
+| `"phase": "start"` | the start phase after the recharge step and the start-of-turn triggers (R-TURN-02, R-TURN-03) | no loot play, attack or purchase yet | the loot step: the active player loots 1 (R-TURN-04), then its window |
+| `"phase": "loot"` | the loot step after the active player looted 1 (R-TURN-04) | none yet | the action phase begins: 1 loot play, attack and purchase (R-TURN-05, R-TURN-07) |
+| `"phase": "action"` or none | the open action phase (R-TURN-06) | 1 of each, or `loot_plays`, `attacks`, `purchases` | the active player can't pass (R-TURN-09) |
+| `"phase": "end"` | the end phase after the end-of-turn triggers (R-TURN-10); the turn's end is declared | as in the action phase | the hand size step, the room step, then the next player's turn (R-TURN-11 to R-TURN-13) |
+| `"declared": "attack"` | the action phase: the attack is declared, the target not chosen (R-ATK-02) | the attack is used (R-TURN-07) | the active player picks the target; a `setup.stack` of responses resolves first |
+| `"declared": "purchase"` | the action phase: the purchase is declared, the item not chosen (R-SHOP-02) | the purchase is used (R-SHOP-05) | the active player picks the shop item or the treasure deck; a `setup.stack` of responses resolves first |
+
+* Each window opens with the active player (R-PRIO-02), or with `setup.priority`'s seat after the players before it passed.
+* As with stacked items, nothing triggers and nothing is paid on the way in: the start-of-turn or end-of-turn triggers and the declaration's triggers are done, and a cost such as an attack tax shows in the setup's cents.
+* The game moves on as in a game (R-STACK-07). An `action` stops at the first window with an empty stack, as before; a step settles to the open action phase, so from `start` or `loot` it runs into this turn's action phase, from `end` into the next player's, and from a declaration through the target or item question (answer it with the step's `choices` or a following `choose` step).
+* In `start` and `loot`, `loot_plays`, `attacks` and `purchases` are errors: the action phase gives them (R-TURN-05, R-TURN-07). The active player's `extra_loot_plays` still count.
+* `declared` needs the action phase (R-ATK-01, R-SHOP-01) and an attack or purchase left (R-TURN-07, R-SHOP-05). An `attack_roll` stack item needs the action phase (R-ATK-01). Each is an error that names the rule; an unknown `phase` or `declared` lists the options.
+* `declared` may come with a `setup.stack`: the responses made to the declaration, waiting on the stack (23.10 follow-up). The declaration itself needed an empty stack; the responses came after it. Priority goes to the top item's owner, or to `setup.priority`'s seat, as with any stack. The stack resolves first (R-STACK-03), priority passes again after each item (R-STACK-04), and once everyone passes on the empty stack the active player picks the target or item (R-ATK-02, R-SHOP-02), as in a game.
+* An `attack_roll` stack item with `declared` is an error: with `attack`, the target is chosen only after the declaration's window (R-ATK-02) and attack rolls go against the target (R-ATK-11); with `purchase`, a purchase is not declared during an attack (R-SHOP-01).
+
+```json
+{
+  "title": "Isaac declared an attack: before he picks the target, Maggy uses Monster Manual on the Fly, so he must attack it",
+  "source": ["card monster_manual", "card fly", "R-ATK-02", "R-ATK-03", "R-ATK-04", "R-ATK-12", "R-TURN-07", "R-PRIO-02"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "maggy", "items": ["monster_manual"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["clotty", "fly"],
+    "declared": "attack",
+    "priority": 1,
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 1, "kind": "activate", "card": "monster_manual", "choices": ["fly"],
+     "expect": {"allowed": true, "attacks": 0, "prompt": {"player": 0, "options": ["fly"]}}},
+    {"kind": "choose", "choices": ["fly"],
+     "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "cents": 1}]}}
+  ],
+  "expect": {"allowed": true}
+}
+```
+
+A response already on the stack (`cards/b2/testdata/situations/bomb/kills-the-fly-before-the-attack-target.json`): Cain played Bomb! on the Fly after Isaac declared. Cain's pass lets it resolve; the Fly dies (Isaac, the active player, gets its 1¢, R-CARD-13), the Dip refills the slot (R-SHOP-07), and only then does Isaac pick the target:
+
+```json
+{
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["clotty", "fly"],
+    "decks": {"monster": ["dip"]},
+    "declared": "attack",
+    "stack": [{"kind": "play", "card": "bomb", "owner": 1, "choices": ["fly"]}],
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 1, "kind": "pass",
+     "expect": {"allowed": true, "resolved": ["bomb"], "prompt": {"player": 0, "options": ["clotty", "dip", "ask.deck.monster"]}}},
+    {"kind": "choose", "choices": ["clotty"], "expect": {"allowed": true, "after": [{"player": 0, "cents": 5}]}}
+  ]
+}
+```
+
+## Steps
+
+`steps` plays several actions in a row (23.4). Each step has the fields of `action` (`player`, `kind`, `card`, `ability`, `choices`) and an optional `expect`, checked right after that step. The top-level `expect` is checked at the end.
+
+```json
+{
+  "title": "Eden's Blessing: Isaac kills a fly for 1¢, then ends his turn and gains nothing",
+  "source": ["card edens_blessing", "card fly", "R-ATK-12"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["edens_blessing"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "decks": {"monster": ["leech"]},
+    "rolls": [2]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"], "expect": {"allowed": true, "after": [{"player": 0, "cents": 0}]}},
+    {"kind": "throw", "expect": {"allowed": true, "after": [{"player": 0, "cents": 1, "damage": 0}]}},
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 1}]}
+}
+```
+
+Step kinds, besides those of `action`:
+
+| `kind` | Does | As in `enginetest` |
+|--------|------|--------------------|
+| `throw` | throws the die of the roll that waits to be thrown | `ThrowPending` (one roll) |
+| `choose` | answers the open question with `choices[0]`; the rest answer the questions after it | `Choose` |
+| `reveal` | puts `card` (a monster deck card) on top of the monster deck, and `player` attacks the deck, placing it in monster slot 1; `choices` answer what follows | `RevealFromDeck` |
+
+`throw` and `choose` act for the player the game waits on; they do not read `player`. A `throw` with no roll waiting, or a `choose` with no open question or no `choices`, is an error, as is an unknown kind.
+
+### When a step settles
+
+After each allowed step the runner settles: it answers the questions with that step's `choices`, in order, throws every roll, and lets every player pass until the active player's action phase is open again: an empty stack, no attack or purchase going on, the turn's end not declared. Whoever holds priority then keeps it, so a `pass` step hands priority to the next player. So an `end_turn` step runs through the end phase into the next player's action phase, as `enginetest`'s `EndTurn` does; a step in a [window](#windows) runs on the same way.
+
+Two exceptions look one step ahead, and only one:
+
+* If the next step is `choose`, settling stops at a question when the step's `choices` are used up. Without a following `choose`, that is an error that lists the options.
+* If the next step is `throw`, settling stops at the first roll waiting to be thrown.
+
+A `prompt` check stops at its question too (23.6). A step whose `expect` has `prompt` settles as if a `choose` step followed: it answers its `choices`, then stops at the first question left, and the check reads it. The top-level `expect.prompt` does the same for the last step, and for `action`. A following step must then answer the question (`choose`) or the file ends there. So a file can check what a player is asked, then answer it:
+
+```json
+"steps": [
+  {"player": 0, "kind": "activate", "card": "the_battery",
+   "expect": {"allowed": true, "prompt": {"player": 0, "options": ["the_d6", "ask.cancel"]}}},
+  {"kind": "choose", "choices": ["the_d6"]}
+]
+```
+
+If the step settles with no question open, the check fails and names what the game waits for: `prompt: no question is open, the game waits for a priority action or a pass`.
+
+A game that ends stops the settling too. A hand-size discard is not answered: the step stops there.
+
+`action` keeps its old rule, so old payloads (website links) answer as before: it stops at the first priority window with an empty stack and no attack or purchase, so an `end_turn` action stops once the end of the turn is declared.
+
+### Refusals and the answer
+
+A refused step changes nothing, and the next steps still run. A step that should be refused says so in its own `expect`: `{"allowed": false, "rule": "R-ABIL-07"}`.
+
+The answer's `allowed`, `rule`, `reason` and `say` are those of the first refused step; `allowed` is true only when no step was refused. The top-level `expect.allowed` and `rule` are compared with that, so a file with a refused step also says `allowed: false` at the top. `events` hold every step's events. A mismatch names its step, or the end:
+
+```
+step 2 (choose): player 1 damage is 1, expected 2
+end, first refusal at step 3 (activate razor), refused by R-ABIL-07: …: allowed is false, expected true
+end: player 1 damage is 0, expected 1
+```
+
+An error (an unknown card, no open question) names the step too: `situation: step 1 (throw): throw: no roll waits to be thrown; the game waits for a priority action or a pass`.
+
 ## What the runner does
 
 1. Builds the table; decks hold every card of the sets, shuffled with `seed`.
-2. Tries the action. A refusal answers `allowed: false` with a rule ID, an English `reason` for developers, and `say`: the player's words as a message key with values (ADR 021), which each client shows in its language.
-3. If allowed, answers the choices and lets every player pass until the stack is empty.
-4. With `expect`, compares and lists any mismatch.
+2. Tries the action, or each step in turn. A refusal answers `allowed: false` with a rule ID, an English `reason` for developers, and `say`: the player's words as a message key with values (ADR 021), which each client shows in its language.
+3. If allowed, answers the choices and lets every player pass until the stack is empty; for steps, see [When a step settles](#when-a-step-settles).
+4. With `expect` (top level or on a step), compares and lists any mismatch.
 
 ```go
 ans, err := engine.RunSituation(data, b2.Set)
@@ -87,4 +330,109 @@ ans, err := engine.RunSituation(data, b2.Set)
 
 ## As tests
 
-Every file in `pkg/rules_engine/testdata/situations/` runs in `go test` and must match its expectation. A disputed case, once resolved, becomes such a file (R-03).
+A situation file with `expect` and `source` is a rules test (LR-07, ADR 033). Each package with tests keeps them in its own `testdata/situations/` tree, and its `go test` runs them: one subtest per file, named by its path in the tree without `.json`, e.g. `TestSituations/razor_blade/deals-1-damage-to-a-player`. A disputed case, once resolved, becomes such a file (R-03); it goes where its card or rule goes.
+
+### Layout
+
+Paths are relative to `pkg/rules_engine/`:
+
+| Tree | Folder | Holds |
+|------|--------|-------|
+| `cards/<set>/testdata/situations/` | `<card>/` | one card's tests; `<card>` is its ref, as in `<card>_test.go` |
+| `cards/<set>/testdata/situations/` | `interactions/` | several cards of the set together, named after them: `lucky-foot-bomb.json` |
+| `cards/testdata/situations/` | `interactions/` | cards of several sets |
+| `testdata/situations/` | `<topic>/` | engine rules with the test sets; `<topic>` is the rule topic in lower case (`R-ATK-01` is `atk/`) |
+
+A folder holds only `.json` files named in kebab case after what they check (`pays-5-cents.json`); no deeper levels. The runner fails a file outside this layout, a card folder that is no card ref of the package's sets, and a topic folder that is no rule topic (the topics in `pkg/rules_engine/docs/rules/README.md`).
+
+### `source`
+
+A non-empty list; each item names one basis for the expected values:
+
+| Form | Example | The runner checks |
+|------|---------|-------------------|
+| `card <ref>` | `card razor_blade` | the card is in the package's sets; its own text is the basis |
+| `R-<TOPIC>-<NN>` | `R-ABIL-07` | the rule is defined in `pkg/rules_engine/docs/rules/` |
+| `Q-<NN>` | `Q-07` | the question is a heading of `open-questions.md` |
+| `R-07 #<N>` | `R-07 #4` | the row is in the old rulings table of `open-questions.md` |
+| `https://…` | a ruling outside the repo | only the form |
+
+Any other form fails with the list of forms. The `expect` values come from these sources, never from running the code (CLAUDE.md 5.25).
+
+### The runner
+
+`enginetest.RunSituations(t, files, sets...)` runs a card tree; `enginetest.RunRuleSituations` the engine's topic tree (`situation_files_test.go`). For each file it checks the layout, then reads it strictly (an unknown field fails with its line, its path and the nearest field name, e.g. `line 7, setup: unknown field "rols"; did you mean "rolls"?`; a payload outside a tree is read as before), then checks that the file has `expect` and `source` and that each source exists, then runs it with `engine.RunSituation`. A mismatch names the file, the step and every failed check; with `steps`, a check of the top-level `expect` names the end:
+
+```
+razor_blade/hits-cain.json, step 1 (activate razor_blade): player 1 damage is 1, expected 2
+razor_blade/hits-cain.json, end: player 1 damage is 0, expected 1
+```
+
+The strict reading covers steps too: `line 9, steps[1]: unknown field "choises"; did you mean "choices"?`.
+
+The rule and question IDs come from `pkg/rules_engine/docs` (package `docs`), which embeds the rules text; only tests import it, so the website's wasm stays the same size.
+
+A set package that has files adds one test (`cards/b2/situations_test.go` is the model):
+
+```go
+//go:embed testdata/situations
+var situations embed.FS
+
+// TestSituations runs this set's situation files (ADR 033).
+func TestSituations(t *testing.T) {
+	enginetest.RunSituations(t, situations, Set)
+}
+```
+
+`go:embed` fails on a folder with no files, so a package adds this test with its first file, not before. A cross-set file in `cards/testdata/situations/` passes every set (`cards.Sets()` and the challenge set) the same way.
+
+## Dump a Go test
+
+A Go card test can write its own draft file (23.7): `enginetest.Table` records its setup and every step it takes through the `Table` helpers, and with the `SITUATION_DUMP` env var set it writes them as JSON when the test ends. Run it for one test:
+
+```sh
+cd pkg/rules_engine
+SITUATION_DUMP=.cache/situations go test ./cards/b2 -run 'TestDinga$' -count=1
+```
+
+A relative folder is from the repository root (`go test` runs in the package folder), and `.cache/` is not tracked. Each table writes `<folder>/<package folder>/<TestName>.json`, e.g. `.cache/situations/b2/TestDinga.json`; a subtest is a subfolder (`TestX/case.json`), and a second table in one test gets `-2`. Without the env var a table records nothing and writes nothing.
+
+```json
+{
+  "title": "Dinga",
+  "source": [],
+  "sets": ["b2"],
+  "setup": {"players": [{"character": "isaac"}, {"character": "cain"}], "active": 0, "monsters": ["dinga"], "rolls": [6, 6, 6, 3]},
+  "steps": [{"player": 0, "kind": "attack", "choices": ["dinga"]}],
+  "todo": ["a draft of TestDinga (23.7): …", "setup.rolls are every die the test threw, forced or not"]
+}
+```
+
+(The file is indented one value per line; it is shown compact here.)
+
+What it records:
+
+* `title` from the test name, `sets` by code, and the setup the test built (`NewSetup`, `New` and the set helpers on them).
+* State the test set by hand before its first step, where a setup field says it: cents, damage, items, hand, souls, deactivated cards, counters, `eternal`, `extra_loot_plays`, slot cards, `monster_damage`, slot `counters`, `loot_plays`, `attacks`, `purchases`, and cards put on top of a deck (`G.PutOnDeck`) as `decks`.
+* `rolls`: every die the test threw, in order, forced (`G.ForceRolls`, `Attack`'s rolls) or random, so the file throws the same dice.
+* A step per outermost helper, with its choices as the plain labels the test gave: `Activate`, `Start` and `Refused` are `activate`, `Play` is `play`, `Attack` and `Do` with an attack are `attack`, `EndTurn` is `end_turn`, `Pass` is `pass`, `Choose` is `choose`, `RevealFromDeck` is `reveal`, and `ThrowPending` a `throw` per die. `Settle`'s choices go to the step before it. `UntilChoose` adds nothing: the step before it stops at the question when a `choose` follows.
+* Intents the test applied itself (`tb.G.Apply`, `tb.G.Settle`) become steps too, read from the game's applied-intent log; passes and throws after a step are left out, since the runner settles each step.
+* State set by hand before a direct `tb.G.Apply` that is the test's first step (23.11): the engine keeps the game as it was just before its first applied intent (its save origin, 19.177), and the recorder reads the setup from that state, so `tb.G.Object(…).Eternal = true` before the first `G.Apply` lands in `eternal`. Should that state be missing (a `Save` moved it), a `todo` line says so.
+
+It never writes `expect`: an expected value comes from the rules, never from a run (CLAUDE.md 5.25, ADR 033). `source` is an empty list to fill.
+
+`todo` lists what the file can't say yet, and the work left:
+
+* State set by hand that no setup field says (`Players[1].SkipTurns`, a boost, a pushed stack item), found by rebuilding the table from the dumped setup and comparing it with the test's table before its first step.
+* State changed between two steps outside a helper (`tb.G.Players[0].Cents = 3`, a `PutOnDeck` mid-test, `tb.G.Run()`).
+* A choice made by a direct `G.Apply` (its label is unknown: `#<index>`), a response in the middle of a stack (owner answer 7: start from `setup.stack`), a helper that does not settle (`Start`, `Pass`), and a `Refused` step whose `expect` needs `allowed: false`.
+
+`todo` is no situation field, so the runner rejects the file until it is gone. To turn a draft into a test file:
+
+1. Check each `todo` line; a test with state no field says stays Go (ADR 033).
+2. Write `title` as the question, and fill `source`.
+3. Write `expect` from the Go test's checks and their source comments or card text; more checks from the card text are fine, never fewer (owner answer 8).
+4. Remove `todo` and save it as `cards/<set>/testdata/situations/<card>/<case>.json`.
+5. Run the set's `go test`, and delete the Go test it replaces in the same change (owner answer 1).
+
+`cards/b2/testdata/situations/dinga/doubles-rewards-on-a-6.json` is the draft above, finished: `TestDinga` is gone.

@@ -1,0 +1,19 @@
+{
+  "title": "Isaac has Golden Horseshoe; at the start of his turn he looks at the treasure deck's top card, The D4, and puts it on the bottom: is Breakfast on top then?",
+  "source": ["card golden_horseshoe", "R-TURN-03"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["golden_horseshoe"]}, {"character": "cain"}],
+    "active": 1,
+    "decks": {"treasure": ["the_d4", "breakfast"]}
+  },
+  "steps": [
+    {"player": 1, "kind": "end_turn", "choices": ["ask.put_on_bottom the_d4"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 0,
+    "decks": {"treasure": ["breakfast"]},
+    "deck_bottoms": {"treasure": ["the_d4"]}
+  }
+}

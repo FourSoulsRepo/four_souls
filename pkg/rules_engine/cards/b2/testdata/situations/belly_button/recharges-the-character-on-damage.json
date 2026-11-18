@@ -1,0 +1,17 @@
+{
+  "title": "Isaac has Belly Button and his character is spent; the Fly hits him on a miss: may he recharge his character?",
+  "source": ["card belly_button", "card fly", "R-ATK-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["belly_button"], "deactivated": ["character"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "rolls": [1, 6]
+  },
+  "action": {"player": 0, "kind": "attack", "choices": ["fly", "ask.yes"]},
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "fly", "dead": true}],
+    "after": [{"player": 0, "deactivated": [], "damage": 1, "cents": 1}]
+  }
+}

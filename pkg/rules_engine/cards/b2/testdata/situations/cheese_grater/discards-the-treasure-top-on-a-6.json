@@ -1,0 +1,14 @@
+{
+  "title": "Isaac has Cheese Grater and rolls a 6 with Mystery Sack: may he reveal the treasure deck's top card and discard it?",
+  "source": ["card cheese_grater", "card mystery_sack", "R-ABIL-16"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["cheese_grater", "mystery_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"treasure": ["breakfast", "dinner"]},
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["ask.deck.treasure", "card.cheese_grater.discard"]},
+  "expect": {"allowed": true, "discards": {"treasure": ["breakfast"]}, "decks": {"treasure": ["dinner"]}}
+}

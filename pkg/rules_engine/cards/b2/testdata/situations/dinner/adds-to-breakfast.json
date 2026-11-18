@@ -1,0 +1,13 @@
+{
+  "title": "Isaac (2 HP) has Dinner and Breakfast: does he have 4 HP?",
+  "source": ["card dinner", "card breakfast", "card isaac", "card fly"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["dinner", "breakfast"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "attack", "choices": ["fly"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "hp": 4, "cents": 1}]}
+}

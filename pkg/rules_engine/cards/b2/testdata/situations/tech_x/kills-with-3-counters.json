@@ -1,0 +1,15 @@
+{
+  "title": "Tech X with 3 counters: remove them to kill a player",
+  "source": ["card tech_x"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["tech_x"], "counters": [{"card": "tech_x", "count": 3}]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "tech_x", "ability": 1, "choices": ["player 2 (cain)"]},
+  "expect": {"allowed": true, "after": [{"player": 1, "dead": true}]}
+}

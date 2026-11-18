@@ -1,0 +1,15 @@
+{
+  "title": "XX. Judgement on Cain, whose only soul is eternal: nothing is destroyed",
+  "source": ["card xx_judgement", "R-ABIL-18", "Q-23"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["xx_judgement"]},
+      {"character": "cain", "souls": ["monstro"], "eternal": ["monstro"]}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "xx_judgement", "choices": ["player 2 (cain)"]},
+  "expect": {"allowed": true, "after": [{"player": 1, "souls": 1}]}
+}

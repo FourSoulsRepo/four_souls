@@ -1,0 +1,18 @@
+{
+  "title": "The Battery offers only the spent D6, then recharges it and stays tapped itself",
+  "source": ["card the_battery", "R-MECH-22", "R-ABIL-04"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["the_battery", "the_d6", "breakfast", "jawbone"], "deactivated": ["the_d6"]},
+      {"character": "cain"}
+    ],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "the_battery",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["the_d6", "ask.cancel"]}}},
+    {"kind": "choose", "choices": ["the_d6"]}
+  ],
+  "expect": {"allowed": true, "after": [{"player": 0, "deactivated": ["the_battery"]}]}
+}

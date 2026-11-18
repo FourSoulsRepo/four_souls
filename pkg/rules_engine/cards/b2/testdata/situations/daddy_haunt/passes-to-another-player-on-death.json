@@ -1,0 +1,17 @@
+{
+  "title": "Isaac (2 HP) has Daddy Haunt and the Fly (1 ATK) hits him on a miss: does he take 2 and die, giving the Haunt to Cain?",
+  "source": ["card daddy_haunt", "card fly", "card isaac", "R-ATK-13", "R-DEATH-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["daddy_haunt"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "rolls": [1]
+  },
+  "action": {"player": 0, "kind": "attack", "choices": ["fly", "player 2 (cain)"]},
+  "expect": {
+    "allowed": true,
+    "events": [{"kind": "died", "player": 0}],
+    "after": [{"player": 0, "dead": true, "items": []}, {"player": 1, "items": ["daddy_haunt"]}]
+  }
+}

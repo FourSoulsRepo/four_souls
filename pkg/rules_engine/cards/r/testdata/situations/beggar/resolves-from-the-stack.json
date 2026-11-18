@@ -1,0 +1,22 @@
+{
+  "title": "Beggar's ability is on the stack, its 3¢ paid: it resolves, then its roll of 3 gains 2¢",
+  "source": ["card beggar", "R-CARD-36", "R-ABIL-24"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "rooms": ["beggar"],
+    "rolls": [3],
+    "stack": [{"kind": "activate", "card": "beggar", "owner": 0}]
+  },
+  "action": {"player": 0, "kind": "pass"},
+  "expect": {
+    "allowed": true,
+    "resolved": ["beggar", "dice_roll"],
+    "after": [{"player": 0, "cents": 2, "items": []}],
+    "discards": {"room": []}
+  }
+}

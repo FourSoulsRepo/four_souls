@@ -161,6 +161,8 @@ Useful tools, all in `enginetest` and `cards/b2/common_test.go`:
 * Every roll waits for its roller's throw; the helpers throw for them. `ThrowPending` throws by hand.
 * `RevealFromDeck(card)`: put a monster deck card into play through an attack, for events.
 
+A simple test (one action, a plain state check) can be a JSON file instead, in `testdata/situations/<card>/` of the set's package: see [Situation payload](Situation-payload) (As tests) and ADR 033.
+
 Run the tests and update the status report:
 
 ```sh

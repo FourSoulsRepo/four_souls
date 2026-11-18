@@ -1,0 +1,24 @@
+{
+  "title": "Isaac declared an attack: before he picks the target, Maggy uses Monster Manual on the Fly, so he must attack it",
+  "source": ["card monster_manual", "card fly", "R-ATK-02", "R-ATK-03", "R-ATK-04", "R-ATK-12", "R-TURN-07", "R-PRIO-02"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "maggy", "items": ["monster_manual"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["clotty", "fly"],
+    "declared": "attack",
+    "priority": 1,
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 1, "kind": "activate", "card": "monster_manual", "choices": ["fly"],
+     "expect": {"allowed": true, "attacks": 0, "prompt": {"player": 0, "options": ["fly"]}}},
+    {"kind": "choose", "choices": ["fly"],
+     "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "cents": 1}]}}
+  ],
+  "expect": {"allowed": true}
+}

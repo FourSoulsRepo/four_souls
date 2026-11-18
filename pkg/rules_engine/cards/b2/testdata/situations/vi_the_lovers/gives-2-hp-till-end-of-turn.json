@@ -1,0 +1,17 @@
+{
+  "title": "Isaac (2 HP) plays VI. The Lovers on himself: 4 HP this turn, 2 HP after it",
+  "source": ["card vi_the_lovers", "card isaac"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["vi_the_lovers"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "vi_the_lovers", "choices": ["player 1 (isaac)"],
+     "expect": {"allowed": true, "after": [{"player": 0, "hp": 4}]}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "after": [{"player": 0, "hp": 2}]}}
+  ],
+  "expect": {"allowed": true}
+}

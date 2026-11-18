@@ -8,18 +8,6 @@ import (
 	"github.com/FourSoulsRepo/rules_engine/enginetest"
 )
 
-func TestChampionBelt(t *testing.T) {
-	tb := itemTable(t, items("champion_belt"))
-	if n := len(tb.G.Allowed(0)); n == 0 {
-		t.Fatal("nothing allowed")
-	}
-	tb.Attack("fly", 6)
-	tb.Attack("leech", 6) // a second attack
-	if tb.G.Turn.BonusAttacksUsed != 1 {
-		t.Errorf("bonus attacks used = %d, want 1", tb.G.Turn.BonusAttacksUsed)
-	}
-}
-
 // The view names Champion Belt's +1 ATK and its condition ahead of the
 // first attack roll and while it hits, beside Meat!'s +1 to attack rolls
 // (V-41, 15.54, 19.67).

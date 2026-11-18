@@ -1,0 +1,11 @@
+{
+  "title": "Isaac has Monstro's Tooth; at the start of his turn a random player, each with a Breakfast, destroys an item: is one Breakfast destroyed?",
+  "source": ["card monstros_tooth", "R-TURN-03"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["monstros_tooth", "breakfast"]}, {"character": "cain", "items": ["breakfast"]}],
+    "active": 1
+  },
+  "steps": [{"player": 1, "kind": "end_turn", "choices": ["breakfast"]}],
+  "expect": {"allowed": true, "active": 0, "discards": {"treasure": ["breakfast"]}}
+}

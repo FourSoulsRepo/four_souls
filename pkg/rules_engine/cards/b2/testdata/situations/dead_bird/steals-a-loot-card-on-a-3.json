@@ -1,0 +1,12 @@
+{
+  "title": "Isaac has Dead Bird; Cain rolls a 3 with Mystery Sack: may Isaac look at Cain's hand and steal his Bomb!?",
+  "source": ["card dead_bird", "card mystery_sack", "R-ABIL-16"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["dead_bird"]}, {"character": "cain", "items": ["mystery_sack"], "hand": ["bomb"]}],
+    "active": 1,
+    "rolls": [3]
+  },
+  "action": {"player": 1, "kind": "activate", "card": "mystery_sack", "choices": ["bomb"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "hand_cards": ["bomb"]}, {"player": 1, "hand": 0, "cents": 4}]}
+}

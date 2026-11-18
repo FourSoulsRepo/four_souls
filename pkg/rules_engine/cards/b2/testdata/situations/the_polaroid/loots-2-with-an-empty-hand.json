@@ -1,0 +1,12 @@
+{
+  "title": "Isaac has The Polaroid and no loot cards: does he loot 2 at the end of his turn?",
+  "source": ["card the_polaroid", "R-TURN-10"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_polaroid"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "steps": [{"player": 0, "kind": "end_turn"}],
+  "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "hand": 2}]}
+}

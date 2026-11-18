@@ -1,0 +1,33 @@
+{
+  "title": "Isaac declared an attack; Cain's Bomb! on the Fly waits on the stack: it resolves first, the Dip refills the slot, then Isaac picks the target",
+  "source": ["card bomb", "card fly", "card clotty", "R-ATK-02", "R-ATK-11", "R-ATK-12", "R-STACK-03", "R-STACK-04", "R-STACK-07", "R-CARD-13", "R-SHOP-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["clotty", "fly"],
+    "decks": {"monster": ["dip"]},
+    "declared": "attack",
+    "stack": [
+      {"kind": "play", "card": "bomb", "owner": 1, "choices": ["fly"]}
+    ],
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 1, "kind": "pass",
+     "expect": {"allowed": true,
+       "resolved": ["bomb"],
+       "attacks": 0,
+       "monsters": [{"card": "clotty", "slot": 1}, {"card": "fly", "dead": true}, {"card": "dip", "slot": 2}],
+       "after": [{"player": 0, "cents": 1}, {"player": 1, "cents": 0, "hand": 0}],
+       "prompt": {"player": 0, "options": ["clotty", "dip", "ask.deck.monster"]}}},
+    {"kind": "choose", "choices": ["clotty"],
+     "expect": {"allowed": true,
+       "monsters": [{"card": "clotty", "dead": true}],
+       "after": [{"player": 0, "cents": 5}]}}
+  ],
+  "expect": {"allowed": true}
+}

@@ -19,6 +19,8 @@ import (
 type Table struct {
 	T testing.TB
 	G *engine.Game
+	// rec records the table for a situation file when DumpEnv is set.
+	rec *recorder
 }
 
 // Seat is a player with a character and items in play.
@@ -39,7 +41,9 @@ func NewSetup(t testing.TB, setup engine.SituationSetup, sets ...engine.CardSet)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return &Table{T: t, G: g}
+	tb := &Table{T: t, G: g}
+	tb.rec = startRecorder(tb, setup, sets)
+	return tb
 }
 
 // Find returns the first object p controls (character or in play) or
@@ -62,11 +66,13 @@ func (tb *Table) Find(p int, card engine.CardRef) engine.ObjectID {
 // test if the engine refuses. It returns every event on the way.
 func (tb *Table) Do(in engine.Intent, choices ...string) []engine.Event {
 	tb.T.Helper()
+	defer tb.enter(func(r *recorder) { r.intent(in, choices, true) })()
 	thrown := tb.ThrowPending()
 	ev, err := tb.G.Apply(in)
 	if err != nil {
 		tb.T.Fatalf("%+v refused: %v", in, err)
 	}
+	tb.saw(ev)
 	return append(append(thrown, ev...), tb.Settle(choices...)...)
 }
 
@@ -74,12 +80,17 @@ func (tb *Table) Do(in engine.Intent, choices ...string) []engine.Event {
 // throw for the roller (15.59). Other helpers call it first.
 func (tb *Table) ThrowPending() []engine.Event {
 	tb.T.Helper()
+	defer tb.enter(nil)()
 	var out []engine.Event
 	for w := tb.G.Prompt(); w.Kind == engine.PromptThrow; w = tb.G.Prompt() {
+		if tb.rec != nil && tb.rec.depth == 1 {
+			tb.rec.add(DumpStep{Kind: "throw"})
+		}
 		ev, err := tb.G.Apply(engine.Intent{Player: w.Player, Kind: engine.IntentThrow})
 		if err != nil {
 			tb.T.Fatal(err)
 		}
+		tb.saw(ev)
 		out = append(out, ev...)
 	}
 	return out
@@ -100,7 +111,9 @@ func ThrowFirstRoll(t testing.TB, g *engine.Game) {
 // Settle answers prompts by label and passes until the stack is empty.
 func (tb *Table) Settle(choices ...string) []engine.Event {
 	tb.T.Helper()
+	defer tb.enter(func(r *recorder) { r.settle(choices) })()
 	ev, err := tb.G.Settle(choices...)
+	tb.saw(ev)
 	if err != nil {
 		tb.T.Fatal(err)
 	}
@@ -117,8 +130,15 @@ func (tb *Table) Activate(p int, card engine.CardRef, i int, choices ...string) 
 // if it is allowed.
 func (tb *Table) Refused(p int, card engine.CardRef, i int) string {
 	tb.T.Helper()
+	defer tb.enter(func(r *recorder) {
+		s := step(p, "activate", card, nil)
+		s.Ability = i
+		r.add(s)
+		r.note("step %d (Refused): the Go test expects a refusal; its expect needs allowed false and the rule", len(r.steps))
+	})()
 	tb.ThrowPending()
-	_, err := tb.G.Apply(engine.Intent{Player: engine.PlayerID(p), Kind: engine.IntentActivate, Objects: []engine.ObjectID{tb.Find(p, card)}, Choice: i})
+	ev, err := tb.G.Apply(engine.Intent{Player: engine.PlayerID(p), Kind: engine.IntentActivate, Objects: []engine.ObjectID{tb.Find(p, card)}, Choice: i})
+	tb.saw(ev)
 	var re *engine.RuleError
 	if !errors.As(err, &re) {
 		tb.T.Fatalf("activating %s ability %d: want a refusal, got %v", card, i, err)
@@ -133,10 +153,12 @@ func (tb *Table) EndTurn(choices ...string) []engine.Event {
 	tb.T.Helper()
 	var out []engine.Event
 	active, number := tb.G.Turn.Active, tb.G.Turn.Number
+	defer tb.enter(func(r *recorder) { r.add(step(int(active), "end_turn", "", choices)) })()
 	ev, err := tb.G.Apply(engine.Intent{Player: active, Kind: engine.IntentEndTurn})
 	if err != nil {
 		tb.T.Fatal(err)
 	}
+	tb.saw(ev)
 	out = append(out, ev...)
 	for range 1000 {
 		if tb.G.Turn.Number != number && tb.G.Turn.Step == engine.StepAction && tb.G.Prompt().Kind == engine.PromptPriority && len(tb.G.Stack) == 0 {
@@ -174,6 +196,7 @@ func (tb *Table) EndTurn(choices ...string) []engine.Event {
 		if err != nil {
 			tb.T.Fatal(err)
 		}
+		tb.saw(ev)
 		out = append(out, ev...)
 	}
 	tb.T.Fatal("the next turn never came")
@@ -193,6 +216,7 @@ func (tb *Table) option(_ engine.Prompt, label string) int {
 // if the stack empties with no question.
 func (tb *Table) UntilChoose() {
 	tb.T.Helper()
+	defer tb.enter(nil)()
 	for range 100 {
 		tb.ThrowPending()
 		w := tb.G.Prompt()
@@ -216,6 +240,7 @@ func (tb *Table) Options() []string {
 // with the given dice results, and settles.
 func (tb *Table) Attack(monster engine.CardRef, rolls ...int) []engine.Event {
 	tb.T.Helper()
+	defer tb.enter(func(r *recorder) { r.add(step(int(tb.G.Turn.Active), "attack", "", []string{string(monster)})) })()
 	tb.G.ForceRolls(rolls...)
 	return tb.Do(engine.Intent{Player: tb.G.Turn.Active, Kind: engine.IntentAttack}, string(monster))
 }
@@ -256,21 +281,32 @@ func ResolvedAt(events []engine.Event, card engine.CardRef) int {
 // may act on the active player's turn.
 func (tb *Table) Pass(p int) {
 	tb.T.Helper()
+	defer tb.enter(func(r *recorder) { r.pass(p) })()
 	tb.ThrowPending()
-	if _, err := tb.G.Apply(engine.Intent{Player: engine.PlayerID(p), Kind: engine.IntentPass}); err != nil {
+	ev, err := tb.G.Apply(engine.Intent{Player: engine.PlayerID(p), Kind: engine.IntentPass})
+	if err != nil {
 		tb.T.Fatal(err)
 	}
+	tb.saw(ev)
 }
 
 // Start activates ability i without settling: the ability waits on the
 // stack, so other players may respond.
 func (tb *Table) Start(p int, card engine.CardRef, i int) {
 	tb.T.Helper()
+	defer tb.enter(func(r *recorder) {
+		s := step(p, "activate", card, nil)
+		s.Ability = i
+		r.add(s)
+		r.settled("Start")
+	})()
 	tb.ThrowPending()
 	in := engine.Intent{Player: engine.PlayerID(p), Kind: engine.IntentActivate, Objects: []engine.ObjectID{tb.Find(p, card)}, Choice: i}
-	if _, err := tb.G.Apply(in); err != nil {
+	ev, err := tb.G.Apply(in)
+	if err != nil {
 		tb.T.Fatalf("%+v refused: %v", in, err)
 	}
+	tb.saw(ev)
 }
 
 // Play plays a loot card from p's hand, answering the prompts.
@@ -282,11 +318,14 @@ func (tb *Table) Play(p int, card engine.CardRef, choices ...string) []engine.Ev
 // Choose answers the open choose prompt by label, without passing.
 func (tb *Table) Choose(label string) {
 	tb.T.Helper()
+	defer tb.enter(func(r *recorder) { r.add(DumpStep{Kind: "choose", Choices: []string{label}}) })()
 	tb.ThrowPending()
 	w := tb.G.Prompt()
-	if _, err := tb.G.Apply(engine.Intent{Player: w.Player, Kind: engine.IntentChoose, Choice: tb.option(w, label)}); err != nil {
+	ev, err := tb.G.Apply(engine.Intent{Player: w.Player, Kind: engine.IntentChoose, Choice: tb.option(w, label)})
+	if err != nil {
 		tb.T.Fatal(err)
 	}
+	tb.saw(ev)
 }
 
 // RevealFromDeck puts card on top of the monster deck and has the active
@@ -294,6 +333,7 @@ func (tb *Table) Choose(label string) {
 // given choices.
 func (tb *Table) RevealFromDeck(card engine.CardRef, choices ...string) []engine.Event {
 	tb.T.Helper()
+	defer tb.enter(func(r *recorder) { r.add(step(int(tb.G.Turn.Active), "reveal", card, choices)) })()
 	tb.G.PutOnDeck(engine.MonsterDeck, card)
 	var top engine.CardRef
 	if id, ok := tb.G.Monsters[0].TopOf(); ok {

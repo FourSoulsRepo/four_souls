@@ -761,6 +761,20 @@ On 2026-10-09 the owner parked every open decision for later.
 4. Status: **Owner** (2026-11-11): keep the proposal for now; the engine may use it.
 5. Basis: **House**: no ruling found.
 
+### Q-55 Playing a card with no valid target
+
+1. Question: may a loot card or ability be played with no valid target?
+   1. E.g. Lil Battery when no item is spent.
+   2. Rules: R-ABIL-04, R-ABIL-06, R-ABIL-40.
+2. Sources:
+   1. S-OFF quickstart: no word on it; the extended rulebook could not be read (2026-11-18).
+   2. No ruling found in a web search (2026-11-18).
+3. Proposal: no; the card can't be played, it stays in hand.
+4. Status: **Owner** (2026-11-18): forbid it (19.198).
+   1. Otherwise anything could be played anytime, to no effect.
+   2. That would confuse newcomers.
+5. Basis: **House**: no ruling found.
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
@@ -943,5 +957,6 @@ Every row of "Card rulings from Discord (S-DIS)" is Community too.
 | Q-48 | Trick/Treat | Reward changes apply in the order made | House |
 | Q-50 | Mischievous The Haunt | One fear counter per instance of damage | House |
 | Q-51 | Mischievous The Haunt, Trick/Treat | The active player picks who loses a fear counter | House |
+| Q-55 | Lil Battery, The D6, any targeted card | No valid target: it can't be played or used | House |
 | Q-53 | Trick/Treat | Attack-start rolls after the target's triggers | House |
 | Q-54 | Trick/Treat | Every monster death counts; one removal per rewards gained | House |

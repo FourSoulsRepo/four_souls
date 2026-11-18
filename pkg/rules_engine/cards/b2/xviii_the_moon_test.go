@@ -6,8 +6,6 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-func TestXVIIITheMoon(t *testing.T) { testOneOnTop(t, "xviii_the_moon", engine.LootDeck) }
-
 // TestXVIIITheMoonShowsTheLook: while the chooser picks, every viewer
 // sees which deck is looked at and how many cards; only the chooser sees
 // the cards. The look ends with the answer (20.18).

@@ -1,0 +1,17 @@
+{
+  "title": "Champion Belt: the turn's attack is used, Isaac attacks the fly again",
+  "source": ["card champion_belt", "card fly", "R-TURN-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["champion_belt"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "attacks": 0,
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "attack", "choices": ["fly"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 1}]}
+}

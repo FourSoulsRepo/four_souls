@@ -1,5 +1,9 @@
 # Four Souls
 
+<p align="center">
+  <img src="build/appicon.png" alt="Four Souls" width="160">
+</p>
+
 Unofficial, free, fan-made desktop version of the card game
 *The Binding of Isaac: Four Souls* for 2–4 players over the network.
 Built with [Wails](https://wails.io) (Go + React/TypeScript).
@@ -7,15 +11,35 @@ Built with [Wails](https://wails.io) (Go + React/TypeScript).
 The game belongs to Edmund McMillen and Maestro Media.
 Please [buy the physical game](https://foursouls.com).
 
-## Play
+<p align="center">
+  <img src="docs/wiki/images/readme-screens.gif" alt="Main menu, a four-player table, Online servers, Host a game, Settings" width="760">
+</p>
 
-Download the archive for your system from
-[Releases](https://github.com/FourSoulsRepo/four_souls/releases).
+## Features
+
+- **The rules are handled for you.** The server runs every card, roll, attack and
+  the stack. Nobody needs to look up a rule or keep count by hand.
+- **Easy to set up and play.** Unzip and start: no installer, no account.
+  Host a game in the app, or find one on your local network and join.
+- **Animations.** Cards fly, dice roll, damage shots hit their targets,
+  so you always see what just happened on the table.
+- **Base game, Gold Box, Four Souls+ and Requiem**, with the Requiem room deck,
+  plus co-op [challenges](docs/wiki/Challenges.md) for 2 players.
+- **Play over the internet** through a virtual LAN, port forwarding,
+  or your own [dedicated server](docs/wiki/Dedicated-server-on-a-VPS.md).
+
+## Download
+
+Get the archive for your system from
+[Releases](https://github.com/FourSoulsRepo/four_souls/releases):
+
+| System | File |
+|---|---|
+| Windows (64-bit) | `four-souls-<version>-windows-amd64.zip` |
+| macOS (Intel and Apple Silicon) | `four-souls-<version>-macos-universal.zip` |
+
 The app is not code-signed: `README.txt` inside, or the wiki page
 [First start](docs/wiki/First-start.md), shows how to open it the first time.
-
-Besides the regular game there are co-op challenges for 2 players:
-[Challenges](docs/wiki/Challenges.md).
 
 Several copies can run on one computer; each is its own player.
 On macOS start another copy with `open -n FourSouls.app`.

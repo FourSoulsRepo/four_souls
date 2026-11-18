@@ -1,0 +1,14 @@
+{
+  "title": "Isaac (1¢) plays VIII. Justice on Cain (3 cards, 9¢): Isaac ends with 3 cards and 9¢",
+  "source": ["card viii_justice"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["viii_justice"], "cents": 1},
+      {"character": "cain", "hand": ["a_dime", "a_dime", "bomb"], "cents": 9}
+    ],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "viii_justice", "choices": ["player 2 (cain)"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "hand": 3, "cents": 9}, {"player": 1, "hand": 3, "cents": 9}]}
+}

@@ -1,0 +1,18 @@
+{
+  "title": "Isaac has Goat Head and 3 loot cards; at the end of his turn he discards A Dime!! and Bomb!: does he loot 2?",
+  "source": ["card goat_head", "R-TURN-10", "R-CARD-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["goat_head"], "hand": ["a_dime", "bomb", "a_nickel"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"loot": ["a_penny", "two_cents", "three_cents"]}
+  },
+  "steps": [{"player": 0, "kind": "end_turn", "choices": ["a_dime", "bomb", "ask.done"]}],
+  "expect": {
+    "allowed": true,
+    "active": 1,
+    "discards": {"loot": ["a_dime", "bomb"]},
+    "after": [{"player": 0, "hand": 3, "hand_cards": ["a_nickel", "a_penny", "two_cents"]}, {"player": 1, "hand_cards": ["three_cents"]}]
+  }
+}

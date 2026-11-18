@@ -1,0 +1,15 @@
+{
+  "title": "Glass Cannon destroys Cain's Breakfast, then a 1 destroys it and Isaac loots 2",
+  "source": ["card glass_cannon"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["glass_cannon"]},
+      {"character": "cain", "items": ["breakfast"]}
+    ],
+    "active": 0,
+    "rolls": [1]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "glass_cannon", "choices": ["breakfast"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "items": [], "hand": 2}]}
+}

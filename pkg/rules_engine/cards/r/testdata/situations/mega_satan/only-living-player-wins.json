@@ -1,0 +1,18 @@
+{
+  "title": "Mega Satan!: Cain and Samson are dead; Isaac ends his turn and wins",
+  "source": ["card mega_satan", "R-WIN-03"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain", "dead": true},
+      {"character": "samson", "dead": true}
+    ],
+    "active": 0,
+    "monsters": ["mega_satan", "fly"]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {"allowed": true, "over": true, "winners": [0]}
+}

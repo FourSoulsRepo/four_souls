@@ -1,0 +1,21 @@
+{
+  "title": "Beggar: Isaac pays 3¢ and rolls a 6; he gains a treasure and the Beggar goes to discard",
+  "source": ["card beggar", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "cents": 6},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "rooms": ["beggar"],
+    "decks": {"treasure": ["book_of_sin"]},
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "beggar"},
+  "expect": {
+    "allowed": true,
+    "after": [{"player": 0, "cents": 3, "items": ["book_of_sin"]}],
+    "discards": {"room": ["beggar"]}
+  }
+}

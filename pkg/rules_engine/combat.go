@@ -316,6 +316,20 @@ func (g *Game) MonsterATK(id ObjectID) int {
 
 // declareAttack: priority passes before a target is chosen (R-ATK-02).
 func (g *Game) declareAttack(p PlayerID) {
+	g.spendAttack()
+	if tax := g.bonus(StatAttackTax, p, 0); tax > 0 {
+		for _, q := range g.turnOrderFrom(p)[1:] {
+			g.GiveCents(p, q, tax) // Tax for the Mighty
+		}
+	}
+	g.Attack = AttackState{On: true}
+	g.emit(Event{Kind: EvAttackDeclared, Player: p})
+	g.openWindow(p)
+}
+
+// spendAttack uses one of the turn's attacks on a declaration (R-TURN-07):
+// a regular one first, then a bonus one.
+func (g *Game) spendAttack() {
 	if g.Turn.MustAttacks > 0 {
 		g.Turn.MustAttacks--
 	}
@@ -329,14 +343,6 @@ func (g *Game) declareAttack(p PlayerID) {
 	} else {
 		g.Turn.BonusAttacksUsed++
 	}
-	if tax := g.bonus(StatAttackTax, p, 0); tax > 0 {
-		for _, q := range g.turnOrderFrom(p)[1:] {
-			g.GiveCents(p, q, tax) // Tax for the Mighty
-		}
-	}
-	g.Attack = AttackState{On: true}
-	g.emit(Event{Kind: EvAttackDeclared, Player: p})
-	g.openWindow(p)
 }
 
 // askAttackTarget offers the monsters in play and the monster deck.

@@ -1,0 +1,13 @@
+{
+  "title": "Isaac kills Dinga with three 6s: its reward roll of 3 is doubled to 6¢",
+  "source": ["card dinga", "R-ATK-12", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["dinga"],
+    "rolls": [6, 6, 6, 3]
+  },
+  "steps": [{"player": 0, "kind": "attack", "choices": ["dinga"]}],
+  "expect": {"allowed": true, "monsters": [{"card": "dinga", "dead": true}], "after": [{"player": 0, "cents": 6}]}
+}

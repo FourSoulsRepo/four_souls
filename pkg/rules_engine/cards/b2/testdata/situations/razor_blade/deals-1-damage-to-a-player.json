@@ -1,0 +1,15 @@
+{
+  "title": "Razor Blade: tap it to deal 1 damage to a player",
+  "source": ["card razor_blade"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["razor_blade"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "razor_blade", "choices": ["player 2 (cain)"]},
+  "expect": {"allowed": true, "after": [{"player": 1, "damage": 1}]}
+}
