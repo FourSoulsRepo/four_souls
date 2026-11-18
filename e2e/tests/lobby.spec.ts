@@ -15,8 +15,10 @@ test('two apps reach the same lobby and start the game', async ({ browser }) => 
   const ann = await (await browser.newContext()).newPage();
   const bo = await (await browser.newContext()).newPage();
 
+  // Both apps offer Requiem (?requiem), as the real app does, so the
+  // host screen's shot shows every set.
   await realAssets(ann);
-  await ann.goto(appURL());
+  await ann.goto(`${appURL()}&requiem`);
   await openHost(ann);
   await ann.getByLabel(tr('lobby.nickname')).fill('Ann');
   await ann.getByLabel(tr('host.detailed')).check();
@@ -28,7 +30,7 @@ test('two apps reach the same lobby and start the game', async ({ browser }) => 
   const id = await gameId(ann);
 
   await realAssets(bo);
-  await bo.goto(appURL());
+  await bo.goto(`${appURL()}&requiem`);
   await openOnline(bo);
   await bo.getByLabel(tr('lobby.nickname')).fill('Bo');
   await bo.getByLabel(tr('lobby.online.address')).fill(address());
