@@ -288,7 +288,7 @@ Ideas: TS-13, LR-04, R-03.
    11. Wiki: `Situation-payload.md`, "Dump a Go test".
    12. Lint: `enginetest` may import `os`; only tests import it (depguard nolint).
 
-### [ ] 23.8 Pilot: move one group
+### [x] 23.8 Pilot: move one group
 
 1. Goal: learn the cost on real tests before any bulk move.
 2. Tasks:
@@ -300,6 +300,49 @@ Ideas: TS-13, LR-04, R-03.
 3. Done when:
    1. The moved files pass; the Go tests they replace are gone.
    2. The report is in this file.
+4. Group (2026-11-18): `interactions_test.go` and the tarot loot cards.
+   1. Tarot: 0. The Fool to XXI. The World, one mechanic each.
+   2. Why: 24 tests of one card kind; plain plays, rolls, deck looks.
+5. Counts: 35 tests looked at (11 interactions, 24 tarot).
+   1. Moved: 21 (8 interactions, 13 tarot), as 23 files.
+   2. Split: 2, a file each; the rest stays Go.
+   3. `TestRulingDamageToDeadPlayer`: damage read before the play stays Go.
+   4. `TestXIXTheSun`: the loot deck bottom stays Go.
+   5. Stayed Go, complicated: 4.
+   6. Table of cases: `TestXWheelOfFortune` (ADR 033 1.3).
+   7. Loop and a recharge between steps: `TestRulingTwoOfClubsTwice`.
+   8. Views: `TestXVIIITheMoonShowsTheLook`, `TestXIITheHangedManTellsEveryoneTheChoice`.
+   9. Needed a format change: 8.
+   10. A roll's resolved value: `TestITheMagician`, `TestRulingRollAboveSix`.
+   11. A deck bottom check: IV, IX, XVIII (`testOneOnTop`), `TestXIITheHangedMan`.
+   12. Event fields (`By`, `Amount`, `Text`, `Private`): The World, The Moon's bottom.
+6. Effort
+   1. A plain test: 2-4 minutes; dump, title, source, expect, a mutation run.
+   2. A test with a death or a turn end: 5-10 minutes.
+   3. Steps settle into the next turn; dead players are back by then.
+   4. So such a check reads a step's `died` event instead.
+   5. `action` stops at the first window; a turn change needs `steps`.
+   6. Every file failed with one expected value changed, then passed.
+7. Drafts: 22 of 25 files kept the dumped setup and steps.
+   1. Conjoined Fatty: more 6s in `rolls`, so a going-on attack would kill it.
+   2. The Stars: a known treasure on the deck, so `items` can name it.
+   3. Judgement's eternal soul: set after a direct `G.Apply`; the draft lacked it.
+   4. Every draft needed `title`, `source`, `expect` by hand; never `todo` left.
+8. Checks added from the card text (owner answer 8):
+   1. Monster Manual tapped; Glass Cannon took Cain's Breakfast.
+   2. Bomb! left 1 damage on Lust; Bum Friend put the Dime on the loot deck.
+   3. Steamy Sale: no item gained; The Tower on 3 kills the Leech too.
+   4. The Fool in the loot discard; Justice leaves Cain as he was.
+   5. The Devil leaves Cain The D6; Judgement leaves Monstro.
+   6. Judgement asks Cain, the soul's controller; The Sun is not discarded.
+9. No rules bug found; `cardgen -report` unchanged.
+10. Recommendation for the bulk move:
+   1. Yes, one card family per sub-step, with the dump.
+   2. About two thirds fit today (23 of 35 with splits).
+   3. First add a deck bottom check and a roll value check: 6 more here.
+   4. Event fields and views stay Go.
+   5. Owner: may a table of fixed cases become a file per case?
+   6. The Wheel of Fortune would be 6 files.
 
 ### [ ] 23.9 Docs
 
