@@ -6511,3 +6511,16 @@ Totals by system (218 items):
    8. Wiki: `Client.md`, next to the 19.86 line.
 7. Owner notes (2026-11-18)
    1. Owner marks 19.227 solved.
+
+### [ ] 19.228 `--diagnose` names every WebKit GPU "Apple GPU"
+
+1. Goal: the report names the GPU that really draws.
+2. Report (owner, 2026-11-18, 0.6.2, Linux)
+   1. Intel `i915`, WebKitGTK 2.54.2; every variant says "Apple GPU".
+3. Cause
+   1. WebKit masks `WEBGL_debug_renderer_info` on every system.
+   2. It returns a fixed "Apple GPU" to pages.
+   3. So the `llvmpipe` check (ADR 035 item 4.4) never fires on WebKit.
+4. Tasks:
+   1. On WebKit, take the GPU from Go, not WebGL; ADR 035 in place.
+   2. 5.26: check every other use of the WebGL renderer string.

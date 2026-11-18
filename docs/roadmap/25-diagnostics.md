@@ -39,7 +39,7 @@ Ideas: B-09.
 3. Result (2026-11-18)
    1. ADR 035; roadmap row and section 25; idea B-09.
 
-### [ ] 25.2 The `--diagnose` flag
+### [x] 25.2 The `--diagnose` flag
 
 1. Goal: one command tells what the webview runs on and how fast it draws.
 2. Tasks:
@@ -78,6 +78,13 @@ Ideas: B-09.
       1. `make e2e`: 633 passed, 1 failed, 22 skipped.
       2. Failure: `arrow.spec.ts:62`, chromium; logged under 19.153.
       3. Rerun: 5 separate runs of the spec, 30 of 30 passed.
+5. Owner's Linux run (0.6.2, 2026-11-18)
+   1. WebKitGTK 2.54.2, Wayland, Intel `i915`; the GPU opens; scale 1.
+   2. `default`, `no-dmabuf`, `no-compositing`, `gpu-never`: 6.2–6.3 fps, every frame slow.
+   3. `gpu-always`: 60.0 fps, no slow frame.
+   4. So `OnDemand` draws on the CPU here; the switches change nothing.
+   5. Renderer "Apple GPU" everywhere: WebKit masks it; logged as 19.228.
+   6. "No MP3 playback": GStreamer can't play `audio/mpeg`; owner to confirm.
 
 ### [ ] 25.3 Self-repair in the game (later)
 
@@ -90,7 +97,7 @@ Ideas: B-09.
    4. A setting turns it off again.
    5. Still low: show what the report found, with a fix per distro.
 4. **Owner** questions:
-   1. Which switches helped on the laptop?
+   1. Which switches helped on the laptop? `gpu-always` only (25.2 item 5).
    2. Ask the player first, or switch by itself?
    3. Still slow after the switch: Electron, or lighter effects?
 5. Done when:
