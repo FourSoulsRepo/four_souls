@@ -1,0 +1,20 @@
+{
+  "title": "Isaac (1 ATK) has Curved Horn and attacks Conjoined Fatty (4 HP) with three 6s: does the first hit deal 2 and the next ones 1, so it dies on the third roll?",
+  "source": ["card curved_horn", "card isaac", "card conjoined_fatty", "R-ATK-11", "R-ATK-12", "R-ATK-14", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["curved_horn"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["conjoined_fatty"],
+    "rolls": [6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["conjoined_fatty"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 6],
+    "monsters": [{"card": "conjoined_fatty", "dead": true}],
+    "after": [{"player": 0, "atk": 1, "hand": 2, "damage": 0}]
+  }
+}

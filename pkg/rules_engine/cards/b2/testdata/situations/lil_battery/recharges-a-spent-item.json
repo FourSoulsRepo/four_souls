@@ -1,0 +1,18 @@
+{
+  "title": "Isaac plays Lil Battery on his spent D6: is it recharged?",
+  "source": ["card lil_battery", "R-MECH-22", "R-CARD-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["the_d6"], "deactivated": ["the_d6"], "hand": ["lil_battery"]},
+      {"character": "cain"}
+    ],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "lil_battery", "choices": ["the_d6"]},
+  "expect": {
+    "allowed": true,
+    "after": [{"player": 0, "deactivated": [], "items": ["the_d6"], "hand_cards": []}],
+    "discards": {"loot": ["lil_battery"]}
+  }
+}

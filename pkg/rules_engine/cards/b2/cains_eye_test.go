@@ -8,18 +8,6 @@ import (
 	"github.com/FourSoulsRepo/rules_engine/enginetest"
 )
 
-func TestCainsEye(t *testing.T) {
-	tb := enginetest.NewSetup(t, engine.SituationSetup{
-		Players: []engine.SituationPlayer{seat("isaac", "cains_eye"), seat("cain")},
-		Active:  1,
-	}, Set)
-	top := tb.G.DeckTop(engine.LootDeck, 1)[0]
-	tb.EndTurn("ask.put_on_bottom " + string(tb.G.Object(top).Card))
-	if tb.G.Decks[engine.LootDeck][0] != top {
-		t.Error("the top card did not go to the bottom")
-	}
-}
-
 func TestCainsEyeShowsTheTopCardToItsOwner(t *testing.T) {
 	tb := enginetest.NewSetup(t, engine.SituationSetup{
 		Players: []engine.SituationPlayer{seat("isaac", "cains_eye"), seat("cain")},

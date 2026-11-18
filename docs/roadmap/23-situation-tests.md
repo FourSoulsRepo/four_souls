@@ -457,9 +457,50 @@ Ideas: TS-13, LR-04, R-03.
 9. Families from the 2026-11-18 count of card kinds in `_test.go` files.
 10. "Other": test files with no card kind (rules, helpers, combos).
 
-### [ ] 23.12 Bulk: b2 loot cards
+### [x] 23.12 Bulk: b2 loot cards
 
 1. Goal: Wildcard, Trinket, Nickel, Bomb, Battery, Butter Bean (about 33 tests).
+2. Counts (2026-11-18): 26 tests left in the family's `_test.go` files.
+   1. 22 of Trinket, Nickel, Bomb, Battery, Butter Bean cards.
+   2. 4 tarot (Wildcard): the rest moved in 23.8 and 23.11.
+   3. So fewer than 33: the count was taken before those moves.
+3. Moved: 18 tests, as 19 files.
+   1. TestANickel, TestADime, TestCounterfeitPenny.
+   2. TestBomb, TestGoldBomb, TestBloodyPenny.
+   3. TestBrokenAnkh: 2 files, one per roll (owner answer 11).
+   4. TestButterBean, TestGuppysHairball, TestSwallowedPenny.
+   5. TestCainsEye, TestGoldenHorseshoe, TestPurpleHeart.
+   6. TestCurvedHorn, TestMegaBattery.
+   7. TestLilBattery, TestLilBatteryOffersOnlyActiveItems, TestLilBatteryNeedsASpentItem.
+4. Split: 0.
+5. Stayed Go, complicated (ADR 033 1.5): 8.
+   1. Views: TestCainsEyeShowsTheTopCardToItsOwner.
+   2. Event fields and views: TestCainsEyeTellsEveryoneTheChoice.
+   3. View ATK mid-attack: TestCurvedHornShownForTheFirstRoll, TestCurvedHornGoneAfterAMiss.
+   4. Tarot, as in 23.8 and 23.11: The Hanged Man, The Moon (2), The World.
+6. Needed a format change: 0.
+7. Drafts: 15 of 19 files kept the dumped setup.
+   1. Butter Bean: A Dime!! starts on `setup.stack`, `priority` 1 (owner answer 7).
+   2. Its draft had a mid-stack play and a hand-set extra loot play.
+   3. Cain's Eye, Golden Horseshoe, Purple Heart: two known deck tops in `setup.decks`.
+   4. So the file names the bottomed card and the next top.
+   5. Lil Battery's refusal: the draft had no step; one `play` added.
+   6. A one-step draft became `action`: it stops before the turn's end.
+   7. So Broken Ankh's file still sees 1 HP before the end-of-turn heal.
+8. Checks added from the card text (owner answer 8):
+   1. Coins, batteries, bombs: the card is in the loot discard.
+   2. Bomb! gives Isaac the Fly's 1¢; Gold Bomb!! leaves Isaac unhurt.
+   3. Bloody Penny: `resolved` checks the loot before the death penalty.
+   4. Broken Ankh on 6: `turn_ended_early`, no `died`; on 5: the Ankh is lost.
+   5. Cain's Eye: Isaac loots the card under the bottomed one.
+   6. Horseshoe, Purple Heart: the next card is on top.
+   7. Curved Horn: 3 rolls resolved, ATK back to 1, 2 loot from the Fatty.
+   8. Hairball: 3 rolls, the Leech dies; Swallowed Penny: 1 damage, the Fly dies.
+   9. Lil Battery: every option, as Battery Bum's file; the refusal keeps the card.
+9. Go tests that did not check what they claimed: 1.
+   1. TestBloodyPenny's comment: the loot resolves before the penalty (R-DEATH-13).
+   2. Its checks (hand 1, 2¢) hold in either order; the file checks the order.
+10. No rules bug found; `cardgen -report` unchanged.
 
 ### [ ] 23.13 Bulk: b2 passive treasures
 

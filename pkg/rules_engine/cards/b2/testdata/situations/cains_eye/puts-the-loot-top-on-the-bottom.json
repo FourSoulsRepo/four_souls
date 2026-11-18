@@ -1,0 +1,19 @@
+{
+  "title": "Isaac has Cain's Eye; at the start of his turn he looks at the loot deck's top card, A Dime!!, and puts it on the bottom: does he then loot A Nickel! in his loot step?",
+  "source": ["card cains_eye", "R-TURN-03", "R-TURN-04"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["cains_eye"]}, {"character": "cain"}],
+    "active": 1,
+    "decks": {"loot": ["a_dime", "a_nickel"]}
+  },
+  "steps": [
+    {"player": 1, "kind": "end_turn", "choices": ["ask.put_on_bottom a_dime"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 0,
+    "deck_bottoms": {"loot": ["a_dime"]},
+    "after": [{"player": 0, "hand_cards": ["a_nickel"]}]
+  }
+}
