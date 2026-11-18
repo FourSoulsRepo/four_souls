@@ -6533,3 +6533,24 @@ Totals by system (218 items):
    6. 5.26: `probe.ts` is the only reader of the WebGL renderer.
    7. Test: `TestBestAndFlags` (Linux ignores it, Windows flags it).
    8. ADR 035 items 3.10, 4.4.1 in place.
+
+### [ ] 19.229 Linux: the app hangs when the first roll's dice fall
+
+1. Goal: a computer that can't play sound still plays the game.
+2. Report (owner, 2026-11-19, 0.6.3, Linux)
+   1. A game hangs as the "who goes first" dice fall on the table.
+   2. Log: `GStreamer element autoaudiosink not found. Please install it`.
+   3. Then, in `WebKitWebProcess`: `GLib-GObject-CRITICAL`, a NULL instance.
+   4. `gst-libav` was installed; `gst-plugins-good` likely not.
+   5. `--diagnose` passed the MP3 check: `canPlayType` knows the decoder only.
+3. Findings so far (not yet confirmed)
+   1. No game code waits on a sound; `playSound` only listens for its end.
+   2. So the page's web process itself likely hangs on the first sound.
+   3. `autoaudiosink` is in the GStreamer good plugins.
+4. **Owner** check: install `gst-plugins-good`; does the hang go away?
+5. Tasks, once confirmed:
+   1. The game must not hang without an audio sink (5.24: every sound).
+   2. Linux: Go finds the GStreamer sink before the window opens.
+      1. Missing: sounds off, and a notice names the package.
+   3. `--diagnose` flags a missing audio sink, not only a decoder.
+   4. Wiki First-start: the Linux packages include the good plugins.

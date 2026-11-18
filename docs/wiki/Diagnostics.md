@@ -29,14 +29,14 @@ The Linux variants:
 | `default` | Nothing: a normal start. The webview always uses the GPU. |
 | `no-dmabuf` | `WEBKIT_DISABLE_DMABUF_RENDERER=1`; fixes some Intel and NVIDIA setups. |
 | `no-compositing` | `WEBKIT_DISABLE_COMPOSITING_MODE=1`; helps on some systems, hurts on others. |
-| `gpu-ondemand` | `FOURSOULS_GPU_POLICY=ondemand`: the GPU only when the page asks; the default before 0.6.3. |
-| `gpu-never` | `FOURSOULS_GPU_POLICY=never`: the webview never uses the GPU. |
+| `gpu-ondemand` | `FOURSOULS_GPU_POLICY=ondemand`: the GPU only when the page asks. WebKitGTK 2.54 and later treat it as always. |
+| `gpu-never` | `FOURSOULS_GPU_POLICY=never`: the webview never uses the GPU; every version before 0.6.3 ran like this. |
 
 When the best variant is not `default`, the report prints the command, for example `FOURSOULS_GPU_POLICY=ondemand ./FourSouls`.
 
 ## The GPU switch
 
-Since 0.6.3 the game on Linux always draws with the GPU. On one tested laptop the old setting drew the menu at 6 frames a second instead of 60. If your window stays black or looks broken, your GPU driver may not cope; start the game with `FOURSOULS_GPU_POLICY=ondemand ./FourSouls` (or `never`), and send the `--diagnose` report to the developers.
+Since 0.6.3 the game on Linux always draws with the GPU. On one tested laptop the old setting drew the menu at 6 frames a second instead of 60. If your window stays black or looks broken, your GPU driver may not cope; start the game with `FOURSOULS_GPU_POLICY=never ./FourSouls` (`ondemand` also works on WebKitGTK older than 2.54), and send the `--diagnose` report to the developers.
 
 ## Problems it finds
 

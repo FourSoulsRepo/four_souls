@@ -75,9 +75,9 @@ func runProbe(id string) {
 }
 
 // linuxOptions sets the webview's GPU policy (ADR 036): always on,
-// unless FOURSOULS_GPU_POLICY asks for "ondemand" or "never". WebKitGTK
-// drew the menu on the CPU at 6 fps with the Wails default, OnDemand
-// (25.2). Other systems ignore it.
+// unless FOURSOULS_GPU_POLICY asks for "ondemand" or "never". With no
+// options Wails v2 picks Never, and WebKitGTK drew the menu on the CPU
+// at 6 fps (25.2). Other systems ignore it.
 func linuxOptions(value string) *linux.Options {
 	policy, ok := diag.GPUPolicy(value)
 	if !ok {

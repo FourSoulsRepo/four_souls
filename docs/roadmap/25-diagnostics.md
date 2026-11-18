@@ -18,7 +18,7 @@ Ideas: B-09.
 4. Known WebKitGTK switches, set before the window opens:
    1. `WEBKIT_DISABLE_DMABUF_RENDERER=1`: a common fix on Intel and NVIDIA.
    2. `WEBKIT_DISABLE_COMPOSITING_MODE=1`: helps on some, hurts on others.
-   3. Wails `linux.Options.WebviewGpuPolicy`; `main.go` sets none (`OnDemand`).
+   3. Wails `linux.Options.WebviewGpuPolicy`; `main.go` sets none (Wails then uses `Never`).
 5. A move to Electron waits for these results (owner, 2026-11-18).
 
 ## Rules for this step (owner, 2026-11-18)
@@ -82,7 +82,7 @@ Ideas: B-09.
    1. WebKitGTK 2.54.2, Wayland, Intel `i915`; the GPU opens; scale 1.
    2. `default`, `no-dmabuf`, `no-compositing`, `gpu-never`: 6.2–6.3 fps, every frame slow.
    3. `gpu-always`: 60.0 fps, no slow frame.
-   4. So `OnDemand` draws on the CPU here; the switches change nothing.
+   4. So no options (Wails: `Never`) draws on the CPU here; the switches change nothing.
    5. Renderer "Apple GPU" everywhere: WebKit masks it; logged as 19.228.
    6. "No MP3 playback": GStreamer can't play `audio/mpeg`; owner to confirm.
 
