@@ -167,13 +167,13 @@ func (g *Game) check(in Intent) error {
 			return refuse("R-TURN-06", "only the active player can end the turn, in the action phase, with an empty stack")
 		}
 		if m := g.Turn.MustAttack; m != 0 && g.canAttack(in.Player) && g.Object(m).Zone.Kind == ZoneInPlay && g.CanBeAttacked(m) {
-			return deny("R-ABIL-12", refuseMustAttack.Msg(), "this turn you must attack %s first", g.Object(m).Card)
+			return deny("R-ATK-03", refuseMustAttack.Msg(), "this turn you must attack %s first", g.Object(m).Card)
 		}
 		if g.Turn.MustAttacks > 0 && g.canAttack(in.Player) {
-			return deny("R-ABIL-12", refuseMustAttack.Msg(), "you must make %d more attacks this turn", g.Turn.MustAttacks)
+			return deny("R-ATK-03", refuseMustAttack.Msg(), "you must make %d more attacks this turn", g.Turn.MustAttacks)
 		}
 		if g.randomAttackDue(in.Player) {
-			return deny("R-ABIL-12", refuseMustAttack.Msg(), "this turn you must make the random attack first (Q-31)")
+			return deny("R-KRAMPUS-13", refuseMustAttack.Msg(), "this turn you must make the random attack first (Q-31)")
 		}
 	case IntentDiscard:
 		if w.Kind != PromptDiscard {

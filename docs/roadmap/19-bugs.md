@@ -6433,6 +6433,14 @@ Totals by system (217 items):
    2. Check every card that sets them, all sets (5.24).
    3. The Monster Manual file then checks `"rule": "R-ATK-03"`.
    4. File: `cards/b2/testdata/situations/monster_manual/forces-an-attack-on-the-monster.json`.
+5. Done (2026-11-18)
+   1. `MustAttack` and `MustAttacks` denials cite R-ATK-03.
+   2. Checked cards: Monster Manual, Ambush, Lust for Blood, Sisters Vis.
+   3. Also Friendly Ball, Blind Rage, Blood Lust, Curse of Blood Lust.
+   4. Each forces an attack; R-ATK-22 builds on R-ATK-03 too.
+   5. The random minion attack cites R-KRAMPUS-13, its own rule (Q-31).
+   6. The Monster Manual file expects R-ATK-03.
+   7. Other R-ABIL-12 denials are a card's static "can't"; they fit.
 
 ### [ ] 19.226 The Bone's soul is refused by R-ABIL-09, a controller rule
 
