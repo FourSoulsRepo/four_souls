@@ -103,6 +103,8 @@ Use options 1, 4, 6, 9, 11, 13 and 15.
       2. So do the options of another player's prompt.
       3. A past object the state points at keeps its card: the stack shows it.
       4. Each new name is drawn from the pool: it says nothing of the old one.
+      5. So does the loot card another player plays from hand: `Activating` names the card dealt there (19.221).
+      6. Test: the copy's state names no card the seat cannot know, outside these places (`TestImagineNamesNoHiddenCard`).
    14. The copy depends only on what `p` knows: the hidden cards of each pool, `seed` and `known`.
       1. Each pool is sorted before the shuffle; the real layout never shows.
       2. Test: an imagined game, imagined again, equals the game imagined, for one seed.

@@ -197,6 +197,182 @@ func TestImagineForgetsTheDealKnown(t *testing.T) {
 	}
 }
 
+// jsonTree is v as decoded JSON: maps, slices, strings, numbers.
+func jsonTree(v any) (any, error) {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return nil, err
+	}
+	var out any
+	return out, json.Unmarshal(b, &out)
+}
+
+// eachString calls f with every string inside a JSON tree, map keys
+// too, and the path to it.
+func eachString(v any, path string, f func(path, s string)) {
+	switch v := v.(type) {
+	case string:
+		f(path, v)
+	case []any:
+		for i, x := range v {
+			eachString(x, path+"["+strconv.Itoa(i)+"]", f)
+		}
+	case map[string]any:
+		for k, x := range v {
+			f(path+"{key}", k)
+			eachString(x, path+"."+k, f)
+		}
+	}
+}
+
+// unknownCards lists the cards seat p cannot know now: the cards of the
+// decks, of the other hands and outside the game, less every card p's
+// view names and every card of a discard, below the top too (open by
+// R-ZONE-07, Decision 2.15). A card with a copy p sees counts as known.
+func unknownCards(g *engine.Game, p engine.PlayerID) (map[string]bool, error) {
+	out := map[string]bool{}
+	add := func(ids []engine.ObjectID) {
+		for _, id := range ids {
+			out[string(g.Objects[id].Card)] = true
+		}
+	}
+	for _, d := range g.Decks {
+		add(d)
+	}
+	for _, pl := range g.Players {
+		if pl.ID != p {
+			add(pl.Hand)
+		}
+	}
+	add(g.Outside)
+	view, err := jsonTree(seatView(g, p))
+	if err != nil {
+		return nil, err
+	}
+	eachString(view, "", func(_, s string) { delete(out, s) })
+	for _, d := range g.Discards {
+		for _, id := range d {
+			delete(out, string(g.Objects[id].Card))
+		}
+	}
+	return out, nil
+}
+
+// namesNoHidden checks that the copy imagined by seat p names no card
+// p cannot know, outside the two places Imagine deals or renames hidden
+// cards: an object's card, and the option labels of another player's
+// prompt (ADR 033, Decision 2.13). Everything else is copied from the
+// game as it is: question texts, previews, start choices, gains.
+func namesNoHidden(g *engine.Game, p engine.PlayerID, seed uint64) error {
+	unknown, err := unknownCards(g, p)
+	if err != nil {
+		return err
+	}
+	c, err := g.Imagine(p, seed, engine.Known{})
+	if err != nil {
+		return err
+	}
+	tree, err := jsonTree(c)
+	if err != nil {
+		return err
+	}
+	state, ok := tree.(map[string]any)
+	if !ok {
+		return fmt.Errorf("the copy is no JSON object: %T", tree)
+	}
+	objects, ok := state["objects"].([]any)
+	if !ok {
+		return fmt.Errorf("the copy has no object list: %T", state["objects"])
+	}
+	for _, o := range objects {
+		if o, ok := o.(map[string]any); ok {
+			delete(o, "card") // dealt from the pool, or renamed (Decision 2.3, 2.13.1)
+		}
+	}
+	if a := c.Activating; a != nil && a.Ability.Card == c.Objects[a.Source].Card {
+		if act, ok := state["activating"].(map[string]any); ok {
+			if ab, ok := act["ability"].(map[string]any); ok {
+				delete(ab, "card") // the card dealt to its source, as that object's (19.221)
+			}
+		}
+	}
+	if c.Waiting.Kind == engine.PromptChoose && c.Waiting.Player != p {
+		if w, ok := state["waiting"].(map[string]any); ok {
+			delete(w, "options") // renamed (Decision 2.13.2)
+		}
+	}
+	var leaks []string
+	eachString(state, "", func(path, s string) {
+		if unknown[s] {
+			leaks = append(leaks, fmt.Sprintf("%s = %q", path, s))
+		}
+	})
+	if len(leaks) > 0 {
+		slices.Sort(leaks)
+		return fmt.Errorf("seat %d: the copy names cards it cannot know: %s", p, strings.Join(leaks, "; "))
+	}
+	if a := c.Activating; a != nil && a.Player != p {
+		return playsOn(c, seed)
+	}
+	return nil
+}
+
+// playsOn plays 60 random steps on an imagined copy whose open play is
+// another player's: its card was redealt, so the mode or targets picked
+// so far were for another card (19.221). The copy must still play on.
+func playsOn(c *engine.Game, seed uint64) (err error) {
+	defer func() {
+		if v := recover(); v != nil {
+			err = fmt.Errorf("a copy with another player's play panics: %v", v)
+		}
+	}()
+	rng := rand.New(rand.NewPCG(seed, 7)) //nolint:gosec // test moves, not security
+	for step := 0; step < 60 && !c.Over; step++ {
+		p := c.Prompt()
+		allowed := c.Allowed(p.Player)
+		if len(allowed) == 0 {
+			return fmt.Errorf("copy step %d: nothing allowed, prompt %+v", step, p)
+		}
+		in := pick(rng, allowed)
+		if in.Kind == engine.IntentDiscard {
+			in.Objects = in.Objects[:p.Count]
+		}
+		if _, err := c.Apply(in); err != nil {
+			return fmt.Errorf("copy step %d: allowed %+v refused: %w", step, in, err)
+		}
+		if err := c.CheckInvariants(); err != nil {
+			return fmt.Errorf("copy step %d: %w", step, err)
+		}
+	}
+	return nil
+}
+
+// TestImagineNamesNoHiddenCard: at every step of the games of
+// TestImagineKeepsTheView, for every seat, the imagined game names a
+// card the seat cannot know only where Imagine dealt or renamed it
+// (ADR 033, Decision 2.13). TestImagineForgetsTheDeal cannot see a field
+// Imagine copies as it is: both of its copies hold the same real name.
+func TestImagineNamesNoHiddenCard(t *testing.T) {
+	for name, s := range cloneSetups() {
+		t.Run(name, func(t *testing.T) {
+			g, _, err := engine.NewGame(s)
+			if err != nil {
+				t.Fatal(err)
+			}
+			check := func(step int) {
+				t.Helper()
+				for p := range engine.PlayerID(len(g.Players)) {
+					if err := namesNoHidden(g, p, uint64(step)+4000); err != nil { //nolint:gosec // step is small
+						t.Fatalf("step %d: %v", step, err)
+					}
+				}
+			}
+			check(-1)
+			playSteps(t, g, rand.New(rand.NewPCG(s.Seed, 99)), imagineSteps, check) //nolint:gosec // test moves, not security
+		})
+	}
+}
+
 // TestImaginePlayout: random play of 200 steps on an imagined game never
 // panics, and its invariants hold all the way.
 func TestImaginePlayout(t *testing.T) {

@@ -56,7 +56,7 @@ This step never closes; new reports are appended.
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
-| X  | Bots: a bot or its driver wrong          | Bots       | 19.199, 19.204, 19.205, 19.206, 19.207, 19.208, 19.209, 19.210, 19.211, 19.212, 19.213, 19.214, 19.215, 19.216 | 14 |
+| X  | Bots: a bot or its driver wrong          | Bots       | 19.199, 19.204, 19.205, 19.206, 19.207, 19.208, 19.209, 19.210, 19.211, 19.212, 19.213, 19.214, 19.215, 19.216, 19.221 | 15 |
 
 Totals by system (212 items):
 
@@ -6308,3 +6308,25 @@ Totals by system (212 items):
 4. Tasks:
    1. Measure a full WebKit run on a quiet machine; if it still fails, find what blocks the pages at game start.
    2. Or give WebKit fewer workers in `make e2e`; decide with the owner.
+
+### [ ] 19.221 An imagined world names the loot card another seat is playing
+
+1. Goal: `Game.Imagine` names no card the seat cannot know (ADR 033, Decision 2.13).
+2. Report (owner's review of `bots`, 2026-11-18)
+   1. New test `TestImagineNamesNoHiddenCard` (`cards/imagine_test.go`).
+   2. It scans the imagined state's JSON for cards the seat cannot know.
+   3. Fails in `set b2` step 77, `set fsp2` 28, `set r` 62, `all sets, 2 players` 11.
+   4. Always `.activating.ability.card`; no other field, with it masked.
+3. Cause: `relabelHidden` leaves `Game.Activating` as it is.
+   1. A loot card stays in hand while its player picks mode and targets.
+   2. The view shows `Activating` to that player only (`activatingSource`).
+   3. So another seat's copy redeals the hand card, but `Ability.Card` keeps the real name.
+   4. The copy is also inconsistent: the source is one card, the ability another's.
+4. Reach: most likely none today.
+   1. A bot thinks only when the prompt is its own (`wantsMove`).
+   2. While `Activating` is open, the prompts are the activating player's.
+5. Tasks:
+   1. [x] `TestImagineNamesNoHiddenCard`: every step of `cloneSetups`, every seat.
+   2. [x] Fix (owner, 2026-11-18: rename to the redealt card): `relabelHidden` sets `Activating.Ability.Card` to the card dealt to its source, when the source is a hand the seat cannot see.
+   3. [x] The copy then holds a mode or targets picked for another card: the test plays 60 random steps on each such copy (168 of them), with `CheckInvariants`; no panic, no refusal.
+   4. [x] ADR 033, Decision 2.13.5 – 2.13.6; wiki Rules-engine.

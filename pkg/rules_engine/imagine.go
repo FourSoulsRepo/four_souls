@@ -231,6 +231,8 @@ func (g *Game) dealHidden(slots []hiddenSlot, hidden map[int][]CardRef, known Kn
 // drawn by rng from the same pool, so the new name says nothing of the
 // old one. A past object the state still points at keeps its card: the
 // stack or a boost may show it (a trigger of a monster that left play).
+// The loot card another player is playing from hand takes the card
+// dealt to it.
 func (g *Game) relabelHidden(p PlayerID, hidden map[int][]CardRef, rng *RNG) {
 	rename := func(ref CardRef) CardRef {
 		pool := hidden[g.poolOf(ref)]
@@ -244,6 +246,12 @@ func (g *Game) relabelHidden(p PlayerID, hidden map[int][]CardRef, rng *RNG) {
 		if o := &g.Objects[i]; o.Zone.Kind == ZoneGone && !used[o.ID] {
 			o.Card = rename(o.Card)
 		}
+	}
+	// A loot card stays in hand while its player picks mode and targets;
+	// only that player's view shows it. Its ability names the card dealt
+	// there, not the real one (19.221).
+	if a := g.Activating; a != nil && g.Objects[a.Source].Zone.Kind == ZoneHand && !g.seesHand(p, a.Player) {
+		a.Ability.Card = g.Objects[a.Source].Card
 	}
 	if g.Waiting.Kind == PromptChoose && g.Waiting.Player != p {
 		for i := range g.Waiting.Options {
