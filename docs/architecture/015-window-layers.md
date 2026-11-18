@@ -57,6 +57,10 @@ Use option 1.
    2. Game events next: effects never hide.
    3. Then the card zoom, over every window.
    4. Then modal overlays, then windows, then the table.
+7. The game menu and its settings are an exception (19.230).
+   1. The player opens them on purpose.
+   2. They cover the effects, the zoom and the trail.
+   3. Only the aim arrow and its note stay above: the pointer.
 
 ## Consequences
 
@@ -78,3 +82,4 @@ Use option 1.
 
 1. Effects stay above the overlays, as before.
 2. The aim arrow drops from 1000 to the top of a short list.
+3. Since 19.230 an effect plays under an open game menu.

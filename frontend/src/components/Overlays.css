@@ -10,6 +10,12 @@
   background: rgb(0 0 0 / 55%);
 }
 
+/* The game menu, its end question and its settings (19.230): the player
+   opened them, so they cover the zoom and the game's effects too. */
+.overlay.game-menu-overlay {
+  z-index: var(--z-game-menu);
+}
+
 .overlay-box {
   display: flex;
   flex-direction: column;

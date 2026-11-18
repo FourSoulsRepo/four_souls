@@ -31,6 +31,13 @@ async function offersOf(page: Page): Promise<Pick> {
   });
 }
 
+// offersReady waits until the page's store holds its n offers, then
+// returns them: the setup frame may come after the pick screen (19.231).
+async function offersReady(page: Page, n: number): Promise<Pick> {
+  await expect.poll(async () => (await offersOf(page)).offers.length).toBe(n);
+  return offersOf(page);
+}
+
 // draft sets the host screen to a draft of n.
 function draft(n: number) {
   return async (host: Page) => {
@@ -63,8 +70,7 @@ test('a draft offers each player characters with their starting items', async ({
       const seen: string[] = [];
       for (const [i, page] of pages.entries()) {
         await expect(page.getByRole('heading', { name: tr('pick.title') })).toBeVisible();
-        await expect.poll(async () => (await offersOf(page)).offers.length).toBe(5);
-        const { offers, items, names } = await offersOf(page);
+        const { offers, items, names } = await offersReady(page, 5);
         // Each sees only their own offers.
         expect(offers.filter((c) => seen.includes(c))).toEqual([]);
         seen.push(...offers);
@@ -105,14 +111,14 @@ test('others see who has picked, not what', async ({ browser }) => {
   await startGame(browser, ['Cy', 'Dee'], {
     setup: draft(2),
     pick: async ([first, second]) => {
-      const { offers } = await offersOf(first!);
+      const { offers } = await offersReady(first!, 2);
       await first!.getByTestId(`offer-${offers[0] ?? ''}`).click();
       await first!.getByRole('button', { name: tr('pick.confirm') }).click();
       await expect(first!.getByText(tr('pick.waiting'))).toBeVisible();
       const seats = second!.getByRole('list', { name: tr('pick.players') });
       await expect(seats.getByText(`Cy: ${tr('pick.has_picked')}`)).toBeVisible();
       await expect(seats.getByText(`Dee: ${tr('pick.choosing')}`)).toBeVisible();
-      const mine = await offersOf(second!);
+      const mine = await offersReady(second!, 2);
       await second!.getByTestId(`offer-${mine.offers[1] ?? ''}`).click();
       await second!.getByRole('button', { name: tr('pick.confirm') }).click();
     },

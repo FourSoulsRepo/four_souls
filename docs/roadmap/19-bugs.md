@@ -38,10 +38,10 @@ This step never closes; new reports are appended.
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45, 19.224                                   | 3     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141, 19.191 | 16 |
-| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119, 19.167, 19.200 | 13 |
+| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119, 19.167, 19.200, 19.230 | 14 |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166, 19.198                          | 4     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194, 19.197, 19.217 | 45 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194, 19.197, 19.217, 19.231 | 46 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179, 19.189, 19.196, 19.202, 19.203, 19.219, 19.220 | 36 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91, 19.201, 19.218             | 6     |
@@ -6569,3 +6569,51 @@ Totals by system (218 items):
    3. The probe's MP3 flag only where Go can't tell (not Linux).
    4. Packages: wiki First-start, `release/README.txt`, `diag.Packages`.
    5. Test: `TestAudio`; ADR 035 item 2.7; UC-48 item 2.3.
+
+### [ ] 19.230 Big cards and dice show over the game's settings
+
+1. Goal: the game menu and its settings cover everything on the table.
+2. Report (owner, 2026-11-19)
+   1. Settings opened from the game menu during a match.
+   2. Big cards and dice are drawn on top of the settings.
+3. Cause (the client, ADR 015)
+   1. The game menu and its settings use the `overlay` layer (90).
+   2. `zoom` (100), `effects` (110) and `trail` (120) are above it.
+   3. That order is for game events over a dialog the game opens.
+   4. The menu is opened by the player; it should cover them.
+4. Tasks:
+   1. A `game-menu` layer above `trail`, under the aiming arrow.
+   2. The game menu, its end question and its settings use it.
+   3. 5.26: check every other `overlay` window.
+   4. e2e: the settings cover a zoomed card.
+5. Fix (2026-11-19)
+   1. `--z-game-menu` (125): under `aim`, over `trail`, `effects`, `zoom`.
+   2. `GameMenu.tsx`: menu, end question, settings take `game-menu-overlay`.
+   3. 5.26: checked, no change: lost, paused, game over (game states).
+   4. 5.26: checked, no change: End turn question, reconnect badge, notices.
+   5. They stay under effects: a game event must be seen (ADR 015 item 6.2).
+   6. e2e: `the game settings cover a zoomed card (19.230)`.
+   7. It fails without the fix: the zoom is drawn on top.
+   8. ADR 015 item 7 and Neutral 3; wiki `Layers.md` row `game-menu`.
+
+### [ ] 19.231 e2e: the draft "who has picked" test reads offers before they come
+
+1. Goal: the draft tests wait for the offers before they read them.
+2. Report (the 19.230 gate, 2026-11-19, WebKit)
+   1. `draft.spec.ts` "others see who has picked, not what" timed out.
+   2. It waited for `offer-`: an empty card id.
+   3. Seed 2697923921; evidence in `.cache/e2e-evidence/19.230-draft-webkit/`.
+3. Cause (the test; the app was right)
+   1. The page snapshot shows the five offers on screen.
+   2. `offersOf` reads the store once; line 108 called it with no wait.
+   3. A slow WebKit page had no `setup` frame yet: no offers.
+   4. The first test polls first (`expect.poll`); this one did not.
+4. Tasks:
+   1. One helper waits for n offers, then returns them (18.10).
+   2. 5.26: every `offersOf` call in the e2e tests.
+5. Fix (2026-11-19)
+   1. `offersReady(page, n)` in `draft.spec.ts`: polls, then reads.
+   2. 5.26: all four `offersOf` reads checked.
+   3. Lines of the first test: already after a poll; now use the helper.
+   4. The "who has picked" test: both reads now wait.
+   5. `draft.spec.ts` with `--repeat-each 3`: 18 passed, both browsers.
