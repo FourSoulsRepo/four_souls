@@ -57,6 +57,9 @@ Ideas: TS-13, LR-04, R-03.
    2. A stack in play is set with `setup.stack` and `priority`.
 8. A moved file may check more than its Go test, from the card text.
    1. More checks, not fewer.
+9. Bulk move: yes, one card family per sub-step, with the dump (2026-11-18).
+10. Deck bottom and roll value checks come first (23.11).
+11. A table of fixed cases: one file per case (ADR 033 1.10).
 
 ## File layout
 
@@ -404,3 +407,98 @@ Ideas: TS-13, LR-04, R-03.
       3. An `attack_roll` item with `declared` is an error.
       4. Attack: R-ATK-02, R-ATK-11; purchase: R-SHOP-01.
       5. New in `b2`: Bomb! (declared attack), Jawbone (declared purchase).
+
+### [ ] 23.11 Deck bottom and roll value checks
+
+1. Goal: the checks the pilot (23.8) missed most.
+2. Tasks:
+   1. `expect.decks`: the bottom cards too, bottom last.
+   2. A check of the value a roll resolved as.
+   3. Shape from the Go tests: `testOneOnTop`, `resolvedRoll`, `ResolvedAt`.
+   4. A passing and a failing test for each.
+   5. Move the pilot's 6 tests that wait for these (23.8 item 6).
+   6. The Emperor, The Hermit, The Moon, The Hanged Man.
+   7. The Magician, `TestRulingRollAboveSix`.
+   8. The Wheel of Fortune: one file per outcome (owner answer 11).
+   9. The dump: a hand-set field before a direct `G.Apply` (23.8 item 7.3).
+   10. Wiki `Situation-payload.md`; ADR 033 if it drifts.
+3. Done when:
+   1. The 7 tests above are files; their Go tests are gone.
+
+## Bulk move rules (owner, 2026-11-18)
+
+1. One card family per sub-step, in a fresh agent (CLAUDE.md 5.21).
+2. The way of 23.8: dump, then `title`, `source`, `expect` by hand.
+3. Owner answers 1, 8, 11; ADR 033 Decision 1 and 4.
+4. Each file fails with one expected value changed, then passes.
+5. No format or engine change in a bulk sub-step.
+   1. A test that needs one stays Go; count it and name the change.
+6. A rules bug: a step 19 item first (CLAUDE.md 5.17); not fixed there.
+7. Rerun `go run ./cmd/cardgen -report`; no card drops from "tested".
+8. Report under the sub-step: moved, split, stayed Go (why), changes needed.
+9. Families from the 2026-11-18 count of card kinds in `_test.go` files.
+10. "Other": test files with no card kind (rules, helpers, combos).
+
+### [ ] 23.12 Bulk: b2 loot cards
+
+1. Goal: Wildcard, Trinket, Nickel, Bomb, Battery, Butter Bean (about 33 tests).
+
+### [ ] 23.13 Bulk: b2 passive treasures
+
+1. Goal: Passive Treasure (about 58 tests).
+
+### [ ] 23.14 Bulk: b2 other treasures
+
+1. Goal: Active, Paid, Eternal, Soul Treasure (about 60 tests).
+
+### [ ] 23.15 Bulk: b2 monsters
+
+1. Goal: Basic and Cursed Monster (about 46 tests).
+
+### [ ] 23.16 Bulk: b2 events, curses, souls
+
+1. Goal: Good and Bad Event, Curse, Bonus and Lost Soul (about 25 tests).
+
+### [ ] 23.17 Bulk: b2 bosses and characters
+
+1. Goal: Boss, Epic Boss, Character (about 49 tests).
+
+### [ ] 23.18 Bulk: b2 other
+
+1. Goal: b2 test files with no card kind (about 57 tests).
+
+### [ ] 23.19 Bulk: fsp2
+
+1. Goal: every fsp2 test (about 89 tests).
+
+### [ ] 23.20 Bulk: g2
+
+1. Goal: every g2 test (about 71 tests).
+
+### [ ] 23.21 Bulk: r rooms
+
+1. Goal: Room (about 59 tests).
+
+### [ ] 23.22 Bulk: r passive and eternal treasures
+
+1. Goal: Passive and Eternal Treasure (about 55 tests).
+
+### [ ] 23.23 Bulk: r other treasures
+
+1. Goal: Active, Paid, Soul Treasure (about 35 tests).
+
+### [ ] 23.24 Bulk: r monsters, bosses, events, souls
+
+1. Goal: monsters, bosses, events, Bonus Soul, Curse (about 49 tests).
+
+### [ ] 23.25 Bulk: r loot and characters
+
+1. Goal: loot cards, Outside, Character (about 50 tests).
+
+### [ ] 23.26 Bulk: r other
+
+1. Goal: r test files with no card kind (about 55 tests).
+
+### [ ] 23.27 Bulk: challenge
+
+1. Goal: Challenge and Challenge Boss (about 50 tests).

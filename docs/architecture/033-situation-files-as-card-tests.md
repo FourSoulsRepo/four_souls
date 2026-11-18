@@ -49,13 +49,14 @@ Use option 1.
 1. Simple and complicated
    1. Simple: the format states its setup, steps and checks.
    2. No engine state set by hand outside `setup`.
-   3. Complicated, so Go: loops or tables of cases.
+   3. Complicated, so Go: loops that compute values.
    4. Go: a check against a value read earlier in the test.
    5. Go: views, hidden cards, records, replay, undo.
    6. Go: helpers and engine APIs, not a game action.
    7. Go: random runs, fuzz, sims.
    8. A missing setup field or check is added to the format first.
    9. Go only when adding it would not serve other tests.
+   10. A table of fixed cases: one file per case (owner, 2026-11-18).
 2. Example of simple: `TestRazorBlade`.
    1. Razor Blade in play, activate it on the other player.
    2. That player has 1 damage.
