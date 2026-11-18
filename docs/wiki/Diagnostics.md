@@ -19,24 +19,29 @@ The check opens a small test window that shows the main menu for about six secon
 The report prints to the terminal and is saved as `diagnose-<date>-<time>.txt` in the app's settings folder; its last line names the file. It has three parts:
 
 1. **The system** (Linux): the WebKitGTK version, Wayland or X11, each GPU in `/dev/dri` with its driver and whether the game may use it, and your `render` and `video` groups.
-2. **One row per variant**: frames per second on the main menu, how many frames came late (over 34 ms), the longest wait, the screen scale, whether the sky moved, and the GPU name the webview reports.
+2. **One row per variant**: frames per second on the main menu, how many frames came late (over 34 ms), the longest wait, the screen scale, whether the sky moved, and the GPU name the webview reports. WebKit (Linux, macOS) hides that name and always says "Apple GPU", so there the column reads "hidden by WebKit"; the GPU lines above it name the real one.
 3. **The verdict**: the fastest variant, how to start the game with it, and any problems found.
 
 The Linux variants:
 
 | Variant | What changes |
 |---|---|
-| `default` | Nothing: a normal start. |
-| `no-dmabuf` | `WEBKIT_DISABLE_DMABUF_RENDERER=1`; often fixes Intel and NVIDIA. |
+| `default` | Nothing: a normal start. The webview always uses the GPU. |
+| `no-dmabuf` | `WEBKIT_DISABLE_DMABUF_RENDERER=1`; fixes some Intel and NVIDIA setups. |
 | `no-compositing` | `WEBKIT_DISABLE_COMPOSITING_MODE=1`; helps on some systems, hurts on others. |
-| `gpu-always` | The webview always uses the GPU. |
-| `gpu-never` | The webview never uses the GPU; for comparison. |
+| `gpu-ondemand` | `FOURSOULS_GPU_POLICY=ondemand`: the GPU only when the page asks; the default before 0.6.3. |
+| `gpu-never` | `FOURSOULS_GPU_POLICY=never`: the webview never uses the GPU. |
 
-When the best variant is an environment switch, the report prints the command, for example `WEBKIT_DISABLE_DMABUF_RENDERER=1 ./FourSouls`. The two `gpu-*` variants can't be chosen yet; a later version will let the game pick the best one itself.
+When the best variant is not `default`, the report prints the command, for example `FOURSOULS_GPU_POLICY=ondemand ./FourSouls`.
+
+## The GPU switch
+
+Since 0.6.3 the game on Linux always draws with the GPU. On one tested laptop the old setting drew the menu at 6 frames a second instead of 60. If your window stays black or looks broken, your GPU driver may not cope; start the game with `FOURSOULS_GPU_POLICY=ondemand ./FourSouls` (or `never`), and send the `--diagnose` report to the developers.
 
 ## Problems it finds
 
-* **The webview draws on the CPU (`llvmpipe`).** The GPU driver is missing or not working; on Linux check that Mesa is installed and up to date.
+* **The webview draws on the CPU (`llvmpipe`).** Windows only, where the webview names its GPU. The GPU driver is missing or not working.
+* **`LIBGL_ALWAYS_SOFTWARE=1` is set.** OpenGL draws on the CPU; remove the variable.
 * **A GPU does not open.** Your user may not use `/dev/dri/renderD*`. Add yourself to the `render` group (`sudo usermod -aG render $USER`) and log in again.
 * **No GPU render node.** No GPU driver is loaded at all.
 * **No MP3 playback.** The game has no sound. Install the GStreamer plugins: `gstreamer1.0-plugins-good` and `gstreamer1.0-libav` (Debian, Ubuntu), `gstreamer1-plugins-good` (Fedora), `gst-plugins-good` and `gst-libav` (Arch).

@@ -45,6 +45,29 @@ func TestVariants(t *testing.T) {
 	if v, ok := VariantByID("linux", "no-dmabuf"); !ok || v.Env[0] != "WEBKIT_DISABLE_DMABUF_RENDERER=1" {
 		t.Errorf("no-dmabuf = %+v, %v", v, ok)
 	}
+	// ADR 036: the default is the GPU always on; on demand is a variant.
+	if v, ok := VariantByID("linux", "gpu-ondemand"); !ok || v.Env[0] != "FOURSOULS_GPU_POLICY=ondemand" {
+		t.Errorf("gpu-ondemand = %+v, %v", v, ok)
+	}
+}
+
+// ADR 036: unset means always; an unknown value falls back to always.
+func TestGPUPolicy(t *testing.T) {
+	cases := []struct {
+		in   string
+		want string
+		ok   bool
+	}{
+		{"", "always", true},
+		{"ondemand", "ondemand", true},
+		{" Never ", "never", true},
+		{"fast", "always", false},
+	}
+	for _, c := range cases {
+		if got, ok := GPUPolicy(c.in); got != c.want || ok != c.ok {
+			t.Errorf("GPUPolicy(%q) = %q, %v; want %q, %v", c.in, got, ok, c.want, c.ok)
+		}
+	}
 }
 
 func TestResultLineRoundTrip(t *testing.T) {
@@ -99,9 +122,18 @@ func TestBestAndFlags(t *testing.T) {
 	if !ok || best.Variant.ID != "no-dmabuf" {
 		t.Fatalf("Best = %+v, %v", best, ok)
 	}
-	s := System{OS: "linux", GPUs: []GPU{{Node: "/dev/dri/renderD128", Err: "permission denied"}}}
+	// Windows: WebView2 names its renderer, so llvmpipe counts there.
+	s := System{OS: "windows"}
+	if flags := strings.Join(Flags(s, outs), "\n"); !strings.Contains(flags, "llvmpipe") {
+		t.Errorf("windows flags miss llvmpipe:\n%s", flags)
+	}
+	s = System{OS: "linux", GPUs: []GPU{{Node: "/dev/dri/renderD128", Err: "permission denied"}}}
 	flags := strings.Join(Flags(s, outs), "\n")
-	for _, want := range []string{"does not open", "llvmpipe", "No MP3"} {
+	// 19.228: WebKit hides the renderer, so its name proves nothing.
+	if strings.Contains(flags, "llvmpipe") {
+		t.Errorf("linux flags trust a WebKit renderer:\n%s", flags)
+	}
+	for _, want := range []string{"does not open", "No MP3"} {
 		if !strings.Contains(flags, want) {
 			t.Errorf("flags miss %q:\n%s", want, flags)
 		}
@@ -112,7 +144,7 @@ func TestBestAndFlags(t *testing.T) {
 	var b strings.Builder
 	Write(&b, s, outs)
 	report := b.String()
-	for _, want := range []string{"Best: no-dmabuf, 60.0 fps.", "WEBKIT_DISABLE_DMABUF_RENDERER=1 ./FourSouls", "gpu-never", "failed: exit status 1"} {
+	for _, want := range []string{"Best: no-dmabuf, 60.0 fps.", "WEBKIT_DISABLE_DMABUF_RENDERER=1 ./FourSouls", "gpu-never", "failed: exit status 1", "hidden by WebKit"} {
 		if !strings.Contains(report, want) {
 			t.Errorf("report misses %q:\n%s", want, report)
 		}

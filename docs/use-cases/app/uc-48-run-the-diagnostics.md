@@ -33,7 +33,7 @@
 * **3b. A window crashes:** its row says "failed" with the last error line.
 * **4a. No variant sent a result:** "Best: none".
 * **4b. The best is `default`:** no command is printed.
-* **4c. The best is a `gpu-*` variant:** no switch exists yet; send the report.
+* **4c. A probe's GPU name:** WebKit hides it; the row says "hidden by WebKit" (19.228).
 * **5a. The file can't be written:** the error; exit code 1.
 
 ## Postconditions

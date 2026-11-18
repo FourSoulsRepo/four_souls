@@ -48,6 +48,7 @@ var switchNames = []string{
 	"LIBGL_ALWAYS_SOFTWARE",
 	"GDK_BACKEND",
 	"GSK_RENDERER",
+	GPUPolicyEnv,
 }
 
 // vendors names the PCI vendor IDs of the usual GPUs.

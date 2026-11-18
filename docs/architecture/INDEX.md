@@ -37,3 +37,4 @@
 | [033](033-bots.md) | Bots in network games | Accepted |
 | [034](034-situation-files-as-card-tests.md) | Situation files as card tests | Accepted |
 | [035](035-webview-diagnostics.md) | Webview diagnostics | Accepted |
+| [036](036-linux-webview-gpu-always.md) | Linux webview always on the GPU | Accepted |

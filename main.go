@@ -73,7 +73,7 @@ func main() {
 }
 
 // appOptions are the window and bindings of a start. A probe (ADR 035)
-// has a variant: a fixed window, never full screen, and its GPU policy.
+// has a variant: a fixed window, never full screen.
 func appOptions(title, settingsFile string, fullscreen bool, probeOf diag.Variant) *options.App {
 	app := NewApp()
 	cardFiles := appfiles.CardsFS()
@@ -97,7 +97,7 @@ func appOptions(title, settingsFile string, fullscreen bool, probeOf diag.Varian
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
 		// The saved window mode applies from the first frame (ST-01).
 		Fullscreen: fullscreen,
-		Linux:      linuxOptions(probeOf.GPU),
+		Linux:      linuxOptions(os.Getenv(diag.GPUPolicyEnv)),
 		// Only the bindings/* structs; App is not bound (ADR 030, item 4).
 		Bind: []any{
 			about.New(), prefs.New(settingsFile), assets.New(cardFiles), setup.New(),
