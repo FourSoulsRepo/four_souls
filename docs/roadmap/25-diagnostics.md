@@ -86,7 +86,7 @@ Ideas: B-09.
    5. Renderer "Apple GPU" everywhere: WebKit masks it; logged as 19.228.
    6. "No MP3 playback": GStreamer can't play `audio/mpeg`; owner to confirm.
 
-### [ ] 25.3 Linux webview always on the GPU
+### [x] 25.3 Linux webview always on the GPU
 
 1. Goal: the game draws at full speed on the owner's Linux laptop.
 2. Owner answers (2026-11-18)
@@ -101,6 +101,9 @@ Ideas: B-09.
 4. Done when:
    1. The owner's laptop runs the menu smoothly in a normal start.
    2. The owner checks the sound (the MP3 warning, 25.2 item 5.6).
+5. Result (2026-11-19)
+   1. Released in 0.6.3; the owner's menu runs at 58–60 fps.
+   2. Sound plays after `gst-libav` and `gst-plugins-good` (19.229).
 
 ### [ ] 25.4 Self-repair in the game (parked)
 

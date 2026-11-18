@@ -6554,3 +6554,6 @@ Totals by system (218 items):
       1. Missing: sounds off, and a notice names the package.
    3. `--diagnose` flags a missing audio sink, not only a decoder.
    4. Wiki First-start: the Linux packages include the good plugins.
+6. Confirmed (owner, 2026-11-19)
+   1. With `gst-plugins-good` installed the game plays through the roll.
+   2. So a missing audio sink hangs the page's web process.
