@@ -1,0 +1,14 @@
+{
+  "title": "Isaac plays XX. Judgement on Cain (2 souls), who destroys Gurdy: 1 soul left",
+  "source": ["card xx_judgement"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["xx_judgement"]},
+      {"character": "cain", "souls": ["monstro", "gurdy"]}
+    ],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "xx_judgement", "choices": ["player 2 (cain)", "gurdy"]},
+  "expect": {"allowed": true, "after": [{"player": 1, "souls": 1, "soul_cards": ["monstro"]}]}
+}

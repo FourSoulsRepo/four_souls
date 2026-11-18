@@ -1,0 +1,18 @@
+{
+  "title": "XX. Judgement on Cain, whose Monstro is eternal: only Gurdy is offered, and it is destroyed",
+  "source": ["card xx_judgement", "R-ABIL-18", "Q-23"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["xx_judgement"]},
+      {"character": "cain", "souls": ["monstro", "gurdy"], "eternal": ["monstro"]}
+    ],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "xx_judgement", "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "prompt": {"player": 1, "options": ["gurdy"]}}},
+    {"kind": "choose", "choices": ["gurdy"]}
+  ],
+  "expect": {"allowed": true, "after": [{"player": 1, "souls": 1, "soul_cards": ["monstro"]}]}
+}

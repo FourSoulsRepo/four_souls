@@ -1,0 +1,16 @@
+{
+  "title": "Isaac plays V. The Hierophant on himself, then misses the Leech: is its 2 damage prevented?",
+  "source": ["card v_the_hierophant", "card leech", "R-ATK-12"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["v_the_hierophant"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [1, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "v_the_hierophant", "choices": ["player 1 (isaac)"]},
+    {"player": 0, "kind": "attack", "choices": ["leech"]}
+  ],
+  "expect": {"allowed": true, "monsters": [{"card": "leech", "dead": true}], "after": [{"player": 0, "damage": 0}]}
+}
