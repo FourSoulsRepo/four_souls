@@ -6460,3 +6460,8 @@ Totals by system (217 items):
    2. Check every refusal with R-ABIL-09, all sets (5.24).
    3. `TestTheBoneSoulHasNoAbilities` then expects that rule.
    4. Then it can move to a situation file.
+5. Done (2026-11-18)
+   1. `activatable` denies an item soul with no abilities by R-CARD-38.
+   2. Other R-ABIL-09 denials: a card the player doesn't control; they fit.
+   3. `TestTheBoneSoulHasNoAbilities` moved to a step in
+      `the_bone/deals-damage-then-becomes-a-soul.json`.

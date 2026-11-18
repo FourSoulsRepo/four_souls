@@ -34,6 +34,9 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 		if contains(g.Turn.LateRooms, src) {
 			return deny("R-TURN-18", refuseNextTurn.Msg(), "a room that entered in the end phase can't be used this turn")
 		}
+	} else if o.Zone.Kind == ZoneInPlay && o.Controller == p && o.Role == RoleSoul && o.NoAbilities && g.kindOf(src) == TreasureCard {
+		// An item that became a soul and lost its abilities (R-CARD-38).
+		return refuse("R-CARD-38", "%s became a soul and lost its abilities", o.Card)
 	} else if o.Zone.Kind != ZoneInPlay || o.Controller != p || (o.Role != RoleItem && o.Role != RoleCharacter && !g.soulKeepsAbilities(src)) {
 		return refuse("R-ABIL-09", "only the controller uses an item's or character's abilities")
 	}
