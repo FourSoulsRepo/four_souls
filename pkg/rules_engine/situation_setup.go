@@ -7,7 +7,7 @@ import (
 	"slices"
 )
 
-// SituationCounter is a number of counters on one card (23.3). Card is
+// SituationCounter is a number of counters on one card (24.3). Card is
 // the card's ref, or "character" for a player's character; Name names
 // the counters ("gold", a level), empty for plain counters.
 type SituationCounter struct {
@@ -134,7 +134,7 @@ func (g *Game) setUpSlots(s SituationSetup) error {
 }
 
 // setupPhases are the values of setup.phase and the step each starts
-// in, its priority window open (23.10). The step's own work is done:
+// in, its priority window open (24.10). The step's own work is done:
 // start is after the recharge and the start-of-turn triggers
 // (R-TURN-03), loot after the active player looted (R-TURN-04), end
 // after the end-of-turn triggers (R-TURN-10). When everyone passes, the
@@ -160,7 +160,7 @@ func (s SituationSetup) phaseStep() (Step, error) {
 }
 
 // setUpTurn sets the turn's step and applies its overrides. loot_plays
-// is unchecked, as before 23.3, so old payloads keep their answers.
+// is unchecked, as before 24.3, so old payloads keep their answers.
 func (s SituationSetup) setUpTurn(t *Turn) error {
 	step, err := s.phaseStep()
 	if err != nil {
@@ -253,12 +253,12 @@ func (g *Game) setUpDeclared(s SituationSetup) error {
 }
 
 // openSetupWindow opens the first window: for holder, the top item's owner
-// or the active player, unless the setup names the seat (23.4). With an
+// or the active player, unless the setup names the seat (24.4). With an
 // empty stack, the players from the active player up to that seat have
 // passed (R-PRIO-02), so when it and the rest pass the window closes as
 // in a game (R-PRIO-05). In the open action phase nobody passes on an
 // empty stack: the active player can't (R-TURN-09), so the seat must be
-// theirs (23.10).
+// theirs (24.10).
 func (g *Game) openSetupWindow(seat *int, holder PlayerID) error {
 	if seat == nil {
 		g.openWindow(holder)

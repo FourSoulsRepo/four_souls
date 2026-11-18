@@ -142,7 +142,7 @@ func (g *Game) stackSource(p PlayerID, card CardRef, rows [][]Slot) (ObjectID, b
 }
 
 // stackedAbility: an activated ability of a card the owner controls,
-// or of a room in a room slot, whose owner is the active player (23.6).
+// or of a room in a room slot, whose owner is the active player (24.6).
 func (g *Game) stackedAbility(p PlayerID, st SituationStack) (StackItem, error) {
 	src, ok := g.stackSource(p, st.Card, [][]Slot{g.Rooms})
 	switch {

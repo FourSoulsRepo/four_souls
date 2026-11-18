@@ -49,6 +49,7 @@ Step 21 added (owner, 2026-11-15); it runs on the step 18 branch.
 Step 21 done (owner, 2026-11-16); it merges with step 18.
 Step 10 starts now, before 9 (owner, 2026-11-16); it runs on the step 18 branch.
 Step 10 done (owner, 2026-11-16); it merges with step 18.
+Situation tests were step 23; they became step 24 at the merge with bots (owner, 2026-11-18).
 
 ---
 
@@ -348,7 +349,7 @@ Step 10 done (owner, 2026-11-16); it merges with step 18.
 6. Long games stay under a size and speed limit.
 7. Ideas: TS-07 – TS-12.
 
-## 23. Situation tests
+## 24. Situation tests
 
 1. The situation format grows to cover most card tests.
 2. Forced dice, deck tops, counters, several steps, richer checks.

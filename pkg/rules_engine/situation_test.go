@@ -231,7 +231,7 @@ func buildSetup(setup string) (*Game, error) {
 	return BuildTable(s, testSet)
 }
 
-// The 23.3 setup fields land where Go tests set them by hand.
+// The 24.3 setup fields land where Go tests set them by hand.
 func TestSituationSetupFields(t *testing.T) {
 	g, err := buildSetup(`{
 		"players": [
@@ -324,7 +324,7 @@ func razorSteps(extra, steps string) string {
 
 // A step may leave a question for a following choose step, may be
 // refused, and later steps still run; each step's expect is checked
-// after it, the file's at the end (23.4).
+// after it, the file's at the end (24.4).
 func TestSituationSteps(t *testing.T) {
 	data := razorSteps("", `[
 		{"player": 0, "kind": "activate", "card": "razor"},
@@ -471,7 +471,7 @@ func passAround(t *testing.T, g *Game, n int) {
 }
 
 // setup.phase and setup.declared start in a real priority window
-// (23.10); when everyone passes, the game moves on as in a game.
+// (24.10); when everyone passes, the game moves on as in a game.
 func TestSituationWindows(t *testing.T) {
 	seat := func(n int) *int { return &n }
 	players := []SituationPlayer{{Character: "hero_a"}, {Character: "hero_b"}}
@@ -485,7 +485,7 @@ func TestSituationWindows(t *testing.T) {
 		return g
 	}
 	// No phase: the open action phase with one loot play, attack and
-	// purchase (R-TURN-05, R-TURN-07), as before 23.10.
+	// purchase (R-TURN-05, R-TURN-07), as before 24.10.
 	g := build(SituationSetup{})
 	if g.Turn.Step != StepAction || g.Turn.LootPlays != 1 || g.Turn.Attacks != 1 || g.Turn.Purchases != 1 || !g.inOpenActionPhase() {
 		t.Errorf("turn %+v; want the open action phase, 1 of each", g.Turn)
@@ -533,7 +533,7 @@ func TestSituationWindows(t *testing.T) {
 	if w := g.Prompt(); w.Kind != PromptChoose || w.Player != 0 || g.Choice.Purpose != ChoosePurchase {
 		t.Errorf("after the purchase's window: prompt %+v; want player 0 to pick the item", w)
 	}
-	// A response waits on the stack (23.10 follow-up): its owner holds
+	// A response waits on the stack (24.10 follow-up): its owner holds
 	// priority (R-PRIO-03). It resolves when everyone passes (R-STACK-03);
 	// priority passes again from the active player (R-STACK-04, R-PRIO-02);
 	// only then is the target or item chosen (R-ATK-02, R-SHOP-02).
@@ -556,7 +556,7 @@ func TestSituationWindows(t *testing.T) {
 			t.Errorf("%s: after the stack: prompt %+v; want player 0 to choose", c.declared, w)
 		}
 	}
-	// A stack with nothing declared is as before 23.10: no attack or
+	// A stack with nothing declared is as before 24.10: no attack or
 	// purchase is on.
 	g = build(SituationSetup{Stack: []SituationStack{{DiceRoll: 3, Owner: 1}}})
 	if g.Attack.On || g.Purchase.On || g.Turn.Attacks != 1 || g.Turn.Purchases != 1 {
@@ -565,7 +565,7 @@ func TestSituationWindows(t *testing.T) {
 }
 
 // A setup.phase or setup.declared that no real window has is an error
-// that names the rule or lists the options (23.10).
+// that names the rule or lists the options (24.10).
 func TestSituationWindowErrors(t *testing.T) {
 	const seats = `"players": [{"character": "hero_a"}, {"character": "hero_b"}], "monsters": ["dummy"]`
 	for _, c := range []struct{ extra, want string }{
@@ -618,7 +618,7 @@ func roomTable(stack, steps string) string {
 		"steps": ` + steps + `}`
 }
 
-// A room works as an item (23.6): an activate step may name it, and
+// A room works as an item (24.6): an activate step may name it, and
 // only the active player may use it (R-CARD-33, R-CARD-36); a stacked
 // room ability is the active player's, costs paid.
 func TestSituationRoom(t *testing.T) {

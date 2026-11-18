@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os" //nolint:depguard // only tests import enginetest, so the wasm engine never does; the dump writes files (23.7)
+	"os" //nolint:depguard // only tests import enginetest, so the wasm engine never does; the dump writes files (24.7)
 	"path/filepath"
 	"reflect"
 	"slices"
@@ -15,12 +15,12 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-// DumpEnv names the folder a Table writes its recording to (23.7):
+// DumpEnv names the folder a Table writes its recording to (24.7):
 // SITUATION_DUMP=.cache/situations go test ./cards/b2 -run TestDinga.
 // A relative folder is from the repository root. Each table writes
 // <folder>/<package>/<TestName>.json when its test ends: a draft
 // situation file with title, sets, setup and steps, an empty source,
-// no expect (ADR 033, item 11), and a todo list the author clears.
+// no expect (ADR 034, item 11), and a todo list the author clears.
 const DumpEnv = "SITUATION_DUMP"
 
 // Dump is the file a recording writes. It is a draft, not a situation
@@ -252,7 +252,7 @@ func (r *recorder) boundary(final bool) {
 	switch {
 	case !r.started && len(direct) > 0:
 		// The game kept its state from just before its first applied
-		// intent (Game.saved.origin), hand-set state included (23.11).
+		// intent (Game.saved.origin), hand-set state included (24.11).
 		before, err := originGame(g, r.sets)
 		if err == nil && len(direct) != len(log) {
 			err = errors.New("helpers applied intents before them")
@@ -661,7 +661,7 @@ func (r *recorder) write() {
 		d.Setup.Rolls = r.rolls
 	}
 	d.Todo = append(d.Todo,
-		"a draft of "+r.name+" (23.7): write title as a question, fill source, and write expect from the Go test's checks "+
+		"a draft of "+r.name+" (24.7): write title as a question, fill source, and write expect from the Go test's checks "+
 			"and their sources, never from a run (CLAUDE.md 5.25); then remove todo and save it under testdata/situations")
 	if len(r.rolls) > 0 {
 		d.Todo = append(d.Todo, "setup.rolls are every die the test threw, forced or not")

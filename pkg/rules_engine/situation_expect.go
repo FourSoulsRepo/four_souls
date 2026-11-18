@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// ExpectedMonster checks one card in a slot (23.5). Card names it, as
+// ExpectedMonster checks one card in a slot (24.5). Card names it, as
 // a setup ref does: the first such card in slot order (monster, final
 // boss, minion, room slots). With Slot (from 1), Card must be on top of
 // that monster slot. Dead true: no slot holds the card, and it is in a
@@ -305,7 +305,7 @@ func (g *Game) checkGame(c *checks, e Expectation) {
 	c.counters("", e.Counters, refs, ids, g)
 }
 
-// ExpectedPrompt checks the open question once a step settled (23.6):
+// ExpectedPrompt checks the open question once a step settled (24.6):
 // Player is who is asked, Options every option by plain label
 // (Game.Plain), in any order. A field left out is not checked.
 type ExpectedPrompt struct {
@@ -313,7 +313,7 @@ type ExpectedPrompt struct {
 	Options []string `json:"options,omitempty"`
 }
 
-// ExpectedEvent is an event kind that must happen (23.6), for Player
+// ExpectedEvent is an event kind that must happen (24.6), for Player
 // when set. None: no such event may happen.
 type ExpectedEvent struct {
 	Kind   EventKind `json:"kind"`

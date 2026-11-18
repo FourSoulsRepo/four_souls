@@ -16,7 +16,7 @@ import (
 	"github.com/FourSoulsRepo/rules_engine/docs"
 )
 
-// SituationDir is where a package keeps its situation files (ADR 033).
+// SituationDir is where a package keeps its situation files (ADR 034).
 const SituationDir = "testdata/situations"
 
 // Tree is the kind of a situation tree: which folders it may hold.
@@ -33,7 +33,7 @@ const (
 
 // RunSituations runs a card tree: every file under testdata/situations
 // in files, one subtest each, named by its path in the tree. A set
-// package embeds its tree and calls it from a test (ADR 033):
+// package embeds its tree and calls it from a test (ADR 034):
 //
 //	//go:embed testdata/situations
 //	var situations embed.FS
@@ -99,7 +99,7 @@ func CheckSituation(tree Tree, files fs.FS, path string, sets ...engine.CardSet)
 		return []string{err.Error()}
 	}
 	// A test file is read strictly: a misspelt field is an error, not
-	// a field left out. A payload is read as before (rule 2 of step 23).
+	// a field left out. A payload is read as before (rule 2 of step 24).
 	if bad := unknownFields(data, reflect.TypeFor[engine.Situation]()); len(bad) > 0 {
 		for i, b := range bad {
 			bad[i] = path + ": " + b
@@ -132,7 +132,7 @@ func CheckSituation(tree Tree, files fs.FS, path string, sets ...engine.CardSet)
 		return append(out, fmt.Sprintf("%s: %v", path, err))
 	}
 	if s.Action == nil {
-		// Steps: each mismatch names its step, or the end (23.4).
+		// Steps: each mismatch names its step, or the end (24.4).
 		for _, m := range ans.Mismatch {
 			out = append(out, path+", "+m)
 		}
@@ -151,12 +151,12 @@ func CheckSituation(tree Tree, files fs.FS, path string, sets ...engine.CardSet)
 // caseName is a file name in kebab case: "pays-5-cents.json".
 var caseName = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*\.json$`)
 
-// checkLayout checks a path against ADR 033 items 5 and 6: a folder,
+// checkLayout checks a path against ADR 034 items 5 and 6: a folder,
 // then a .json file in kebab case, no deeper levels.
 func checkLayout(tree Tree, path string, sets []engine.CardSet) string {
 	parts := strings.Split(path, "/")
 	if len(parts) != 2 {
-		return "outside the layout: want <folder>/<case>.json, no deeper levels (ADR 033)"
+		return "outside the layout: want <folder>/<case>.json, no deeper levels (ADR 034)"
 	}
 	if !caseName.MatchString(parts[1]) {
 		return fmt.Sprintf("%q: want a .json file named in kebab case, e.g. pays-5-cents.json", parts[1])
@@ -185,7 +185,7 @@ var (
 	linkForm     = regexp.MustCompile(`^https://\S+$`)
 )
 
-// checkSource checks one source item against ADR 033 item 9.
+// checkSource checks one source item against ADR 034 item 9.
 func checkSource(src string, sets []engine.CardSet) string {
 	switch {
 	case strings.HasPrefix(src, "card "):

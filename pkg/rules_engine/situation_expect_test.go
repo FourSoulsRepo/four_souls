@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// expectTable is a situation for the 23.5 checks: hero_a plays a
+// expectTable is a situation for the 24.5 checks: hero_a plays a
 // Bomb!-like card on the dummy (HP 1), which dies; boss refills its
 // slot from the deck. expect is the step's expect.
 func expectTable(expect string) string {
@@ -56,7 +56,7 @@ func runExpect(t *testing.T, data string) []string {
 	return ans.Mismatch
 }
 
-// Every 23.5 check passes when the values are right.
+// Every 24.5 check passes when the values are right.
 func TestSituationExpectChecksPass(t *testing.T) {
 	if got := runExpect(t, expectTable(rightExpect)); len(got) != 0 {
 		t.Errorf("mismatch %q; want none", got)
@@ -148,7 +148,7 @@ func promptTable(expect string) string {
 }
 
 // A prompt check stops the step at the question and checks who is
-// asked and every option, in any order (23.6).
+// asked and every option, in any order (24.6).
 func TestSituationExpectPrompt(t *testing.T) {
 	// razor's text: a monster or player; a target question ends with
 	// cancel (R-ABIL-04: targets are chosen as it goes on the stack).
@@ -184,7 +184,7 @@ func stackTable(expect string) string {
 }
 
 // resolved: names in order, others may come between (R-STACK-02);
-// events: kinds that must, or must not, happen (23.6).
+// events: kinds that must, or must not, happen (24.6).
 func TestSituationExpectResolvedAndEvents(t *testing.T) {
 	for _, right := range []string{
 		`"resolved": ["coin_bag", "bomb_loot", "dice_roll"]`,
@@ -230,7 +230,7 @@ func bottomGame(t *testing.T) *Game {
 	return g
 }
 
-// deck_bottoms names the bottom cards in any order (23.11): the rest of
+// deck_bottoms names the bottom cards in any order (24.11): the rest of
 // the loot deck is pennies (testSet), and bomb_loot is the bottom card.
 func TestSituationExpectDeckBottoms(t *testing.T) {
 	g := bottomGame(t)
@@ -262,7 +262,7 @@ func TestSituationExpectDeckBottoms(t *testing.T) {
 	}
 }
 
-// resolved_rolls: the values the rolls resolved as, in order (23.11).
+// resolved_rolls: the values the rolls resolved as, in order (24.11).
 // The stack's roll of 4 has no change on it, so it resolves as 4.
 func TestSituationExpectResolvedRolls(t *testing.T) {
 	if got := runExpect(t, stackTable(`{"allowed": true, "resolved_rolls": [4]}`)); len(got) != 0 {

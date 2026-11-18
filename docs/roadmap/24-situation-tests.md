@@ -1,4 +1,6 @@
-# Step 23. Situation tests
+# Step 24. Situation tests
+
+Was step 23; renumbered at the merge with bots (owner, 2026-11-18).
 
 Goal: most card tests are situation files, not Go code.
 
@@ -58,8 +60,8 @@ Ideas: TS-13, LR-04, R-03.
 8. A moved file may check more than its Go test, from the card text.
    1. More checks, not fewer.
 9. Bulk move: yes, one card family per sub-step, with the dump (2026-11-18).
-10. Deck bottom and roll value checks come first (23.11).
-11. A table of fixed cases: one file per case (ADR 033 1.10).
+10. Deck bottom and roll value checks come first (24.11).
+11. A table of fixed cases: one file per case (ADR 034 1.10).
 
 ## File layout
 
@@ -71,12 +73,12 @@ Ideas: TS-13, LR-04, R-03.
 3. Cards of several sets: `cards/testdata/situations/interactions/`.
 4. Engine rules, test sets only: `testdata/situations/<area>/`.
    1. `<area>` is the rule ID area in lower case: `atk`, `stack`, `abil`.
-   2. The 6 files today move there (23.2).
+   2. The 6 files today move there (24.2).
 5. A resolved disputed case (R-03) goes where its card or rule goes.
    1. Its `source` names the ruling.
 6. A folder holds only `.json` files; no deeper levels.
 
-### [x] 23.1 ADR: situation files as card tests
+### [x] 24.1 ADR: situation files as card tests
 
 1. Goal: one ADR fixes when a test is a file and when Go.
 2. Tasks:
@@ -87,7 +89,7 @@ Ideas: TS-13, LR-04, R-03.
 3. Done when:
    1. The ADR is Accepted and in `INDEX.md`.
 
-### [x] 23.2 A runner per set, and the `source` field
+### [x] 24.2 A runner per set, and the `source` field
 
 1. Goal: each set's `go test` runs its own situation files.
 2. Tasks:
@@ -102,7 +104,7 @@ Ideas: TS-13, LR-04, R-03.
    1. A b2 file with a wrong `expect` fails `go test ./cards/b2`.
    2. A test file with no `source` fails.
 
-### [x] 23.3 Setup: dice, decks, counters, turn
+### [x] 24.3 Setup: dice, decks, counters, turn
 
 1. Goal: the setup says what Go tests set by hand today.
 2. Tasks:
@@ -128,7 +130,7 @@ Ideas: TS-13, LR-04, R-03.
    1. `Players[i].Cents =` 22, `.Damage =` 3, `.Dead =` 1.
    2. `Turn.LootPlays =` 7: `loot_plays`.
    3. Souls appended to `InPlay`, 8: `souls`.
-   4. `.Hand =` 6: `hand`; mid-test changes wait for `steps` (23.4).
+   4. `.Hand =` 6: `hand`; mid-test changes wait for `steps` (24.4).
    5. `.Charged =` 5: `deactivated`.
    6. `Rooms`, `Character` (4, 2): set while building the setup.
 6. Rejected:
@@ -146,7 +148,7 @@ Ideas: TS-13, LR-04, R-03.
    3. New in `r`: Soul of Wrath (bonus soul counters); `r` gets a runner.
 8. A test file is read strictly: an unknown field fails.
 
-### [x] 23.4 Several steps
+### [x] 24.4 Several steps
 
 1. Goal: a file plays several actions in a row.
 2. Tasks:
@@ -172,7 +174,7 @@ Ideas: TS-13, LR-04, R-03.
    5. Moved: TestBlankCard, TestGoldenRazorBlade.
    6. New: Eden's Blessing after a fly: attack, throw, end turn.
 
-### [x] 23.5 Richer checks
+### [x] 24.5 Richer checks
 
 1. Goal: the checks Go card tests use most.
 2. Tasks:
@@ -215,7 +217,7 @@ Ideas: TS-13, LR-04, R-03.
    3. Moved in `r`: TestMegaSatanWins, TestRedChampions, TestSumptorium.
    4. Soul of Wrath's file also checks `soul_cards`.
 
-### [x] 23.6 Checks on prompts and order
+### [x] 24.6 Checks on prompts and order
 
 1. Goal: a file checks what a player is asked and what resolves first.
 2. Tasks:
@@ -267,7 +269,7 @@ Ideas: TS-13, LR-04, R-03.
    6. New in `r`: Red Vise spares a player with 2 loot cards.
    7. `stack/three-stacked-events.json` also checks `resolved`.
 
-### [x] 23.7 Dump a Go test's setup as a file
+### [x] 24.7 Dump a Go test's setup as a file
 
 1. Goal: a tool writes `setup` and `steps` from a Go test run.
 2. Tasks:
@@ -291,7 +293,7 @@ Ideas: TS-13, LR-04, R-03.
    11. Wiki: `Situation-payload.md`, "Dump a Go test".
    12. Lint: `enginetest` may import `os`; only tests import it (depguard nolint).
 
-### [x] 23.8 Pilot: move one group
+### [x] 24.8 Pilot: move one group
 
 1. Goal: learn the cost on real tests before any bulk move.
 2. Tasks:
@@ -312,7 +314,7 @@ Ideas: TS-13, LR-04, R-03.
    3. `TestRulingDamageToDeadPlayer`: damage read before the play stays Go.
    4. `TestXIXTheSun`: the loot deck bottom stays Go.
    5. Stayed Go, complicated: 4.
-   6. Table of cases: `TestXWheelOfFortune` (ADR 033 1.3).
+   6. Table of cases: `TestXWheelOfFortune` (ADR 034 1.3).
    7. Loop and a recharge between steps: `TestRulingTwoOfClubsTwice`.
    8. Views: `TestXVIIITheMoonShowsTheLook`, `TestXIITheHangedManTellsEveryoneTheChoice`.
    9. Needed a format change: 8.
@@ -347,7 +349,7 @@ Ideas: TS-13, LR-04, R-03.
    5. Owner: may a table of fixed cases become a file per case?
    6. The Wheel of Fortune would be 6 files.
 
-### [ ] 23.9 Docs
+### [ ] 24.9 Docs
 
 1. Goal: a simple new card test starts as a file.
 2. Tasks:
@@ -357,7 +359,7 @@ Ideas: TS-13, LR-04, R-03.
 3. Done when:
    1. A simple new card from the guide needs no Go test.
 
-### [x] 23.10 Priority windows
+### [x] 24.10 Priority windows
 
 1. Goal: a file starts in any moment where a player may respond (owner, 2026-11-18).
 2. Why:
@@ -372,10 +374,10 @@ Ideas: TS-13, LR-04, R-03.
    2. `setup.declared`: `attack` or `purchase`, before the target or item.
    3. `priority` on an empty stack works in each window above.
    4. In the open action phase, nothing declared: an error citing R-TURN-09.
-   5. With a stack, `priority` works as now (23.4).
+   5. With a stack, `priority` works as now (24.4).
    6. Rewrite the Cain file into a real window, e.g. the loot step.
    7. A file per window, expected values from the rules.
-   8. Wiki: `Situation-payload.md`; ADR 033 if it drifts.
+   8. Wiki: `Situation-payload.md`; ADR 034 if it drifts.
 4. Done when:
    1. Each window has a file where a non-active player acts.
    2. Empty-stack `priority` in the open action phase fails, naming R-TURN-09.
@@ -408,20 +410,20 @@ Ideas: TS-13, LR-04, R-03.
       4. Attack: R-ATK-02, R-ATK-11; purchase: R-SHOP-01.
       5. New in `b2`: Bomb! (declared attack), Jawbone (declared purchase).
 
-### [x] 23.11 Deck bottom and roll value checks
+### [x] 24.11 Deck bottom and roll value checks
 
-1. Goal: the checks the pilot (23.8) missed most.
+1. Goal: the checks the pilot (24.8) missed most.
 2. Tasks:
    1. `expect.decks`: the bottom cards too, bottom last.
    2. A check of the value a roll resolved as.
    3. Shape from the Go tests: `testOneOnTop`, `resolvedRoll`, `ResolvedAt`.
    4. A passing and a failing test for each.
-   5. Move the pilot's 6 tests that wait for these (23.8 item 6).
+   5. Move the pilot's 6 tests that wait for these (24.8 item 6).
    6. The Emperor, The Hermit, The Moon, The Hanged Man.
    7. The Magician, `TestRulingRollAboveSix`.
    8. The Wheel of Fortune: one file per outcome (owner answer 11).
-   9. The dump: a hand-set field before a direct `G.Apply` (23.8 item 7.3).
-   10. Wiki `Situation-payload.md`; ADR 033 if it drifts.
+   9. The dump: a hand-set field before a direct `G.Apply` (24.8 item 7.3).
+   10. Wiki `Situation-payload.md`; ADR 034 if it drifts.
 3. Done when:
    1. The 7 tests above are files; their Go tests are gone.
 4. Done (2026-11-18):
@@ -446,8 +448,8 @@ Ideas: TS-13, LR-04, R-03.
 ## Bulk move rules (owner, 2026-11-18)
 
 1. One card family per sub-step, in a fresh agent (CLAUDE.md 5.21).
-2. The way of 23.8: dump, then `title`, `source`, `expect` by hand.
-3. Owner answers 1, 8, 11; ADR 033 Decision 1 and 4.
+2. The way of 24.8: dump, then `title`, `source`, `expect` by hand.
+3. Owner answers 1, 8, 11; ADR 034 Decision 1 and 4.
 4. Each file fails with one expected value changed, then passes.
 5. No format or engine change in a bulk sub-step.
    1. A test that needs one stays Go; count it and name the change.
@@ -457,12 +459,12 @@ Ideas: TS-13, LR-04, R-03.
 9. Families from the 2026-11-18 count of card kinds in `_test.go` files.
 10. "Other": test files with no card kind (rules, helpers, combos).
 
-### [x] 23.12 Bulk: b2 loot cards
+### [x] 24.12 Bulk: b2 loot cards
 
 1. Goal: Wildcard, Trinket, Nickel, Bomb, Battery, Butter Bean (about 33 tests).
 2. Counts (2026-11-18): 26 tests left in the family's `_test.go` files.
    1. 22 of Trinket, Nickel, Bomb, Battery, Butter Bean cards.
-   2. 4 tarot (Wildcard): the rest moved in 23.8 and 23.11.
+   2. 4 tarot (Wildcard): the rest moved in 24.8 and 24.11.
    3. So fewer than 33: the count was taken before those moves.
 3. Moved: 18 tests, as 19 files.
    1. TestANickel, TestADime, TestCounterfeitPenny.
@@ -473,11 +475,11 @@ Ideas: TS-13, LR-04, R-03.
    6. TestCurvedHorn, TestMegaBattery.
    7. TestLilBattery, TestLilBatteryOffersOnlyActiveItems, TestLilBatteryNeedsASpentItem.
 4. Split: 0.
-5. Stayed Go, complicated (ADR 033 1.5): 8.
+5. Stayed Go, complicated (ADR 034 1.5): 8.
    1. Views: TestCainsEyeShowsTheTopCardToItsOwner.
    2. Event fields and views: TestCainsEyeTellsEveryoneTheChoice.
    3. View ATK mid-attack: TestCurvedHornShownForTheFirstRoll, TestCurvedHornGoneAfterAMiss.
-   4. Tarot, as in 23.8 and 23.11: The Hanged Man, The Moon (2), The World.
+   4. Tarot, as in 24.8 and 24.11: The Hanged Man, The Moon (2), The World.
 6. Needed a format change: 0.
 7. Drafts: 15 of 19 files kept the dumped setup.
    1. Butter Bean: A Dime!! starts on `setup.stack`, `priority` 1 (owner answer 7).
@@ -502,7 +504,7 @@ Ideas: TS-13, LR-04, R-03.
    2. Its checks (hand 1, 2¢) hold in either order; the file checks the order.
 10. No rules bug found; `cardgen -report` unchanged.
 
-### [x] 23.13 Bulk: b2 passive treasures
+### [x] 24.13 Bulk: b2 passive treasures
 
 1. Goal: Passive Treasure (about 58 tests).
 2. Counts (2026-11-18): 58 tests in 50 `_test.go` files of the family.
@@ -526,7 +528,7 @@ Ideas: TS-13, LR-04, R-03.
    2. Its option outcomes are a view; they stay Go.
    3. TestGuppysCollar: the file checks the prevented death.
    4. The heal's amount stays Go: TestGuppysCollarHealsBack1HP.
-5. Stayed Go, complicated (ADR 033 1.5): 4, all views.
+5. Stayed Go, complicated (ADR 034 1.5): 4, all views.
    1. TestChampionBeltSourceDuringFirstRoll, TestChampionBeltInTheOdds.
    2. TestDeadBirdShowsTheCardToTwo, TestTheresOptions.
 6. Needed a format change: 0 whole tests.
@@ -551,7 +553,7 @@ Ideas: TS-13, LR-04, R-03.
 9. Choices made here:
    1. Champion Belt: the turn's `attacks` is 0, then a second attack is allowed.
    2. It replaces the engine's `BonusAttacksUsed` count.
-   3. Mom's Box answers: options in any order; the order is the display (23.6).
+   3. Mom's Box answers: options in any order; the order is the display (24.6).
    4. The D10: no covered check; slot 1's card and the Fly's return say it.
    5. Monstro's Tooth: a random player; one Breakfast in the treasure discard.
 10. Go tests that did not check what they claimed: 1.
@@ -560,58 +562,58 @@ Ideas: TS-13, LR-04, R-03.
 11. Trinity Shield's refusal cites R-ABIL-12, a static ability; it fits.
 12. No rules bug found; `cardgen -report` unchanged.
 
-### [ ] 23.14 Bulk: b2 other treasures
+### [ ] 24.14 Bulk: b2 other treasures
 
 1. Goal: Active, Paid, Eternal, Soul Treasure (about 60 tests).
 
-### [ ] 23.15 Bulk: b2 monsters
+### [ ] 24.15 Bulk: b2 monsters
 
 1. Goal: Basic and Cursed Monster (about 46 tests).
 
-### [ ] 23.16 Bulk: b2 events, curses, souls
+### [ ] 24.16 Bulk: b2 events, curses, souls
 
 1. Goal: Good and Bad Event, Curse, Bonus and Lost Soul (about 25 tests).
 
-### [ ] 23.17 Bulk: b2 bosses and characters
+### [ ] 24.17 Bulk: b2 bosses and characters
 
 1. Goal: Boss, Epic Boss, Character (about 49 tests).
 
-### [ ] 23.18 Bulk: b2 other
+### [ ] 24.18 Bulk: b2 other
 
 1. Goal: b2 test files with no card kind (about 57 tests).
 
-### [ ] 23.19 Bulk: fsp2
+### [ ] 24.19 Bulk: fsp2
 
 1. Goal: every fsp2 test (about 89 tests).
 
-### [ ] 23.20 Bulk: g2
+### [ ] 24.20 Bulk: g2
 
 1. Goal: every g2 test (about 71 tests).
 
-### [ ] 23.21 Bulk: r rooms
+### [ ] 24.21 Bulk: r rooms
 
 1. Goal: Room (about 59 tests).
 
-### [ ] 23.22 Bulk: r passive and eternal treasures
+### [ ] 24.22 Bulk: r passive and eternal treasures
 
 1. Goal: Passive and Eternal Treasure (about 55 tests).
 
-### [ ] 23.23 Bulk: r other treasures
+### [ ] 24.23 Bulk: r other treasures
 
 1. Goal: Active, Paid, Soul Treasure (about 35 tests).
 
-### [ ] 23.24 Bulk: r monsters, bosses, events, souls
+### [ ] 24.24 Bulk: r monsters, bosses, events, souls
 
 1. Goal: monsters, bosses, events, Bonus Soul, Curse (about 49 tests).
 
-### [ ] 23.25 Bulk: r loot and characters
+### [ ] 24.25 Bulk: r loot and characters
 
 1. Goal: loot cards, Outside, Character (about 50 tests).
 
-### [ ] 23.26 Bulk: r other
+### [ ] 24.26 Bulk: r other
 
 1. Goal: r test files with no card kind (about 55 tests).
 
-### [ ] 23.27 Bulk: challenge
+### [ ] 24.27 Bulk: challenge
 
 1. Goal: Challenge and Challenge Boss (about 50 tests).

@@ -98,7 +98,7 @@ func mustJSON(t *testing.T, v any) string {
 }
 
 // A dump with todo removed and source and expect added by hand runs
-// as a situation file (23.7 Done).
+// as a situation file (24.7 Done).
 func TestDumpRunsWithExpect(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv(DumpEnv, dir)
@@ -135,7 +135,7 @@ func TestDumpOffWithoutEnv(t *testing.T) {
 
 // State set by hand before a direct G.Apply as the first step is in
 // the setup too: the game keeps its state from before its first
-// applied intent (23.11; 23.8 pilot item 7.3, XX. Judgement's soul).
+// applied intent (24.11; 24.8 pilot item 7.3, XX. Judgement's soul).
 func TestDumpHandSetBeforeDirectApply(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv(DumpEnv, dir)

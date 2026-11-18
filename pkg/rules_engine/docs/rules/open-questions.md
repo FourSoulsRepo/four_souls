@@ -770,7 +770,7 @@ On 2026-10-09 the owner parked every open decision for later.
    1. S-OFF quickstart: no word on it; the extended rulebook could not be read (2026-11-18).
    2. No ruling found in a web search (2026-11-18).
 3. Proposal: no; the card can't be played, it stays in hand.
-4. Status: **Owner** (2026-11-18): forbid it (19.198).
+4. Status: **Owner** (2026-11-18): forbid it (19.223).
    1. Otherwise anything could be played anytime, to no effect.
    2. That would confuse newcomers.
 5. Basis: **House**: no ruling found.

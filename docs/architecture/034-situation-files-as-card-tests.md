@@ -1,8 +1,9 @@
-# 33. Situation files as card tests
+# 34. Situation files as card tests
 
 * **Status:** Accepted
 * **Date:** 2026-11-17
 * **Authors:** @HardDie
+* **Renumbered:** from 033 at the merge with bots (owner, 2026-11-18).
 
 ---
 
@@ -94,45 +95,45 @@ Use option 1.
    7. House and Community rulings keep their label in `open-questions.md`.
 10. Format compatibility
    1. Old payloads keep working; website links hold them (12.7).
-   2. `action` stays; `steps` is added beside it (23.4).
+   2. `action` stays; `steps` is added beside it (24.4).
    3. Every new field is optional for a payload.
    4. A file has `action` or `steps`, never both.
    5. A step may carry its own `expect`; the top one is checked at the end.
-   6. `expect` checks are named as in `setup`; one left out is not checked (23.5).
+   6. `expect` checks are named as in `setup`; one left out is not checked (24.5).
    7. A card list in `expect` names every card, in any order.
    8. A deck in `expect.decks` compares only its top cards, top first.
-   9. `prompt` checks the open question: who is asked, every option (23.6).
+   9. `prompt` checks the open question: who is asked, every option (24.6).
    10. A prompt check stops its step at the question it checks.
    11. `resolved` names stack items in order; others may come between.
    12. `events` names event kinds that must, or must not, happen.
    13. A room works as an item in `activate` steps and `setup.stack`.
-   14. `setup.phase` and `setup.declared` start in a real priority window (23.10).
+   14. `setup.phase` and `setup.declared` start in a real priority window (24.10).
    15. Phases: `start`, `loot`, `action` (default), `end`.
    16. `declared`: an attack or purchase, before its target or item.
    17. Everyone passes: the game moves on as in a game (R-STACK-07).
    18. Open action phase: `priority` on an empty stack is the active player's (R-TURN-09).
    19. `declared` may come with `setup.stack`: responses resolve before the choice.
-   20. `expect.deck_bottoms` names a deck's bottom cards, in any order (23.11).
+   20. `expect.deck_bottoms` names a deck's bottom cards, in any order (24.11).
    21. Any order: several cards go to the bottom at random (Q-22).
    22. `expect.resolved_rolls`: each roll's final value, in order (R-DICE-06).
 11. `expect` comes from the rules, never from a run (5.25).
-   1. A tool may write `setup` and `steps`; never `expect` (23.7).
-   2. `enginetest` dumps a Go test with `SITUATION_DUMP` (23.7).
+   1. A tool may write `setup` and `steps`; never `expect` (24.7).
+   2. `enginetest` dumps a Go test with `SITUATION_DUMP` (24.7).
    3. The dump adds `title`, `sets`, an empty `source`, and `todo`.
    4. `todo` lists what it can't say; the runner rejects it until removed.
-   5. Hand-set state before a first direct `G.Apply` is read from the save origin (23.11).
+   5. Hand-set state before a first direct `G.Apply` is read from the save origin (24.11).
 12. Runner
    1. `enginetest.RunSituations` runs a set's tree in its `go test`.
    2. One subtest per file, named by its path in the tree.
    3. `enginetest.RunRuleSituations` runs the engine's topic tree.
    4. Rule and question IDs come from package `docs` (`pkg/rules_engine/docs`).
    5. Only tests import it; the wasm build stays the same.
-   6. It reads a test file strictly: an unknown field fails (23.3).
+   6. It reads a test file strictly: an unknown field fails (24.3).
    7. A payload outside a tree is read as before.
    8. An unknown field's error names its line, path and nearest field.
    9. A mismatch names its step, or the end for the top `expect`.
 13. A new card's simple tests are files from now on.
-   1. `Adding-a-card.md` says how (23.9).
+   1. `Adding-a-card.md` says how (24.9).
 
 ## Consequences
 
@@ -151,9 +152,9 @@ Use option 1.
    1. A field is added only when several tests need it.
 3. A refactor of the engine can't rename refs in JSON files.
    1. The runner fails on an unknown ref, with the options.
-4. The move costs time; the pilot (23.8) measures it first.
+4. The move costs time; the pilot (24.8) measures it first.
 
 ### Neutral
 
-1. The 6 root files move into topic folders (23.2).
+1. The 6 root files move into topic folders (24.2).
 2. Website examples from test files may come later; not now.

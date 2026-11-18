@@ -85,7 +85,7 @@ func TestCheckSituationSourceForms(t *testing.T) {
 	}
 }
 
-// A file outside the layout fails before it runs (ADR 033 items 5, 6).
+// A file outside the layout fails before it runs (ADR 034 items 5, 6).
 func TestCheckSituationLayout(t *testing.T) {
 	data := razorFile(cardSource, rightExpect)
 	for _, c := range []struct {
@@ -137,7 +137,7 @@ func TestCheckSituationUnknownField(t *testing.T) {
 	if len(got) != 2 || !strings.Contains(got[0], `setup: unknown field "rols"; did you mean "rolls"?`) || !strings.Contains(got[1], "Situation-payload.md") {
 		t.Errorf("problems %q; want the field, its place, the nearest name and the field list", got)
 	}
-	// The 23.10 fields are known too, so a misspelt one is named.
+	// The 24.10 fields are known too, so a misspelt one is named.
 	data = strings.Replace(razorFile(cardSource, rightExpect), `"active": 0`, `"active": 0, "phase": "action", "declarde": "attack"`, 1)
 	got = check(enginetest.CardTree, "razor_blade/hits-cain.json", data)
 	if len(got) != 2 || !strings.Contains(got[0], `setup: unknown field "declarde"; did you mean "declared"?`) {
@@ -220,7 +220,7 @@ func TestCheckSituationStepUnknownField(t *testing.T) {
 	}
 }
 
-// The strict reader covers the 23.5 checks: a typo in a player, a
+// The strict reader covers the 24.5 checks: a typo in a player, a
 // monster or a counter check names its place and the nearest field.
 func TestCheckSituationExpectUnknownField(t *testing.T) {
 	expect := `, "expect": {"allowed": true, "after": [{"player": 1, "hand_card": []}],
@@ -242,7 +242,7 @@ func TestCheckSituationExpectUnknownField(t *testing.T) {
 	}
 }
 
-// The strict reader covers the 23.6 checks: prompt, resolved, events.
+// The strict reader covers the 24.6 checks: prompt, resolved, events.
 func TestCheckSituationOrderUnknownField(t *testing.T) {
 	expect := `, "expect": {"allowed": true, "prompt": {"player": 0, "optons": []},
 		"resolved": ["razor_blade"], "events": [{"kind": "damaged", "plyer": 1}], "resolve": []}`
@@ -262,7 +262,7 @@ func TestCheckSituationOrderUnknownField(t *testing.T) {
 	}
 }
 
-// The strict reader covers the 23.11 checks: deck bottoms, roll values.
+// The strict reader covers the 24.11 checks: deck bottoms, roll values.
 func TestCheckSituationBottomAndRollsUnknownField(t *testing.T) {
 	expect := `, "expect": {"allowed": true, "deck_bottom": {"loot": []}, "resolved_roll": [3]}`
 	got := check(enginetest.CardTree, "razor_blade/hits-cain.json", razorFile(cardSource, expect))

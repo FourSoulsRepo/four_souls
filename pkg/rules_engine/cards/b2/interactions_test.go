@@ -3,7 +3,7 @@ package b2
 // Interaction tests: card combinations and rulings from step 3 (TS-04).
 // Each test names its source: the re-checked old rulings (R-07) and the
 // S-RU FAQ rulings in docs/rules/open-questions.md, and Yuggy's rulings.
-// The simple ones are situation files (ADR 033): testdata/situations/.
+// The simple ones are situation files (ADR 034): testdata/situations/.
 
 import "testing"
 

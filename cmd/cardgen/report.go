@@ -50,7 +50,7 @@ func cardStatus(dir string, ref carddb.Ref) (Status, error) {
 	if _, statErr := os.Stat(strings.TrimSuffix(file, ".go") + "_test.go"); statErr == nil {
 		return Tested, nil
 	}
-	// Situation files test a card too (ADR 033).
+	// Situation files test a card too (ADR 034).
 	cases, err := filepath.Glob(filepath.Join(dir, "testdata", "situations", strings.TrimSuffix(fileName(ref), ".go"), "*.json"))
 	if err != nil {
 		return NotStarted, fmt.Errorf("cardgen: %w", err)

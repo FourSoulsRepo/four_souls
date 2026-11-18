@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.197, 19.198 | 25 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223 | 25 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193 | 18 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
@@ -5981,10 +5981,10 @@ Totals by system (188 items):
    1. Find what scales the monster at that moment.
    2. Wait for the exact state, not a time (5.16.10).
 
-### [ ] 19.197 A room used off turn is refused by R-CARD-36, not R-CARD-33
+### [ ] 19.222 A room used off turn is refused by R-CARD-36, not R-CARD-33
 
 1. Goal: the refusal cites the rule that says it directly.
-2. Report (owner, 2026-11-18, 23.6 review)
+2. Report (owner, 2026-11-18, 24.6 review)
    1. Cain activates Bomb Bum on Isaac's turn; refused by R-CARD-36.
    2. R-CARD-33: only the active player uses a room's activated abilities.
    3. R-CARD-36: a room's "you" is the active player (Requiem).
@@ -6005,11 +6005,12 @@ Totals by system (188 items):
    6. Now Isaac's room use waits on the stack and Isaac passes first.
    7. Blood Donation's copy of that check, with the same flaw, is removed.
    8. The Bomb Bum situation file expects R-CARD-33.
+6. Renumbered from 19.197 at the merge with bots (owner, 2026-11-18).
 
-### [ ] 19.198 No valid target is refused by R-ABIL-06, a fizzle rule
+### [ ] 19.223 No valid target is refused by R-ABIL-06, a fizzle rule
 
 1. Goal: a card or ability with no valid target is refused by its own rule.
-2. Report (23.12 bulk move, 2026-11-18)
+2. Report (24.12 bulk move, 2026-11-18)
    1. Lil Battery with no spent item is refused by R-ABIL-06.
    2. R-ABIL-06: a target gone on resolution fizzles; not a refusal.
    3. No rule says a card can't be played without a valid target.
@@ -6030,4 +6031,4 @@ Totals by system (188 items):
    3. Checked: no other refusal cites R-ABIL-06; the rest are fizzles.
    4. The D6 test and the Lil Battery file expect R-ABIL-40.
    5. Wiki `Client.md` cites R-ABIL-40.
-
+7. Renumbered from 19.198 at the merge with bots (owner, 2026-11-18).

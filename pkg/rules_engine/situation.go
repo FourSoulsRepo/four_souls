@@ -9,7 +9,7 @@ import (
 )
 
 // Situation is a shareable table position with one action to check
-// (LR-04), or several steps in a row (23.4). With Expect filled in it is
+// (LR-04), or several steps in a row (24.4). With Expect filled in it is
 // also a rules test (LR-07).
 type Situation struct {
 	Title  string           `json:"title"`
@@ -18,19 +18,19 @@ type Situation struct {
 	Setup  SituationSetup   `json:"setup"`
 	Action *SituationAction `json:"action,omitempty"`
 	// Steps are actions in a row, each checked by its own Expect. A
-	// situation has Action (one step, as before 23.4) or Steps.
+	// situation has Action (one step, as before 24.4) or Steps.
 	Steps  []SituationStep `json:"steps,omitempty"`
 	Expect *Expectation    `json:"expect,omitempty"`
 	// Source names the basis of Expect: a card, a rule, a question or a
-	// link. A test file needs it; a payload needs none (ADR 033). Only
+	// link. A test file needs it; a payload needs none (ADR 034). Only
 	// the test runner reads it (enginetest.RunSituations).
 	Source []string `json:"source,omitempty"`
 }
 
 // SituationSetup is the table. Turn: the active player is in the open
 // action phase with one loot play, attack and purchase left.
-// LootPlays, Attacks and Purchases override those (23.3); Phase and
-// Declared start it in another priority window (23.10).
+// LootPlays, Attacks and Purchases override those (24.3); Phase and
+// Declared start it in another priority window (24.10).
 type SituationSetup struct {
 	Players  []SituationPlayer `json:"players"`
 	Active   int               `json:"active"`
@@ -69,7 +69,7 @@ type SituationSetup struct {
 	// (R-TURN-09).
 	Priority *int `json:"priority,omitempty"`
 	// Phase is the step whose priority window the situation starts in
-	// (23.10): "start" (after the start-of-turn triggers, R-TURN-03),
+	// (24.10): "start" (after the start-of-turn triggers, R-TURN-03),
 	// "loot" (after the loot step's loot, R-TURN-04), "action" (the
 	// default) or "end" (after the end-of-turn triggers, R-TURN-10).
 	Phase string `json:"phase,omitempty"`
@@ -103,7 +103,7 @@ type SituationPlayer struct {
 // SituationAction is the one thing a player tries. Kind is "play",
 // "activate", "attack", "purchase", "end_turn" or "pass"; "throw" throws
 // the roll that waits, "choose" answers the open question, and "reveal"
-// puts Card on the monster deck and attacks the deck (23.4). Choices
+// puts Card on the monster deck and attacks the deck (24.4). Choices
 // answer the prompts that follow, by option label (e.g. a target's card
 // name).
 type SituationAction struct {
@@ -123,7 +123,7 @@ type SituationStep struct {
 
 // Expectation is what should happen (LR-04). A field left out is not
 // checked. A list of cards names every card there, in any order; an
-// empty list expects none (23.5).
+// empty list expects none (24.5).
 type Expectation struct {
 	Allowed bool             `json:"allowed"`
 	Rule    string           `json:"rule,omitempty"` // the refusal's rule, when not allowed
@@ -148,16 +148,16 @@ type Expectation struct {
 	Over    *bool `json:"over,omitempty"`
 	Winners []int `json:"winners,omitempty"`
 	// Prompt checks the open question: who is asked and its options.
-	// It also makes settling stop at that question (23.6).
+	// It also makes settling stop at that question (24.6).
 	Prompt *ExpectedPrompt `json:"prompt,omitempty"`
 	// Resolved names stack items in the order they resolved: a card
 	// ref or an item kind (dice_roll, attack_roll, …). Other items may
-	// resolve between them; an empty list expects none (23.6).
+	// resolve between them; an empty list expects none (24.6).
 	Resolved []string `json:"resolved,omitempty"`
 	// Events are event kinds that must happen, or with None must not.
 	Events []ExpectedEvent `json:"events,omitempty"`
 	// ResolvedRolls are the values every roll resolved as, in order:
-	// the final result after changes (R-DICE-06); [] expects none (23.11).
+	// the final result after changes (R-DICE-06); [] expects none (24.11).
 	ResolvedRolls []int `json:"resolved_rolls,omitempty"`
 }
 
@@ -223,7 +223,7 @@ func RunSituation(data []byte, sets ...CardSet) (Answer, error) {
 		if i+1 < len(steps) {
 			stop = stopAt{question: steps[i+1].Kind == "choose", throw: steps[i+1].Kind == "throw"}
 		}
-		// A prompt check stops at the question it checks (23.6): the
+		// A prompt check stops at the question it checks (24.6): the
 		// step's own, or the file's on the last step.
 		if st.Expect.asks() || (i == len(steps)-1 && s.Expect.asks()) {
 			stop.question = true
@@ -270,7 +270,7 @@ func RunSituation(data []byte, sets ...CardSet) (Answer, error) {
 }
 
 // stepList is the action as one step, or the steps; a situation has
-// one of the two (23.4).
+// one of the two (24.4).
 func (s Situation) stepList() ([]SituationStep, error) {
 	switch {
 	case s.Action != nil && s.Steps != nil:

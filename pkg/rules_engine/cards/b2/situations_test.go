@@ -10,7 +10,7 @@ import (
 //go:embed testdata/situations
 var situations embed.FS
 
-// TestSituations runs this set's situation files (ADR 033).
+// TestSituations runs this set's situation files (ADR 034).
 func TestSituations(t *testing.T) {
 	enginetest.RunSituations(t, situations, Set)
 }

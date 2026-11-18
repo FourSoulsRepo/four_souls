@@ -1,5 +1,5 @@
 // Package docs holds our rules text in rules/ (R-04) for tests: the rule
-// IDs and the open questions a test may name as its source (ADR 033).
+// IDs and the open questions a test may name as its source (ADR 034).
 // Only tests import it; the engine and the website do not.
 package docs
 
