@@ -6,6 +6,7 @@
 * [Playing over the internet](Playing-over-the-internet)
 * [Challenges](Challenges)
 * [Playing with bots](Playing-with-bots)
+* [Diagnostics](Diagnostics)
 
 **Server admins**
 

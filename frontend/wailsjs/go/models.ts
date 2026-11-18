@@ -259,6 +259,47 @@ export namespace cardinfo {
 
 }
 
+export namespace diag {
+	
+	export class Result {
+	    variant: string;
+	    frames: number;
+	    seconds: number;
+	    slow: number;
+	    worstMs: number;
+	    renderer: string;
+	    vendor: string;
+	    pixelRatio: number;
+	    width: number;
+	    height: number;
+	    sky: boolean;
+	    reducedMotion: boolean;
+	    sounds: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Result(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.variant = source["variant"];
+	        this.frames = source["frames"];
+	        this.seconds = source["seconds"];
+	        this.slow = source["slow"];
+	        this.worstMs = source["worstMs"];
+	        this.renderer = source["renderer"];
+	        this.vendor = source["vendor"];
+	        this.pixelRatio = source["pixelRatio"];
+	        this.width = source["width"];
+	        this.height = source["height"];
+	        this.sky = source["sky"];
+	        this.reducedMotion = source["reducedMotion"];
+	        this.sounds = source["sounds"];
+	    }
+	}
+
+}
+
 export namespace host {
 	
 	export class Info {

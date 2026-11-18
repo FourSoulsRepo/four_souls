@@ -46,7 +46,7 @@ Ideas: B-09.
    1. `FourSouls --diagnose` runs the report, then exits; no game window.
    2. System part in Go, package `internal/diag` (ADR 035 item 2).
    3. Probe part: the app starts itself once per variant (ADR 035 item 3).
-   4. Binding `bindings/diag`: the variant to the frontend, the result back.
+   4. Binding `bindings/probe`: the variant to the frontend, the result back.
    5. Frontend `probe.ts`: menu on the sky, frames measured, result sent.
    6. Report to the terminal and a file in the app folder (ADR 035 item 4).
    7. Wiki page Diagnostics, in the players group.
@@ -55,6 +55,29 @@ Ideas: B-09.
    1. The flag runs on macOS here; the owner runs it on Linux.
    2. A normal start is unchanged; every e2e test passes.
    3. The report names the best variant by frame rate.
+4. Result (2026-11-18); waits for the owner's Linux run.
+   1. `internal/diag`: `Args`, `Variants`, `ReadSystem`, `ProbeAll`, `Write`, `Flags`.
+      1. WebKitGTK version by cgo: `webkit_linux_41.go`, `webkit_linux_40.go`.
+      2. Without Linux or cgo: `webkit_other.go`, version unknown.
+   2. `diagnose.go` in `main`: `runDiagnose`, `runProbe`, `linuxOptions`.
+   3. `main.go`: `appOptions` builds a normal start and a probe alike.
+      1. A normal start passes no variant: `Linux` stays nil, as before.
+   4. `bindings/probe`: `Variant`, `Report`; always bound.
+      1. Departure: not `bindings/diag`; ADR 035 item 5.3.
+   5. Frontend: `probe.ts`, `probe.test.ts`; `App.tsx` starts the probe.
+      1. Bridge: `probeVariant`, `sendProbe`; `fakeBridge.ts` fakes `window.go.probe.Probe`.
+   6. Generated: `wailsjs/go/probe/Probe`; `models.ts` namespace `diag` only.
+      1. Wails also reordered `records.Seat` and file modes; not kept.
+   7. Docs: wiki Diagnostics (players), First-start link, Client, Repo-layout.
+      1. UC-48 and its index row; `CLAUDE.md` 4.28.
+   8. Checks on macOS:
+      1. With images: `--diagnose` 60.0 fps, sky moving, report saved.
+      2. `wails build -m -tags embed`: 59.9 fps, sky off; a normal start runs.
+      3. Linux cgo files not built here; CI lint and build cover them.
+   9. Gates: `make lint`, `make test`, `make frontend` (Vitest 757 passed, 1 skipped).
+      1. `make e2e`: 633 passed, 1 failed, 22 skipped.
+      2. Failure: `arrow.spec.ts:62`, chromium; logged under 19.153.
+      3. Rerun: 5 separate runs of the spec, 30 of 30 passed.
 
 ### [ ] 25.3 Self-repair in the game (later)
 

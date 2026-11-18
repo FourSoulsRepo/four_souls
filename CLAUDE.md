@@ -73,6 +73,8 @@
    27. `make bot-values`: measures the bots' card values into `internal/bot/values.json`.
        1. Run it after adding cards: `BOT_VALUES=-missing` measures only the new ones.
        2. Never edit the file by hand; `TestValuesFile` fails while a card is missing.
+   28. `FourSouls --diagnose`: webview report and frame rates (ADR 035).
+       1. Details: `docs/wiki/Diagnostics.md`.
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.

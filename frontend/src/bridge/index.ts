@@ -27,7 +27,8 @@ import {
 } from '../../wailsjs/go/assets/Assets';
 import { Notice as wailsNotice, Versions as wailsVersions } from '../../wailsjs/go/about/About';
 import { SaveSettings as wailsSaveSettings, Settings as wailsSettings } from '../../wailsjs/go/prefs/Prefs';
-import { settings } from '../../wailsjs/go/models';
+import { diag, settings } from '../../wailsjs/go/models';
+import { Report as wailsProbeReport, Variant as wailsProbeVariant } from '../../wailsjs/go/probe/Probe';
 import { Info as hostInfo, Start as hostStart, Stop as hostStop } from '../../wailsjs/go/host/Host';
 import {
   ApplyAndQuit as wailsApplyAndQuit,
@@ -553,4 +554,18 @@ export function onUpdateProgress(callback: (p: UpdateProgress) => void): () => v
   return EventsOn('update:progress', (p: UpdateProgress) => {
     callback({ done: p.done, total: p.total });
   });
+}
+
+// ProbeResult is what a `--diagnose` probe window measured (ADR 035).
+export type ProbeResult = Omit<diag.Result, 'variant'>;
+
+// probeVariant is the `--diagnose` variant this window measures; '' in a
+// normal start.
+export function probeVariant(): Promise<string> {
+  return wailsProbeVariant();
+}
+
+// sendProbe hands the result to Go, which prints it and quits.
+export function sendProbe(r: ProbeResult): Promise<void> {
+  return wailsProbeReport(diag.Result.createFrom({ ...r, variant: '' }));
 }

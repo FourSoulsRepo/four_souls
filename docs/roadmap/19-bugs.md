@@ -4878,6 +4878,14 @@ Totals by system (218 items):
 3. Tasks:
    1. Find the cause from the evidence; fix the app or the test.
    2. Check: the spec, both browsers, 5 workers, 10 repeats, all pass.
+4. Seen again (25.2, 2026-11-18)
+   1. `make e2e`, chromium; 633 passed, this one failed.
+   2. Line 112: `march.starts` was 2, not 1; the march started twice.
+   3. Unrelated to 25.2: no table change.
+   4. Evidence: `.cache/e2e-evidence-25.2` (not in git).
+   5. Rerun: the spec, 5 separate runs, both browsers: 30 of 30 passed.
+   6. `--repeat-each` fails here on its own: repeats save games with one name.
+      1. "Continue" then matches two rows (strict mode); 19.152 fixed this elsewhere.
 
 ### [x] 19.154 e2e: Krampus win test misses when Delirium is dealt
 

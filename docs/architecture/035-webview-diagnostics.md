@@ -66,9 +66,10 @@ Use options 1, 3, 5 and 6.
    2. The last line names the file.
    3. It ends with the variant with the most frames per second.
    4. Red flags: software rendering (`llvmpipe`), no render node, no group access.
-5. The binding `bindings/diag` is always bound (ADR 030).
+5. The binding `bindings/probe` is always bound (ADR 030).
    1. `Variant()`: `""` in a normal start.
    2. `Report(result)`: only in a probe; prints and quits.
+   3. Not `bindings/diag`: the `diag` model namespace would merge (ADR 030).
 
 ## Consequences
 

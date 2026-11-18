@@ -47,6 +47,7 @@ Go bindings are one package per domain under `bindings/` (ADR 030); `main.go` bu
 | `host` | `Host` | `Start`, `Stop`, `Info` |
 | `records` | `Records` | `SaveRecord`, `List`, `Open`, `Step`, `Delete`, `Export`, `PickFile` |
 | `updater` | `Updater` | `Check`, `Download`, `ApplyAndQuit`, `OpenReleases` |
+| `probe` | `Probe` | `Variant`, `Report` (`--diagnose` only; ADR 035) |
 
 Wails generates each struct's calls into `frontend/wailsjs/go/<package>/<Struct>.js` (e.g. `wailsjs/go/assets/Assets`) and its types into `export namespace <package>` in `models.ts`. Only `src/bridge/index.ts` imports them; its exports keep their own names, so screens never see the Go packages. At run time the calls go through `window.go.<package>.<Struct>.<Method>`, and `src/fakeBridge.ts` fakes exactly those paths (`?fake`), e.g. `window.go.join.Join.FindGames`. A new binding package checks `models.ts` first: a name already used there (`settings`, `update`, …) would merge two namespaces.
 

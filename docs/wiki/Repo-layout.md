@@ -11,6 +11,7 @@ bindings/join/         Join: LAN games, seat check, server status
 bindings/host/         Host: runs a game server inside the app
 bindings/records/      Records: saves a match record
 bindings/updater/      Updater: checks, downloads and applies app updates
+bindings/probe/        Probe: a --diagnose window's variant and result (ADR 035)
 cmd/server/            dedicated server (no UI)
 cmd/server_load/       load test: plays whole games against a running server
 cmd/bot_arena/         bot arena: whole games between bot levels (make bots)
@@ -20,6 +21,7 @@ internal/arena/        plays and counts bot games for bot_arena and tests
 internal/assets/       app files, embedded or read from disk
 internal/bot/          a bot seat's move; sees only imagined games (ADR 033)
 internal/cardinfo/     card display info from card_db, for app and website
+internal/diag/         --diagnose: system report, probe runs, frame rates (ADR 035)
 internal/instance/     one slot per running app copy
 internal/lan/          finds hosted games on the LAN (ADR 009)
 internal/legal/        fan-game notice used by app and server
