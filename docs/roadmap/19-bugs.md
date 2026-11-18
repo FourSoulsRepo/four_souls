@@ -6467,7 +6467,7 @@ Totals by system (218 items):
    3. `TestTheBoneSoulHasNoAbilities` moved to a step in
       `the_bone/deals-damage-then-becomes-a-soul.json`.
 
-### [ ] 19.227 The next roller gets no Throw button; everyone sees "throwing…"
+### [x] 19.227 The next roller gets no Throw button; everyone sees "throwing…"
 
 1. Goal: the player the game waits on always gets the Throw button.
 2. Report (owner, 2026-11-18)
@@ -6501,3 +6501,5 @@ Totals by system (218 items):
    6. Checked, no change: `ChoiceBack` kept card (one flight), `ModeDialog` key.
    7. Vitest: `a left game forgets its steps`; `forgetDeals` in `animations.test.ts`.
    8. Wiki: `Client.md`, next to the 19.86 line.
+7. Owner notes (2026-11-18)
+   1. Owner marks 19.227 solved.
