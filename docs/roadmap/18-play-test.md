@@ -882,3 +882,5 @@ Ideas: B-04, B-05, B-08.
    6. e2e `giveLooks` moved to `e2e/tests/looks.ts`, shared.
    7. Docs: UC-13 5s; wiki `Client.md`.
    8. Screenshots: `18.27-godhead-before`, `18.27-godhead-dice`.
+7. Owner notes (2026-11-18)
+   1. Owner marks 18.27 solved.
