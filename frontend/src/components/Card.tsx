@@ -9,7 +9,7 @@ import { scaleFor } from '../playback';
 import { fighters, mustTargets } from '../prompt';
 import { counterColor, ghostPath } from '../counters';
 import type { CounterView, MonsterStats, StatSource } from '../protocol';
-import { rewardsLine, rewardsText, statLines, sumOf, tempSources, trend, type Name, type TempSource, type Trend } from '../stats';
+import { damageTaken, rewardsLine, rewardsText, statLines, sumOf, tempSources, trend, type Name, type TempSource, type Trend } from '../stats';
 import { useApp, viewScale } from '../store';
 import { arrowShows } from '../aim';
 import { boxOf, restWatch, type RestWatch } from '../zoom';
@@ -246,6 +246,7 @@ export function Card({
         <>
           <Badge kind="hp" value={stats.hp} label={t('badge.hp', { n: stats.hp })} title={t('badge.hp_title')} hurt={damage > 0} trend={trend(sumOf(stats.sources, 'hp'), 0)} />
           <Badge kind="atk" value={stats.atk} label={t('badge.atk', { n: stats.atk })} title={t('badge.atk_title')} trend={stats.printed_atk === undefined ? undefined : trend(stats.atk, stats.printed_atk)} />
+          <TakenBadge sources={stats.sources} />
         </>
       )}
       {badges && monster && <MonsterBadges stats={monster} hurt={damage > 0} />}
@@ -608,11 +609,21 @@ function SourceIcon({ source, name, onLeave, scale }: { source: TempSource; name
   );
 }
 
+// TakenBadge is the damage the player takes more (18.29, ADR 037): a
+// red "+N" above the heart, only while N is above 0. It counts as the
+// heart does (count-flip). The words fit any damage, bombs too.
+function TakenBadge({ sources }: { sources: StatSource[] | undefined }) {
+  const n = damageTaken(sources);
+  if (n <= 0) return null;
+  const text = t('badge.damage_taken', { n });
+  return <Badge kind="taken" value={n} label={text} title={text} />;
+}
+
 // Badge shapes, drawn like the game's cut-out art (15.23): a heart for
 // health, a die for the dice, a ghost for fear (18.26), and lumpy blobs
 // for the rest.
 const blob = 'M52 6C78 5 95 24 94 50C93 77 74 95 48 94C22 93 5 76 6 49C7 22 26 7 52 6Z';
-type BadgeKind = 'hp' | 'dc' | 'atk' | 'counters' | 'damage' | 'fear';
+type BadgeKind = 'hp' | 'dc' | 'atk' | 'counters' | 'damage' | 'fear' | 'taken';
 const shapes = new Map<BadgeKind, string>([
   ['hp', 'M50 92C24 72 5 55 6 33C7 15 22 6 35 7C43 8 48 13 50 20C52 13 57 8 65 7C78 6 93 15 94 33C95 55 76 72 50 92Z'],
   ['fear', ghostPath],
@@ -645,7 +656,11 @@ function Badge({ kind, value, label, title, style, hurt = false, trend: dir }: B
         {/* Fear's ghost has eyes above its number (18.26). */}
         {kind === 'fear' && <path className="card-badge-eyes" d="M33 30a5 7 0 1 0 10 0a5 7 0 1 0-10 0ZM57 30a5 7 0 1 0 10 0a5 7 0 1 0-10 0Z" />}
       </svg>
-      {kind === 'hp' || kind === 'fear' ? <Count value={value} className="card-badge-value" /> : <span className="card-badge-value">{value}</span>}
+      {kind === 'hp' || kind === 'fear' || kind === 'taken' ? (
+        <Count value={value} className="card-badge-value" prefix={kind === 'taken' ? '+' : ''} />
+      ) : (
+        <span className="card-badge-value">{value}</span>
+      )}
     </span>
   );
 }

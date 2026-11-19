@@ -499,6 +499,10 @@
     },
     "note": "Screen-reader name of the damage badge on a card. n: damage on it."
   },
+  "badge.damage_taken": {
+    "text": "Each time you take damage, you take {n} more",
+    "note": "Tooltip and screen-reader name of the red '+N' badge on a character: its player takes N more of each damage, bombs too (Daddy Haunt, Trick). n: that number, always above 0."
+  },
   "badge.dc": {
     "text": {
       "one": "{n} dice",
@@ -4544,6 +4548,10 @@
     "text": "{amount} DC of monsters you attack",
     "note": "Tooltip of an effect icon on a character. amount: '+1' or '−1'."
   },
+  "stats.effect.damage_taken": {
+    "text": "{amount} damage taken",
+    "note": "Tooltip of an effect icon on a character: each damage its player takes changes by this much. amount: '+1' or '−1'."
+  },
   "stats.effect.dc": {
     "text": "{amount} DC",
     "note": "Tooltip of an effect icon on a monster. amount: '+1' or '−1'."
@@ -4629,6 +4637,10 @@
   "stats.sum_atk": {
     "text": "ATK {n} = {base} printed {terms}",
     "note": "Zoomed card, under it: why its attack changed. n: attack now; base: printed; terms: the changes with their cards."
+  },
+  "stats.sum_damage_taken": {
+    "text": "Damage taken {n} = {terms}",
+    "note": "Zoomed character, under it: why its player takes more of each damage. n: the sum, '+3'; terms: '+2 Trick (this turn) + 1 Daddy Haunt'."
   },
   "stats.sum_dc": {
     "text": "DC {n} = {base} printed {terms}",

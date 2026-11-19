@@ -83,7 +83,7 @@ type RewardView struct {
 
 // StatSourceView is one source of a stat change, so a client can show
 // why a stat changed (V-41). Stat is "hp", "atk", "dc", "roll",
-// "attack_roll" or "attacked_dc"; Lasts is "in_play", "turn" or
+// "attack_roll", "attacked_dc" or "damage_taken"; Lasts is "in_play", "turn" or
 // "next_roll". Card is the source's card, "" when it is hidden.
 type StatSourceView struct {
 	Stat   string   `json:"stat,omitempty"`
@@ -836,15 +836,17 @@ func digit(s string) int {
 var statKeys = map[Stat]string{
 	StatPlayerHP: "hp", StatPlayerATK: "atk", StatMonsterHP: "hp", StatMonsterDC: "dc", StatMonsterATK: "atk",
 	StatRoll: "roll", StatAttackRoll: "attack_roll", StatNextAttackRoll: "attack_roll", StatAttackedDC: "attacked_dc",
+	StatDamageTaken: "damage_taken",
 }
 
 var lastsKeys = [...]string{LastsInPlay: "in_play", LastsTurn: "turn", LastsNextRoll: "next_roll"}
 
-// playerSources lists what changes a player's stats and rolls now.
+// playerSources lists what changes a player's stats and rolls now, and
+// the damage they take (18.29, ADR 037).
 func (g *Game) playerSources(p PlayerID) []StatSourceView {
 	parts := g.Parts(StatPlayerHP, p, 0)
 	parts = append(parts, g.atkGame().Parts(StatPlayerATK, p, 0)...)
-	for _, s := range []Stat{StatRoll, StatAttackRoll, StatAttackedDC} {
+	for _, s := range []Stat{StatRoll, StatAttackRoll, StatAttackedDC, StatDamageTaken} {
 		parts = append(parts, g.Parts(s, p, 0)...)
 	}
 	return g.sourceViews(append(parts, g.nextAttackRollParts(p)...))

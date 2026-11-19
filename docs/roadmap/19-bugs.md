@@ -5058,6 +5058,10 @@ Totals by system (218 items):
    1. WebKit, line 482, the same hover mark.
    2. Rerun alone, webkit: passed.
    3. Evidence: `.cache/e2e-evidence/10.7/run1/` (not in git).
+7. Seen again (18.29 `make e2e` run 1, 2026-11-19)
+   1. WebKit, line 482, the same hover mark; 637 passed, 1 failed.
+   2. The change under test (18.29) only adds a badge on characters.
+   3. Evidence: `.cache/e2e-evidence/18.29-run1/` (not in git).
 
 ### [ ] 19.160 e2e: Ambush! as a Krampus minion ends the minions test
 

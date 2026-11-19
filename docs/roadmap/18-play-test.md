@@ -903,7 +903,7 @@ Ideas: B-04, B-05, B-08.
       2. Not in the monster's attack line: it changes every damage, bombs too.
       3. Every other effect shows too, by the ADR's three levels.
 
-### [ ] 18.29 Damage taken on the character card
+### [x] 18.29 Damage taken on the character card
 
 1. Goal: a player sees how much more damage they take (ADR 037 item 2).
    1. Moved from 19.232; its Report and Cause are there.
@@ -936,6 +936,38 @@ Ideas: B-04, B-05, B-08.
    4. Screenshots before and after, own and opponent's character.
    5. UC-42, wiki `Client.md`, `Animations.md` if a new animation.
    6. Gates: `make lint`, `make frontend e2e`.
+5. Result (2026-11-19)
+   1. Engine: `damage_taken` in `statKeys`; `playerSources` sends its parts.
+   2. Client: `damageTaken` and `merged` in `stats.ts`.
+   3. `TakenBadge` in `Card.tsx`: red "+N" above the heart (`card-taken`).
+   4. It counts as HP does: `Count` got a `prefix`; no new animation.
+   5. Zoom line after the roll lines; this turn first, as the owner wrote it.
+   6. `merged` also joins one source's icon lines (part of 18.31 task 3).
+      1. Same mechanism (5.26): else the Trick icon showed two "+1" lines.
+   7. Words: `badge.damage_taken`, `stats.effect.damage_taken`, `stats.sum_damage_taken`.
+   8. Tests: Go `TestGhostlyTrickeryView`; Vitest `stats`; e2e in `challenge-trick.spec.ts`.
+   9. Docs: UC-42 14.6–14.10; wiki `Client.md`; `Animations.md` `count-flip` row.
+   10. ADR 037: no drift.
+   11. Screenshots: `.cache/screenshots/18.29/before/` and `after/`.
+       1. After also without images: `*-noimages.png`.
+   12. 5.24: cards that change damage a player takes, all sets.
+       1. Shown now (`StatDamageTaken`): Daddy Haunt (b2), Trick (`trick_treat_normhardultra`).
+       2. Trick (`trick_treat_comp`): not built yet (TODO stub).
+          1. When built it must use `IncreaseDamageTaken`.
+       3. Only on a roll (`CombatMod`): Fire Mind (r), x2 on attack rolls of 1.
+       4. No damage on a roll (`CombatMod`): Dead Weight, Ball of Bandages, Halo of Flies (r).
+          1. Also Infamy, Placenta (g2).
+       5. Lower or prevent (`DamageMod`): Dry Baby, The Dead Cat (b2).
+          1. Also Callus, Gnawed Leaf (r).
+       6. Roll to prevent: Guppy's Hairball (b2).
+       7. Next damage (`Shields`): Soul Heart, Dagaz, Host Hat, The Poop (b2).
+          1. Also Guppy's Paw, V. The Hierophant, Yum Heart, Mom's Bra (b2).
+          2. Also Black Heart, The Jar (r); Holy Chest (fsp2).
+       8. None of 3–7 is a `StatDamageTaken` amount; they wait for 18.30.
+       9. Monsters' own damage changes (Horf, Leaper, Mom!) are not player effects.
+   13. Gates: `make lint`, `make frontend` (762 Vitest), `make test` pass.
+       1. `make e2e` run 1: 637 passed, 1 failed: `aim.spec.ts:406`, webkit (19.159).
+       2. Run 2: 638 passed, 22 skipped.
 
 ### [ ] 18.30 Engine: every player effect in the view
 

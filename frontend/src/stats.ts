@@ -34,12 +34,26 @@ export interface Live {
   dc?: number;
 }
 
+// merged adds up one source's parts of one stat (18.29, ADR 037): two
+// "+1" of the Trick card this turn are one "+2". Parts that last or
+// apply differently stay apart. The order is each first part's.
+export function merged(sources: StatSource[]): StatSource[] {
+  const sums = new Map<string, StatSource>();
+  for (const s of sources) {
+    const key = JSON.stringify([s.stat, s.source ?? null, s.card ?? '', s.lasts, s.when ?? null]);
+    const known = sums.get(key);
+    sums.set(key, known ? { ...known, amount: known.amount + s.amount } : s);
+  }
+  return [...sums.values()].filter((s) => s.amount !== 0);
+}
+
 // statLines are the sums the zoom shows beside a card: "ATK 4 = 1 printed
 // + 2 Polyphemus + 1 XI. Strength (this turn)", one line per stat that
-// has sources, then the roll changes. Empty without sources.
+// has sources, then the roll changes, then the damage the player takes.
+// Empty without sources.
 export function statLines(sources: StatSource[] | undefined, printed: Printed, live: Live, name: Name): string[] {
   // Lasting sources first, then this turn's: the print, then what stays.
-  const list = [...(sources ?? [])].sort((a, b) => Number(a.lasts !== 'in_play') - Number(b.lasts !== 'in_play'));
+  const list = merged([...(sources ?? [])].sort((a, b) => Number(a.lasts !== 'in_play') - Number(b.lasts !== 'in_play')));
   const lines: string[] = [];
   const formula = (stat: StatSource['stat'], base: number, now: number, line: (v: { n: number; base: number; terms: string }) => string) => {
     const parts = list.filter((s) => s.stat === stat);
@@ -60,7 +74,26 @@ export function statLines(sources: StatSource[] | undefined, printed: Printed, l
   rolls('roll', (l) => t('stats.rolls', { list: l }));
   rolls('attack_roll', (l) => t('stats.attack_rolls', { list: l }));
   rolls('attacked_dc', (l) => t('stats.attacked', { list: l }), ` ${t('stats.dc')}`);
+  const taken = takenLine(list, name);
+  if (taken) lines.push(taken);
   return lines;
+}
+
+// takenLine is the damage a player takes more (18.29, owner 19.232):
+// "Damage taken +3 = +2 Trick (this turn) + 1 Daddy Haunt". This turn's
+// sources come first, as the owner wrote it. '' without any.
+function takenLine(list: StatSource[], name: Name): string {
+  const parts = list.filter((s) => s.stat === 'damage_taken').sort((a, b) => Number(a.lasts !== 'turn') - Number(b.lasts !== 'turn'));
+  if (parts.length === 0) return '';
+  const terms = parts.map((s, i) => `${i === 0 ? signed(s.amount) : ` ${s.amount < 0 ? '−' : '+'} ${String(Math.abs(s.amount))}`} ${name(s.card)}${suffix(s)}`);
+  return t('stats.sum_damage_taken', { n: signed(sumOf(parts, 'damage_taken')), terms: terms.join('') });
+}
+
+// damageTaken is how much more of each damage the player takes now: the
+// sum of the view's sources (18.29, ADR 037). The engine adds no less
+// than 0 (combat.go), so neither does this.
+export function damageTaken(sources: StatSource[] | undefined): number {
+  return Math.max(sumOf(sources, 'damage_taken'), 0);
 }
 
 // TempSource is one icon on a card: an effect of this turn or one that
@@ -73,10 +106,12 @@ export interface TempSource {
 }
 
 // tempSources are a card's icons, one per source and lasting: lasting
-// sources show only in the sums (owner, 2026-10-22).
+// sources show only in the sums (owner, 2026-10-22). One source's
+// changes of one stat are one line: "+2 damage taken", not two "+1"
+// (18.29).
 export function tempSources(sources: StatSource[] | undefined): TempSource[] {
   const out: TempSource[] = [];
-  (sources ?? []).forEach((s, i) => {
+  merged(sources ?? []).forEach((s, i) => {
     if (s.lasts === 'in_play') return;
     const nextRoll = s.lasts === 'next_roll';
     const key = `${s.source !== undefined ? String(s.source) : `x${String(i)}`}-${s.lasts}`;
@@ -108,6 +143,8 @@ function effect(s: StatSource): string {
       return s.lasts === 'next_roll' ? t('stats.effect.next_attack_roll', { amount }) : t('stats.effect.attack_roll', { amount });
     case 'attacked_dc':
       return t('stats.effect.attacked_dc', { amount });
+    case 'damage_taken':
+      return t('stats.effect.damage_taken', { amount });
   }
 }
 

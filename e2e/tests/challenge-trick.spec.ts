@@ -16,9 +16,10 @@ import { activePage, Ask, asked as askedOf, canEndTurn, click, endTurn, gameOver
 test.setTimeout(180_000);
 
 // The engine's numbers (state.go, statics.go, cards.go): the next
-// attack roll's boost, the monster deck, the in-play zone, the soul
-// role, the loot reward.
+// attack roll's boost, the damage-taken boost, the monster deck, the
+// in-play zone, the soul role, the loot reward.
 const NEXT_ATTACK_ROLL = 18;
+const STAT_DAMAGE_TAKEN = 36;
 const MONSTER_DECK = 2;
 const ZONE_IN_PLAY = 4;
 const ROLE_SOUL = 5;
@@ -44,7 +45,7 @@ interface SaveObject {
 interface TrickSave {
   state: {
     turn: { active: number };
-    boosts?: { stat: number; player: number; amount: number }[];
+    boosts?: { stat: number; player: number; amount: number; source?: number }[];
     players: { in_play: number[]; counters?: Counter[] }[];
     objects: SaveObject[];
     decks: number[][];
@@ -506,4 +507,64 @@ test('the boss can be attacked once souls reach its trick counters; the challeng
     await expect(over.getByRole('heading', { name: tr('over.challenge_won') })).toBeVisible();
   }
   await shot(first(pages), 'trick-won');
+});
+
+// takenOf is the sum of the damage-taken sources the page's view sends
+// for each player (18.29).
+async function takenOf(page: Page): Promise<number[]> {
+  return page.evaluate(() => {
+    interface S {
+      game: { view: { players: { sources?: { stat: string; amount: number }[] }[] } } | null;
+    }
+    const v = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState().game?.view;
+    return (v?.players ?? []).map((p) => (p.sources ?? []).filter((s) => s.stat === 'damage_taken').reduce((n, s) => n + s.amount, 0));
+  });
+}
+
+test('two 1-2 results of Ghostly Trickery show +2 damage taken on the character (18.29)', async ({ browser }) => {
+  const names = repeatNames(['Dan', 'Dot']);
+  const pages = await startGame(browser, names, { setup: hostTrick });
+  await activePage(pages, click);
+  // The state after two 1-2 results of the attack-start roll, as on
+  // Hard: Trick says "1-2: Damage you would take is increased by 1
+  // till end of turn" (R-TRICK-13), and two such results add up (Q-46).
+  await saveEditContinue(pages, names.join(', '), (game) => {
+    edit(game, (save) => {
+      trickSide(save);
+      const source = save.state.challenge.card ?? 0;
+      const one = { stat: STAT_DAMAGE_TAKEN, player: save.state.turn.active, amount: 1, source };
+      save.state.boosts = [...(save.state.boosts ?? []), one, { ...one }];
+    });
+  });
+  const active = await activePage(pages, click);
+  await expect.poll(async () => (await takenOf(active)).some((n) => n === 2)).toBe(true);
+  const now = await seenOf(active);
+  const seat = (await takenOf(active)).indexOf(2);
+  const character = now.characters[seat] ?? -1;
+  // Each time you take damage, you take 2 more: 1 + 1 from the card.
+  const label = tr('badge.damage_taken', { n: 2 });
+  for (const page of pages) {
+    const card = page.locator(`[data-zone="obj-${String(character)}"]`);
+    const badge = card.getByLabel(label, { exact: true });
+    await expect(badge).toBeVisible();
+    await expect(badge).toHaveText('+2');
+    await expect(badge).toHaveAttribute('title', label);
+    // The other player's character takes no more: no badge.
+    for (const [other, id] of now.characters.entries()) {
+      if (other !== seat) {
+        await expect(page.locator(`[data-zone="obj-${String(id)}"] .card-taken`)).toHaveCount(0);
+      }
+    }
+  }
+  await shot(active, 'trick-taken-own');
+  const other = pages.find((p) => p !== active);
+  if (other) {
+    await shot(other, 'trick-taken-opponent');
+  }
+  // The zoom says the sum and its source, once: "+2 Trick (this turn)",
+  // not two "+1" lines (owner, 19.232).
+  await active.locator(`[data-zone="obj-${String(character)}"]`).hover();
+  const terms = `+2 ${cardName('trick_treat_normhardultra')} (${tr('stats.this_turn')})`;
+  await expect(active.locator('.card-zoom .card-zoom-stats')).toContainText(tr('stats.sum_damage_taken', { n: '+2', terms }));
+  await shot(active, 'trick-taken-zoom');
 });

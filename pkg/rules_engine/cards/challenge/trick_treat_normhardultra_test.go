@@ -1,6 +1,7 @@
 package challenge_test
 
 import (
+	"maps"
 	"slices"
 	"strings"
 	"testing"
@@ -117,6 +118,40 @@ func TestGhostlyTrickeryDamage(t *testing.T) {
 	ev = attack(tb, "fly", 1, 1, 6, 1)
 	if got := damageTo(ev, 0); len(got) != 1 || got[0] != 3 {
 		t.Errorf("Daddy Haunt and 1: damage %v, want [3]", got)
+	}
+}
+
+// 18.29, ADR 037: the view sends what makes a player take more damage.
+// Expected from the card texts: Ghostly Trickery on Hard rolls 2x,
+// each "1-2: Damage you would take is increased by 1 till end of turn";
+// Daddy Haunt: "take that much damage +1 instead". So +3: two +1s of
+// this turn from the Trick card, +1 in play from Daddy Haunt.
+func TestGhostlyTrickeryView(t *testing.T) {
+	tb := trick(t, engine.DifficultyHard, engine.SituationPlayer{Items: []engine.CardRef{"daddy_haunt"}}, engine.SituationPlayer{})
+	attack(tb, "fly", 1, 2, 6, 6, 6)
+	haunt := tb.Find(0, "daddy_haunt")
+	type part struct {
+		source engine.ObjectID
+		card   engine.CardRef
+		amount int
+		lasts  string
+	}
+	want := map[part]int{
+		{tb.G.Challenge.Card, trickCard, 1, "turn"}: 2,
+		{haunt, "daddy_haunt", 1, "in_play"}:        1,
+	}
+	for _, v := range []engine.Viewer{{Kind: engine.ViewSpectator}, {Kind: engine.ViewPlayer, Player: 1}} {
+		got := map[part]int{}
+		sum := 0
+		for _, s := range tb.G.View(v).Players[0].Sources {
+			if s.Stat == "damage_taken" {
+				got[part{s.Source, s.Card, s.Amount, s.Lasts}]++
+				sum += s.Amount
+			}
+		}
+		if sum != 3 || !maps.Equal(got, want) {
+			t.Errorf("viewer %+v: damage taken %d from %v, want 3 from %v", v, sum, got, want)
+		}
 	}
 }
 

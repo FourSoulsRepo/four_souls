@@ -376,7 +376,7 @@ export interface RewardView {
 // StatSource is one source of a stat change (V-41). card is "" or absent
 // when the source is hidden; older servers send no sources.
 export interface StatSource {
-  stat: "hp" | "atk" | "dc" | "roll" | "attack_roll" | "attacked_dc";
+  stat: "hp" | "atk" | "dc" | "roll" | "attack_roll" | "attacked_dc" | "damage_taken";
   source?: number;
   card?: string;
   amount: number;

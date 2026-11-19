@@ -57,6 +57,11 @@
     3. Gained abilities show as the copy mark on the monster.
     4. Hard rolls 2x, Ultra Hard 3x: one mark per gained monster (19.157).
     5. Hover on a mark zooms the gained monster; the monster's zoom names them all.
+    6. A 1–2 result: the player takes 1 more of each damage this turn (18.29).
+    7. Their character card shows a red "+N" above the heart; both players see it.
+    8. Its tooltip: "Each time you take damage, you take N more".
+    9. The character's zoom: "Damage taken +2 = +2 Trick (this turn)".
+    10. Daddy Haunt adds its +1 to the same badge and line.
 15. Trick side: a monster dies; the Haunt loses a trick counter (R-TRICK-12).
     1. The Haunt's roll and the trick counter come at once.
     2. The active player orders them in the trigger order dialog.
@@ -78,6 +83,7 @@
   * Each gain of rewards removes a fear counter; the active player picks whose.
 * **16a. Trick or Treat is lost only by the timer:** "Challenge lost", "The timer ran out".
 * **Card images missing:** the Haunt, Trick and Treat are landscape text cards.
+* **Card images missing:** the text character card shows the "+N" badge too.
 
 ## Postconditions
 

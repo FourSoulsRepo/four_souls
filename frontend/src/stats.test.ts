@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { StatSource } from './protocol';
-import { hitsText, oddsLine, rewardsLine, rollChanges, statLines, sumOf, tempSources, trend } from './stats';
+import { damageTaken, hitsText, oddsLine, rewardsLine, rollChanges, statLines, sumOf, tempSources, trend } from './stats';
 
 const names = new Map([
   ['polyphemus', 'Polyphemus'],
@@ -9,6 +9,8 @@ const names = new Map([
   ['round_worm', 'Round Worm'],
   ['champion_belt', 'Champion Belt'],
   ['curse', 'Curse of the Blind'],
+  ['trick_treat_normhardultra', 'Trick'],
+  ['daddy_haunt', 'Daddy Haunt'],
 ]);
 const name = (card: string | undefined) => (card ? (names.get(card) ?? card) : 'a hidden card');
 
@@ -59,6 +61,36 @@ describe('statLines', () => {
   });
   it('is empty without sources', () => {
     expect(statLines(undefined, { hp: 2, atk: 1 }, { atk: 1 }, name)).toEqual([]);
+  });
+});
+
+// Damage taken (18.29). Trick: "1-2: Damage you would take is increased
+// by 1 till end of turn", rolled twice on Hard; Daddy Haunt: "take that
+// much damage +1 instead". So +3: +2 from Trick this turn, +1 lasting.
+describe('damage taken (18.29)', () => {
+  const trick: StatSource = { stat: 'damage_taken', source: 3, card: 'trick_treat_normhardultra', amount: 1, lasts: 'turn' };
+  const haunt: StatSource = { stat: 'damage_taken', source: 8, card: 'daddy_haunt', amount: 1, lasts: 'in_play' };
+  it('sums every source', () => {
+    expect(damageTaken([trick, haunt, trick, poly])).toBe(3);
+    expect(damageTaken([poly])).toBe(0);
+    expect(damageTaken(undefined)).toBe(0);
+  });
+  it('says the sum with one line per source, this turn first (owner, 19.232)', () => {
+    expect(statLines([haunt, trick, trick], { hp: 2, atk: 1 }, { atk: 1 }, name)).toEqual(['Damage taken +3 = +2 Trick (this turn) + 1 Daddy Haunt']);
+    expect(statLines([trick], { hp: 2, atk: 1 }, { atk: 1 }, name)).toEqual(['Damage taken +1 = +1 Trick (this turn)']);
+  });
+  it('comes after the stats and rolls', () => {
+    expect(statLines([trick, poly, meat], { hp: 2, atk: 1 }, { atk: 3 }, name)).toEqual([
+      'ATK 3 = 1 printed + 2 Polyphemus',
+      'Attack rolls: +1 Meat!',
+      'Damage taken +1 = +1 Trick (this turn)',
+    ]);
+  });
+  it('gives the card of this turn one icon with one line', () => {
+    expect(tempSources([trick, trick, haunt])).toEqual([{ key: '3-turn', card: 'trick_treat_normhardultra', nextRoll: false, lines: ['+2 damage taken this turn'] }]);
+  });
+  it('adds up one source in the other sums too', () => {
+    expect(statLines([strength, strength], { hp: 2, atk: 1 }, { atk: 3 }, name)).toEqual(['ATK 3 = 1 printed + 2 XI. Strength (this turn)']);
   });
 });
 
