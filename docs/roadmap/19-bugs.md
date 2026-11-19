@@ -34,7 +34,7 @@ This step never closes; new reports are appended.
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226 | 27 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193 | 18 |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193, 19.232 | 19 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45, 19.224                                   | 3     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141, 19.191 | 16 |
@@ -6619,3 +6619,44 @@ Totals by system (218 items):
    3. Lines of the first test: already after a poll; now use the helper.
    4. The "who has picked" test: both reads now wait.
    5. `draft.spec.ts` with `--repeat-each 3`: 18 passed, both browsers.
+
+### [~] 19.232 Trick or Treat: no way to see how much more damage a player takes
+
+1. Goal: a player sees how much extra damage they take now.
+2. Report (owner, 2026-11-19)
+   1. Trick or Treat, Trick side: Ghostly Trickery rolls 1–2.
+   2. "Damage you would take is increased by 1 till end of turn."
+   3. Each attack start rolls again; the +1s add up.
+   4. Nothing on the table shows the total; only history lines.
+3. Cause (the engine view, V-41)
+   1. `IncreaseDamageTaken` adds a `StatDamageTaken` boost.
+   2. `playerSources` sends HP, ATK and roll sources only.
+   3. `statKeys` has no key for `StatDamageTaken`.
+   4. So the client never gets it; Daddy Haunt (b2) is hidden too.
+4. Display (owner, 2026-11-19)
+   1. A badge on the character card, as HP and ATK: red, "+N".
+   2. Shown only while the total is above 0.
+   3. Its title: "Each time you take damage, you take N more".
+   4. Zoom line: "Damage taken +3 = +2 Trick/Treat (this turn) + 1 Daddy Haunt".
+   5. Sources of one card add up: one "+2" line, not two "+1" lines.
+   6. Not on the rule card: it is shared; the effect is on one player.
+   7. Not in the attack line: it changes every damage, bombs too (owner).
+5. Tasks:
+   1. Engine: key `damage_taken` in `statKeys`; `playerSources` adds its parts.
+   2. `protocol.ts`: the new stat name; `stats.ts` effect and lines.
+   3. `Card.tsx`: the badge; its words in `en.json` (ADR 021).
+   4. 5.24: every card that changes damage a player takes, all sets.
+   5. 5.26: other player stats with an amount and no view.
+      1. At least: attack tax, cheaper $ abilities, max hand size.
+      2. The owner wants them all shown; see item 6.
+   6. Tests: Go view test with Ghostly Trickery twice and Daddy Haunt.
+   7. Vitest `stats`; e2e in `challenge-trick.spec.ts` from a saved game.
+   8. Before and after screenshots (rule 4).
+   9. UC-42, ADR 028 or wiki Client if their text changes.
+6. Other player effects (owner, 2026-11-19)
+   1. Find one way to show every effect on a player.
+   2. Most now show nowhere once their card is gone.
+   3. Proposal and its ADR wait for the owner; then sub-steps.
+7. Moved (owner, 2026-11-19): the same logic as every other player effect.
+   1. Decision: ADR 037; plan: 18.28–18.32.
+   2. The fix is 18.29.
