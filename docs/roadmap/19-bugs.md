@@ -6570,7 +6570,7 @@ Totals by system (218 items):
    4. Packages: wiki First-start, `release/README.txt`, `diag.Packages`.
    5. Test: `TestAudio`; ADR 035 item 2.7; UC-48 item 2.3.
 
-### [ ] 19.230 Big cards and dice show over the game's settings
+### [x] 19.230 Big cards and dice show over the game's settings
 
 1. Goal: the game menu and its settings cover everything on the table.
 2. Report (owner, 2026-11-19)
@@ -6595,6 +6595,8 @@ Totals by system (218 items):
    6. e2e: `the game settings cover a zoomed card (19.230)`.
    7. It fails without the fix: the zoom is drawn on top.
    8. ADR 015 item 7 and Neutral 3; wiki `Layers.md` row `game-menu`.
+6. Owner notes (2026-11-19)
+   1. Owner marks 19.230 solved.
 
 ### [ ] 19.231 e2e: the draft "who has picked" test reads offers before they come
 
