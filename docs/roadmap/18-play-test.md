@@ -968,6 +968,9 @@ Ideas: B-04, B-05, B-08.
    13. Gates: `make lint`, `make frontend` (762 Vitest), `make test` pass.
        1. `make e2e` run 1: 637 passed, 1 failed: `aim.spec.ts:406`, webkit (19.159).
        2. Run 2: 638 passed, 22 skipped.
+6. Owner notes (2026-11-19)
+   1. Owner marks 18.29 solved.
+   2. The merged icon lines (18.31 task 3) stay in.
 
 ### [ ] 18.30 Engine: every player effect in the view
 
