@@ -34,14 +34,14 @@ This step never closes; new reports are appended.
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226 | 27 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193 | 18 |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193, 19.232 | 19 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45, 19.224                                   | 3     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141, 19.191 | 16 |
-| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119, 19.167, 19.200 | 13 |
+| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119, 19.167, 19.200, 19.230 | 14 |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166, 19.198                          | 4     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194, 19.197, 19.217 | 45 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194, 19.197, 19.217, 19.231 | 46 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179, 19.189, 19.196, 19.202, 19.203, 19.219, 19.220 | 36 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91, 19.201, 19.218             | 6     |
@@ -5058,6 +5058,10 @@ Totals by system (218 items):
    1. WebKit, line 482, the same hover mark.
    2. Rerun alone, webkit: passed.
    3. Evidence: `.cache/e2e-evidence/10.7/run1/` (not in git).
+7. Seen again (18.29 `make e2e` run 1, 2026-11-19)
+   1. WebKit, line 482, the same hover mark; 637 passed, 1 failed.
+   2. The change under test (18.29) only adds a badge on characters.
+   3. Evidence: `.cache/e2e-evidence/18.29-run1/` (not in git).
 
 ### [ ] 19.160 e2e: Ambush! as a Krampus minion ends the minions test
 
@@ -6512,7 +6516,7 @@ Totals by system (218 items):
 7. Owner notes (2026-11-18)
    1. Owner marks 19.227 solved.
 
-### [ ] 19.228 `--diagnose` names every WebKit GPU "Apple GPU"
+### [x] 19.228 `--diagnose` names every WebKit GPU "Apple GPU"
 
 1. Goal: the report names the GPU that really draws.
 2. Report (owner, 2026-11-18, 0.6.2, Linux)
@@ -6533,3 +6537,130 @@ Totals by system (218 items):
    6. 5.26: `probe.ts` is the only reader of the WebGL renderer.
    7. Test: `TestBestAndFlags` (Linux ignores it, Windows flags it).
    8. ADR 035 items 3.10, 4.4.1 in place.
+6. Owner notes (2026-11-19)
+   1. The 0.6.3 Linux report shows "hidden by WebKit" in every row.
+   2. Owner marks 19.228 solved.
+
+### [ ] 19.229 Linux: the app hangs when the first roll's dice fall
+
+1. Goal: a computer that can't play sound still plays the game.
+2. Report (owner, 2026-11-19, 0.6.3, Linux)
+   1. A game hangs as the "who goes first" dice fall on the table.
+   2. Log: `GStreamer element autoaudiosink not found. Please install it`.
+   3. Then, in `WebKitWebProcess`: `GLib-GObject-CRITICAL`, a NULL instance.
+   4. `gst-libav` was installed; `gst-plugins-good` likely not.
+   5. `--diagnose` passed the MP3 check: `canPlayType` knows the decoder only.
+3. Findings so far (not yet confirmed)
+   1. No game code waits on a sound; `playSound` only listens for its end.
+   2. So the page's web process itself likely hangs on the first sound.
+   3. `autoaudiosink` is in the GStreamer good plugins.
+4. **Owner** check: install `gst-plugins-good`; does the hang go away?
+5. Tasks, once confirmed:
+   1. The game must not hang without an audio sink (5.24: every sound).
+   2. Linux: Go finds the GStreamer sink before the window opens.
+      1. Missing: sounds off, and a notice names the package.
+   3. `--diagnose` flags a missing audio sink, not only a decoder.
+   4. Wiki First-start: the Linux packages include the good plugins.
+6. Confirmed (owner, 2026-11-19)
+   1. With `gst-plugins-good` installed the game plays through the roll.
+   2. So a missing audio sink hangs the page's web process.
+7. Owner (2026-11-19): do tasks 5.3 and 5.4 now.
+   1. 5.4: list every package found: WebKitGTK, good plugins, libav.
+   2. Tasks 5.1, 5.2 (sounds off, a notice) wait for the owner.
+8. Done (2026-11-19)
+   1. `diag.ReadAudio`: plugin files in the GStreamer folders and `GST_PLUGIN_*`.
+   2. Report line "Sound:"; flags name the packages per distro.
+   3. The probe's MP3 flag only where Go can't tell (not Linux).
+   4. Packages: wiki First-start, `release/README.txt`, `diag.Packages`.
+   5. Test: `TestAudio`; ADR 035 item 2.7; UC-48 item 2.3.
+
+### [x] 19.230 Big cards and dice show over the game's settings
+
+1. Goal: the game menu and its settings cover everything on the table.
+2. Report (owner, 2026-11-19)
+   1. Settings opened from the game menu during a match.
+   2. Big cards and dice are drawn on top of the settings.
+3. Cause (the client, ADR 015)
+   1. The game menu and its settings use the `overlay` layer (90).
+   2. `zoom` (100), `effects` (110) and `trail` (120) are above it.
+   3. That order is for game events over a dialog the game opens.
+   4. The menu is opened by the player; it should cover them.
+4. Tasks:
+   1. A `game-menu` layer above `trail`, under the aiming arrow.
+   2. The game menu, its end question and its settings use it.
+   3. 5.26: check every other `overlay` window.
+   4. e2e: the settings cover a zoomed card.
+5. Fix (2026-11-19)
+   1. `--z-game-menu` (125): under `aim`, over `trail`, `effects`, `zoom`.
+   2. `GameMenu.tsx`: menu, end question, settings take `game-menu-overlay`.
+   3. 5.26: checked, no change: lost, paused, game over (game states).
+   4. 5.26: checked, no change: End turn question, reconnect badge, notices.
+   5. They stay under effects: a game event must be seen (ADR 015 item 6.2).
+   6. e2e: `the game settings cover a zoomed card (19.230)`.
+   7. It fails without the fix: the zoom is drawn on top.
+   8. ADR 015 item 7 and Neutral 3; wiki `Layers.md` row `game-menu`.
+6. Owner notes (2026-11-19)
+   1. Owner marks 19.230 solved.
+
+### [ ] 19.231 e2e: the draft "who has picked" test reads offers before they come
+
+1. Goal: the draft tests wait for the offers before they read them.
+2. Report (the 19.230 gate, 2026-11-19, WebKit)
+   1. `draft.spec.ts` "others see who has picked, not what" timed out.
+   2. It waited for `offer-`: an empty card id.
+   3. Seed 2697923921; evidence in `.cache/e2e-evidence/19.230-draft-webkit/`.
+3. Cause (the test; the app was right)
+   1. The page snapshot shows the five offers on screen.
+   2. `offersOf` reads the store once; line 108 called it with no wait.
+   3. A slow WebKit page had no `setup` frame yet: no offers.
+   4. The first test polls first (`expect.poll`); this one did not.
+4. Tasks:
+   1. One helper waits for n offers, then returns them (18.10).
+   2. 5.26: every `offersOf` call in the e2e tests.
+5. Fix (2026-11-19)
+   1. `offersReady(page, n)` in `draft.spec.ts`: polls, then reads.
+   2. 5.26: all four `offersOf` reads checked.
+   3. Lines of the first test: already after a poll; now use the helper.
+   4. The "who has picked" test: both reads now wait.
+   5. `draft.spec.ts` with `--repeat-each 3`: 18 passed, both browsers.
+
+### [~] 19.232 Trick or Treat: no way to see how much more damage a player takes
+
+1. Goal: a player sees how much extra damage they take now.
+2. Report (owner, 2026-11-19)
+   1. Trick or Treat, Trick side: Ghostly Trickery rolls 1–2.
+   2. "Damage you would take is increased by 1 till end of turn."
+   3. Each attack start rolls again; the +1s add up.
+   4. Nothing on the table shows the total; only history lines.
+3. Cause (the engine view, V-41)
+   1. `IncreaseDamageTaken` adds a `StatDamageTaken` boost.
+   2. `playerSources` sends HP, ATK and roll sources only.
+   3. `statKeys` has no key for `StatDamageTaken`.
+   4. So the client never gets it; Daddy Haunt (b2) is hidden too.
+4. Display (owner, 2026-11-19)
+   1. A badge on the character card, as HP and ATK: red, "+N".
+   2. Shown only while the total is above 0.
+   3. Its title: "Each time you take damage, you take N more".
+   4. Zoom line: "Damage taken +3 = +2 Trick/Treat (this turn) + 1 Daddy Haunt".
+   5. Sources of one card add up: one "+2" line, not two "+1" lines.
+   6. Not on the rule card: it is shared; the effect is on one player.
+   7. Not in the attack line: it changes every damage, bombs too (owner).
+5. Tasks:
+   1. Engine: key `damage_taken` in `statKeys`; `playerSources` adds its parts.
+   2. `protocol.ts`: the new stat name; `stats.ts` effect and lines.
+   3. `Card.tsx`: the badge; its words in `en.json` (ADR 021).
+   4. 5.24: every card that changes damage a player takes, all sets.
+   5. 5.26: other player stats with an amount and no view.
+      1. At least: attack tax, cheaper $ abilities, max hand size.
+      2. The owner wants them all shown; see item 6.
+   6. Tests: Go view test with Ghostly Trickery twice and Daddy Haunt.
+   7. Vitest `stats`; e2e in `challenge-trick.spec.ts` from a saved game.
+   8. Before and after screenshots (rule 4).
+   9. UC-42, ADR 028 or wiki Client if their text changes.
+6. Other player effects (owner, 2026-11-19)
+   1. Find one way to show every effect on a player.
+   2. Most now show nowhere once their card is gone.
+   3. Proposal and its ADR wait for the owner; then sub-steps.
+7. Moved (owner, 2026-11-19): the same logic as every other player effect.
+   1. Decision: ADR 037; plan: 18.28–18.32.
+   2. The fix is 18.29.

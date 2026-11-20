@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -172,5 +173,46 @@ func TestGPUs(t *testing.T) {
 	got := gpus(sys, dev)
 	if len(got) != 1 || got[0].Driver != "i915" || got[0].Vendor != "Intel" || !got[0].Opens {
 		t.Errorf("gpus = %+v", got)
+	}
+}
+
+// 19.229: autoaudiosink, an output and an MP3 decoder, from the plugin
+// files in the GStreamer folders.
+func TestAudio(t *testing.T) {
+	root := t.TempDir()
+	debian, arch := filepath.Join(root, "x86_64-linux-gnu"), filepath.Join(root, "arch")
+	for _, dir := range []string{debian, arch} {
+		if err := os.MkdirAll(dir, 0o750); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, f := range []string{
+		filepath.Join(debian, "libgstalsa.so"),
+		filepath.Join(arch, "libgstautodetect.so"),
+		filepath.Join(arch, "libgstlibav.so"),
+	} {
+		if err := os.WriteFile(f, nil, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	a := audioIn([]string{debian, arch, debian, filepath.Join(root, "missing")})
+	if len(a.Dirs) != 2 || !a.AutoSink || !slices.Equal(a.Outputs, []string{"alsa"}) || !slices.Equal(a.Decoders, []string{"libav"}) {
+		t.Errorf("audioIn = %+v", a)
+	}
+	if !a.Plays() || len(audioFlags(a)) != 0 {
+		t.Errorf("Plays = %v, flags %q", a.Plays(), audioFlags(a))
+	}
+	// The owner's laptop before the fix: libav, no good plugins.
+	noSink := Audio{Dirs: []string{arch}, Outputs: []string{"alsa"}, Decoders: []string{"libav"}}
+	if f := strings.Join(audioFlags(noSink), "\n"); !strings.Contains(f, "autoaudiosink") || !strings.Contains(f, "gst-plugins-good") {
+		t.Errorf("no sink flags: %q", f)
+	}
+	if f := strings.Join(audioFlags(Audio{}), "\n"); !strings.Contains(f, "not found") {
+		t.Errorf("unknown flags: %q", f)
+	}
+	var b strings.Builder
+	Write(&b, System{OS: "linux", Audio: noSink}, nil)
+	if !strings.Contains(b.String(), "Sound:      autoaudiosink missing, outputs alsa, MP3 decoders libav") {
+		t.Errorf("report:\n%s", b.String())
 	}
 }

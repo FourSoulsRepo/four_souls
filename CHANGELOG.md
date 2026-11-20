@@ -6,6 +6,12 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+## 0.6.4 - 2026-11-20
+
+- A character that takes more damage (Ghostly Trickery, Daddy Haunt) shows a red "+N" badge above its heart; the zoomed card lists where it comes from.
+- The game menu and its settings now cover big cards and dice; they no longer show on top.
+- Linux: `--diagnose` checks the GStreamer plugins for sound; without the good plugins the game hangs at its first sound. The Linux packages to install now include `gst-plugins-good` and `gst-libav` (see README.txt).
+
 ## 0.6.3 - 2026-11-19
 
 - Linux: the game always draws with the GPU; on a tested laptop the menu went from 6 to 60 frames a second. If the window stays black, start it with `FOURSOULS_GPU_POLICY=ondemand` (or `never`).

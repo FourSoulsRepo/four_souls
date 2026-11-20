@@ -327,6 +327,12 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    3. Instead each option is a die showing that value.
    4. The die has the chooser's own dice look (V-19).
    5. Planned in 18.27.
+58. V-58. Every effect on a player shows on the table (owner, 2026-11-19).
+   1. E.g. Ghostly Trickery's +1 damage taken adds up; no total shows.
+   2. Many effects show nowhere once their card is gone.
+   3. Damage taken: a badge on the character, as HP and ATK.
+   4. Others: icons by source; the zoom lists them all.
+   5. Decision: ADR 037; planned in 18.28–18.32.
 
 ## Rules
 

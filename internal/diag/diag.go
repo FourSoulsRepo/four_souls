@@ -77,7 +77,7 @@ type Variant struct {
 
 // Variants lists what the report tries on this system (ADR 035, item
 // 3.1): the switches only mean something to WebKitGTK. The default is
-// the GPU always on (ADR 036); gpu-ondemand is the Wails default.
+// the GPU always on (ADR 036); gpu-never is how every start ran before.
 func Variants(goos string) []Variant {
 	if goos != "linux" {
 		return []Variant{{ID: "default"}}

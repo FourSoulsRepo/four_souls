@@ -14,6 +14,7 @@
 2. The app reads the system (ADR 035 item 2).
    1. Linux: WebKitGTK version, session, GPUs, groups.
    2. Webview switches already set.
+   3. Linux: the GStreamer plugins for sound.
 3. A test window opens for each variant.
    1. Linux: five variants; other systems: `default` only.
    2. The window is 1280×800 and shows the main menu over the sky.

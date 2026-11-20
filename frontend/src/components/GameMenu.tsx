@@ -50,7 +50,7 @@ export function GameMenu({ host }: { host: boolean }) {
   }
   if (settings) {
     return (
-      <div className="overlay" role="dialog" aria-label={t('settings.title')}>
+      <div className="overlay game-menu-overlay" role="dialog" aria-label={t('settings.title')}>
         <div className="screen game-settings">
           <h2>{t('settings.title')}</h2>
           <SettingsForm
@@ -65,7 +65,7 @@ export function GameMenu({ host }: { host: boolean }) {
   }
   if (ending) {
     return (
-      <div className="overlay" role="dialog" aria-label={t('game_menu.label')}>
+      <div className="overlay game-menu-overlay" role="dialog" aria-label={t('game_menu.label')}>
         <div className="overlay-box">
           <h2>{t('game_menu.end_title')}</h2>
           <p className="muted">{t('game_menu.end_hint')}</p>
@@ -95,7 +95,7 @@ export function GameMenu({ host }: { host: boolean }) {
     );
   }
   return (
-    <div className="overlay" role="dialog" aria-label={t('game_menu.label')}>
+    <div className="overlay game-menu-overlay" role="dialog" aria-label={t('game_menu.label')}>
       <div className="overlay-box">
         <h2>{t('game_menu.title')}</h2>
         {host && <p className="muted">{t('game_menu.save_hint')}</p>}

@@ -64,13 +64,15 @@ export function useFlip(el: RefObject<HTMLElement | null>, key: number): void {
 }
 
 // Count is a counter's number that counts (20.11): each step flips the
-// number in. data-count is the number on screen, for tests.
-export function Count({ value, className = '' }: { value: number; className?: string }) {
+// number in. data-count is the number on screen, for tests. prefix goes
+// before it: "+" for the damage a player takes more (18.29).
+export function Count({ value, className = '', prefix = '' }: { value: number; className?: string; prefix?: string }) {
   const shown = useCount(value);
   const ref = useRef<HTMLSpanElement>(null);
   useFlip(ref, shown);
   return (
     <span ref={ref} className={`count${className ? ` ${className}` : ''}`} data-count={shown}>
+      {prefix}
       {shown}
     </span>
   );

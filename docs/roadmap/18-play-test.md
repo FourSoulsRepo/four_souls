@@ -884,3 +884,154 @@ Ideas: B-04, B-05, B-08.
    8. Screenshots: `18.27-godhead-before`, `18.27-godhead-dice`.
 7. Owner notes (2026-11-18)
    1. Owner marks 18.27 solved.
+
+### [x] 18.28 ADR: effects on a player
+
+1. Goal: one decision for showing every effect on a player (V-58).
+   1. Owner, 2026-11-19; moved here from bug 19.232.
+   2. Built on the step 25 branch (owner, 2026-11-19).
+2. Tasks:
+   1. Survey the player stats and where their sources lie.
+   2. ADR 037 with the three levels: badges, icons, zoom list.
+3. Done when:
+   1. ADR 037 is in `INDEX.md`; 18.29–18.32 follow it.
+4. Result (2026-11-19, main conversation)
+   1. ADR 037, Accepted; idea V-58; `roadmap.md` step 18 item 14.
+   2. Survey: about 30 player stats; groups A, B, C (ADR 037 Context 5).
+   3. Owner decisions:
+      1. Damage taken shows on the character, not on the rule card.
+      2. Not in the monster's attack line: it changes every damage, bombs too.
+      3. Every other effect shows too, by the ADR's three levels.
+
+### [x] 18.29 Damage taken on the character card
+
+1. Goal: a player sees how much more damage they take (ADR 037 item 2).
+   1. Moved from 19.232; its Report and Cause are there.
+2. Where it comes from today:
+   1. `IncreaseDamageTaken` (Ghostly Trickery) adds a `StatDamageTaken` boost.
+   2. Daddy Haunt (b2) has it as a static (`YouHave`).
+   3. `combat.go` adds the total to each damage instance.
+   4. `playerSources` and `statKeys` leave it out: the client never gets it.
+3. Tasks:
+   1. Engine: key `damage_taken` in `statKeys`.
+   2. `playerSources` adds `Parts(StatDamageTaken, p, 0)`.
+   3. `protocol.ts`: the stat name; `stats.ts`: its effect line.
+   4. `Card.tsx`: a `damage_taken` badge beside HP and ATK.
+      1. Red; shows "+N", the sum of the sources.
+      2. Only while the sum is above 0.
+      3. Title: "Each time you take damage, you take N more".
+      4. The words fit any damage, bombs too (owner).
+      5. A changed number counts as HP does (`count-flip`, ADR 012).
+   5. Zoom line: "Damage taken +3 = +2 Trick/Treat (this turn) + 1 Daddy Haunt".
+   6. One source's lines add up: "+2 Trick/Treat", not two "+1" lines.
+   7. 5.24: every card that changes damage a player takes, all sets.
+      1. List them in the result; ones not on `StatDamageTaken` wait for 18.30.
+   8. Words in `en.json` and every locale; `make i18n` (ADR 021).
+   9. Without images the text card shows the badge too.
+4. Done when:
+   1. Go view test: Ghostly Trickery twice plus Daddy Haunt sends +3.
+      1. Expected value from the card texts; name them in the test.
+   2. Vitest `stats`: the sum and the zoom line.
+   3. e2e `challenge-trick.spec.ts`: two 1–2 rolls show "+2" (saved game).
+   4. Screenshots before and after, own and opponent's character.
+   5. UC-42, wiki `Client.md`, `Animations.md` if a new animation.
+   6. Gates: `make lint`, `make frontend e2e`.
+5. Result (2026-11-19)
+   1. Engine: `damage_taken` in `statKeys`; `playerSources` sends its parts.
+   2. Client: `damageTaken` and `merged` in `stats.ts`.
+   3. `TakenBadge` in `Card.tsx`: red "+N" above the heart (`card-taken`).
+   4. It counts as HP does: `Count` got a `prefix`; no new animation.
+   5. Zoom line after the roll lines; this turn first, as the owner wrote it.
+   6. `merged` also joins one source's icon lines (part of 18.31 task 3).
+      1. Same mechanism (5.26): else the Trick icon showed two "+1" lines.
+   7. Words: `badge.damage_taken`, `stats.effect.damage_taken`, `stats.sum_damage_taken`.
+   8. Tests: Go `TestGhostlyTrickeryView`; Vitest `stats`; e2e in `challenge-trick.spec.ts`.
+   9. Docs: UC-42 14.6–14.10; wiki `Client.md`; `Animations.md` `count-flip` row.
+   10. ADR 037: no drift.
+   11. Screenshots: `.cache/screenshots/18.29/before/` and `after/`.
+       1. After also without images: `*-noimages.png`.
+   12. 5.24: cards that change damage a player takes, all sets.
+       1. Shown now (`StatDamageTaken`): Daddy Haunt (b2), Trick (`trick_treat_normhardultra`).
+       2. Trick (`trick_treat_comp`): not built yet (TODO stub).
+          1. When built it must use `IncreaseDamageTaken`.
+       3. Only on a roll (`CombatMod`): Fire Mind (r), x2 on attack rolls of 1.
+       4. No damage on a roll (`CombatMod`): Dead Weight, Ball of Bandages, Halo of Flies (r).
+          1. Also Infamy, Placenta (g2).
+       5. Lower or prevent (`DamageMod`): Dry Baby, The Dead Cat (b2).
+          1. Also Callus, Gnawed Leaf (r).
+       6. Roll to prevent: Guppy's Hairball (b2).
+       7. Next damage (`Shields`): Soul Heart, Dagaz, Host Hat, The Poop (b2).
+          1. Also Guppy's Paw, V. The Hierophant, Yum Heart, Mom's Bra (b2).
+          2. Also Black Heart, The Jar (r); Holy Chest (fsp2).
+       8. None of 3–7 is a `StatDamageTaken` amount; they wait for 18.30.
+       9. Monsters' own damage changes (Horf, Leaper, Mom!) are not player effects.
+   13. Gates: `make lint`, `make frontend` (762 Vitest), `make test` pass.
+       1. `make e2e` run 1: 637 passed, 1 failed: `aim.spec.ts:406`, webkit (19.159).
+       2. Run 2: 638 passed, 22 skipped.
+6. Owner notes (2026-11-19)
+   1. Owner marks 18.29 solved.
+   2. The merged icon lines (18.31 task 3) stay in.
+
+### [ ] 18.30 Engine: every player effect in the view
+
+1. Goal: `PlayerView.Sources` holds every effect on a player (ADR 037 item 1).
+2. Tasks:
+   1. A `statKeys` key for each player stat, except `StatUsed`.
+   2. `playerSources` reads them all, not a fixed list.
+      1. A flag stat (lock, no souls) sends amount 1.
+      2. A conditional static goes only to players it applies to now.
+      3. E.g. Might for the Meek: only the fewest-souls players.
+   3. Shop price: one part per source, not one per shop item.
+   4. Every boost names its source (`Boost.Source`).
+      1. Find boosts made without one, e.g. Lust for Blood's item boost.
+   5. 5.24: effects on a player not kept as stats.
+      1. Search all sets for "till end of turn" and "you can't" effects.
+      2. List each; one that is a player effect becomes a stat part.
+      3. Ask the owner before changing any rule code beyond that.
+   6. Effects on one object (Algiz's eternal) stay out (ADR 037 item 1.7).
+   7. View size: sources only while an effect is on.
+3. Done when:
+   1. One Go view test per group A, B, C, with real cards.
+      1. B: a "fewest souls" room on one player, not the other.
+      2. C: Get Out of Jail after its card is discarded.
+   2. Fuzz stays green; old records still replay.
+   3. ADR 037 matches the code; wiki package notes updated.
+
+### [ ] 18.31 Client: effect icons for every effect
+
+1. Goal: the character's icons show every effect from elsewhere (ADR 037 item 3).
+2. Tasks:
+   1. `tempSources` becomes the icon list for groups B and C.
+      1. Group A (card in the player's own area): no icon.
+      2. Lasting B sources get icons too (owner change of V-41.4).
+   2. Each stat key gets an effect text: `stats.effect.<key>`.
+      1. E.g. "Can't gain souls", "Max hand size 2", "+5¢ to attack".
+   3. One source's lines of one stat add up.
+   4. An icon whose lines are one number stat shows the sum.
+   5. Above 4 icons: the first 4 and a "+K" chip.
+      1. The chip opens the character's zoom (18.32).
+   6. Icons appear and leave as now (SB-12, SB-13; ADR 012).
+   7. Words in `en.json` and every locale; `make i18n`.
+   8. 5.26: every place that draws sources (stack, history, odds line).
+3. Done when:
+   1. Vitest: grouping, sums, the "+K" chip.
+   2. e2e: a room's icon on the right player; a gone card's icon stays.
+   3. Screenshots: few icons, many icons, without images.
+   4. UC-12, wiki `Client.md`, `Animations.md`.
+   5. Gates: `make lint`, `make frontend e2e`.
+
+### [ ] 18.32 Client: "Effects on you" in the zoom
+
+1. Goal: the zoomed character lists every effect on its player (ADR 037 item 4).
+2. Tasks:
+   1. A list under the stat lines: groups A, B and C.
+   2. "This turn" first, then "while in play".
+   3. Each line: what it does, then the source card's name.
+   4. A hidden source: "a hidden card".
+   5. Own and opponents' characters alike.
+   6. Words in `en.json` and every locale; `make i18n`.
+3. Done when:
+   1. Vitest: the order and the lines.
+   2. e2e: the "+K" chip opens this list.
+   3. Screenshots; UC-12; wiki `Client.md`.
+   4. Gates: `make lint`, `make frontend e2e`.

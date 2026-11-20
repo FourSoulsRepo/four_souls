@@ -16,6 +16,7 @@
    1. Its version; Wayland or X11; the GPU driver; access to `/dev/dri`.
    2. Switches read at start: `WEBKIT_DISABLE_DMABUF_RENDERER`, `WEBKIT_DISABLE_COMPOSITING_MODE`.
    3. Wails `WebviewGpuPolicy`: `OnDemand`, `Always` (the default since ADR 036), `Never`.
+      1. Before ADR 036: no options, which Wails v2 makes `Never`.
 4. No switch is right for every computer; it must be measured.
 5. A switch only works before the webview starts.
    1. One process cannot try several.
@@ -52,6 +53,7 @@ Use options 1, 3, 5 and 6.
    4. Linux: each `/dev/dri/renderD*`, its driver, vendor, and if it opens.
    5. Linux: the user's `render` and `video` groups.
    6. Switches already set in the environment.
+   7. Linux: GStreamer plugin files: `autoaudiosink`, outputs, MP3 decoders (19.229).
 3. Probe part: the app starts itself with `--diagnose-probe=<variant>`.
    1. Linux variants: `default`, `no-dmabuf`, `no-compositing`, `gpu-ondemand`, `gpu-never`.
    2. Other systems: `default` only.

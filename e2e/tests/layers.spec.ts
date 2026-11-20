@@ -133,6 +133,31 @@ test('the rollback vote covers the table; the game menu opens over it (17.4)', a
   expect(await onTop(menu, panel)).toBe(true);
 });
 
+test('the game settings cover a zoomed card (19.230)', async ({ browser }) => {
+  const [ida] = await startGame(browser, ['Ida', 'Jon'], { url: fast() });
+  if (!ida) {
+    throw new Error('no pages');
+  }
+  await ida.getByRole('button', { name: tr('game_menu.button') }).click();
+  await ida.getByRole('button', { name: tr('game_menu.settings') }).click();
+  const settings = ida.getByRole('dialog', { name: tr('settings.title') }).locator('.game-settings');
+  await expect(settings).toBeVisible();
+  // A held zoom, as a touch leaves it, in the middle of the settings:
+  // the player opened the menu on purpose, so it covers the zoom.
+  const s = await box(settings);
+  await ida.evaluate((at) => {
+    interface S {
+      setZoom: (z: unknown) => void;
+    }
+    const store = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store;
+    store.getState().setZoom({ ref: 'isaac', touch: true, rise: false, at });
+  }, { left: s.x + s.width / 2 - 30, right: s.x + s.width / 2 + 30, top: s.y + s.height / 2 - 40, bottom: s.y + s.height / 2 + 40 });
+  const zoom = ida.getByTestId('card-zoom').locator('.card-zoom-body');
+  await expect(zoom).toBeAttached();
+  await shot(ida, 'layers-settings-zoom');
+  expect(await onTop(settings, zoom)).toBe(true);
+});
+
 // noPresence drops the server's presence frames on the way to the page:
 // the other seat's real pointer would replace the injected one (19.48).
 function noPresence(page: Page): Promise<void> {

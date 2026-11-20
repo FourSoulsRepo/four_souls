@@ -882,6 +882,20 @@
   stroke: none;
 }
 
+/* The damage a player takes more (18.29, ADR 037): a small red "+N"
+   blob above the heart, so it reads with health. */
+.card-taken {
+  bottom: 34cqi;
+  left: 3cqi;
+  width: 25cqi;
+  --fill: #b3201a;
+  rotate: -8deg;
+}
+
+.card-taken .card-badge-value {
+  font-size: 15cqi;
+}
+
 /* Damage on a character: a smaller dark-red blob at the top corner. */
 .card-damage {
   top: 4cqi;
