@@ -123,7 +123,8 @@ type SituationStep struct {
 
 // Expectation is what should happen (LR-04). A field left out is not
 // checked. A list of cards names every card there, in any order; an
-// empty list expects none (24.5).
+// empty list expects none (24.5). A list or map of checks that is there
+// but empty is a mismatch: it would check nothing (19.234).
 type Expectation struct {
 	Allowed bool             `json:"allowed"`
 	Rule    string           `json:"rule,omitempty"` // the refusal's rule, when not allowed
@@ -134,11 +135,13 @@ type Expectation struct {
 	// of 0 expects none.
 	Counters []SituationCounter `json:"counters,omitempty"`
 	// Decks are the cards on top of decks by name, top first, as
-	// setup.decks; Discards the whole discard piles, any order.
+	// setup.decks, [] an empty deck; Discards the whole discard piles,
+	// any order.
 	Decks    map[string][]CardRef `json:"decks,omitempty"`
 	Discards map[string][]CardRef `json:"discards,omitempty"`
 	// DeckBottoms are the cards at the bottom of decks by name, in any
-	// order: several cards go to the bottom in random order (Q-22).
+	// order: several cards go to the bottom in random order (Q-22);
+	// [] expects an empty deck.
 	DeckBottoms map[string][]CardRef `json:"deck_bottoms,omitempty"`
 	// Active, LootPlays and Attacks check the turn, as in setup.
 	Active    *int `json:"active,omitempty"`
@@ -656,6 +659,13 @@ func (g *Game) mismatches(allowed bool, rule string, events []Event, e Expectati
 		out = append(out, fmt.Sprintf("refused by %s, expected %s", rule, e.Rule))
 	}
 	c := checks(out)
+	emptyChecks(&c, "after", len(e.After), e.After != nil)
+	emptyChecks(&c, "monsters", len(e.Monsters), e.Monsters != nil)
+	emptyChecks(&c, "counters", len(e.Counters), e.Counters != nil)
+	emptyChecks(&c, "decks", len(e.Decks), e.Decks != nil)
+	emptyChecks(&c, "discards", len(e.Discards), e.Discards != nil)
+	emptyChecks(&c, "deck_bottoms", len(e.DeckBottoms), e.DeckBottoms != nil)
+	emptyChecks(&c, "events", len(e.Events), e.Events != nil)
 	for _, x := range e.After {
 		g.checkPlayer(&c, x)
 	}
@@ -667,7 +677,7 @@ func (g *Game) mismatches(allowed bool, rule string, events []Event, e Expectati
 	g.checkGame(&c, e)
 	g.checkPrompt(&c, e.Prompt)
 	g.checkResolved(&c, e.Resolved, events)
-	checkEvents(&c, e.Events, events)
+	checkEvents(&c, e.Events, events, len(g.Players))
 	checkRolls(&c, e.ResolvedRolls, events)
 	return c
 }

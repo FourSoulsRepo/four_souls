@@ -6726,3 +6726,39 @@ Totals by system (224 items):
    8. A rules bug found that way: its own 19 item.
    9. Wiki `Situation-payload.md`; ADR 034 if it drifts.
    10. Wiki: the missing `setup.bonus_souls` line (24.16).
+5. Done (2026-11-23)
+   1. `checkMonster`: without `dead: true` the card must top a slot.
+   2. With `slot`, that slot; else any slot, in slot order.
+   3. Else: "monster fly is in no slot, options [...]", the slot cards.
+   4. `dead: false` now says the same as no `dead`.
+   5. `dead: true` unchanged: in no slot, and in a discard or souls.
+6. 5.26: other checks with only a key, a false or an empty value
+   1. Fixed: a player entry with only `player` checked nothing.
+   2. Fixed: an empty `after`, `monsters`, `counters`, `events` checked nothing.
+   3. Fixed: an empty `decks`, `discards`, `deck_bottoms` map, too.
+   4. Also a player's empty `counters` list; each is now a mismatch.
+   5. Fixed: `decks` or `deck_bottoms` `[]` for a deck passed always.
+   6. Now `[]` expects that deck to be empty, as other card lists.
+   7. Fixed: an `events` seat no player has; `none` passed always.
+   8. Fine: player `dead: false` and `over: false` compare the value.
+   9. Fine: counters with `count` 0 need the card; none on it.
+   10. Fine: `prompt: {}` checks a question is open (documented).
+   11. Fine: `prompt.options: []` never matches a question.
+   12. Fine: `[]` in `discards`, `resolved`, `resolved_rolls`, `winners`.
+   13. Fine: `[]` in `items`, `hand_cards`, `soul_cards`, `deactivated`.
+   14. Fine: `events` without `none` needs one; `allowed` false a refusal.
+   15. Fine: a `slot` with `dead: true` fails on the slot's card.
+7. Situation files that failed after the fix: 1 of 343.
+   1. `the_d10/covers-a-monster-on-a-3.json`, step 1.
+   2. It checked the covered Fly as `dead: false`.
+   3. A covered card is not in play (R-ZONE-10): in no slot.
+   4. It had checked only that the Fly was in no discard or souls.
+   5. Now: an empty monster discard, no souls for either player.
+   6. The end check still shows the Fly back in slot 1 (R-ZONE-11).
+   7. The other 48 `card`-only and 8 `dead: false` entries hold.
+   8. No rules bug found; no new item.
+8. Tests and docs
+   1. Go: `TestSituationExpectChecksFail`, `…ResolvedAndEvents`, `…DeckBottoms`.
+   2. A pass and a fail for each fix; `rightExpect` adds `{"card": "boss"}`.
+   3. Wiki `Situation-payload.md`: Checks, the example, `setup.bonus_souls`.
+   4. ADR 034: no drift; unchanged.

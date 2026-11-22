@@ -32,6 +32,7 @@ A situation is a small JSON document: a table position, one action or several [s
 * `setup.monsters`, `setup.shop` — the top card of each slot.
 * `setup.rooms` — the room in each room slot (R-SETUP-12); the active player uses its abilities (R-CARD-33, R-CARD-36).
 * `setup.monster_damage` — damage on a card in a monster, final boss, minion or room slot, by its ref: `{"gemini": 2}`. It must leave the card at least 1 HP.
+* `setup.bonus_souls` — the active bonus souls, by ref (R-SETUP-06): `["soul_of_greed"]`. They start with no owner; `setup.counters` and `expect.counters` name them after the slot cards.
 * `setup.counters` — counters on a card no player controls: a card in a slot or an active bonus soul, in the same form as a player's: `[{"card": "soul_of_wrath", "count": 5}]`.
 * `setup.decks` — cards put on top of decks, by deck name (`treasure`, `loot`, `monster`, `room`), top first: `{"monster": ["chest_2"], "loot": ["bomb", "a_penny"]}`. Each card must belong to that deck. The rest of the deck is every card of the sets, shuffled with `seed`.
 * `setup.rolls` — the next dice results, in order, each 1–6: `[6, 1]`. Any die rolled after them is random (from `seed`).
@@ -79,7 +80,9 @@ A counter entry is `{"card": …, "name": …, "count": …}`; `count` is 1 or m
 * A list of cards (`items`, `hand_cards`, `soul_cards`, `deactivated`, `discards`, `winners`) names every card there, in any order: a card more or less is a mismatch, and `[]` expects none. The deck in `decks` is the exception: it holds the rest of the sets, so only its top cards are compared, in order.
 * `hand` and `souls` stay counts, as before 24.5; the cards are `hand_cards` and `soul_cards`.
 * A counter check names its card as in setup (`"character"` for the character); a `count` of 0 expects none.
-* A `monsters` check needs `card`. Without `slot`, `card` names the first such card in slot order (monster, final boss, minion, room slots), as `setup.monster_damage` does. With `slot` (from 1, a monster slot), that slot's top card must be `card`. `dead: true` means no slot holds the card and it is in a discard or a player's souls; `dead: false` that a slot holds it.
+* A `monsters` check needs `card`. Without `slot`, `card` names the first such card in slot order (monster, final boss, minion, room slots), as `setup.monster_damage` does. With `slot` (from 1, a monster slot), that slot's top card must be `card`. Every entry without `dead: true` checks that the card is on top of a slot (that slot, with `slot`), even `{"card": "fly"}` alone; otherwise the mismatch says it is in no slot and lists the slot cards (19.234). A covered card (R-ZONE-10) is in no slot: it is not in play. `dead: false` therefore says the same as leaving `dead` out. `dead: true` means no slot holds the card and it is in a discard or a player's souls.
+* Nothing checks nothing (19.234). An `after` entry with only `player` is a mismatch; so is a list or map of checks that is there but empty: `after`, `monsters`, `counters` (top-level or a player's), `events`, `decks`, `discards`, `deck_bottoms`. Leave such a field out instead. Inside `decks` and `deck_bottoms`, `[]` for one deck expects that deck to be empty; in `discards` it expects an empty discard pile.
+* An `events` entry's `player` must be a seat in the game; any other seat is a mismatch, since `none: true` would always pass for it.
 * `hp` is what is left: max HP minus damage, for players and monsters.
 * `prompt` (24.6) checks the question open once the step settled, a choose or order question. `player` is the seat asked; `options` names every option by its label, as `choices` do, in any order. A target or mode question ends with `ask.cancel`: the player may back out before paying (R-ABIL-04). A field left out is not checked, so `"prompt": {}` only says a question is open. A prompt check also stops the step at that question; see [When a step settles](#when-a-step-settles).
 * `resolved` (24.6) names stack items in the order they resolved (`stack_resolved` events, as `enginetest.ResolvedAt` reads them). It is an ordered subsequence: each name must resolve after the one before it, and other items may resolve between them, so a check of two cards ignores the damage a Bomb! puts on the stack. A loot card, an activated or a triggered ability is named by its card ref; any other item by its kind: `dice_roll`, `attack_roll`, `damage`, `death`, `death_penalty`, `death_step`. `[]` expects nothing resolved. Any other name is an error that lists the kinds.
@@ -94,6 +97,7 @@ Each mismatch says what it found and what was expected:
 player 0 items are [razor sword coin_bag], expected [razor sword]
 monster slot 1 is "gaper", expected "boss"
 monster gaper evasion is 3, expected 4
+monster fly is in no slot, options [gaper boss]
 player 0 counters on razor are 2, expected 3
 monster deck top is [gaper], expected [boss]
 loot deck bottom is [bomb_loot], expected [penny] in any order
