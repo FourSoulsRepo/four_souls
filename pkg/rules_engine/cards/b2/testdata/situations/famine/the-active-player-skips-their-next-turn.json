@@ -1,0 +1,21 @@
+{
+  "title": "Isaac kills Famine: after Cain's turn, is Isaac's next turn skipped, so Cain is active again?",
+  "source": ["card famine", "card isaac", "R-ATK-12", "R-CARD-13", "R-DEATH-05", "R-TURN-16"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["famine"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["famine"],
+     "expect": {"allowed": true, "monsters": [{"card": "famine", "dead": true}], "after": [{"player": 0, "hand": 3, "soul_cards": ["famine"]}]}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1}},
+    {"player": 1, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1}}
+  ],
+  "expect": {"allowed": true, "active": 1}
+}

@@ -1,0 +1,22 @@
+{
+  "title": "Isaac (3 HP, A Dime!! in hand) misses Scolex and takes its combat damage: does he discard a loot card?",
+  "source": ["card scolex", "card isaac", "card breakfast", "R-ATK-12", "R-ATK-13", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["breakfast"], "hand": ["a_dime"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["scolex"],
+    "decks": {"monster": ["pooter"], "treasure": ["dinner"]},
+    "rolls": [1, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["scolex", "a_dime"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 6, 6, 6],
+    "monsters": [{"card": "scolex", "dead": true}],
+    "discards": {"loot": ["a_dime"]},
+    "after": [{"player": 0, "damage": 1, "hand_cards": [], "items": ["breakfast", "dinner"], "soul_cards": ["scolex"]}]
+  }
+}

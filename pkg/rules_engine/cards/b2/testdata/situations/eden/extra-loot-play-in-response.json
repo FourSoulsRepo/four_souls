@@ -1,0 +1,18 @@
+{
+  "title": "Two Edens: the active one's ↷ waits on the stack, and the other Eden uses ↷ in response; does the active Eden have 2 loot plays, and is a second ↷ refused?",
+  "source": ["card eden", "R-MECH-01", "R-PRIO-01", "R-TURN-05", "R-ABIL-07", "R-ABIL-10"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "eden", "deactivated": ["character"]}, {"character": "eden"}],
+    "active": 0,
+    "stack": [{"kind": "activate", "card": "eden", "owner": 0}],
+    "priority": 1
+  },
+  "steps": [
+    {"player": 1, "kind": "activate", "card": "eden",
+     "expect": {"allowed": true, "resolved": ["eden", "eden"], "loot_plays": 2, "after": [{"player": 0, "deactivated": ["character"]}, {"player": 1, "deactivated": ["character"]}]}},
+    {"player": 0, "kind": "activate", "card": "eden",
+     "expect": {"allowed": false, "rule": "R-ABIL-07", "loot_plays": 2}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-07"}
+}

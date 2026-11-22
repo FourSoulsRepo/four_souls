@@ -1,0 +1,21 @@
+{
+  "title": "Isaac hits The Haunt (3 HP, DC 4) twice: does it gain +1 DC on the second damage, so his 4 then misses?",
+  "source": ["card the_haunt", "card isaac", "R-ATK-12", "R-ATK-13", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["the_haunt"],
+    "decks": {"monster": ["pooter"], "treasure": ["breakfast"]},
+    "rolls": [6, 6, 4, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["the_haunt"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 4, 6],
+    "monsters": [{"card": "the_haunt", "dead": true}],
+    "after": [{"player": 0, "damage": 1, "items": ["breakfast"], "soul_cards": ["the_haunt"]}]
+  }
+}

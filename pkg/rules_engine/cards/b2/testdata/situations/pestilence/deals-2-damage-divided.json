@@ -1,0 +1,20 @@
+{
+  "title": "Isaac kills Pestilence and divides its 2 damage: 1 to himself and 1 to Cain; does each take 1?",
+  "source": ["card pestilence", "card isaac", "R-ATK-12", "R-CARD-13", "R-DEATH-05"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["pestilence"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["pestilence", "player 1 (isaac)", "player 2 (cain)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "pestilence", "dead": true}, {"slot": 1, "card": "pooter"}],
+    "after": [{"player": 0, "damage": 1, "hand": 2, "soul_cards": ["pestilence"]}, {"player": 1, "damage": 1}]
+  }
+}

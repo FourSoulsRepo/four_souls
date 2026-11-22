@@ -1,0 +1,22 @@
+{
+  "title": "Isaac kills Mom! in the only monster slot: is a second slot added, so two monsters come from the deck?",
+  "source": ["card mom", "card isaac", "card meat", "R-ATK-12", "R-CARD-13", "R-DEATH-05", "R-DEATH-08", "R-DEATH-09"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["breakfast", "dinner", "meat"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["mom"],
+    "monster_damage": {"mom": 4},
+    "decks": {"monster": ["pooter", "leech", "dip"], "treasure": ["sack_of_pennies"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["mom"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "mom", "dead": true}, {"card": "pooter", "damage": 0}, {"card": "leech", "damage": 0}],
+    "decks": {"monster": ["dip"]},
+    "after": [{"player": 0, "souls": 2, "soul_cards": ["mom"], "items": ["breakfast", "dinner", "meat", "sack_of_pennies"]}]
+  }
+}

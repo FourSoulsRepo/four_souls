@@ -17,25 +17,17 @@ func table(t *testing.T, seats ...engine.SituationPlayer) *enginetest.Table {
 	return enginetest.New(t, Set, seats...)
 }
 
-// testExtraLoot checks a character's ↷: one more loot play, on your own
-// turn and on another player's turn.
-func testExtraLoot(t *testing.T, character engine.CardRef) {
+// testExtraLootOnAnotherTurn checks a character's ↷ on another player's
+// turn: that player gets one more loot play (Player.ExtraLootPlays). The
+// rest of the ↷ is in <character>/extra-loot-play-in-response.json.
+func testExtraLootOnAnotherTurn(t *testing.T, character engine.CardRef) {
 	t.Helper()
 	tb := table(t, seat(character), seat(character))
 	tb.Start(0, character, 0)
 	tb.Pass(0)
 	tb.Activate(1, character, 0) // in response, on another player's turn
-	if got := tb.G.Turn.LootPlays; got != 2 {
-		t.Errorf("active player's loot plays = %d, want 2", got)
-	}
-	if tb.G.Object(tb.Find(0, character)).Charged {
-		t.Error("the character is still charged after ↷")
-	}
 	if got := tb.G.Players[1].ExtraLootPlays; got != 1 {
 		t.Errorf("other player's extra loot plays = %d, want 1", got)
-	}
-	if rule := tb.Refused(0, character, 0); rule != "R-ABIL-07" {
-		t.Errorf("second use refused by %s, want R-ABIL-07 (deactivated)", rule)
 	}
 }
 
@@ -122,53 +114,6 @@ func itemTable(t *testing.T, items []engine.CardRef, hand ...engine.CardRef) *en
 
 // items is a shorthand for a list of cards.
 func items(cards ...engine.CardRef) []engine.CardRef { return cards }
-
-// testPlainMonster kills a monster with attack rolls of 6 and checks the
-// rewards the active player gains.
-func testPlainMonster(t *testing.T, card engine.CardRef) {
-	t.Helper()
-	tb := monsterTable(t, items(card), seat("isaac"), seat("cain"))
-	m, _ := tb.G.Monsters[0].TopOf()
-	d := Set.Cards[slices.IndexFunc(Set.Cards, func(c engine.CardDef) bool { return c.Ref == card })]
-	rolls := make([]int, d.HP+1)
-	for i := range rolls {
-		rolls[i] = 6
-	}
-	tb.Attack(card, rolls...)
-	if tb.G.Object(m).Zone.Kind == engine.ZoneInPlay {
-		t.Fatalf("%s survived %d hits", card, d.HP)
-	}
-	want := map[engine.RewardKind]int{}
-	for _, r := range d.Rewards {
-		want[r.Kind] += r.Amount
-	}
-	pl := tb.G.Players[0]
-	if pl.Cents != want[engine.RewardCents] || len(pl.Hand) != want[engine.RewardLoot] {
-		t.Errorf("cents %d hand %d, want %d and %d", pl.Cents, len(pl.Hand), want[engine.RewardCents], want[engine.RewardLoot])
-	}
-	if items := len(pl.InPlay) - d.Soul; items != want[engine.RewardTreasure] {
-		t.Errorf("%d treasures, want %d", items, want[engine.RewardTreasure])
-	}
-	if s := tb.G.SoulValue(0); s != d.Soul {
-		t.Errorf("soul value %d, want %d", s, d.Soul)
-	}
-}
-
-// killWithSixes attacks the monster in slot 1 with rolls of 6 until it
-// dies, answering the prompts that follow with choices.
-func killWithSixes(t *testing.T, tb *enginetest.Table, choices ...string) {
-	t.Helper()
-	m, _ := tb.G.Monsters[0].TopOf()
-	rolls := make([]int, tb.G.HP(m)+1)
-	for i := range rolls {
-		rolls[i] = 6
-	}
-	tb.G.ForceRolls(rolls...)
-	tb.Do(engine.Intent{Player: tb.G.Turn.Active, Kind: engine.IntentAttack}, append([]string{string(tb.G.Object(m).Card)}, choices...)...)
-	if tb.G.Object(m).Zone.Kind == engine.ZoneInPlay {
-		t.Fatalf("%s survived", tb.G.Object(m).Card)
-	}
-}
 
 // slayTable: the monster in slot 1, Isaac and Cain with the given setups.
 func slayTable(t *testing.T, monster engine.CardRef, isaac, cain engine.SituationPlayer) *enginetest.Table {

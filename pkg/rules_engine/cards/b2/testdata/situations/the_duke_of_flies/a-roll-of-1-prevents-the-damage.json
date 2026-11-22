@@ -1,0 +1,21 @@
+{
+  "title": "Each time Isaac hits The Duke of Flies (4 HP, DC 3) he rolls; is the hit his roll of 1 follows prevented, so it takes 5 attack rolls to kill it?",
+  "source": ["card the_duke_of_flies", "card isaac", "R-ATK-12", "R-ABIL-30", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["the_duke_of_flies"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 1, 6, 2, 6, 2, 6, 2, 6, 2]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["the_duke_of_flies"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 1, 6, 2, 6, 2, 6, 2, 6, 2],
+    "monsters": [{"card": "the_duke_of_flies", "dead": true}],
+    "after": [{"player": 0, "damage": 0, "hand": 2, "soul_cards": ["the_duke_of_flies"]}]
+  }
+}

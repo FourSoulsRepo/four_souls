@@ -1,0 +1,24 @@
+{
+  "title": "Mask of Infamy (4 HP, DC 4) has 3 damage: does it have DC 6 at 1 HP, so Isaac's 5 misses and his 6 hits?",
+  "source": ["card mask_of_infamy", "card isaac", "R-ATK-02", "R-ATK-12", "R-ATK-13", "R-ATK-18", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["mask_of_infamy"],
+    "monster_damage": {"mask_of_infamy": 3},
+    "decks": {"monster": ["pooter"], "treasure": ["breakfast"]},
+    "rolls": [5, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["mask_of_infamy", "ask.deck.monster"]}, "monsters": [{"card": "mask_of_infamy", "hp": 1, "evasion": 6}]}},
+    {"kind": "choose", "choices": ["mask_of_infamy"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [5, 6],
+    "monsters": [{"card": "mask_of_infamy", "dead": true}],
+    "after": [{"player": 0, "damage": 1, "items": ["breakfast"], "soul_cards": ["mask_of_infamy"]}]
+  }
+}

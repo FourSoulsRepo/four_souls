@@ -1,0 +1,21 @@
+{
+  "title": "Isaac kills Wrath, then rolls a 1: does each player take 1 damage?",
+  "source": ["card wrath", "card isaac", "R-ATK-12", "R-CARD-13", "R-DEATH-05"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["wrath"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 6, 6, 1]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["wrath"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 6, 1],
+    "monsters": [{"card": "wrath", "dead": true}],
+    "after": [{"player": 0, "damage": 1, "cents": 6, "soul_cards": ["wrath"]}, {"player": 1, "damage": 1}]
+  }
+}

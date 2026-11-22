@@ -1,0 +1,23 @@
+{
+  "title": "Isaac (3 HP) attacks Gurdy Jr.; with his attack roll of 1 on the stack he uses Mr. Boom on it: does he take 1 damage for the activation, then 1 for the miss?",
+  "source": ["card gurdy_jr", "card mr_boom", "card isaac", "card breakfast", "R-ATK-12", "R-ATK-13", "R-STACK-02", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["mr_boom", "breakfast"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["gurdy_jr"],
+    "decks": {"monster": ["pooter"], "treasure": ["dinner"]},
+    "stack": [{"kind": "attack_roll", "dice_roll": 1, "card": "gurdy_jr", "owner": 0}],
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "mr_boom", "choices": ["gurdy_jr"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved": ["gurdy_jr", "mr_boom", "attack_roll"],
+    "resolved_rolls": [1, 6],
+    "monsters": [{"card": "gurdy_jr", "dead": true}],
+    "after": [{"player": 0, "damage": 2, "dead": false, "deactivated": ["mr_boom"], "items": ["mr_boom", "breakfast", "dinner"], "soul_cards": ["gurdy_jr"]}]
+  }
+}

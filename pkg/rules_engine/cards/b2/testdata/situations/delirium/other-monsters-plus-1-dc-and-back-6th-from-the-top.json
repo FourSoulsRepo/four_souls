@@ -1,0 +1,24 @@
+{
+  "title": "Delirium is beside a Fly (DC 2): does the Fly have DC 3, and when Isaac kills Delirium, does it go into the monster deck 6th from the top, before the slot refills?",
+  "source": ["card delirium", "card fly", "card isaac", "R-ATK-02", "R-ATK-12", "R-CARD-13", "R-DEATH-05", "R-SHOP-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["delirium", "fly"],
+    "decks": {"monster": ["pooter", "leech", "dip", "clotty", "spider"], "treasure": ["breakfast", "dinner"]},
+    "rolls": [6, 6, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["delirium", "fly", "ask.deck.monster"]}, "monsters": [{"card": "fly", "evasion": 3}, {"card": "delirium", "evasion": 4}]}},
+    {"kind": "choose", "choices": ["delirium"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 6, 6, 6],
+    "monsters": [{"slot": 1, "card": "pooter"}, {"slot": 2, "card": "fly", "evasion": 2}],
+    "decks": {"monster": ["leech", "dip", "clotty", "spider", "delirium"]},
+    "after": [{"player": 0, "items": ["breakfast", "dinner"], "souls": 0}]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "title": "Larry Jr. (4 HP, DC 3) has 2 damage: does it have DC 4, so Isaac's 3 misses and his 4 hits?",
+  "source": ["card larry_jr", "card isaac", "R-ATK-02", "R-ATK-12", "R-ATK-13", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["larry_jr"],
+    "monster_damage": {"larry_jr": 2},
+    "decks": {"monster": ["pooter"]},
+    "rolls": [3, 4, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["larry_jr", "ask.deck.monster"]}, "monsters": [{"card": "larry_jr", "hp": 2, "evasion": 4}]}},
+    {"kind": "choose", "choices": ["larry_jr"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [3, 4, 6],
+    "monsters": [{"card": "larry_jr", "dead": true}],
+    "after": [{"player": 0, "damage": 1, "cents": 6, "soul_cards": ["larry_jr"]}]
+  }
+}

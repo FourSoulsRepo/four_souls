@@ -1,0 +1,19 @@
+{
+  "title": "Gemini (3 HP, 1 ATK) has 2 damage: does it have 2 ATK at 1 HP when Isaac declares an attack?",
+  "source": ["card gemini", "card isaac", "R-ATK-02", "R-ATK-12", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["gemini"],
+    "monster_damage": {"gemini": 2},
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["gemini", "ask.deck.monster"]}, "monsters": [{"card": "gemini", "hp": 1, "atk": 2}]}},
+    {"kind": "choose", "choices": ["gemini"]}
+  ],
+  "expect": {"allowed": true, "monsters": [{"card": "gemini", "dead": true}], "after": [{"player": 0, "damage": 0, "cents": 5}]}
+}

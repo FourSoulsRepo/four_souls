@@ -1,0 +1,21 @@
+{
+  "title": "Isaac hits Gluttony (4 HP, DC 3) with 6, 5, 6, 6: does Cain, the player to his left, take 1 damage for each 6 but none for the 5?",
+  "source": ["card gluttony", "card isaac", "card cain", "card breakfast", "card dinner", "R-ATK-12", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "items": ["breakfast", "dinner"]}],
+    "active": 0,
+    "monsters": ["gluttony"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 5, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["gluttony"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 5, 6, 6],
+    "monsters": [{"card": "gluttony", "dead": true}],
+    "after": [{"player": 0, "damage": 0, "hand": 1, "soul_cards": ["gluttony"]}, {"player": 1, "damage": 3, "dead": false}]
+  }
+}

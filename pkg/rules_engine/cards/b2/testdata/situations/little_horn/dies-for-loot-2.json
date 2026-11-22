@@ -1,0 +1,21 @@
+{
+  "title": "Isaac (1 ATK) kills Little Horn (2 HP, DC 6) with 2 sixes: does he gain its reward, loot 2, and its soul, and no treasure?",
+  "source": ["card little_horn", "card isaac", "R-ATK-12", "R-CARD-13", "R-DEATH-08", "R-DEATH-09"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["little_horn"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["little_horn"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6],
+    "monsters": [{"card": "little_horn", "dead": true}, {"slot": 1, "card": "pooter"}],
+    "after": [{"player": 0, "cents": 0, "hand": 2, "items": [], "souls": 1, "soul_cards": ["little_horn"]}]
+  }
+}

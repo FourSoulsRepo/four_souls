@@ -1,0 +1,25 @@
+{
+  "title": "Isaac hits Satan! (1 HP left) with a 6: may he choose any living player, and does Cain, whom he chooses, die as Satan! dies?",
+  "source": ["card satan", "card isaac", "R-ATK-12", "R-CARD-13", "R-DEATH-08", "R-DEATH-15"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["satan"],
+    "monster_damage": {"satan": 5},
+    "decks": {"monster": ["pooter"], "treasure": ["breakfast", "dinner"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["satan"],
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["player 1 (isaac)", "player 2 (cain)"]}}},
+    {"kind": "choose", "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "events": [{"kind": "died", "player": 1}, {"kind": "died", "player": 0, "none": true}]}}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "monsters": [{"card": "satan", "dead": true}, {"slot": 1, "card": "pooter"}],
+    "after": [{"player": 0, "dead": false, "souls": 2, "items": ["breakfast", "dinner"], "soul_cards": ["satan"]}, {"player": 1, "dead": true}]
+  }
+}

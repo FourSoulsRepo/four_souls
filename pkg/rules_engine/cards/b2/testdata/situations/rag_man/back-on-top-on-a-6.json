@@ -1,0 +1,22 @@
+{
+  "title": "Isaac kills Rag Man and gains its rewards, then rolls a 6: does Rag Man go on top of the monster deck instead of becoming his soul, so the empty slot draws it back?",
+  "source": ["card rag_man", "card isaac", "R-ATK-12", "R-CARD-13", "R-DEATH-06", "R-DEATH-07", "R-DEATH-08", "R-DEATH-09"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["rag_man"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["rag_man"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 6],
+    "monsters": [{"slot": 1, "card": "rag_man", "damage": 0}],
+    "decks": {"monster": ["pooter"]},
+    "after": [{"player": 0, "hand": 3, "souls": 0, "soul_cards": []}]
+  }
+}

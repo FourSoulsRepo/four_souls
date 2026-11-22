@@ -745,9 +745,77 @@ Ideas: TS-13, LR-04, R-03.
 11. No rules bug found; `cardgen -report` unchanged.
 12. Helpers `hasCurse`, `handCards` removed from `common_test.go`: no use left.
 
-### [ ] 24.17 Bulk: b2 bosses and characters
+### [x] 24.17 Bulk: b2 bosses and characters
 
 1. Goal: Boss, Epic Boss, Character (about 49 tests).
+2. Counts (2026-11-23): 49 tests in 46 `_test.go` files of the family.
+   1. 31 Boss, 4 Epic Boss, 11 Character cards.
+   2. Bosses: one test each; Cain 2 tests, Eden 3.
+3. Moved: 35 tests, as 35 files; their `_test.go` files are gone.
+   1. Plain bosses: Gurdy, Little Horn, Monstro: `<card>/dies-for-<reward>.json`.
+   2. TestCarrionQueen, TestChub, TestConquest, TestDaddyLongLegs, TestDarkOne.
+   3. TestDeath, TestDelirium, TestEnvy, TestFamine, TestGemini, TestGluttony.
+   4. TestGreed, TestGurdyJr, TestLarryJr, TestLust, TestMaskOfInfamy.
+   5. TestMegaFatty, TestMom, TestPestilence, TestPeep, TestPin, TestPride.
+   6. TestRagMan, TestSatan, TestScolex, TestSloth, TestTheBloat.
+   7. TestTheHaunt, TestTheDukeOfFlies, TestTheLamb, TestWar, TestWrath.
+4. Split: 11, a file each: every character's ↷ test.
+   1. Blue Baby, Cain, Eden, Eve, Isaac, Judas, Lazarus.
+   2. Also Lilith, Maggy, Samson, The Forgotten.
+   3. File: `<character>/extra-loot-play-in-response.json`.
+   4. The active one's ↷ starts on `setup.stack`; the other responds.
+   5. It checks 2 loot plays, both deactivated, a second ↷ refused.
+   6. Stays Go: the other player's `ExtraLootPlays` (`testExtraLootOnAnotherTurn`).
+   7. No check says it (24.5 rejected `extra_loot_plays`).
+   8. No step can use it: a play in response is mid-stack (owner answer 7).
+   9. Stays Go: the starting item, from a real game start (`newGame`).
+   10. Cain's and Eden's start order and Eden's choice stay Go too.
+5. Stayed Go whole, complicated (ADR 034 1.5): 3.
+   1. Game start, events, views, replay: TestCainGoesFirstWithoutARoll.
+   2. Also TestEdenBeforeCain, TestEdensAtOnce.
+6. Needed a format change: 0 whole tests.
+   1. The splits keep an `extra_loot_plays` check and the game start.
+7. Engine state read in Go, said by a game action in the file:
+   1. `AttackRolls`: `resolved_rolls` (Carrion Queen, Chub, Mega Fatty, Pin, Duke).
+   2. `MustAttacks` (Conquest, Envy): `attacks` 1, an end of turn refused by R-ATK-03.
+   3. `Evasion`, `MonsterATK` (Larry Jr., Mask, Gemini): the attack's target question.
+   4. The step stops there; then the rolls show the DC.
+   5. Mom's `len(Monsters)`: two refill cards in slots, the third on the deck.
+   6. Daddy Long Legs' `Boosts`: a 4 then misses; the Fly has DC 3.
+   7. Famine: two `end_turn` steps; Cain is active again.
+8. Drafts: 26 of 46 files kept the dumped steps.
+   1. Monster or treasure deck tops in `setup.decks` (35), so cards are named.
+   2. Characters: no draft kept; a response is `setup.stack` (owner answer 7).
+   3. Gurdy Jr.: the roll of 1 starts as an `attack_roll` on `setup.stack`.
+   4. A prompt check splits a step: Death, Satan!, Delirium.
+   5. Also Gemini, Larry Jr., Mask of Infamy: no step in the draft.
+   6. Satan! starts at 1 HP: one 6 kills it and a player.
+   7. Conquest, Envy: a refused `end_turn` step added.
+9. Setups made to prove the card text:
+   1. Dark One, War: Isaac 3 HP survives the 2 damage; it was "2 or dead".
+   2. Gluttony: Cain 4 HP; a 5 among the 6s deals him nothing.
+   3. Daddy Long Legs: a Fly beside it, a 4 after the 1.
+   4. Larry Jr.: a 3 misses, a 4 hits; Mask of Infamy: a 5 misses.
+10. Checks added from the card text (owner answer 8):
+   1. Every kill: the monster died, its reward, its soul; most: the refill.
+   2. Delirium: the Fly back to DC 2; the deck's 5 top cards, Delirium 5th.
+   3. Death, Satan!: both players offered; only Cain `died`.
+   4. Pride: its trigger resolves before the first attack roll (R-ATK-25).
+   5. Pride, Scolex, Sloth: the cards in the loot discard.
+   6. Rag Man: no soul, 3 loot, the Pooter still on the deck.
+   7. Gurdy Jr.: its trigger, then Mr. Boom, then the roll (R-STACK-02).
+   8. Greed: Isaac 1 damage; The Bloat: Isaac 2; The Lamb: Cain has no soul.
+11. Go tests that did not check what they claimed: 2.
+   1. TestGurdyJr checked damage ≥ 1; the roll of 1 alone dealt that.
+   2. The file checks 2 damage on 3 HP and the resolve order.
+   3. TestDaddyLongLegs checked only that some boost existed.
+   4. The file checks the 4 missing and the Fly's DC 3.
+12. Runner note, no change here: a `monsters` check with only `card` checks nothing.
+   1. `dead: false` also passes for a card in a deck.
+   2. Mom's file checks `damage` 0, so the card must be in a slot.
+13. No rules bug found; `cardgen -report` unchanged.
+14. Helpers `testPlainMonster`, `killWithSixes` removed: no use left.
+   1. `testExtraLoot` is now `testExtraLootOnAnotherTurn`.
 
 ### [ ] 24.18 Bulk: b2 other
 
