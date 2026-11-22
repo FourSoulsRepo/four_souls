@@ -1,0 +1,16 @@
+{
+  "title": "One monster slot; Isaac reveals XL Floor!: is a second slot added and filled, and may he attack once more?",
+  "source": ["card xl_floor", "R-ATK-09", "R-MECH-31"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "decks": {"monster": ["pooter"]}
+  },
+  "action": {"player": 0, "kind": "reveal", "card": "xl_floor"},
+  "expect": {"allowed": true,
+    "attacks": 1,
+    "discards": {"monster": ["xl_floor"]},
+    "monsters": [{"slot": 1, "card": "fly"}, {"slot": 2, "card": "pooter"}]}
+}

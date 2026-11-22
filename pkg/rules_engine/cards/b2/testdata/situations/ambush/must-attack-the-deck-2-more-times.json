@@ -1,0 +1,22 @@
+{
+  "title": "Isaac attacks the monster deck and reveals Ambush!: must he attack the monster deck 2 more times before he may end his turn?",
+  "source": ["card ambush", "R-ATK-03", "R-ATK-09", "R-CARD-15"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "ambush",
+     "expect": {"allowed": true,
+       "attacks": 2,
+       "monsters": [{"slot": 1, "card": "fly"}],
+       "discards": {"monster": ["ambush"]}}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"rule": "R-ATK-03", "active": 0}},
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["ask.deck.monster"]}}}
+  ],
+  "expect": {"rule": "R-ATK-03"}
+}

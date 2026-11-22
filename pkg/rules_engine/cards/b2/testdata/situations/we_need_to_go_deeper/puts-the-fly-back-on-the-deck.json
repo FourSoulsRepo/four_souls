@@ -1,0 +1,25 @@
+{
+  "title": "Mr. Boom killed the Fly; Isaac reveals We Need To Go Deeper! and picks the Fly: is it on top of the monster deck, and may he attack once more?",
+  "source": ["card we_need_to_go_deeper", "card mr_boom", "R-ATK-09", "R-DEATH-09"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["mr_boom"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["pooter"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "mr_boom", "choices": ["fly"],
+     "expect": {"allowed": true,
+       "discards": {"monster": ["fly"]},
+       "monsters": [{"slot": 1, "card": "pooter"}],
+       "after": [{"player": 0, "cents": 1}]}},
+    {"player": 0, "kind": "reveal", "card": "we_need_to_go_deeper", "choices": ["fly", "ask.done"],
+     "expect": {"allowed": true,
+       "attacks": 1,
+       "decks": {"monster": ["fly"]},
+       "discards": {"monster": ["we_need_to_go_deeper"]},
+       "monsters": [{"slot": 1, "card": "pooter"}, {"slot": 2, "card": "leech"}]}}
+  ],
+  "expect": {"allowed": true}
+}

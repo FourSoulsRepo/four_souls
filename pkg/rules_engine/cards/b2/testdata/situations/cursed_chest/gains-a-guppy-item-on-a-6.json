@@ -1,0 +1,16 @@
+{
+  "title": "Isaac reveals Cursed Chest and rolls a 6: does he gain the Guppy item he picks from the treasure deck, and take no damage?",
+  "source": ["card cursed_chest", "card guppys_head", "R-ABIL-22", "R-ATK-09"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "reveal", "card": "cursed_chest", "choices": ["guppys_head"]},
+  "expect": {"allowed": true,
+    "resolved_rolls": [6],
+    "discards": {"monster": ["cursed_chest"]},
+    "after": [{"player": 0, "items": ["guppys_head"], "damage": 0}]}
+}

@@ -1,0 +1,19 @@
+{
+  "title": "Cain has 5¢ and gets Curse of Greed: does he lose 4¢ at the end of his own turn, and not at the end of Isaac's?",
+  "source": ["card curse_of_greed", "R-ABIL-20", "R-TURN-10", "R-MECH-42"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "cents": 5}],
+    "active": 0,
+    "monsters": ["fly"]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "curse_of_greed", "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "discards": {"monster": []}}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 1, "cents": 5}]}},
+    {"player": 1, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 0, "after": [{"player": 1, "cents": 1}]}}
+  ],
+  "expect": {"allowed": true}
+}

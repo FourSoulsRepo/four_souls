@@ -1,0 +1,14 @@
+{
+  "title": "Isaac reveals Devil Deal and picks \"Loot 2. Take 1 damage.\": does he loot 2 and take 1 damage?",
+  "source": ["card devil_deal", "R-ATK-09", "R-CARD-06", "R-MECH-18"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"]
+  },
+  "action": {"player": 0, "kind": "reveal", "card": "devil_deal", "choices": ["card.devil_deal.loot"]},
+  "expect": {"allowed": true,
+    "discards": {"monster": ["devil_deal"]},
+    "after": [{"player": 0, "hand": 2, "damage": 1, "items": []}]}
+}

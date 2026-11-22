@@ -1,0 +1,14 @@
+{
+  "title": "Isaac (2 HP) reveals Troll Bombs: do 2 damage kill him, and only him?",
+  "source": ["card troll_bombs", "card isaac", "R-ATK-09", "R-CARD-10", "R-MECH-18", "R-DEATH-01"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"]
+  },
+  "action": {"player": 0, "kind": "reveal", "card": "troll_bombs"},
+  "expect": {"allowed": true,
+    "events": [{"kind": "died", "player": 0}, {"kind": "died", "player": 1, "none": true}],
+    "after": [{"player": 0, "dead": true}, {"player": 1, "dead": false, "damage": 0}]}
+}

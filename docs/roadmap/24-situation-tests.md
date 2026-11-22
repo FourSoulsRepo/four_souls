@@ -687,9 +687,63 @@ Ideas: TS-13, LR-04, R-03.
    2. The Cursed Horf file leaves out the loot and its discard.
 10. `cardgen -report` unchanged.
 
-### [ ] 24.16 Bulk: b2 events, curses, souls
+### [x] 24.16 Bulk: b2 events, curses, souls
 
 1. Goal: Good and Bad Event, Curse, Bonus and Lost Soul (about 25 tests).
+2. Counts (2026-11-23): 25 tests in 25 `_test.go` files of the family.
+   1. 26 cards: 12 Good Event, 5 Bad Event, 5 Curse, 3 Bonus Soul, 1 Lost Soul.
+   2. Chest (2nd): no Go test left (24.3); Soul of Wrath is in `r`.
+3. Moved: 23 tests, as 23 files; their `_test.go` files are gone.
+   1. TestAmbush, TestCursedChest, TestDarkChest, TestDarkChest2.
+   2. TestDevilDeal, TestGoldChest, TestGoldChest2, TestSecretRoom.
+   3. TestICanSeeForever, TestShopUpgrade, TestXLFloor, TestWeNeedToGoDeeper.
+   4. TestMegaTrollBomb, TestTrollBombs, TestLostSoul.
+   5. TestCurseOfAmnesia, TestCurseOfGreed, TestCurseOfLoss.
+   6. TestCurseOfPain, TestCurseOfTheBlind.
+   7. TestSoulOfGluttony, TestSoulOfGreed, TestSoulOfGuppy.
+4. Split: 2, a file each.
+   1. TestChest: the file checks the cents, the discard, the Fly uncovered.
+   2. The discarded event's `Card` and `Prev` stay Go: TestChestDiscardedEvent.
+   3. TestGreedEvent: the file checks the choice, the cents, `lost_cents`.
+   4. The event's `Amount` stays Go: TestGreedEventLostCentsAmount.
+5. Stayed Go whole: 0. Needed a format change: 0.
+   1. The splits keep event fields (`Card`, `Prev`, `Amount`), as 24.13.
+6. Engine state read in Go, said by a game action in the file:
+   1. Ambush's `MustAttackDeck`: `attacks` 2, an end of turn refused by R-ATK-03.
+   2. Then an attack offers only the monster deck.
+   3. Shop Upgrade's shop slots: a purchase offers both new slots' items.
+   4. Curses (`hasCurse`): no curse check (24.5); the curse's effect says it.
+   5. Also `discards.monster` is `[]`: the curse did not go to discard.
+   6. Soul of Guppy's condition: Cain is active with no Guppy item.
+   7. So turn order asks Cain first; Isaac, with 2, gains the soul.
+   8. Bonus souls: `setup.bonus_souls`; A Penny! is the action that checks them.
+7. Drafts: 15 of 23 kept the dumped setup.
+   1. Soul of Gluttony and Soul of Greed: a real game, no `Table`, no draft.
+   2. Deck tops fixed in `setup.decks`, so the file names them (6).
+   3. Curse of Amnesia, Gold Chest, I Can See Forever, Shop Upgrade.
+   4. Also XL Floor, We Need To Go Deeper.
+   5. Curse of Greed: Cain's 5¢, set between steps, is in `setup`.
+   6. Soul of Guppy: no step; Cain active and his A Penny! added.
+   7. One-step reveal drafts became `action` (13).
+   8. Greed!: a prompt check splits the reveal from the choice.
+8. Checks added from the card text (owner answer 8):
+   1. Every event: it is in the monster discard; roll events: `resolved_rolls`.
+   2. Shop Upgrade, XL Floor, We Need To Go Deeper: one more attack.
+   3. XL Floor: the Pooter fills the new slot.
+   4. Curse of Greed: no loss at the end of Isaac's turn.
+   5. Curse of the Blind: DC 2 on Isaac's turn; Curse of Pain: no damage then.
+   6. Curse of Loss: Monstro and the curse in the monster discard, Cain `died`.
+   7. Dark Chest, Troll Bombs: `died` for Isaac only; Mega Troll Bomb: both.
+   8. Greed!: Cain is the only choice; Isaac loses nothing.
+   9. I Can See Forever: the 5 other cards on top, in the chosen order.
+   10. Lost Soul: no item, not in the loot discard.
+   11. Bonus souls: the other player gains none.
+9. Go tests that did not check what they claimed: 1.
+   1. TestSoulOfGluttony always skipped: its loop moved only Cain's few cards.
+   2. The file gives Cain 10 loot cards in setup and checks the soul.
+10. Refusal: Ambush's end of turn cites R-ATK-03; its text fits.
+11. No rules bug found; `cardgen -report` unchanged.
+12. Helpers `hasCurse`, `handCards` removed from `common_test.go`: no use left.
 
 ### [ ] 24.17 Bulk: b2 bosses and characters
 

@@ -1,0 +1,16 @@
+{
+  "title": "Isaac reveals the second Dark Chest and rolls a 3: does he loot 2?",
+  "source": ["card dark_chest_2", "R-ATK-09", "R-CARD-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "rolls": [3]
+  },
+  "action": {"player": 0, "kind": "reveal", "card": "dark_chest_2"},
+  "expect": {"allowed": true,
+    "resolved_rolls": [3],
+    "discards": {"monster": ["dark_chest_2"]},
+    "after": [{"player": 0, "hand": 2, "cents": 0, "damage": 0}]}
+}

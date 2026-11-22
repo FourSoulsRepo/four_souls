@@ -154,16 +154,6 @@ func testPlainMonster(t *testing.T, card engine.CardRef) {
 	}
 }
 
-// hasCurse reports whether player p has the curse.
-func hasCurse(g *engine.Game, p int, card engine.CardRef) bool {
-	for _, id := range g.Players[p].InPlay {
-		if o := g.Object(id); o.Card == card && o.Role == engine.RoleCurse {
-			return true
-		}
-	}
-	return false
-}
-
 // killWithSixes attacks the monster in slot 1 with rolls of 6 until it
 // dies, answering the prompts that follow with choices.
 func killWithSixes(t *testing.T, tb *enginetest.Table, choices ...string) {
@@ -249,15 +239,6 @@ func resolvedRoll(t *testing.T, events []engine.Event) int {
 	}
 	t.Fatal("no roll resolved")
 	return 0
-}
-
-// handCards are the cards in player p's hand, in order.
-func handCards(g *engine.Game, p int) []engine.CardRef {
-	var out []engine.CardRef
-	for _, id := range g.Players[p].Hand {
-		out = append(out, g.Object(id).Card)
-	}
-	return out
 }
 
 // sackFirst puts the roll result on the stack first, so the other card's

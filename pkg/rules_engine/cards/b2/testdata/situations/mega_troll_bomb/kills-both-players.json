@@ -1,0 +1,14 @@
+{
+  "title": "Isaac and Cain (2 HP each) are at full HP; Isaac reveals Mega Troll Bomb!: do 2 damage each kill both?",
+  "source": ["card mega_troll_bomb", "card isaac", "card cain", "R-ATK-09", "R-MECH-28", "R-DEATH-01"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"]
+  },
+  "action": {"player": 0, "kind": "reveal", "card": "mega_troll_bomb"},
+  "expect": {"allowed": true,
+    "events": [{"kind": "died", "player": 0}, {"kind": "died", "player": 1}],
+    "after": [{"player": 0, "dead": true}, {"player": 1, "dead": true}]}
+}
