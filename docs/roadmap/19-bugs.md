@@ -58,19 +58,20 @@ This step never closes; new reports are appended.
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 | X  | Bots: a bot or its driver wrong          | Bots       | 19.199, 19.204, 19.205, 19.206, 19.207, 19.208, 19.209, 19.210, 19.211, 19.212, 19.213, 19.214, 19.215, 19.216, 19.221 | 15 |
 | Y  | A left game: its step state kept         | Client     | 19.227                                                 | 1     |
+| Z  | Situation runner: a check checks nothing | Go tests   | 19.234                                                 | 1     |
 
-Totals by system (219 items):
+Totals by system (224 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U, W | 49 |
-| Card data | C       | 2     |
-| Client    | D–G, O, P, S, V, Y | 55 |
+| Engine    | A, B, T, U, W | 50 |
+| Card data | C       | 3     |
+| Client    | D–G, O, P, S, V, Y | 56 |
 | Server    | H, N    | 5     |
-| e2e       | I, J    | 81    |
+| e2e       | I, J    | 82    |
 | Release   | K       | 6     |
 | None      | L       | 2     |
-| Go tests  | M       | 1     |
+| Go tests  | M, Z    | 2     |
 | Go tools  | Q       | 2     |
 | Vitest    | R       | 1     |
 | Bots      | X       | 15    |
@@ -6700,3 +6701,28 @@ Totals by system (219 items):
    8. They keep the old order: the result first, the other trigger resolves first.
    9. Go: Charged Baby, Crystal Ball, Holy monsters, Hourglass, Fruitcake, …
    10. Files: 15 in `cards/b2/testdata/situations/`, R-ABIL-15 in each source.
+
+### [ ] 19.234 Situation files: a monster check with only `card` checks nothing
+
+1. Goal: every `expect` entry checks what the wiki says it means.
+2. Report (24.17 bulk move, 2026-11-23)
+   1. `{"card": "fly"}` in `expect.monsters` checks nothing.
+   2. `"dead": false` also passes for a card in a deck or anywhere else.
+   3. The wiki says `dead: false` means a slot holds the card.
+   4. Seen in the Peep and Mom files of 24.17.
+   5. Owner (2026-11-23): fix it now.
+3. Cause (the situation runner, `situation_expect.go`)
+   1. `checkMonster` checks the slot only for `slot` or a number field.
+   2. `dead: false` is `!found && leftPlay`: false also off the table.
+   3. So a file can pass while it checks less than it says.
+4. Tasks:
+   1. A monster entry without `dead: true` needs the card on top of a slot.
+   2. With `slot`, that slot; without, any slot, in slot order.
+   3. The mismatch says it is in no slot and lists the slot cards.
+   4. `dead: true` keeps its meaning.
+   5. 5.26: every other check with only its key, a false or an empty value.
+   6. Go tests: a pass and a fail for each fix.
+   7. Rerun every situation file; fix each failing one from the rules (5.25).
+   8. A rules bug found that way: its own 19 item.
+   9. Wiki `Situation-payload.md`; ADR 034 if it drifts.
+   10. Wiki: the missing `setup.bonus_souls` line (24.16).
