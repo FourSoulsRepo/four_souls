@@ -9,7 +9,7 @@ func TestRedCandle(t *testing.T) {
 		t.Errorf("view dice = %v, want [3]", d)
 	}
 	tb.G.ForceRolls(3)
-	tb.Activate(0, "mystery_sack", 0, "fly")
+	tb.Activate(0, "mystery_sack", 0, sackFirst, "fly")
 	if top(tb, 0) == "fly" {
 		t.Error("a 3 was rolled: 1 damage kills the fly")
 	}

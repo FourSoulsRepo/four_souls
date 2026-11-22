@@ -1,20 +1,25 @@
 {
-  "title": "Cursed Horf is in a slot; Isaac (2 HP) rolls a 2 for Mystery Sack: does he take 2 damage and die, the penalty taking the Sack?",
-  "source": ["card cursed_horf", "card mystery_sack", "card isaac", "R-DICE-06", "R-DEATH-14"],
+  "title": "Cursed Horf is in a slot; Isaac (2 HP) rolls a 2 for Mystery Sack: he orders the two triggers, Sack first, so he loots A Penny! before Horf's 2 damage kills him, and the penalty discards it",
+  "source": ["card cursed_horf", "card mystery_sack", "card isaac", "R-DICE-06", "R-ABIL-24", "R-ABIL-15", "R-CARD-10", "R-DEATH-14"],
   "sets": ["b2"],
   "setup": {
     "players": [{"character": "isaac", "items": ["mystery_sack"]}, {"character": "cain"}],
     "active": 0,
     "monsters": ["cursed_horf"],
+    "decks": {"loot": ["a_penny"]},
     "rolls": [2]
   },
   "steps": [
-    {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["mystery_sack"],
+    {"player": 0, "kind": "activate", "card": "mystery_sack",
      "expect": {"allowed": true,
        "resolved_rolls": [2],
+       "prompt": {"player": 0, "options": ["cursed_horf: Each time a player rolls a 2, they take 2 damage.", "mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢."]}}},
+    {"kind": "choose", "choices": ["cursed_horf: Each time a player rolls a 2, they take 2 damage.", "mystery_sack", "a_penny"],
+     "expect": {"allowed": true,
+       "resolved": ["mystery_sack", "cursed_horf"],
        "events": [{"kind": "damaged", "player": 0}, {"kind": "died", "player": 0}],
-       "discards": {"treasure": ["mystery_sack"]},
-       "after": [{"player": 0, "items": []}]}}
+       "discards": {"loot": ["a_penny"], "treasure": ["mystery_sack"]},
+       "after": [{"player": 0, "hand": 0, "items": []}]}}
   ],
   "expect": {"allowed": true}
 }

@@ -176,3 +176,7 @@ func testStats(t *testing.T, card string, hp, dc, atk int) {
 		t.Errorf("%s: HP %d DC %d ATK %d, want %d %d %d", card, tb.G.HP(id), tb.G.Evasion(id), tb.G.MonsterATK(id), hp, dc, atk)
 	}
 }
+
+// beanFirst puts the roll result on the stack first, so the other card's
+// "each time a player rolls" trigger resolves first (R-ABIL-15, 19.233).
+const beanFirst = "the_butter_bean: ↷: Roll- 6: Recharge this."

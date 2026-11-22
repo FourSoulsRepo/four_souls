@@ -11,7 +11,7 @@ func TestHourglass(t *testing.T) {
 	tb := table(t, seat("isaac", "hourglass", "mystery_sack"), seat("cain", "boomerang"))
 	tb.G.ForceRolls(2)
 	boomerang := tb.Find(1, "boomerang")
-	ev := tb.Activate(0, "mystery_sack", 0, "boomerang")
+	ev := tb.Activate(0, "mystery_sack", 0, sackFirst, "boomerang")
 	if tb.G.Object(boomerang).Charged {
 		t.Error("on a 2 an item may be deactivated")
 	}
@@ -25,7 +25,7 @@ func TestHourglassSkipsPassiveItems(t *testing.T) {
 	tb := table(t, seat("isaac", "hourglass", "mystery_sack"), seat("cain", "boomerang", "dads_lost_coin"))
 	tb.G.ForceRolls(2)
 	tb.Start(0, "mystery_sack", 0)
-	if _, err := tb.G.Settle(); err == nil {
+	if _, err := tb.G.Settle(sackFirst); err == nil {
 		t.Fatal("no question: the 2 should ask")
 	}
 	got := tb.Options()

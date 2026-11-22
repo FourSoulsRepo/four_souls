@@ -6688,3 +6688,15 @@ Totals by system (219 items):
    2. Check every roll trigger against every Roll- ability, all sets (5.24).
    3. The file then checks the loot and its discard.
    4. File: `cards/b2/testdata/situations/cursed_horf/rolling-a-2-deals-2-damage.json`.
+6. Owner (2026-11-23): Isaac picks the order, as for other triggers at once.
+7. Done (2026-11-23)
+   1. `stack.go`: the result trigger joins `PendingTriggers` (R-ABIL-15).
+   2. One shared place: every Roll- card against every roll trigger, all sets.
+   3. Same controller: asked; another player's: turn order, no question.
+   4. `Clone` copies its new fields; `CloneRules` lists them.
+   5. Cursed Horf file: Horf first, so the Sack loots before the death.
+   6. It checks the question, the order, and A Penny! in the loot discard.
+   7. Tests that roll with Mystery Sack or The Butter Bean answer the order.
+   8. They keep the old order: the result first, the other trigger resolves first.
+   9. Go: Charged Baby, Crystal Ball, Holy monsters, Hourglass, Fruitcake, …
+   10. Files: 15 in `cards/b2/testdata/situations/`, R-ABIL-15 in each source.

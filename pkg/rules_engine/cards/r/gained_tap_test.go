@@ -34,6 +34,8 @@ func TestChargedBabyRechargesGoldenTrinket(t *testing.T) {
 		t.Fatal(err)
 	}
 	tb.UntilChoose()
+	tb.Choose(sackFirst)
+	tb.UntilChoose()
 	want := []string{"golden_trinket", "ask.none"}
 	if got := tb.Options(); !slices.Equal(got, want) {
 		t.Fatalf("options = %v, want %v", got, want)

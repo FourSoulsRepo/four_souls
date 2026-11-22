@@ -1,6 +1,6 @@
 {
   "title": "Isaac has The D10 and rolls a 3 with Mystery Sack; he puts the monster deck's Gold Chest on the Fly's slot and it rolls 5: does he gain 4¢ + 7¢, and is the Fly back on top?",
-  "source": ["card the_d10", "card mystery_sack", "card gold_chest", "R-ABIL-16", "R-ZONE-11", "R-CARD-09"],
+  "source": ["R-ABIL-15", "card the_d10", "card mystery_sack", "card gold_chest", "R-ABIL-16", "R-ZONE-11", "R-CARD-09"],
   "sets": ["b2"],
   "setup": {
     "players": [{"character": "isaac", "items": ["the_d10", "mystery_sack"]}, {"character": "cain"}],
@@ -9,7 +9,7 @@
     "decks": {"monster": ["gold_chest"]},
     "rolls": [3, 5]
   },
-  "action": {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["ask.slot 1"]},
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢.", "ask.slot 1"]},
   "expect": {
     "allowed": true,
     "resolved_rolls": [3, 5],

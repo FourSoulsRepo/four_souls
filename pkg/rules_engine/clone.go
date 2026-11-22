@@ -46,7 +46,11 @@ func (g *Game) clone(keepSaved bool) *Game {
 	c.Throw = clonePtr(g.Throw, func(t *Throw) Throw { return *t })
 	c.FirstRoll = clonePtr(g.FirstRoll, (*FirstRoll).clone)
 	c.Activating = clonePtr(g.Activating, (*Activation).clone)
-	c.PendingTriggers = slices.Clone(g.PendingTriggers)
+	c.PendingTriggers = cloneEach(g.PendingTriggers, func(t *PendingTrigger) PendingTrigger {
+		t2 := *t
+		t2.Targets = slices.Clone(t.Targets)
+		return t2
+	})
 	c.Boosts = slices.Clone(g.Boosts)
 	c.Shields = slices.Clone(g.Shields)
 	c.Lingering = slices.Clone(g.Lingering)

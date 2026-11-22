@@ -54,7 +54,7 @@ func TestHourglassSkipsTheRevenant(t *testing.T) {
 	tb.G.Object(tb.Find(1, "anima_sola")).Flipped = true
 	tb.G.ForceRolls(2)
 	tb.Start(0, "mystery_sack", 0)
-	if _, err := tb.G.Settle(); err == nil {
+	if _, err := tb.G.Settle(sackFirst); err == nil {
 		t.Fatal("no question: the 2 should ask")
 	}
 	got := tb.Options() // labels name the card, not its face up

@@ -10,7 +10,7 @@ import (
 func TestHolyMomsEye(t *testing.T) {
 	tb := slayTable(t, "holy_moms_eye", seat("isaac", "mystery_sack"), seat("cain"))
 	tb.G.ForceRolls(2)
-	tb.Activate(0, "mystery_sack", 0, "mystery_sack")
+	tb.Activate(0, "mystery_sack", 0, sackFirst, "mystery_sack")
 	if !tb.G.Object(tb.Find(0, "mystery_sack")).Charged {
 		t.Error("the sack was not recharged")
 	}
@@ -26,6 +26,8 @@ func TestHolyMomsEyeOffersOnlySpentActiveItems(t *testing.T) {
 		t.Fatal(err)
 	}
 	tb.UntilChoose()
+	tb.Choose(sackFirst)
+	tb.UntilChoose()
 	want := []string{"mystery_sack", "jawbone", "ask.none"}
 	if got := tb.Options(); !slices.Equal(got, want) {
 		t.Errorf("options = %v, want %v", got, want)
@@ -40,6 +42,8 @@ func TestChargedBabyOffersOnlySpentActiveItems(t *testing.T) {
 	if _, err := tb.G.Apply(engine.Intent{Player: 0, Kind: engine.IntentActivate, Objects: []engine.ObjectID{tb.Find(0, "mystery_sack")}}); err != nil {
 		t.Fatal(err)
 	}
+	tb.UntilChoose()
+	tb.Choose(sackFirst)
 	tb.UntilChoose()
 	want := []string{"mystery_sack", "ask.none"}
 	if got := tb.Options(); !slices.Equal(got, want) {

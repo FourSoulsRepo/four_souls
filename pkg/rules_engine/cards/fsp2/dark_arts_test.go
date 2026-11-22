@@ -10,7 +10,11 @@ func TestDarkArts(t *testing.T) {
 	cents := func(items ...engine.CardRef) int {
 		tb := table(t, seat("dark_judas", items...), seat("cain"))
 		tb.G.ForceRolls(6)
-		tb.Activate(0, "mystery_sack", 0)
+		var order []string
+		if len(items) > 1 { // Dark Arts' trigger and the Sack's result (19.233)
+			order = []string{sackFirst}
+		}
+		tb.Activate(0, "mystery_sack", 0, order...)
 		return tb.G.Players[0].Cents
 	}
 	if with, without := cents("mystery_sack", "dark_arts"), cents("mystery_sack"); with-without != 2 {

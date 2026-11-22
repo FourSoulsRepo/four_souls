@@ -260,3 +260,7 @@ func enterRoom(tb *enginetest.Table, card engine.CardRef) {
 	tb.G.Run()
 	settleAny(tb)
 }
+
+// sackFirst puts the roll result on the stack first, so the other card's
+// "each time a player rolls" trigger resolves first (R-ABIL-15, 19.233).
+const sackFirst = "mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢."

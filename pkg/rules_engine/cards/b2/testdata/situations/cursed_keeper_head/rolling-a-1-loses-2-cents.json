@@ -1,6 +1,6 @@
 {
   "title": "Cursed Keeper Head is in a slot; Isaac (3¢) rolls a 1 for Mystery Sack: does he loot 1 and lose 2¢?",
-  "source": ["card cursed_keeper_head", "card mystery_sack", "R-DICE-06", "R-MECH-42"],
+  "source": ["R-ABIL-15", "card cursed_keeper_head", "card mystery_sack", "R-DICE-06", "R-MECH-42"],
   "sets": ["b2"],
   "setup": {
     "players": [{"character": "isaac", "items": ["mystery_sack"], "cents": 3}, {"character": "cain"}],
@@ -8,7 +8,7 @@
     "monsters": ["cursed_keeper_head"],
     "rolls": [1]
   },
-  "action": {"player": 0, "kind": "activate", "card": "mystery_sack"},
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢."]},
   "expect": {
     "allowed": true,
     "resolved_rolls": [1],

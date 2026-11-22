@@ -71,7 +71,7 @@ var CloneRules = map[string]string{
 	"FirstRoll":          "Round Players* Rolls*",
 	"Activation":         "Player Source Ability Loot Mode Chosen* Window",
 	"PendingTrigger": "Ability Source Controller On EventPlayer EventAmount EventStack " +
-		"EventObject EventSource EventBy",
+		"EventObject EventSource EventBy RollResult Mode Targets*",
 	"Boost":        "Stat Player Object Amount Source",
 	"Shield":       "Target Amount Cap Source",
 	"Target":       "Object Player IsPlayer",

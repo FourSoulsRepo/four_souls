@@ -11,7 +11,7 @@ func TestCursedGlobin(t *testing.T) {
 	tb.G.DealDamageTo(engine.Target{Object: topID(tb, 1)}, 3, 0, 0)
 	tb.Settle()
 	tb.G.ForceRolls(3)
-	tb.Activate(0, "mystery_sack", 0)
+	tb.Activate(0, "mystery_sack", 0, sackFirst)
 	if d := tb.G.Object(topID(tb, 1)).Damage; d != 1 {
 		t.Errorf("Gurdy damage = %d, want 3 - 2", d)
 	}
