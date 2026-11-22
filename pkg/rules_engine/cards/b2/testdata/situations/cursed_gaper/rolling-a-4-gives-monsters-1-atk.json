@@ -1,0 +1,18 @@
+{
+  "title": "Cursed Gaper (1 ATK) is in a slot; Isaac rolls a 4 for Mystery Sack: does each monster gain +1 ATK this turn, and does he gain 4¢?",
+  "source": ["card cursed_gaper", "card mystery_sack", "R-DICE-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["mystery_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["cursed_gaper"],
+    "rolls": [4]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack"},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [4],
+    "monsters": [{"card": "cursed_gaper", "atk": 2}],
+    "after": [{"player": 0, "cents": 4, "deactivated": ["mystery_sack"]}]
+  }
+}

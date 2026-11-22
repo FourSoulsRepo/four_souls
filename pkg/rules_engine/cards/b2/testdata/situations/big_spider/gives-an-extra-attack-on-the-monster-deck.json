@@ -1,0 +1,23 @@
+{
+  "title": "Isaac kills Big Spider with three 6s: may he attack once more, but only the monster deck?",
+  "source": ["card big_spider", "card isaac", "R-ATK-02", "R-ATK-12", "R-CARD-13", "R-TURN-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["big_spider"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["big_spider"],
+     "expect": {"allowed": true,
+       "resolved_rolls": [6, 6, 6],
+       "monsters": [{"card": "big_spider", "dead": true}],
+       "attacks": 1,
+       "after": [{"player": 0, "hand": 1}]}},
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["ask.deck.monster"]}}}
+  ],
+  "expect": {"allowed": true}
+}

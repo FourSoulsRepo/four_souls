@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226 | 27 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226, 19.233 | 28 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193, 19.232 | 19 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45, 19.224                                   | 3     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
@@ -59,11 +59,11 @@ This step never closes; new reports are appended.
 | X  | Bots: a bot or its driver wrong          | Bots       | 19.199, 19.204, 19.205, 19.206, 19.207, 19.208, 19.209, 19.210, 19.211, 19.212, 19.213, 19.214, 19.215, 19.216, 19.221 | 15 |
 | Y  | A left game: its step state kept         | Client     | 19.227                                                 | 1     |
 
-Totals by system (218 items):
+Totals by system (219 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U, W | 48 |
+| Engine    | A, B, T, U, W | 49 |
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V, Y | 55 |
 | Server    | H, N    | 5     |
@@ -6664,3 +6664,27 @@ Totals by system (218 items):
 7. Moved (owner, 2026-11-19): the same logic as every other player effect.
    1. Decision: ADR 037; plan: 18.28–18.32.
    2. The fix is 18.29.
+
+### [ ] 19.233 A Roll- result skips the order of same-time roll triggers
+
+1. Goal: a roll ability's result and a "when you roll N" trigger are ordered by R-ABIL-15.
+2. Report (24.15 bulk move, 2026-11-23)
+   1. Cursed Horf in a slot; Isaac rolls a 2 for Mystery Sack.
+   2. Both trigger as the roll resolves (R-DICE-06, R-ABIL-24).
+   3. Cursed Horf resolves first: Isaac dies, the penalty finds no loot card.
+   4. Then the Sack's "Loot 1" resolves: the dead Isaac keeps the card.
+   5. Nobody was asked the order.
+3. Cause (the engine)
+   1. `stack.go` pushes the result trigger (`RollFor`) as the roll resolves.
+   2. The roll triggers are placed after it, at the next priority.
+   3. So they always resolve first; `ChooseTriggerOrder` never sees the pair.
+4. Rules
+   1. R-ABIL-24: the result is a trigger; the roller controls it.
+   2. R-ABIL-15: triggers at once are ordered; each player orders their own.
+   3. Cursed Horf's trigger is the active player's (R-CARD-10).
+   4. Open: does the result trigger count as "at once" with them?
+5. Tasks:
+   1. Decide with the owner; a Q-item if the rules text is unclear.
+   2. Check every roll trigger against every Roll- ability, all sets (5.24).
+   3. The file then checks the loot and its discard.
+   4. File: `cards/b2/testdata/situations/cursed_horf/rolling-a-2-deals-2-damage.json`.

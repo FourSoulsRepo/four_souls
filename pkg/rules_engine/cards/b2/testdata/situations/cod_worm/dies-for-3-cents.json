@@ -1,0 +1,21 @@
+{
+  "title": "Isaac (1 ATK) kills the Cod Worm (2 HP, DC 5) with 2 sixes: does he gain its reward, 3¢, and no loot, treasure or soul?",
+  "source": ["card cod_worm", "card isaac", "R-ATK-12", "R-CARD-13", "R-DEATH-08", "R-DEATH-09"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["cod_worm"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["cod_worm"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6],
+    "monsters": [{"card": "cod_worm", "dead": true}, {"slot": 1, "card": "pooter"}],
+    "after": [{"player": 0, "cents": 3, "hand": 0, "items": [], "souls": 0}]
+  }
+}

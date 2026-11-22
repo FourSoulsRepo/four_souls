@@ -1,0 +1,20 @@
+{
+  "title": "Isaac kills Greedling and picks Cain (8¢): does Cain lose 7¢ while Isaac gains its 7¢?",
+  "source": ["card greedling", "card isaac", "R-ATK-12", "R-MECH-42", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "cents": 8}],
+    "active": 0,
+    "monsters": ["greedling"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["greedling", "player 2 (cain)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "greedling", "dead": true}],
+    "after": [{"player": 0, "cents": 7}, {"player": 1, "cents": 1}]
+  }
+}

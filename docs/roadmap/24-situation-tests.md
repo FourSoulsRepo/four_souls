@@ -638,9 +638,54 @@ Ideas: TS-13, LR-04, R-03.
    1. Other cards' tests use them; their files are gone.
 13. `cardgen -report` unchanged.
 
-### [ ] 24.15 Bulk: b2 monsters
+### [x] 24.15 Bulk: b2 monsters
 
 1. Goal: Basic and Cursed Monster (about 46 tests).
+2. Counts (2026-11-23): 46 tests in 44 `_test.go` files of the family.
+   1. 38 Basic, 6 Cursed Monster cards; Stoney has 3 tests.
+   2. Dinga: no Go test left (24.7).
+3. Moved: 46 tests, as 46 files; every `_test.go` of the family is gone.
+   1. `testPlainMonster`, 14: Cod Worm, Clotty, Conjoined Fatty, Dip.
+   2. Also Fatty, Fat Bat, Fly, Leech, Pale Fatty, Pooter.
+   3. Also Red Host, Spider, Squirt, Trite: `<card>/dies-for-<reward>.json`.
+   4. TestBigSpider, TestBlackBony, TestBoomFly, TestDankGlobin.
+   5. TestDople, TestEvilTwin, TestGreedling, TestHanger, TestHopper.
+   6. TestHorf, TestKeeperHead, TestLeaper, TestMomsDeadHand, TestMomsEye.
+   7. TestMomsHand, TestMulligan, TestMulliboom, TestPortal, TestPsyHorf.
+   8. TestRageCreep, TestRingOfFlies, TestSwarmOfFlies, TestWizoob.
+   9. Cursed: Gaper, Keeper Head, Fatty, Psy Horf, Horf, Mom's Hand.
+   10. TestStoney, TestStoneyCovered, TestStoneyFromTheDeck.
+4. Split: 0. Stayed Go: 0. Needed a format change: 0.
+5. Engine state read in Go, said by a game action in the file:
+   1. Big Spider's `DeckAttacks`: the next attack offers only the deck.
+   2. Portal's `MustAttacks`: `attacks` 1, an end of turn refused by R-ATK-03.
+   3. Hanger's shop slot: a purchase offers the new slot's Breakfast.
+   4. Mulligan's slot: two refill cards are both in play.
+   5. Hopper's `AttackRolls`: `resolved_rolls` 6, 5, 5.
+   6. Stoney covered: a deck attack puts the Pooter on it, then kills it.
+   7. The Go test used `CoverMonsterSlot` and `KillObject`.
+   8. Stoney from the deck: no roll, no `attack_target`; then an end of turn.
+6. Drafts: 39 of 46 files kept the dumped steps.
+   1. 37 got monster or treasure deck tops in `setup.decks`.
+   2. So the refill and a gained treasure are named.
+   3. Steps added: Big Spider, Hanger, Portal, Stoney from the deck.
+   4. A prompt check splits a step: Mom's Dead Hand, Stoney.
+   5. One-step Mystery Sack drafts became `action` (4).
+7. Checks added from the card text (owner answer 8):
+   1. Every kill: the monster died, its reward, the slot's refill.
+   2. Plain monsters: no other reward kind, no soul.
+   3. Black Bony: a reward roll of 6 loots 6; Boom Fly: 4¢.
+   4. Dank Globin: both cards in the loot discard; Wizoob: Monstro too.
+   5. Cursed: the roll's own result (4¢, loot 1) beside the curse.
+   6. Mom's Hand: one attack roll; Mom's Dead Hand: the steal options.
+   7. Dople, Evil Twin, Mulliboom: Cain's `died`; Isaac unhurt.
+8. Go tests that did not check what they claimed: 1.
+   1. TestMomsEye had no check (`_ = tb`).
+   2. The file checks Isaac's `looked_at` and Cain's hand.
+9. Bugs logged: 19.233; not fixed here.
+   1. Mystery Sack's result resolves after Cursed Horf's trigger; no order asked.
+   2. The Cursed Horf file leaves out the loot and its discard.
+10. `cardgen -report` unchanged.
 
 ### [ ] 24.16 Bulk: b2 events, curses, souls
 

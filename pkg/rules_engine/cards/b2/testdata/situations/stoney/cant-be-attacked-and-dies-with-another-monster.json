@@ -1,0 +1,23 @@
+{
+  "title": "The Fly and Stoney are in slots; Isaac declares an attack: is Stoney no target, and does it die when he kills the Fly?",
+  "source": ["card stoney", "card fly", "card isaac", "R-ATK-02", "R-ATK-12", "R-CARD-12", "R-CARD-31", "R-DEATH-09"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "stoney"],
+    "decks": {"monster": ["pooter", "squirt"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["fly", "ask.deck.monster"]}}},
+    {"kind": "choose", "choices": ["fly"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "monsters": [{"card": "fly", "dead": true}, {"card": "stoney", "dead": true}, {"card": "pooter", "dead": false}, {"card": "squirt", "dead": false}],
+    "after": [{"player": 0, "cents": 1, "hand": 1}]
+  }
+}

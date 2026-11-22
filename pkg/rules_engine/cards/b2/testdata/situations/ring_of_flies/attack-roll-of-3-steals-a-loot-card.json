@@ -1,0 +1,21 @@
+{
+  "title": "Isaac hits Ring of Flies (DC 3) with a 3; Cain holds Bomb!: must Isaac steal a loot card from Cain at random?",
+  "source": ["card ring_of_flies", "card isaac", "R-ATK-12", "R-MECH-38", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "hand": ["bomb"]}],
+    "active": 0,
+    "monsters": ["ring_of_flies"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [3, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["ring_of_flies", "player 2 (cain)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [3, 6, 6],
+    "monsters": [{"card": "ring_of_flies", "dead": true}],
+    "after": [{"player": 0, "hand_cards": ["bomb"], "cents": 3}, {"player": 1, "hand": 0}]
+  }
+}

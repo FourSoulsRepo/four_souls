@@ -1,0 +1,21 @@
+{
+  "title": "Isaac with Breakfast (3 HP) misses Leaper (1 ATK) with a 1: does he take 2 damage, then kill it with two 6s?",
+  "source": ["card leaper", "card isaac", "card breakfast", "R-ATK-12", "R-ATK-13", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["breakfast"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leaper"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [1, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["leaper"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 6, 6],
+    "monsters": [{"card": "leaper", "dead": true}],
+    "after": [{"player": 0, "damage": 2, "hp": 1, "cents": 5}]
+  }
+}

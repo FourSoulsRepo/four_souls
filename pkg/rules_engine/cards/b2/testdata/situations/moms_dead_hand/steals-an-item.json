@@ -1,0 +1,22 @@
+{
+  "title": "Isaac kills Mom's Dead Hand; Cain has Breakfast: may Isaac steal it?",
+  "source": ["card moms_dead_hand", "card isaac", "R-ATK-12", "R-MECH-38", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "items": ["breakfast"]}],
+    "active": 0,
+    "monsters": ["moms_dead_hand"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["moms_dead_hand"],
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["breakfast", "ask.none"]}}},
+    {"kind": "choose", "choices": ["breakfast"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "moms_dead_hand", "dead": true}],
+    "after": [{"player": 0, "items": ["breakfast"], "cents": 4}, {"player": 1, "items": []}]
+  }
+}

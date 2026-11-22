@@ -1,0 +1,21 @@
+{
+  "title": "Isaac kills Mulliboom and picks Cain (2 HP): does Cain take 3 damage and die?",
+  "source": ["card mulliboom", "card isaac", "card cain", "R-ATK-12", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["mulliboom"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["mulliboom", "player 2 (cain)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "mulliboom", "dead": true}],
+    "events": [{"kind": "died", "player": 1}, {"kind": "died", "player": 0, "none": true}],
+    "after": [{"player": 0, "damage": 0, "cents": 6}, {"player": 1, "dead": true}]
+  }
+}
