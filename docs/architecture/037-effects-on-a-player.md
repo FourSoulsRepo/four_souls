@@ -65,6 +65,16 @@ Use option 1.
       1. Sent in `Sources`: stat `shield`, or `shield_cap` for a cap.
       2. Amount is the shield's amount or cap; lasts `turn`.
       3. Shields on monsters or items stay out.
+      4. A shield of the whole next damage has no amount (18.30).
+   9. Game-wide effects with no player stay out (18.30).
+      1. Rewards doubled: A Lucky Penny!, Blessing of the Sack.
+      2. A roll of 2 or 3 becomes 1: Eternal D6.
+      3. Two dice, the left player picks: Cursed Lil Haunt.
+      4. The owner decides later where they show.
+   10. The DC to attack a player sends only the effect that counts (18.30).
+       1. The newest wins (R-MECH-06), so no sum.
+   11. A flag stat's amount is 1, even when the engine stores more.
+       1. E.g. the death-penalty item's receiver (Lust for Blood).
 2. Level 1, badges: numbers that change a fight.
    1. HP and ATK, as now.
    2. New: damage taken, red, "+N", only while above 0.

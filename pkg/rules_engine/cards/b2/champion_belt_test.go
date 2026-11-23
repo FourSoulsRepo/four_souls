@@ -10,7 +10,8 @@ import (
 
 // The view names Champion Belt's +1 ATK and its condition ahead of the
 // first attack roll and while it hits, beside Meat!'s +1 to attack rolls
-// (V-41, 15.54, 19.67).
+// (V-41, 15.54, 19.67), and its "attack an additional time" (ADR 037,
+// 18.30).
 func TestChampionBeltSourceDuringFirstRoll(t *testing.T) {
 	tb := enginetest.NewSetup(t, engine.SituationSetup{
 		Players:  []engine.SituationPlayer{seat("isaac", "champion_belt", "meat"), seat("cain")},
@@ -23,7 +24,9 @@ func TestChampionBeltSourceDuringFirstRoll(t *testing.T) {
 		}
 		return out
 	}
-	want := []string{"atk champion_belt in_play ask.when.first_attack_roll", "attack_roll meat in_play "}
+	// Card texts: Champion Belt "+1 ATK for your first attack roll" and
+	// "may attack an additional time"; Meat! +1 to attack rolls.
+	want := []string{"atk champion_belt in_play ask.when.first_attack_roll", "attack_roll meat in_play ", "attacks champion_belt in_play "}
 	if got := cards(); !reflect.DeepEqual(got, want) {
 		t.Errorf("before the attack: sources = %q, want %q", got, want)
 	}

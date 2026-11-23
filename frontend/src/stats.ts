@@ -115,8 +115,10 @@ export function tempSources(sources: StatSource[] | undefined): TempSource[] {
     if (s.lasts === 'in_play') return;
     const nextRoll = s.lasts === 'next_roll';
     const key = `${s.source !== undefined ? String(s.source) : `x${String(i)}`}-${s.lasts}`;
+    const text = effect(s);
+    if (text === '') return; // no words for this stat yet (18.31)
     const when = whenText(s);
-    const line = `${nextRoll ? effect(s) : t('stats.this_turn_effect', { effect: effect(s) })}${when ? ` (${when})` : ''}`;
+    const line = `${nextRoll ? text : t('stats.this_turn_effect', { effect: text })}${when ? ` (${when})` : ''}`;
     const known = out.find((t) => t.key === key);
     if (known) {
       known.lines.push(line);
@@ -127,7 +129,8 @@ export function tempSources(sources: StatSource[] | undefined): TempSource[] {
   return out;
 }
 
-// effect says what one source does: "+1 ATK", "+1 to the next attack roll".
+// effect says what one source does: "+1 ATK", "+1 to the next attack roll";
+// '' for a stat it has no words for.
 function effect(s: StatSource): string {
   const amount = signed(s.amount);
   switch (s.stat) {
@@ -145,6 +148,8 @@ function effect(s: StatSource): string {
       return t('stats.effect.attacked_dc', { amount });
     case 'damage_taken':
       return t('stats.effect.damage_taken', { amount });
+    default:
+      return ''; // a stat without words yet: no icon line (18.30)
   }
 }
 

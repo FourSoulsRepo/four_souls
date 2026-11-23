@@ -82,9 +82,10 @@ type RewardView struct {
 }
 
 // StatSourceView is one source of a stat change, so a client can show
-// why a stat changed (V-41). Stat is "hp", "atk", "dc", "roll",
-// "attack_roll", "attacked_dc" or "damage_taken"; Lasts is "in_play", "turn" or
-// "next_roll". Card is the source's card, "" when it is hidden.
+// why a stat changed (V-41). Stat is a statKeys value ("hp", "atk",
+// "damage_taken", "no_souls", ...) or a shield key; Lasts is "in_play",
+// "turn" or "next_roll". Card is the source's card, "" when it is
+// hidden. A flag stat has Amount 1 (ADR 037).
 type StatSourceView struct {
 	Stat   string   `json:"stat,omitempty"`
 	Source ObjectID `json:"source,omitempty"`
@@ -832,24 +833,93 @@ func digit(s string) int {
 	return int(s[0] - '0')
 }
 
-// statKeys name the stats a client shows sources for (V-41).
+// statKeys name the stats a client shows sources for (V-41, ADR 037):
+// every player stat but StatUsed, and the monster stats.
 var statKeys = map[Stat]string{
 	StatPlayerHP: "hp", StatPlayerATK: "atk", StatMonsterHP: "hp", StatMonsterDC: "dc", StatMonsterATK: "atk",
 	StatRoll: "roll", StatAttackRoll: "attack_roll", StatNextAttackRoll: "attack_roll", StatAttackedDC: "attacked_dc",
 	StatDamageTaken: "damage_taken",
+	// 18.30: every other player stat.
+	StatShopPrice: "shop_price", StatLootPlays: "loot_plays", StatAttacks: "attacks", StatPurchases: "purchases",
+	StatLootStep: "loot_step", StatLockOthers: "lock_others", StatLootDouble: "loot_double", StatDeathWard: "death_ward",
+	StatRechargeLimit: "recharge_limit", StatHandCap: "hand_cap", StatLockTurn: "lock_turn",
+	StatNoCharRecharge: "no_char_recharge", StatRevealHand: "reveal_hand", StatChooseAttack: "choose_attack",
+	StatNoForcedLoss: "no_forced_loss", StatPaidDiscount: "paid_discount", StatNoSouls: "no_souls",
+	StatPenaltyItemTo: "penalty_item_to", StatPlayerAttackDC: "player_attack_dc", StatOneAbility: "one_ability",
+	StatOneLoot: "one_loot", StatAttackTax: "attack_tax",
 }
+
+// Shield keys: a shield on a player is an effect too (ADR 037 item 1.8).
+const (
+	shieldKey    = "shield"     // prevents Amount of the next damage; no amount: all of it
+	shieldCapKey = "shield_cap" // the next damage is at most Amount
+)
+
+// notPlayerStats are the stats playerSources does not read by the
+// stat loop: the monster stats, engine bookkeeping (StatUsed), effects
+// on one object (StatEternal, ADR 037 item 1.7), game-wide effects with
+// no player (rewards doubled, a roll of 2 or 3 becomes 1, two dice),
+// and the stats it reads its own way (HP, ATK, the next attack roll,
+// the DC when attacked).
+var notPlayerStats = map[Stat]bool{
+	StatMonsterHP: true, StatMonsterDC: true, StatMonsterATK: true, StatUsed: true, StatEternal: true,
+	StatDoubleRewards: true, StatRollToOne: true, StatTwoDiceLeftChooses: true,
+	StatPlayerHP: true, StatPlayerATK: true, StatNextAttackRoll: true, StatPlayerAttackDC: true,
+}
+
+// flagStats are on or off: a source sends amount 1 (ADR 037 item 1.4).
+var flagStats = map[Stat]bool{
+	StatLockOthers: true, StatLootDouble: true, StatDeathWard: true, StatRechargeLimit: true, StatLockTurn: true,
+	StatNoCharRecharge: true, StatRevealHand: true, StatChooseAttack: true, StatNoForcedLoss: true,
+	StatNoSouls: true, StatPenaltyItemTo: true, StatOneAbility: true, StatOneLoot: true,
+}
+
+// numStats is the number of stats.
+var numStats = Stat(len(statNames))
 
 var lastsKeys = [...]string{LastsInPlay: "in_play", LastsTurn: "turn", LastsNextRoll: "next_roll"}
 
-// playerSources lists what changes a player's stats and rolls now, and
-// the damage they take (18.29, ADR 037).
+// playerSources lists every effect on a player now (ADR 037 item 1):
+// each player stat's parts, the DC others attack them at, the next
+// attack roll's boosts, then the shields on them.
 func (g *Game) playerSources(p PlayerID) []StatSourceView {
 	parts := g.Parts(StatPlayerHP, p, 0)
 	parts = append(parts, g.atkGame().Parts(StatPlayerATK, p, 0)...)
-	for _, s := range []Stat{StatRoll, StatAttackRoll, StatAttackedDC, StatDamageTaken} {
-		parts = append(parts, g.Parts(s, p, 0)...)
+	for s := range numStats {
+		if notPlayerStats[s] {
+			continue
+		}
+		for _, pt := range g.Parts(s, p, 0) {
+			if flagStats[s] && pt.Amount > 0 {
+				pt.Amount = 1
+			}
+			parts = append(parts, pt)
+		}
 	}
-	return g.sourceViews(append(parts, g.nextAttackRollParts(p)...))
+	if pt, ok := g.playerAttackDCPart(p); ok {
+		parts = append(parts, pt)
+	}
+	return append(g.sourceViews(append(parts, g.nextAttackRollParts(p)...)), g.shieldViews(p)...)
+}
+
+// shieldViews are the shields on player p, one per shield; they last
+// till end of turn (R-MECH-46, ADR 037 item 1.8).
+func (g *Game) shieldViews(p PlayerID) []StatSourceView {
+	var out []StatSourceView
+	for _, s := range g.Shields {
+		if !s.Target.IsPlayer || s.Target.Player != p {
+			continue
+		}
+		sv := StatSourceView{Stat: shieldKey, Amount: s.Amount, Lasts: lastsKeys[LastsTurn]}
+		if s.Cap > 0 {
+			sv.Stat, sv.Amount = shieldCapKey, s.Cap
+		}
+		if card := g.publicCard(s.Source); card != "" {
+			sv.Source, sv.Card = s.Source, card
+		}
+		out = append(out, sv)
+	}
+	return out
 }
 
 // atkGame is the game the shown ATK reads (19.67). While the active

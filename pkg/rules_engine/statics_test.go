@@ -248,3 +248,17 @@ func TestThrownRollNamesItsChanges(t *testing.T) {
 		t.Errorf("roll_resolved sources %+v, want %+v", got, want)
 	}
 }
+
+// Every stat has a view key but the ones no player view sends (ADR 037
+// item 1.1): a new player stat without a key would show as "".
+func TestEveryPlayerStatHasAKey(t *testing.T) {
+	keyless := map[Stat]bool{StatUsed: true, StatEternal: true, StatDoubleRewards: true, StatRollToOne: true, StatTwoDiceLeftChooses: true}
+	for s := range numStats {
+		if statKeys[s] == "" && !keyless[s] {
+			t.Errorf("stat %v has no view key", s)
+		}
+		if statKeys[s] != "" && keyless[s] {
+			t.Errorf("stat %v has a key but is never sent", s)
+		}
+	}
+}

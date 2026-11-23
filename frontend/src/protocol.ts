@@ -373,10 +373,13 @@ export interface RewardView {
   roll?: boolean;
 }
 
-// StatSource is one source of a stat change (V-41). card is "" or absent
-// when the source is hidden; older servers send no sources.
+// StatSource is one source of a stat change (V-41), or another effect on
+// a player (ADR 037, 18.30). card is "" or absent when the source is
+// hidden; older servers send no sources. A flag stat (a lock, no souls)
+// has amount 1. A "shield" without amount prevents the whole next
+// damage; "shield_cap" caps it at amount.
 export interface StatSource {
-  stat: "hp" | "atk" | "dc" | "roll" | "attack_roll" | "attacked_dc" | "damage_taken";
+  stat: "hp" | "atk" | "dc" | "roll" | "attack_roll" | "attacked_dc" | "damage_taken" | "shop_price" | "loot_plays" | "attacks" | "purchases" | "loot_step" | "lock_others" | "loot_double" | "death_ward" | "recharge_limit" | "hand_cap" | "lock_turn" | "no_char_recharge" | "reveal_hand" | "choose_attack" | "no_forced_loss" | "paid_discount" | "no_souls" | "penalty_item_to" | "player_attack_dc" | "one_ability" | "one_loot" | "attack_tax" | "shield" | "shield_cap";
   source?: number;
   card?: string;
   amount: number;

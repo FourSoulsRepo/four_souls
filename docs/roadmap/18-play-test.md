@@ -978,7 +978,7 @@ Ideas: B-04, B-05, B-08.
    1. Owner marks 18.29 solved.
    2. The merged icon lines (18.31 task 3) stay in.
 
-### [ ] 18.30 Engine: every player effect in the view
+### [x] 18.30 Engine: every player effect in the view
 
 1. Goal: `PlayerView.Sources` holds every effect on a player (ADR 037 item 1).
 2. Tasks:
@@ -1006,6 +1006,44 @@ Ideas: B-04, B-05, B-08.
       2. C: Get Out of Jail after its card is discarded.
    2. Fuzz stays green; old records still replay.
    3. ADR 037 matches the code; wiki package notes updated.
+4. Result (2026-11-24)
+   1. `playerSources` loops over every stat but `notPlayerStats`.
+   2. New keys: `shop_price`, `loot_plays`, `attacks`, `purchases`, `loot_step`.
+      1. Also `lock_others`, `loot_double`, `death_ward`, `recharge_limit`, `hand_cap`.
+      2. Also `lock_turn`, `no_char_recharge`, `reveal_hand`, `choose_attack`.
+      3. Also `no_forced_loss`, `paid_discount`, `no_souls`, `penalty_item_to`.
+      4. Also `player_attack_dc`, `one_ability`, `one_loot`, `attack_tax`.
+      5. Shields: `shield` (no amount: the whole next damage), `shield_cap`.
+   3. Flag stats send amount 1 (`flagStats`).
+   4. `player_attack_dc`: only the newest effect, as `PlayerAttackDC` (R-MECH-06).
+   5. Shop price: one part per source (subject 0).
+   6. `GivePenaltyItem` takes the source: Lust for Blood, Battle Royale.
+   7. Out: `StatUsed`, `StatEternal`, monster stats.
+   8. Out, game-wide, no player: rewards doubled, 2–3 becomes 1, two dice.
+      1. A Lucky Penny!, Blessing of the Sack, Eternal D6, Cursed Lil Haunt.
+      2. Owner question: where they show (ADR 037 item 1.9).
+   9. Client: `protocol.ts` names the keys.
+      1. `tempSources` skips a stat without words; 18.31 adds them.
+   10. Tests: `cards/player_effects_view_test.go`, groups A, B, C, shields.
+       1. `TestEveryPlayerStatHasAKey`; Champion Belt test gets `attacks`.
+       2. Vitest: unknown keys make no icon line.
+   11. Docs: ADR 037 items 1.8.4, 1.9–1.11; wiki `Rules-engine.md`, `Client.md`.
+   12. Task 5, player effects not kept as stats (listed only):
+       1. Lingering: Black Heart (r), Lemon Mishap, Plan C (g2), Red Candle (fsp2), The Mirror (r).
+       2. Markers: Magic Marker (r), on a card's number, not a player.
+       3. Extra turn: XIX. The Sun (b2), `Game.ExtraTurn`.
+       4. Compost (b2): `Game.Compost`, the next loot of any player.
+       5. Next loot copied: Blank Card (b2), `Player.CopyNextLoot`.
+       6. Skip turns: Famine (b2), Haunted!, Overflow! (r); `Player.SkipTurns`.
+       7. Free shop item: Credit Card (g2), `Turn.FreeShopItem`.
+       8. Must attack: Monster Manual, Ambush!, Envy, Conquest (b2), Lust for Blood (r).
+          1. Also Portal (b2), Gaper, I Am Error (g2); `Turn.MustAttack`, `ForceAttacks`.
+       9. Extra attacks or loot plays this turn: counted in `attacks` and `loot_plays` left.
+          1. E.g. Holy Chest (fsp2), Box (b2); no source shown.
+       10. "Can't" texts on objects only (eternal, monsters); none on a player.
+   13. Gates: `make lint`, `make test`, `make frontend` (764 Vitest) pass.
+       1. `make e2e`: 638 passed, 22 skipped, first run.
+       2. `make fuzz-sets FUZZTIME=60s` passes.
 
 ### [ ] 18.31 Client: effect icons for every effect
 

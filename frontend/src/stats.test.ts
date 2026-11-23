@@ -116,6 +116,12 @@ describe('tempSources', () => {
       { key: 'x1-turn', nextRoll: false, lines: ['+1 max HP this turn'] },
     ]);
   });
+  it('skips effects it has no words for yet (18.30)', () => {
+    const jail: StatSource = { stat: 'lock_turn', source: 7, card: 'get_out_of_jail_card', amount: 1, lasts: 'turn' };
+    const shield = { stat: 'shield', source: 8, card: 'the_poop', lasts: 'turn' } as StatSource; // no amount: the whole next damage
+    expect(tempSources([jail, shield, { ...jail, stat: 'hp' }])).toEqual([{ key: '7-turn', card: 'get_out_of_jail_card', nextRoll: false, lines: ['+1 max HP this turn'] }]);
+    expect(statLines([jail, shield], { hp: 2, atk: 1 }, { atk: 1 }, name)).toEqual([]);
+  });
 });
 
 describe('hitsText', () => {
