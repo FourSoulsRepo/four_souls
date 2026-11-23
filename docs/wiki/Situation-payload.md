@@ -41,6 +41,7 @@ A situation is a small JSON document: a table position, one action or several [s
 * `setup.priority` — the seat that holds priority at the start, from 0: `1`. See [Priority](#priority).
 * `setup.phase` — the turn's window the situation starts in: `start`, `loot`, `action` (the default) or `end` (24.10). See [Windows](#windows).
 * `setup.declared` — `attack` or `purchase`: the active player has declared it in the action phase and not chosen the target or item yet (R-ATK-02, R-SHOP-02). See [Windows](#windows).
+* `setup.must_attack`, `setup.must_attacks`, `setup.must_attack_deck` — the attack duties in force this turn (19.235): a card the active player must attack (`"krampus"`), how many more attacks they must make (`1`), and how many of their next attacks must go to the monster deck (`1`). A card in a slot does not set its duty; write the duty here if it is in force. See [Attack duties](#attack-duties).
 * `action.kind` — `play`, `activate`, `attack`, `purchase`, `end_turn` or `pass`; `card` and `ability` pick the card. `activate` names a card the player controls, or a room in a room slot (24.6): only the active player may use a room, so another player's `activate` is refused by R-CARD-33, as in a game. Also `throw`, `choose` and `reveal`, which mostly make sense as [steps](#steps).
 * `action.choices` — answers to the prompts that follow, by option label: an option's plain form, with no language (`Game.Plain`, 16.4). A card is its ref (`"bomb"`), a player `"player 2 (hero_b)"`, a number its digits, a card's own words (a "choose one-" option) the words; any other option is its key, then its values (`"ask.deck.monster"`, `"ask.cancel"`, `"ask.yes"`, `"ask.slot_card 1 fly"`).
 * `steps` — several actions in a row, each with its own `choices` and an optional `expect`; a situation has `action` or `steps`, never both. See [Steps](#steps).
@@ -247,6 +248,33 @@ A response already on the stack (`cards/b2/testdata/situations/bomb/kills-the-fl
 }
 ```
 
+## Attack duties
+
+A card in a slot does not set its duty; write the duty in the setup if it is in force (owner, 2026-11-23). Krampus in a monster slot says "The active player must attack this once each turn if able", but a setup runs no start-of-turn trigger, and a player may have stopped the duty (with an eternal card's ability, say). So without these fields no duty is in force, as before 19.235. They are the engine's own turn state (`Turn.MustAttack`, `MustAttacks`, `MustAttackDeck`), so the game treats them as if a card had set them:
+
+| Field | Means | As set by |
+|-------|-------|-----------|
+| `must_attack` | a card the active player must attack this turn if able (R-ATK-03, R-ATK-22): the attack's target question offers only it, and the turn can't end while it is in play and an attack is left | Krampus, The Harbingers, Monster Manual, Friendly Ball, Lust for Blood (a player's character) |
+| `must_attacks` | how many more attacks the active player must make; the turn can't end while one is owed and an attack is left (R-ATK-03). It adds no attack: `attacks` says how many are left | Portal, Conquest, Envy, Ambush, Gutted Fatty (each also gives the attacks, so `attacks` goes up too), Blood Lust (`r`), Curse of Blood Lust, Blind Rage |
+| `must_attack_deck` | how many of the active player's next attacks must go to the monster deck: each one's target question offers only the deck. It forces no attack by itself; with Blind Rage or Ambush `must_attacks` says that | Blind Rage (1, with `must_attacks` 1), Ambush (2, with `must_attacks` 2) |
+
+```json
+"setup": {
+  "players": [{"character": "isaac"}, {"character": "cain"}],
+  "active": 0,
+  "monsters": ["krampus", "fly"],
+  "must_attack": "krampus"
+}
+```
+
+Isaac can't end his turn (refused by R-ATK-03), and his attack's only target is Krampus (`cards/fsp2/testdata/situations/krampus/isaac-must-attack-it-this-turn.json`).
+
+* `must_attack` names a card by ref, the first with that ref the active player may attack now, in the engine's order: monster, final boss and minion slots, attackable items, attackable rooms, then the other players' characters (only while an effect lets the active player attack players, R-ATK-20). Any other ref is an error that lists those options. Lust for Blood's own DC for its target is no setup field, so a player is a target only with a card in play that makes players attackable.
+* The values are the turn as the situation starts: with `declared: attack` the declared attack has already counted, so `must_attacks` is what is left after it. An `attack_roll` stack item on the `must_attack` card is an error naming R-ATK-22: that attack already met the duty.
+* `phase` `start` and `loot` may carry them: the start-of-turn triggers that set such duties are done (R-TURN-03), and they hold into the action phase. In `phase: end` they are an error naming R-ATK-03: the turn's end is declared, which R-ATK-03 refuses while an attack is owed.
+* A negative `must_attacks` or `must_attack_deck` is an error.
+* No field for Pilfering Krampus's random minion attack (R-KRAMPUS-13, Q-31): it is a "while a minion is in play" effect, not a duty a trigger sets, and the engine keeps only whether it was made this turn (`Turn.RandomAttackMade`); a challenge test that needs that stays Go (24.3).
+
 ## Steps
 
 `steps` plays several actions in a row (24.4). Each step has the fields of `action` (`player`, `kind`, `card`, `ability`, `choices`) and an optional `expect`, checked right after that step. The top-level `expect` is checked at the end.
@@ -417,7 +445,7 @@ A relative folder is from the repository root (`go test` runs in the package fol
 What it records:
 
 * `title` from the test name, `sets` by code, and the setup the test built (`NewSetup`, `New` and the set helpers on them).
-* State the test set by hand before its first step, where a setup field says it: cents, damage, items, hand, souls, deactivated cards, counters, `eternal`, `extra_loot_plays`, slot cards, `monster_damage`, slot `counters`, `loot_plays`, `attacks`, `purchases`, and cards put on top of a deck (`G.PutOnDeck`) as `decks`.
+* State the test set by hand before its first step, where a setup field says it: cents, damage, items, hand, souls, deactivated cards, counters, `eternal`, `extra_loot_plays`, slot cards, `monster_damage`, slot `counters`, `loot_plays`, `attacks`, `purchases`, the attack duties (`must_attack`, `must_attacks`, `must_attack_deck`, 19.235), and cards put on top of a deck (`G.PutOnDeck`) as `decks`. A `must_attack` card the active player can't attack has no ref the setup takes, so it stays a `todo`.
 * `rolls`: every die the test threw, in order, forced (`G.ForceRolls`, `Attack`'s rolls) or random, so the file throws the same dice.
 * A step per outermost helper, with its choices as the plain labels the test gave: `Activate`, `Start` and `Refused` are `activate`, `Play` is `play`, `Attack` and `Do` with an attack are `attack`, `EndTurn` is `end_turn`, `Pass` is `pass`, `Choose` is `choose`, `RevealFromDeck` is `reveal`, and `ThrowPending` a `throw` per die. `Settle`'s choices go to the step before it. `UntilChoose` adds nothing: the step before it stops at the question when a `choose` follows.
 * Intents the test applied itself (`tb.G.Apply`, `tb.G.Settle`) become steps too, read from the game's applied-intent log; passes and throws after a step are left out, since the runner settles each step.

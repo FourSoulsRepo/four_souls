@@ -165,3 +165,24 @@ func TestDumpHandSetBeforeDirectApply(t *testing.T) {
 		t.Errorf("todo %q; want no hand-set state left out", d.Todo)
 	}
 }
+
+// Attack duties set by hand go to the setup's duty fields (19.235), so
+// they leave no todo.
+func TestDumpHandSetDuties(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv(DumpEnv, dir)
+	t.Run("duties", func(t *testing.T) {
+		tb := NewSetup(t, engine.SituationSetup{Players: []engine.SituationPlayer{Seat("isaac", "book_of_sin"), Seat("cain")}, Monsters: []engine.CardRef{"clotty", "fly"}}, b2.Set)
+		tb.G.ForceRolls(5)
+		tb.G.Turn.MustAttack = tb.G.Monsters[1].Cards[0] // as Monster Manual on the Fly
+		tb.G.Turn.MustAttacks, tb.G.Turn.MustAttackDeck = 2, 1
+		tb.Activate(0, "book_of_sin", 0)
+	})
+	d, _ := readDump(t, dir, "TestDumpHandSetDuties/duties")
+	if s := d.Setup; s.MustAttack != "fly" || s.MustAttacks != 2 || s.MustAttackDeck != 1 {
+		t.Errorf("setup must_attack %q, must_attacks %d, must_attack_deck %d; want fly, 2, 1", s.MustAttack, s.MustAttacks, s.MustAttackDeck)
+	}
+	if hasTodo(d, "no setup field says it") || hasTodo(d, "does not build") {
+		t.Errorf("todo %q; want the duties in the setup", d.Todo)
+	}
+}

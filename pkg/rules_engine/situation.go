@@ -78,6 +78,16 @@ type SituationSetup struct {
 	// (R-ATK-02, R-SHOP-02). Stack holds the responses to it; they
 	// resolve before the choice.
 	Declared string `json:"declared,omitempty"`
+	// MustAttack, MustAttacks and MustAttackDeck are the attack duties
+	// in force this turn, as the Turn fields of those names hold them
+	// (19.235). A card in a slot does not set its duty: a player may
+	// have stopped it, so the setup says which hold. MustAttack names
+	// what the active player must attack; MustAttacks is how many more
+	// attacks they must make; MustAttackDeck how many of their next
+	// attacks must go to the monster deck.
+	MustAttack     CardRef `json:"must_attack,omitempty"`
+	MustAttacks    int     `json:"must_attacks,omitempty"`
+	MustAttackDeck int     `json:"must_attack_deck,omitempty"`
 }
 
 // SituationPlayer is one seat.
@@ -535,6 +545,9 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 	holder, stackErr := g.stackUp(s.Setup.Stack, active)
 	if stackErr != nil {
 		return nil, stackErr
+	}
+	if err := g.setUpDuties(s.Setup); err != nil {
+		return nil, err
 	}
 	g.events = nil
 	return g, g.openSetupWindow(s.Setup.Priority, holder)

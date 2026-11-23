@@ -3,6 +3,7 @@ package rulesengine
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"slices"
 )
@@ -249,6 +250,48 @@ func (g *Game) setUpDeclared(s SituationSetup) error {
 		g.spendPurchase()
 		g.Purchase = PurchaseState{On: true}
 	}
+	return nil
+}
+
+// setUpDuties sets the attack duties in force this turn (19.235), as
+// the turn holds them once the setup's window is open, so after a
+// declared attack or a stacked attack roll has counted (R-TURN-07). A card in a slot sets no
+// duty (owner, 2026-11-23): a player may have stopped it, so the setup
+// names the duties that hold. They hold from the start phase, where the
+// start-of-turn triggers have set them (R-TURN-03); in the end phase
+// the turn's end is declared, which R-ATK-03 refuses while one is owed.
+func (g *Game) setUpDuties(s SituationSetup) error {
+	for _, n := range []struct {
+		name string
+		n    int
+	}{{"must_attacks", s.MustAttacks}, {"must_attack_deck", s.MustAttackDeck}} {
+		if n.n < 0 {
+			return fmt.Errorf("situation: %s %d is below 0", n.name, n.n)
+		}
+	}
+	if s.MustAttack == "" && s.MustAttacks == 0 && s.MustAttackDeck == 0 {
+		return nil
+	}
+	if g.Turn.Step == StepEndTriggers {
+		return errors.New("situation: phase end: the turn's end is declared, which R-ATK-03 refuses while an attack is owed; " +
+			"leave out must_attack, must_attacks and must_attack_deck")
+	}
+	if s.MustAttack != "" {
+		targets := g.attackTargets()
+		refs := make([]CardRef, len(targets))
+		for i, id := range targets {
+			refs[i] = g.Object(id).Card
+		}
+		i := slices.Index(refs, s.MustAttack)
+		if i < 0 {
+			return fmt.Errorf("situation: must_attack: the active player can't attack %q, options %v", s.MustAttack, refs)
+		}
+		if g.Attack.Started && g.Attack.Target == targets[i] {
+			return fmt.Errorf("situation: must_attack: the attack roll on the stack attacks %q, so the duty is met (R-ATK-22); leave it out", s.MustAttack)
+		}
+		g.Turn.MustAttack = targets[i]
+	}
+	g.Turn.MustAttacks, g.Turn.MustAttackDeck = s.MustAttacks, s.MustAttackDeck
 	return nil
 }
 

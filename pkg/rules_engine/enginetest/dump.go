@@ -406,7 +406,28 @@ func observe(g *engine.Game) engine.SituationSetup {
 	}
 	loot, attacks, purchases := g.Turn.LootPlays, g.Turn.Attacks, g.Turn.Purchases
 	s.LootPlays, s.Attacks, s.Purchases = &loot, &attacks, &purchases
+	s.MustAttack = mustAttack(g)
+	s.MustAttacks, s.MustAttackDeck = g.Turn.MustAttacks, g.Turn.MustAttackDeck
 	return s
+}
+
+// mustAttack is the ref of the card the active player must attack this
+// turn (19.235), when setup.must_attack can name it: a card in play the
+// active player may attack. Otherwise the rebuilt table lacks the duty,
+// and the diff makes it a todo.
+func mustAttack(g *engine.Game) engine.CardRef {
+	id := g.Turn.MustAttack
+	if id == 0 || g.Object(id).Zone.Kind != engine.ZoneInPlay || !g.CanBeAttacked(id) {
+		return ""
+	}
+	for _, pl := range g.Players {
+		if pl.Character == id {
+			if _, ok := g.PlayerAttackDC(pl.ID); !ok {
+				return ""
+			}
+		}
+	}
+	return g.Object(id).Card
 }
 
 func counters(card engine.CardRef, cs []engine.Counter) []engine.SituationCounter {

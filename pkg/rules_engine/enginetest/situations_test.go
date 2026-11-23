@@ -143,6 +143,12 @@ func TestCheckSituationUnknownField(t *testing.T) {
 	if len(got) != 2 || !strings.Contains(got[0], `setup: unknown field "declarde"; did you mean "declared"?`) {
 		t.Errorf("problems %q; want only the misspelt declared", got)
 	}
+	// So are the 19.235 duty fields.
+	data = strings.Replace(razorFile(cardSource, rightExpect), `"active": 0`, `"active": 0, "must_attacks": 0, "must_atack_deck": 1`, 1)
+	got = check(enginetest.CardTree, "razor_blade/hits-cain.json", data)
+	if len(got) != 2 || !strings.Contains(got[0], `setup: unknown field "must_atack_deck"; did you mean "must_attack_deck"?`) {
+		t.Errorf("problems %q; want only the misspelt must_attack_deck", got)
+	}
 }
 
 // An unknown field names its line and path; with no near name, the

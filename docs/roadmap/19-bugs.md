@@ -6790,6 +6790,51 @@ Totals by system (226 items):
    4. The Krampus file then may check Isaac's own refused end of turn.
    5. File: `cards/fsp2/testdata/situations/krampus/must-be-attacked.json`.
    6. It starts in Isaac's end phase, so it does not rely on this bug.
+5. Owner notes (2026-11-23)
+   1. A field, not derived from the cards in the slots.
+   2. A card in a slot does not prove its duty is in force.
+   3. A player may have stopped it, e.g. with an eternal card's ability.
+   4. So the setup names the duties that hold this turn.
+   5. Without the fields no duty is in force, as before.
+6. Done (2026-11-23)
+   1. Setup fields: `must_attack`, `must_attacks`, `must_attack_deck`.
+   2. They set `Turn.MustAttack`, `MustAttacks`, `MustAttackDeck`; no own logic.
+   3. `must_attack`: a ref the active player may attack now; else options.
+   4. A player's character counts only while players can be attacked (R-ATK-20).
+   5. Set after a declared attack counted: the turn as the setup starts.
+   6. Allowed in `start`, `loot`, `action`; start-of-turn triggers are done (R-TURN-03).
+   7. `phase: end`: an error naming R-ATK-03; the end is declared.
+   8. Negative numbers are errors.
+   9. No field for the random minion attack (R-KRAMPUS-13, Q-31).
+   10. It is a "while" effect; only `RandomAttackMade` is turn state.
+   11. Its one hand-set use is a challenge Go test; challenges stay Go (24.3).
+   12. The dump writes the duties into `setup`; no todo for them.
+   13. A `must_attack` the setup can't name stays a todo.
+   14. New file: `krampus/isaac-must-attack-it-this-turn.json`.
+   15. Isaac's end refused (R-ATK-03); only Krampus offered; then he may end.
+   16. Go tests: `situation_duty_test.go`, a dump test, a strict-read case.
+   17. Wiki `Situation-payload.md`: Attack duties; ADR 034 10.23, 10.24.
+   18. A stacked attack roll on the `must_attack` card: an error, R-ATK-22.
+7. Checked (5.24): every card that sets a duty, all sets.
+   1. Start of turn: Krampus (fsp2), The Harbingers, Blind Rage (r).
+   2. Other triggers: Portal, Conquest, Envy, Ambush (b2); Gaper, I Am Error! (g2).
+   3. Also Gutted Fatty, Challenge Room, Lust for Blood, Friendly Ball (r).
+   4. Also Blood Lust (r), Curse of Blood Lust, Boss Rush! (fsp2).
+   5. Activated: Monster Manual (b2), Sisters Vis (r, a question only).
+   6. Challenge: Pilfering Krampus (Normal), `MustAttackRandom`.
+   7. Helpers: `mustAttackThis` (fsp2, r), `ForceAttacks`, `AddDeckAttack`.
+8. Checked files and tests: none built a duty by hand but one.
+   1. b2 files: ambush, conquest, envy, portal, monster_manual (2).
+   2. fsp2 files: krampus (2), curse_of_blood_lust, boss_rush, head_of_krampus (2).
+   3. b2 blood_lust (2), mega_battery: no duty in them.
+   4. Each sets its duty by the card's own action; it tests the card.
+   5. So none changed; a field there would skip what they test.
+   6. r Go tests: blind_rage, blood_lust_r, challenge_room, friendly_ball.
+   7. Also gutted_fatty, lust_for_blood, sisters_vis, the_harbingers.
+   8. Also dogma, the_clicker; g2: gaper, i_am_error.
+   9. All reach the duty by a turn start or a card; none set by hand.
+   10. Challenge `pilfering_krampus_norm_test.go` sets two by hand.
+   11. `RandomAttackMade` and `MustAttack`; it starts a challenge, so stays Go.
 
 ### [ ] 19.236 ? Card with nothing to copy is refused by R-ABIL-04
 
