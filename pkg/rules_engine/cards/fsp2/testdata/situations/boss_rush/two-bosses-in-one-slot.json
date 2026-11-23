@@ -1,0 +1,21 @@
+{
+  "title": "Isaac reveals Boss Rush!; the deck holds Spider, Monstro, Dip, Widow: are both bosses put in slot 2, Widow on top, the rest discarded, and must he attack once more?",
+  "source": ["card boss_rush", "R-ATK-03", "R-ZONE-10", "R-CARD-15"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fatty", "fly"],
+    "decks": {"monster": ["spider", "monstro", "dip", "widow"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "boss_rush", "choices": ["ask.slot 2", "ask.slot 2"],
+     "expect": {"allowed": true,
+       "monsters": [{"slot": 1, "card": "fatty"}, {"slot": 2, "card": "widow"}],
+       "discards": {"monster": ["spider", "dip", "boss_rush"]},
+       "attacks": 1}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"rule": "R-ATK-03", "active": 0}}
+  ],
+  "expect": {"rule": "R-ATK-03"}
+}

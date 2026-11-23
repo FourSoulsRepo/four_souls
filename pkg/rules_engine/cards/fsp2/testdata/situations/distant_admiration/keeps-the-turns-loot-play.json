@@ -1,0 +1,19 @@
+{
+  "title": "Isaac has 1 loot play; Distant Admiration makes him play Cain's 3 Cents!: does he keep his 1 loot play, and only that one?",
+  "source": ["card distant_admiration", "card three_cents", "card a_penny", "R-CARD-08", "R-TURN-05"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["distant_admiration"], "hand": ["a_penny", "a_penny"]}, {"character": "cain", "hand": ["three_cents"]}],
+    "active": 0,
+    "loot_plays": 1
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "distant_admiration", "choices": ["player 2 (cain)", "three_cents"],
+     "expect": {"allowed": true, "loot_plays": 1, "after": [{"player": 0, "cents": 3, "hand": 2}, {"player": 1, "hand": 0}]}},
+    {"player": 0, "kind": "play", "card": "a_penny",
+     "expect": {"allowed": true, "loot_plays": 0, "after": [{"player": 0, "cents": 4, "hand": 1}]}},
+    {"player": 0, "kind": "play", "card": "a_penny",
+     "expect": {"allowed": false, "rule": "R-CARD-08", "after": [{"player": 0, "cents": 4, "hand": 1}]}}
+  ],
+  "expect": {"allowed": false, "rule": "R-CARD-08"}
+}

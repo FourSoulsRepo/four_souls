@@ -1,0 +1,19 @@
+{
+  "title": "Isaac rolls a 6 with Mystery Sack while Holy Bony is out: may he put the loot deck's top 3 back as Bomb!, 2 Cents!, 4 Cents!?",
+  "source": ["card holy_bony", "card mystery_sack", "R-ABIL-16", "R-ZONE-04"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["mystery_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["holy_bony", "gurdy"],
+    "decks": {"loot": ["four_cents", "two_cents", "bomb"]},
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢.", "ask.deck.loot", "bomb", "two_cents", "four_cents"]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "decks": {"loot": ["bomb", "two_cents", "four_cents"]},
+    "after": [{"player": 0, "hand": 0, "cents": 0}]
+  }
+}

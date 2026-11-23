@@ -1,0 +1,21 @@
+{
+  "title": "Isaac kills Sucker: does it deal 1 damage to each player as it dies?",
+  "source": ["card sucker", "card isaac", "R-DEATH-05", "R-MECH-28", "R-CARD-13"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["sucker", "fly"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["sucker"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "monsters": [{"card": "sucker", "dead": true}, {"slot": 1, "card": "dip"}],
+    "after": [{"player": 0, "damage": 1, "hand": 1}, {"player": 1, "damage": 1}]
+  }
+}

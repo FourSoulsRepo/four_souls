@@ -1,0 +1,21 @@
+{
+  "title": "Isaac hits Headless Horseman (3 HP, DC 3, 2 ATK) three times: is its death prevented, does it heal 2 with DC 4 and 1 ATK, and does it die to two more hits?",
+  "source": ["card headless_horseman", "card isaac", "R-MECH-46", "R-ATK-12", "R-ATK-13", "R-CARD-14"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["headless_horseman", "fly"],
+    "decks": {"monster": ["dip"], "treasure": ["breakfast"]},
+    "rolls": [3, 3, 3, 3, 4, 4]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["headless_horseman"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [3, 3, 3, 3, 4, 4],
+    "monsters": [{"card": "headless_horseman", "dead": true}, {"slot": 1, "card": "dip"}],
+    "after": [{"player": 0, "damage": 1, "soul_cards": ["headless_horseman"], "items": ["breakfast"]}]
+  }
+}

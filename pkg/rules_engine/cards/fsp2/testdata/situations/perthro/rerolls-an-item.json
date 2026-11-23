@@ -1,0 +1,16 @@
+{
+  "title": "Isaac plays Perthro on his Mystery Sack: is it destroyed and replaced by the treasure deck's top card?",
+  "source": ["card perthro", "R-MECH-48"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["mystery_sack"], "hand": ["perthro"]}, {"character": "cain"}],
+    "active": 0,
+    "decks": {"treasure": ["breakfast"]}
+  },
+  "action": {"player": 0, "kind": "play", "card": "perthro", "choices": ["mystery_sack"]},
+  "expect": {
+    "allowed": true,
+    "discards": {"treasure": ["mystery_sack"], "loot": ["perthro"]},
+    "after": [{"player": 0, "items": ["breakfast"]}]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "title": "Isaac (3 HP with Breakfast) kills Brain (2 HP) with two 6s: does he take 1 damage for each 6?",
+  "source": ["card brain", "card breakfast", "card isaac", "R-ATK-12", "R-CARD-13"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["breakfast"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["brain", "fly"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["brain"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6],
+    "monsters": [{"card": "brain", "dead": true}, {"slot": 1, "card": "dip"}],
+    "after": [{"player": 0, "damage": 2, "hand": 1}]
+  }
+}

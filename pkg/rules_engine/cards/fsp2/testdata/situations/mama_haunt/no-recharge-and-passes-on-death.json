@@ -1,0 +1,20 @@
+{
+  "title": "Cain has Mama Haunt and a spent character: does it stay spent through his recharge step, and when he dies, does Mama Haunt go to Isaac?",
+  "source": ["card mama_haunt", "card leech", "R-TURN-02", "R-ATK-13", "R-DEATH-13"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "items": ["mama_haunt"], "deactivated": ["character"]}],
+    "active": 0,
+    "monsters": ["leech", "fatty"],
+    "decks": {"loot": ["a_penny"]},
+    "rolls": [1]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 1, "deactivated": ["character"], "hand_cards": ["a_penny"]}]}},
+    {"player": 1, "kind": "attack", "choices": ["leech", "player 1 (isaac)", "a_penny"],
+     "expect": {"allowed": true, "events": [{"kind": "died", "player": 1}],
+       "after": [{"player": 0, "items": ["mama_haunt"]}, {"player": 1, "items": [], "hand": 0}]}}
+  ],
+  "expect": {"allowed": true}
+}

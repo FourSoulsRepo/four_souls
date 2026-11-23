@@ -1,0 +1,21 @@
+{
+  "title": "Isaac has Head of the Keeper and kills the Fatty (4 HP) with four hits: does he gain 1¢ per hit and 2¢ for the kill?",
+  "source": ["card head_of_the_keeper", "card fatty", "R-ATK-12", "R-CARD-13"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["head_of_the_keeper"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fatty", "monstro"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [2, 2, 2, 2]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fatty"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [2, 2, 2, 2],
+    "monsters": [{"card": "fatty", "dead": true}, {"slot": 1, "card": "dip"}],
+    "after": [{"player": 0, "cents": 6, "hand": 1}]
+  }
+}

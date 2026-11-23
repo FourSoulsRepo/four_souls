@@ -1,0 +1,16 @@
+{
+  "title": "Krampus is out when Cain's turn starts: may Cain end his turn without attacking it?",
+  "source": ["card krampus", "R-ATK-03", "R-ATK-22", "R-TURN-03", "R-TURN-10"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["krampus", "fly"],
+    "phase": "end"
+  },
+  "steps": [
+    {"player": 0, "kind": "pass", "expect": {"allowed": true, "active": 1}},
+    {"player": 1, "kind": "end_turn", "expect": {"rule": "R-ATK-03", "active": 1, "attacks": 1}}
+  ],
+  "expect": {"rule": "R-ATK-03"}
+}

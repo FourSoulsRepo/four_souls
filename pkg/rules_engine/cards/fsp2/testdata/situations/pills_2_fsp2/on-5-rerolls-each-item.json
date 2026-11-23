@@ -1,0 +1,19 @@
+{
+  "title": "Isaac plays Pills! and rolls a 5: is each of his items rerolled, except the eternal D6?",
+  "source": ["card pills_2_fsp2", "R-MECH-48", "R-ABIL-18", "R-MECH-23"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["mystery_sack", "the_d6"], "eternal": ["the_d6"], "hand": ["pills_2_fsp2"]}, {"character": "cain"}],
+    "active": 0,
+    "decks": {"treasure": ["breakfast", "dinner"]},
+    "rolls": [5]
+  },
+  "action": {"player": 0, "kind": "play", "card": "pills_2_fsp2"},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [5],
+    "decks": {"treasure": ["dinner"]},
+    "discards": {"treasure": ["mystery_sack"], "loot": ["pills_2_fsp2"]},
+    "after": [{"player": 0, "items": ["the_d6", "breakfast"]}]
+  }
+}

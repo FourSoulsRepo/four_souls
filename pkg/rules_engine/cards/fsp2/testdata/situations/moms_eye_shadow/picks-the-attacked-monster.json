@@ -1,0 +1,21 @@
+{
+  "title": "Isaac declares an attack on the Fly; Cain has Mom's Eye Shadow and picks Gurdy: does Isaac attack Gurdy instead?",
+  "source": ["card moms_eye_shadow", "card gurdy", "card isaac", "R-ATK-13", "R-ATK-12", "R-CARD-14"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "items": ["moms_eye_shadow"]}, {"character": "maggy"}],
+    "active": 0,
+    "monsters": ["fly", "gurdy"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [1, 6, 6, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly", "gurdy"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 6, 6, 6, 6, 6],
+    "monsters": [{"slot": 1, "card": "fly", "damage": 0}, {"card": "gurdy", "dead": true}, {"slot": 2, "card": "dip"}],
+    "after": [{"player": 0, "damage": 1, "cents": 7, "soul_cards": ["gurdy"]}]
+  }
+}

@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226, 19.233 | 28 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226, 19.233, 19.236 | 29 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193, 19.232 | 19 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45, 19.224                                   | 3     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
@@ -59,12 +59,13 @@ This step never closes; new reports are appended.
 | X  | Bots: a bot or its driver wrong          | Bots       | 19.199, 19.204, 19.205, 19.206, 19.207, 19.208, 19.209, 19.210, 19.211, 19.212, 19.213, 19.214, 19.215, 19.216, 19.221 | 15 |
 | Y  | A left game: its step state kept         | Client     | 19.227                                                 | 1     |
 | Z  | Situation runner: a check checks nothing | Go tests   | 19.234                                                 | 1     |
+| AA | Situation setup: a start-of-turn duty lost | Engine   | 19.235                                                 | 1     |
 
-Totals by system (224 items):
+Totals by system (226 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U, W | 50 |
+| Engine    | A, B, T, U, W, AA | 52 |
 | Card data | C       | 3     |
 | Client    | D–G, O, P, S, V, Y | 56 |
 | Server    | H, N    | 5     |
@@ -6765,3 +6766,44 @@ Totals by system (224 items):
 9. Owner notes (2026-11-23)
    1. Owner marks 19.234 solved.
    2. The totals table correction (219 to 224 items) is fine.
+
+### [ ] 19.235 A setup with Krampus in a slot lets the active player skip it
+
+1. Goal: a situation setup in the action phase keeps Krampus's duty.
+2. Report (24.19 bulk move, 2026-11-23)
+   1. Setup: Isaac active, open action phase, Krampus in slot 1, 1 attack left.
+   2. Isaac ends his turn without attacking; it is allowed.
+   3. Krampus: "The active player must attack this once each turn if able."
+   4. R-ATK-03, R-ATK-22: the forced attack must be obeyed.
+   5. The wiki says a setup starts after the start-of-turn triggers.
+   6. So Krampus's start-of-turn duty should hold in that turn.
+   7. `TestKrampus` relied on it: Isaac's own end of turn passed first.
+3. Cause (the situation setup)
+   1. Krampus sets `Turn.MustAttack` by two triggers in `krampus.go`.
+   2. `AtStartOfEachTurn` and `WhenThisEntersPlay`.
+   3. A setup puts cards in slots with no trigger and no turn start.
+   4. So the duty is never set for the setup's own turn.
+4. Tasks:
+   1. Decide with the owner: the setup sets each start-of-turn duty, or a field.
+   2. Check every start-of-turn "must attack" card, all sets (5.24).
+   3. E.g. Blind Rage, The Harbingers, challenge minions (Q-31).
+   4. The Krampus file then may check Isaac's own refused end of turn.
+   5. File: `cards/fsp2/testdata/situations/krampus/must-be-attacked.json`.
+   6. It starts in Isaac's end phase, so it does not rely on this bug.
+
+### [ ] 19.236 ? Card with nothing to copy is refused by R-ABIL-04
+
+1. Goal: the refusal cites the rule that says it.
+2. Report (24.19 bulk move, 2026-11-23)
+   1. No item with a ↷ ability is in play; Isaac plays ? Card.
+   2. Refused by R-ABIL-04: targets are picked as the ability goes on the stack.
+   3. R-ABIL-40: a loot card with no valid target can't be played.
+   4. So R-ABIL-40 says why, not R-ABIL-04.
+3. Cause (the engine)
+   1. `prompt.go` denies the copy with R-ABIL-04 (`refuseNothingToCopy`).
+   2. Other R-ABIL-04 uses there are questions, not refusals.
+4. Tasks:
+   1. The denial cites R-ABIL-40.
+   2. Check every copy refusal and every R-ABIL-04 denial, all sets (5.24).
+   3. The file then checks `"rule": "R-ABIL-40"`.
+   4. File: `cards/fsp2/testdata/situations/questionmark_card/needs-an-item.json`.

@@ -1,0 +1,17 @@
+{
+  "title": "Isaac has P.H.D. and rolls a 2: is he asked +1, -1 or no, as words and not card refs, and does \"no\" keep the 2?",
+  "source": ["card phd", "card mystery_sack", "R-DICE-10"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["phd", "mystery_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "decks": {"loot": ["a_penny"]},
+    "rolls": [2]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "mystery_sack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["ask.plus_one", "ask.minus_one", "ask.no"]}}},
+    {"kind": "choose", "choices": ["ask.no"]}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [2], "after": [{"player": 0, "hand_cards": ["a_penny"], "cents": 0}]}
+}

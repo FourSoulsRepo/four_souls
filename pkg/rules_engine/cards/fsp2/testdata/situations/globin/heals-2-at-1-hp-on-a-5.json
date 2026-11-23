@@ -1,0 +1,18 @@
+{
+  "title": "Globin (4 HP) has 2 damage; Isaac's Bomb! brings it to 1 HP and the roll is a 5: does it heal 2?",
+  "source": ["card globin", "card bomb", "R-MECH-40", "R-CARD-10"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["globin", "fly"],
+    "monster_damage": {"globin": 2},
+    "rolls": [5]
+  },
+  "action": {"player": 0, "kind": "play", "card": "bomb", "choices": ["globin"]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [5],
+    "monsters": [{"slot": 1, "card": "globin", "damage": 1, "hp": 3}]
+  }
+}

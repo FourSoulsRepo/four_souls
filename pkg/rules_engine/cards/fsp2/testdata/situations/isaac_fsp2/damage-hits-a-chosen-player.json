@@ -1,0 +1,16 @@
+{
+  "title": "Isaac's Bomb! hits the boss Isaac!; Isaac picks Maggy: does she take 1 damage, and nobody else?",
+  "source": ["card isaac_fsp2", "card bomb", "R-CARD-10"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["bomb"]}, {"character": "cain"}, {"character": "maggy"}],
+    "active": 0,
+    "monsters": ["isaac_fsp2", "fly"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "bomb", "choices": ["isaac_fsp2", "player 3 (maggy)"]},
+  "expect": {
+    "allowed": true,
+    "monsters": [{"slot": 1, "card": "isaac_fsp2", "damage": 1}],
+    "after": [{"player": 0, "damage": 0}, {"player": 1, "damage": 0}, {"player": 2, "damage": 1}]
+  }
+}

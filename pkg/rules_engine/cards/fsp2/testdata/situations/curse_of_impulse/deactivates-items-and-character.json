@@ -1,0 +1,17 @@
+{
+  "title": "Isaac gets Curse of Impulse: at the end of his turn, are his Mystery Sack and his character deactivated?",
+  "source": ["card curse_of_impulse", "R-ABIL-20", "R-TURN-10", "R-MECH-22"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["mystery_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fatty", "monstro"]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "curse_of_impulse", "choices": ["player 1 (isaac)"],
+     "expect": {"allowed": true, "discards": {"monster": []}, "after": [{"player": 0, "deactivated": []}]}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "events": [{"kind": "deactivated", "player": 0}], "after": [{"player": 0, "deactivated": ["mystery_sack", "character"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

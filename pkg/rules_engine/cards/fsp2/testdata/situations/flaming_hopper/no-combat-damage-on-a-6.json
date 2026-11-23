@@ -1,0 +1,21 @@
+{
+  "title": "Isaac rolls 6, then 4 on Flaming Hopper (1 HP, DC 4): does the 6 deal nothing, so the 4 is needed to kill it?",
+  "source": ["card flaming_hopper", "card isaac", "R-ATK-12", "R-CARD-13"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["flaming_hopper", "fly"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [6, 4]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["flaming_hopper"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 4],
+    "monsters": [{"card": "flaming_hopper", "dead": true}, {"slot": 1, "card": "dip"}],
+    "after": [{"player": 0, "cents": 4, "damage": 0}]
+  }
+}

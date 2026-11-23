@@ -1,0 +1,19 @@
+{
+  "title": "Isaac is given Bomb! through Distant Admiration but cancels at its target: is Bomb! left in hand, and does playing it later use his loot play?",
+  "source": ["card distant_admiration", "card bomb", "R-ABIL-04", "R-CARD-08"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["distant_admiration"], "hand": ["a_penny"]}, {"character": "cain", "hand": ["bomb"]}],
+    "active": 0,
+    "loot_plays": 1
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "distant_admiration", "choices": ["player 2 (cain)", "bomb", "ask.cancel"],
+     "expect": {"allowed": true, "loot_plays": 1, "after": [{"player": 0, "hand_cards": ["a_penny", "bomb"]}, {"player": 1, "damage": 0}]}},
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "loot_plays": 0, "after": [{"player": 1, "damage": 1}]}},
+    {"player": 0, "kind": "play", "card": "a_penny",
+     "expect": {"allowed": false, "rule": "R-CARD-08", "after": [{"player": 0, "hand_cards": ["a_penny"], "cents": 0}]}}
+  ],
+  "expect": {"allowed": false, "rule": "R-CARD-08"}
+}

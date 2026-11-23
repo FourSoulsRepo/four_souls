@@ -1,0 +1,24 @@
+{
+  "title": "Isaac kills Holy Mulligan: are monster slots expanded by 2, all refilled, and may he attack once more?",
+  "source": ["card holy_mulligan", "card isaac", "R-ATK-12", "R-MECH-31", "R-DEATH-09", "R-CARD-13"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["holy_mulligan", "fly"],
+    "decks": {"monster": ["leech", "trite", "spider", "dip"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["holy_mulligan"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "events": [{"kind": "expanded"}],
+    "monsters": [{"card": "holy_mulligan", "dead": true}, {"slot": 2, "card": "fly"}, {"card": "leech"}, {"card": "trite"}, {"card": "spider"}],
+    "decks": {"monster": ["dip"]},
+    "attacks": 1,
+    "after": [{"player": 0, "cents": 3}]
+  }
+}

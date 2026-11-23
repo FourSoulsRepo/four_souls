@@ -1,0 +1,18 @@
+{
+  "title": "Isaac uses Head of Krampus and rolls a 2: does each player take 1 damage and no monster?",
+  "source": ["card head_of_krampus", "R-MECH-28"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["head_of_krampus"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["gurdy", "monstro"],
+    "rolls": [2]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "head_of_krampus"},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [2],
+    "monsters": [{"slot": 1, "card": "gurdy", "damage": 0}, {"slot": 2, "card": "monstro", "damage": 0}],
+    "after": [{"player": 0, "damage": 1}, {"player": 1, "damage": 1}]
+  }
+}

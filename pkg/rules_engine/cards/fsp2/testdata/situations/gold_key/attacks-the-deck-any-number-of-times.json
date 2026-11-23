@@ -1,0 +1,23 @@
+{
+  "title": "Isaac plays Gold Key, kills the Fly, then attacks the monster deck three times: is each allowed, and is the deck still offered after?",
+  "source": ["card gold_key", "card fly", "card chest", "card gold_chest", "card dark_chest", "R-ATK-08", "R-ATK-09"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["gold_key"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [6, 1, 3, 3]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "gold_key", "expect": {"allowed": true, "discards": {"loot": ["gold_key"]}}},
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "cents": 1}]}},
+    {"player": 0, "kind": "reveal", "card": "chest", "expect": {"allowed": true, "after": [{"player": 0, "cents": 2}]}},
+    {"player": 0, "kind": "reveal", "card": "gold_chest", "expect": {"allowed": true, "after": [{"player": 0, "cents": 7}]}},
+    {"player": 0, "kind": "reveal", "card": "dark_chest", "expect": {"allowed": true, "after": [{"player": 0, "cents": 10}]}},
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["ask.deck.monster"]}}}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [6, 1, 3, 3]}
+}

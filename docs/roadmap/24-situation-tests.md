@@ -890,9 +890,100 @@ Ideas: TS-13, LR-04, R-03.
    3. Also `runSome`, `rollTable`, `resolvedRoll`.
 15. `open-questions.md`: Q-29's and S-YUG's test references point at the files.
 
-### [ ] 24.19 Bulk: fsp2
+### [x] 24.19 Bulk: fsp2
 
 1. Goal: every fsp2 test (about 89 tests).
+2. Counts (2026-11-23): 95 tests in 80 `_test.go` files of `cards/fsp2`.
+   1. `common_test.go` holds helpers only.
+   2. fsp2 gets its runner: `situations_test.go`, with its first files.
+   3. Every file names `"sets": ["b2", "fsp2"]`: fsp2 plays with the Base Game.
+3. Moved: 82 tests, as 91 files; 67 `_test.go` files are gone.
+   1. Tables, one file per case (owner answer 11): Angel Room 3.
+   2. Also Black Rune, Cursed Eye, Gimpy, Head of Krampus 2 each.
+   3. Also Holy Chest, Pills! (3-4 / 5-6), Poker Chip 2 each.
+   4. Every other card test: one file in its card folder.
+   5. Poker Chip through Diplopia: `poker_chip/copied-by-diplopia.json`.
+   6. No `interactions/`: no test is about two fsp2 cards.
+   7. No cross-set file; `cards/testdata/situations/` stays unwired.
+4. Split: 9, a file each; the rest stays Go.
+   1. Test1Up: the heal's `Amount` stays Go (`Test1UpHealsOnce`).
+   2. TestBossRushOwnSlot: `CheckInvariants` stays Go (engine API).
+   3. TestMutantSpider: the dice event and the prompt text stay Go.
+   4. TestRedCandle, TestTelepathyForDummies: view dice stay Go.
+   5. Bum-Bo, Dark Judas, Guppy, Whore of Babylon: `<character>/extra-loot-play.json`.
+   6. Their starting item stays Go: `testStartingItem` (a real game start).
+5. Stayed Go whole: 4.
+   1. Save and load: TestGimpySaveAtDiscard (ADR 034 1.5).
+   2. Views: TestGuppysEye (1.5).
+   3. Event field `Object`: TestCurseOfImpulseDeactivatedEvents (24.6).
+   4. TestGetOutOfJailCard: needs a format change.
+   5. Cain acts with priority over a stack, after the card resolved.
+   6. A step can't stop there (owner answer 7); no setup field holds the lock.
+6. Engine state or API in Go, said by a game action in the file:
+   1. `DealDamageTo`: Bomb! in hand, or on `setup.stack` with `priority`.
+   2. Abaddon, Gimpy, Globin, Isaac!, Lard, Smart Fly, Tumor.
+   3. Dark Arts, The Left Hand: Cain starts with 1 damage; Bomb! kills him.
+   4. Mama Haunt: Cain misses the Leech on his own turn and dies.
+   5. `KillObject`: an attack (Swarmer, The Fallen, Mom's Heart!).
+   6. Mom's Heart! starts with 7 damage; one 6 kills it.
+   7. Headless Horseman: three hits, then a 3 misses for 1, two 4s kill.
+   8. `DeckAttacks`: Blastocyst, Gold Key: the next attack offers only the deck.
+   9. Gold Key: three deck attacks on events after the Fly, each allowed.
+   10. `MustAttacks`: Boss Rush!, Krampus: an end of turn refused by R-ATK-03.
+   11. `PlayerATK`, `Evasion`, `HP`: a prompt check stops at the target question.
+   12. Nerve Ending, Widow, Polyphemus, The Wiz: then misses and hits show them.
+   13. `Lingering` (Red Candle): Cain's 3 on his turn deals no damage.
+   14. `FreeLoot`, `ExtraLootPlays` (Distant Admiration): later plays and a refusal.
+   15. Responses to a waiting roll or loot: `setup.stack` (owner answer 7).
+   16. 20/20, Libra, Euthanasia, Pills! (cancel).
+7. Needed a format change: 1 whole test (5.4); the splits keep Go-only fields.
+8. Drafts: most kept the dumped setup; each got `title`, `source`, `expect`.
+   1. Deck tops in `setup.decks`, so refills, loot and treasure are named.
+   2. `ForceRolls` after a direct call: all dice in `setup.rolls`.
+   3. No draft (no step): Guppy's Eye, Nerve Ending, Widow, Polyphemus, ? Card refused.
+9. Setups changed to prove the card text:
+   1. Brain, Roundy: Breakfast for HP, not Lard; one fsp2 card per file.
+   2. Flaming Hopper: no Lard; it took no damage.
+   3. Bony keeps two Lards: 6 HP shows 1, then 3 damage; throw steps check each.
+   4. Forget Me Now: Cain's Fatty soul is Widow, a soul card (R-CARD-18).
+   5. Dark Arts: one file; a 6 gives 2¢, the Sack gives nothing on a 6.
+   6. The Go test compared two tables; the file needs no second one.
+10. Checks added from the card text (owner answer 8):
+   1. Every kill: the monster died, its reward, its soul, the refill.
+   2. Roll cards and attacks: `resolved_rolls`; used items: `deactivated`.
+   3. Loot cards, destroyed items, events: their discard pile.
+   4. Black Candle: all 5 other cards at the bottom; Cain's Curse of Pain hurts him.
+   5. Curse of Blood Lust: Isaac may end the turn he used his attack.
+   6. Cursed Eye on 1: no `damaged` for Isaac; Monstro still in its slot.
+   7. Daddy Long Legs: Cain gets the Fly's 1¢.
+   8. Divorce Papers: Cain keeps 4¢ and two cards; the card is destroyed.
+   9. Hourglass: a `deactivated` event for Cain; Isaac still loots 1.
+   10. Mom's Eye Shadow: the Fly untouched; Monstro II: Maggy unhurt.
+   11. Mom's Heart!: Isaac's 2 souls; Poker Chip via Diplopia: one roll only.
+   12. Rubber Cement: both slots refilled; Tape Worm: Isaac's own damage.
+   13. Telepathy for Dummies: the start roll and the loot step's card.
+11. Go tests that did not check what they claimed: 2.
+   1. TestKrampus: Isaac ended his own turn first; that passed only by 19.235.
+   2. The file starts in Isaac's end phase; Cain's end is refused.
+   3. TestBlackCandle: 2 cards not in the top 5, not the bottom.
+   4. The file names all 5 cards at the bottom.
+   5. Weak, not wrong: 5 refusals accepted any rule.
+   6. Blood Lust, both Krampus tests: the files check R-ATK-03.
+12. Refusals: rules from the rules text.
+   1. No loot play left: R-CARD-08 fits (Distant Admiration, 4 files).
+   2. Second ↷ of a character: R-ABIL-07 fits.
+   3. ? Card with no ↷ item cites R-ABIL-04; R-ABIL-40 fits (19.236).
+   4. Its file checks `allowed: false` only.
+13. Bugs logged: 19.235 and 19.236; not fixed here.
+   1. 19.235: a setup with Krampus in a slot skips its duty that turn.
+14. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 1104 changes.
+   2. Only swaps in any-order lists passed, as they should.
+15. Helpers: `testCharacter` is now `testStartingItem`.
+   1. Removed, no use left: `table`, `lootTable`, `inDiscard`, `foe`.
+   2. Also `settleAny`, `top`, `topID`, `attackRolls`, `declareAttack`.
+   3. Also `testStats`, `sackFirst`; the files spell the Sack's label.
+16. `cardgen -report` unchanged.
 
 ### [ ] 24.20 Bulk: g2
 

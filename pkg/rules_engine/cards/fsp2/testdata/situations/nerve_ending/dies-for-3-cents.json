@@ -1,0 +1,24 @@
+{
+  "title": "Nerve Ending (4 HP, DC 2, 1 ATK): does Isaac's 1 miss for 1 damage, and do four 2s kill it for 3¢?",
+  "source": ["card nerve_ending", "card isaac", "R-ATK-02", "R-ATK-12", "R-ATK-13", "R-CARD-13"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["nerve_ending", "fly"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [1, 2, 2, 2, 2]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["nerve_ending", "fly", "ask.deck.monster"]},
+       "monsters": [{"slot": 1, "card": "nerve_ending", "hp": 4, "evasion": 2, "atk": 1}]}},
+    {"kind": "choose", "choices": ["nerve_ending"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 2, 2, 2, 2],
+    "monsters": [{"card": "nerve_ending", "dead": true}, {"slot": 1, "card": "dip"}],
+    "after": [{"player": 0, "damage": 1, "cents": 3, "hand": 0, "souls": 0}]
+  }
+}

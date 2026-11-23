@@ -1,0 +1,18 @@
+{
+  "title": "Isaac plays Pills! and rolls a 6: does he take 1 damage?",
+  "source": ["card pills_3_fsp2", "R-MECH-18"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["pills_3_fsp2"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "play", "card": "pills_3_fsp2"},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "monsters": [{"slot": 1, "card": "fly"}],
+    "after": [{"player": 0, "damage": 1}, {"player": 1, "damage": 0}]
+  }
+}

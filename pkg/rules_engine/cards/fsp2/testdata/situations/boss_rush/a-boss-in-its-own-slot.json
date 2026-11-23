@@ -1,0 +1,24 @@
+{
+  "title": "Boss Rush! sits in slot 1 on the Fatty; Isaac puts Monstro in slot 1 and Widow in slot 2: does Boss Rush! still go to discard, and is the Fatty back once Monstro dies?",
+  "source": ["card boss_rush", "card monstro", "card isaac", "R-ZONE-10", "R-ZONE-11", "R-CARD-15", "R-ATK-12", "R-CARD-14"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fatty", "fly"],
+    "decks": {"monster": ["spider", "monstro", "dip", "widow"]},
+    "rolls": [6, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "boss_rush", "choices": ["ask.slot 1", "ask.slot 2"],
+     "expect": {"allowed": true,
+       "monsters": [{"slot": 1, "card": "monstro"}, {"slot": 2, "card": "widow"}],
+       "discards": {"monster": ["spider", "dip", "boss_rush"]}}},
+    {"player": 0, "kind": "attack", "choices": ["monstro"],
+     "expect": {"allowed": true,
+       "resolved_rolls": [6, 6, 6, 6],
+       "monsters": [{"card": "monstro", "dead": true}, {"slot": 1, "card": "fatty", "damage": 0}, {"slot": 2, "card": "widow"}],
+       "after": [{"player": 0, "cents": 6, "soul_cards": ["monstro"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

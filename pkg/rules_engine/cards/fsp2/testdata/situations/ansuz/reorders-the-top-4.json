@@ -1,0 +1,18 @@
+{
+  "title": "Isaac plays Ansuz on the monster deck (Fatty, Trite, Leech, Fly on top): are they put back in his order, Fly on top?",
+  "source": ["card ansuz", "R-ZONE-04", "R-CARD-07"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["ansuz"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["fatty", "trite", "leech", "fly"]}
+  },
+  "action": {"player": 0, "kind": "play", "card": "ansuz", "choices": ["ask.deck.monster", "fly", "leech", "trite", "fatty"]},
+  "expect": {
+    "allowed": true,
+    "decks": {"monster": ["fly", "leech", "trite", "fatty"]},
+    "discards": {"loot": ["ansuz"]},
+    "after": [{"player": 0, "hand": 0}]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "title": "Isaac discards Bomb! to Athame and picks Cain: does Cain discard 2 of his 3 loot cards?",
+  "source": ["card athame", "R-ABIL-07", "R-MECH-25"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["athame"], "hand": ["bomb"]},
+      {"character": "cain", "hand": ["a_penny", "two_cents", "four_cents"]}
+    ],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "athame", "choices": ["bomb", "player 2 (cain)", "two_cents", "four_cents"]},
+  "expect": {
+    "allowed": true,
+    "discards": {"loot": ["bomb", "two_cents", "four_cents"]},
+    "after": [{"player": 0, "hand": 0, "deactivated": []}, {"player": 1, "hand_cards": ["a_penny"]}]
+  }
+}

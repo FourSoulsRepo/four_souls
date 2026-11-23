@@ -1,0 +1,24 @@
+{
+  "title": "Isaac has The Wiz: is the Fly at DC 3 on his turn, so a 2 misses, and does his hit on it also deal 1 to Gurdy?",
+  "source": ["card the_wiz", "card fly", "card isaac", "R-ATK-12", "R-ATK-13", "R-CARD-13"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_wiz"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "gurdy"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [2, 3]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["fly", "gurdy", "ask.deck.monster"]},
+       "monsters": [{"slot": 1, "card": "fly", "evasion": 3}]}},
+    {"kind": "choose", "choices": ["fly", "gurdy"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [2, 3],
+    "monsters": [{"card": "fly", "dead": true}, {"slot": 1, "card": "dip"}, {"slot": 2, "card": "gurdy", "damage": 1}],
+    "after": [{"player": 0, "damage": 1, "cents": 1}]
+  }
+}

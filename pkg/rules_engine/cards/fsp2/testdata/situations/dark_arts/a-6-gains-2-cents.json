@@ -1,0 +1,16 @@
+{
+  "title": "Dark Judas rolls a 6 with Mystery Sack while he has Dark Arts: does he gain 2¢ (the Sack gives nothing on a 6)?",
+  "source": ["card dark_arts", "card mystery_sack", "R-ABIL-16"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "dark_judas", "items": ["mystery_sack", "dark_arts"]}, {"character": "cain"}],
+    "active": 0,
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢."]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [{"player": 0, "cents": 2, "hand": 0}, {"player": 1, "cents": 0}]
+  }
+}

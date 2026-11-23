@@ -1,0 +1,17 @@
+{
+  "title": "Isaac plays Pills! and rolls a 3: does Cain discard his loot card?",
+  "source": ["card pills_fsp2", "R-MECH-25", "R-MECH-27"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["pills_fsp2"]}, {"character": "cain", "hand": ["bomb"]}],
+    "active": 0,
+    "rolls": [3]
+  },
+  "action": {"player": 0, "kind": "play", "card": "pills_fsp2", "choices": ["bomb"]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [3],
+    "discards": {"loot": ["pills_fsp2", "bomb"]},
+    "after": [{"player": 1, "hand": 0}]
+  }
+}
