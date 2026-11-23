@@ -1068,9 +1068,85 @@ Ideas: TS-13, LR-04, R-03.
 15. Old step 19 entries name removed Go tests; left as history.
 16. `cardgen -report` unchanged.
 
-### [ ] 24.21 Bulk: r rooms
+### [x] 24.21 Bulk: r rooms
 
 1. Goal: Room (about 59 tests).
+2. Counts (2026-11-23): 59 tests in 57 `_test.go` files of the family.
+   1. 61 Room cards; Beggar, Bomb Bum, Red Champions, Red Vise: files since 24.5-24.6.
+   2. Spider Webs and Tax For The Mighty have 2 tests each.
+3. Moved: 58 tests, as 59 files; 56 `_test.go` files are gone.
+   1. TestAllHallowsEve, TestAngelicIntervention, TestBattleRoyale, 2, 3.
+   2. TestBlackChampions, TestBlessingOfGluttony, Greed, Steam, The Inner Eye, The Sack.
+   3. TestBlindRage, TestBloodDonation, TestBloodLustR, TestBloodMoney, TestBumBoIsLoose.
+   4. TestButterFingers, TestChallengeRoom, TestConjoinedTwin, TestDevilBeggar.
+   5. TestDiceRoom1 to 6, TestEdensBlessingR, TestEquality, TestEternalChest.
+   6. TestFloorSpikes, TestFortuneTeller, TestGreedLooms, TestGus, TestHaunted.
+   7. TestHeavyIsTheHead, TestIAmErrorR, TestIsaacsBlessing, TestKeyMaster, TestLaserEye.
+   8. TestMaggysBlessing, TestMightForTheMeek, TestPityForThePoor, TestPlanetarium.
+   9. TestRestockMachine, TestSamsonsBlessing, TestShadowOfFamine, TestShadowOfWar.
+   10. TestShellGame, TestSlotMachine, TestSocialGoals, TestSpiderWebs, TestSplashDamage.
+   11. TestStaticShock, TestSpoilsOfWar, TestTheMirror, TestWhiteChampions.
+   12. TestTaxForTheMighty: 2 files, one per case (owner answer 11).
+   13. TestTaxForTheMightyForcedAttack: `tax_for_the_mighty/forced-attack-unpaid-may-end-the-turn.json`.
+   14. Social Goals: in its own folder; Auction Gavel is a prop (as 24.20).
+   15. An `interactions/` file would drop it from cardgen's "tested".
+4. Split: 0.
+5. Stayed Go: 1. TestSpiderWebsDeactivatedEvent: the event's `Object` (24.6, as 24.19).
+   1. The Spider Webs file checks the event's kind and player only.
+6. Needed a format change: 0.
+7. Engine state or API in Go, said by a game action in the file:
+   1. `CanGainSouls` (All Hallows' Eve): Isaac kills Chub, Cain Little Horn; no soul.
+   2. `PlayerAttackDC` (Battle Royale 2, 3): a roll one below misses, the DC hits.
+   3. `MonsterATK`, `Evasion`, `PlayerHP`, `PlayerATK`: a prompt check, or a turn's end.
+   4. `MustAttackDeck` (Blind Rage): end refused by R-ATK-03; the attack offers only the deck.
+   5. `MustAttacks` (Blood Lust, Challenge Room): `attacks` 1, end refused by R-ATK-03.
+   6. `DealDamageTo` (Blood Money, Shadow Of War, Spoils Of War): a miss at 1 HP, or Bomb!.
+   7. `RefillSlots` (Dice Rooms): the "enters play" trigger on `setup.stack`.
+   8. `SkipTurns` (Haunted): Cain ends his turn and is active again.
+   9. `GiveCents` (Social Goals): Cain bids 6¢ on Isaac's Auction Gavel.
+   10. `AddNamedCounters` (Social Goals): `setup.counters`, as the draft had them.
+   11. `ForceAttacks` (Tax, forced): `must_attacks` 1, `must_attack_deck` 1 (19.235).
+8. Drafts: 27 of 59 files kept the dumped setup and steps.
+   1. The `setup` helper's 6 Clotty and 6 Book Of Sin: only the named tops kept.
+   2. No step in the draft (7): a step added; stats at the attack target question.
+   3. Dice Rooms: a mid-stack pass; now a `trigger` item on `setup.stack`.
+   4. Refused steps added: Blind Rage, Blood Lust, Challenge Room, Might For The Meek.
+   5. Setups changed to prove the card text: see item 10.
+9. Checks added from the card text (owner answer 8):
+   1. Roll rooms: `resolved_rolls`; costs: cents, damage, the loot discard.
+   2. Rooms that discard themselves: the room discard; the slot refills (R-SHOP-06).
+   3. Kills: the monster died, its reward; Gus: the soul, Cain's helper roll.
+   4. Dice Room!: at the turn's end it goes to discard, White Champions refills.
+   5. Dice Rooms: the discards, the new items and hands, the refilled slots.
+   6. Inner Eye: the deck order after the Pooter; the Fly back in slot 1.
+   7. Might For The Meek: a third attack refused by R-TURN-07.
+   8. Shadow Of War: the room's trigger resolves before the death penalty.
+   9. Equality: a third player gains 1¢ too; Splash Damage: Samson unhurt.
+   10. Social Goals: the goal counters, every player's 2 treasures.
+   11. Tax: the `gave_cents` event; Isaac's 1¢ from the Fly.
+10. Setups changed to prove the card text:
+   1. Floor Spikes: the Fly and Breakfast; Isaac takes exactly 2 and lives.
+   2. Gus: 2 HP left; it dies only from Cain's helper roll.
+   3. Heavy Is The Head: Jawbone for Glitch, which has no ↷ (R-MECH-54).
+   4. Shadow Of Famine: the second ability is Sack Of Pennies, not the room.
+11. Go tests that did not check what they claimed: 2.
+   1. TestFloorSpikes: damage ≥ 2, but the Leech's 2 ATK killed Isaac alone.
+   2. TestShadowOfFamine: Shadow Of Famine has no activated ability to refuse.
+   3. Weak, not wrong: Blind Rage, Shadow Of Famine, Tax refusals accepted any rule.
+   4. The files check R-ATK-03 and R-ABIL-12.
+12. Refusals: rules from the rules text.
+   1. Shadow Of Famine, Tax For The Mighty: R-ABIL-12, a static ability; it fits.
+   2. Blind Rage, Blood Lust, Challenge Room: R-ATK-03 fits.
+   3. Might For The Meek's third attack: R-TURN-07 fits.
+13. Note, no change: `attacks` leaves out a static bonus attack (as 24.13).
+   1. Might For The Meek: `attacks` 0 after the first attack; the second is allowed.
+14. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 607 changes.
+   2. Only changes that say another true thing passed (14).
+   3. E.g. a player index to another player with the same values.
+15. No rules bug found.
+16. Helpers removed, no use left: `fightRoom`, `enterRoom`.
+17. `cardgen -report` unchanged.
 
 ### [ ] 24.22 Bulk: r passive and eternal treasures
 
