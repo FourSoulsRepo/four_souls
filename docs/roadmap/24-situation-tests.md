@@ -1148,9 +1148,99 @@ Ideas: TS-13, LR-04, R-03.
 16. Helpers removed, no use left: `fightRoom`, `enterRoom`.
 17. `cardgen -report` unchanged.
 
-### [ ] 24.22 Bulk: r passive and eternal treasures
+### [x] 24.22 Bulk: r passive and eternal treasures
 
 1. Goal: Passive and Eternal Treasure (about 55 tests).
+2. Counts (2026-11-24): 55 tests in 44 `_test.go` files of the family.
+   1. 25 Passive, 20 Eternal Treasure cards; Sumptorium: files since 24.5.
+   2. Starting item tests in character files wait for 24.25.
+3. Moved: 51 tests, as 53 files; 40 `_test.go` files are gone.
+   1. TestAbyss, TestAbyssOnBagLunchKeepsHP, TestAbel, TestAlabasterBox.
+   2. TestTheRevenantAttacked, TestDeathPenaltySkipsTheRevenant.
+   3. TestHourglassSkipsTheRevenant: cross-set (fsp2 Hourglass).
+   4. It is `cards/testdata/situations/interactions/hourglass-anima-sola-skips-the-revenant.json`.
+   5. TestBackstabber, TestBallOfBandages, TestBagOfCrafting, TestBerserk.
+   6. TestBloodPuppy, TestBobbyBomb, TestBobbyBombStartOfTurn, TestBookOfVirtues.
+   7. TestCeremonialBlade, TestChocolateMilk, TestConsolationPrize, TestDeadWeight.
+   8. TestDamocles, TestDamoclesDestroyedOnDeath, TestFetalHaunt, TestFlip.
+   9. TestFireMind: 2 files, one per table (dealt on a 6, taken on a 1).
+   10. TestGello, TestGnawedLeafNotYourTurn, TestGnawedLeafCancels.
+   11. TestHaloOfFlies, TestHaloOfFliesWhenAttacked, TestHandicappedPlacard.
+   12. TestHemoptysis, TestHypercoagulation, TestIBS, TestKeepersBargain.
+   13. TestJudasShadow, TestLemegeton, TestLodestone, TestLunch, TestLilChest.
+   14. TestKeepersBox: 2 files, one per table.
+   15. TestMomsBottleOfPills, TestPunchingBag, TestPlaydoughCookie, TestRockBottom.
+   16. TestSiblingRivalry, TestSoulbond, TestSpelunkerHat.
+   17. TestSpindownDice, TestSpindownDiceBagLunch, TestTrickPenny, TestTrickPennyPaid.
+4. Split: 3, a file each; the rest stays Go.
+   1. TestAnimaSola: the flip and the refused ↷ are a file.
+   2. The view's face up stays Go: TestAnimaSolaShowsTheRevenant (ADR 023).
+   3. TestClassicRoller: the reroll and the kill are a file.
+   4. The event's `Dice` stays Go: TestClassicRollerThrowsBothDice (24.6).
+   5. TestGlitch: the gained Jawbone's steal and the recharge are a file.
+   6. `Eternal()` and `Gained` stay Go: TestGlitchStaysEternalAndGainsAtTurnEnd.
+5. Stayed Go whole: 1. TestIBSCancelsDeckAttack: needs a format change.
+   1. IBS answers an attack roll waiting on a deck attack (Q-24).
+   2. A step can't stop there (owner answer 7).
+   3. `setup.stack` can't say the monster came from a deck attack.
+6. Needed a format change: 1 whole test (5); the splits keep Go-only fields.
+7. Engine state set by hand in Go, said by a game action in the file:
+   1. Anima Sola's `Flipped`: the Deserter uses it; a turn later it is recharged.
+   2. The Revenant attacked: she flips it on Isaac's loot step (`phase: loot`).
+   3. Alabaster Box's added counter: two more turns pass instead.
+   4. Bobby Bomb's milled card: Cain plays Bomb! into the loot discard.
+   5. Lemegeton's `Charged`: Lil Battery recharges it.
+   6. Rock Bottom's shortened hand: Isaac plays a Bomb!.
+   7. Keeper's Box's `len(Shop)`: a second purchase offers both new slots' items.
+   8. Handicapped Placard's `Evasion`, Punching Bag's HP: a prompt check.
+   9. `DealDamageTo` (Revenant penalty): the Leech kills the Deserter.
+8. Responses: `setup.stack` or `declared` (owner answer 7).
+   1. Classic Roller, Gello: an `attack_roll` on `setup.stack`.
+   2. Lodestone: a dice roll of 3 on `setup.stack`.
+   3. Sibling Rivalry: `declared: attack`, `priority` 1.
+9. Drafts: 40 of 56 files kept the dumped setup and steps.
+   1. The `setup` helper's 6 Clotty and 6 Book Of Sin: only named tops kept.
+   2. Deck tops in `setup.decks`, so refills, loot and treasure are named.
+   3. Bobby Bomb, Mom's Bottle of Pills: all 10 loot tops are named.
+   4. So the hand and the 8 bottom cards are known.
+   5. Throw steps check one roll: Ball Of Bandages, Dead Weight, Halo Of Flies.
+   6. No step in the draft: Handicapped Placard (an attack), Lunch (Mega Bomb!).
+   7. Setups changed to prove the card text: see item 10.
+10. Setups changed to prove the card text:
+   1. Ball Of Bandages: the Leech (DC 4), so the 3 misses.
+   2. Lodestone: the Leech (DC 4); the roll of 3 comes first, then the attack.
+   3. Lunch: Isaac takes 2 from his own Mega Bomb! and lives.
+11. Checks added from the card text (owner answer 8):
+   1. Kills: the monster died, its reward; most: the slot's refill.
+   2. Roll cards and attacks: `resolved_rolls`; used items: `deactivated`.
+   3. Destroyed items and played loot: their discard pile.
+   4. Abyss: the counters, ATK 1 after one item; Bag Lunch in the loot discard.
+   5. Anima Sola: no loot as it flips to The Revenant; the Revenant not a target after.
+   6. Backstabber: the target options; Samson is not offered.
+   7. Berserk: `attacks` 1 after the first kill, the bonus counted (24.28).
+   8. Ceremonial Blade: the discarded card is the end of turn's loot.
+   9. Flip: amginE ehT's 2 ATK, recharged, both Bombs in the loot discard.
+   10. Gello: no roll resolves, `attacks` 1, the Fly's 1¢ to Isaac.
+   11. Halo Of Flies: Cain's damage after each roll: 0, 1, then dead.
+   12. Hemoptysis, Hypercoagulation: the counters each step.
+   13. Spindown Dice on Bag Lunch: Cain's 3 HP.
+12. Go tests that did not check what they claimed: 3.
+   1. TestBallOfBandages: a 3 hits the Pooter (DC 3); no combat damage either way.
+   2. TestLodestone: "the 3 missed" was wrong; a 3 hits the Pooter.
+   3. Its check passed once the Pooter died.
+   4. TestHaloOfFliesWhenAttacked: `Damage != 0 && !Dead` passed once Cain died.
+   5. The files check the miss, the DC and Cain's damage after the 6.
+13. Refusals: rules from the rules text.
+   1. Abyss used twice: R-ABIL-07, as 24.18 (with R-ABIL-10).
+   2. The Revenant's ↷: R-ABIL-08; it has no activated ability.
+14. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 771 changes.
+   2. Only changes that say another true thing passed (22).
+   3. E.g. a 3 in `[3, 3]` changed to the other 3.
+   4. The cross-set file: 4 changes by hand, each failed.
+15. No rules bug found.
+16. Helper removed, no use left: `table2`.
+17. `cardgen -report` unchanged.
 
 ### [ ] 24.23 Bulk: r other treasures
 
