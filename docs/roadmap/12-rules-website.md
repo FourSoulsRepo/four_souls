@@ -232,6 +232,7 @@ Rules of this step (owner, 2026-11-06):
       1. S-RU uses «добыча» and «жетон» throughout.
    9. Dice: S-RU says «кубик»; «Комната игральной кости!» says «игральная кость».
       1. Not a glossary term; `roll` is «бросок» in both.
+   10. Owner kept all three picks of items 5–7 (2026-11-24).
 
 ### [ ] 12.11 Russian app interface
 
