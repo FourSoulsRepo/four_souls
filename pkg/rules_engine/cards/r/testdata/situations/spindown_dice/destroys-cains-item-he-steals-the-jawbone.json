@@ -1,0 +1,16 @@
+{
+  "title": "The Broken uses Spindown Dice on Cain's Spoon Bender: is it destroyed, and does Cain steal the shop's Jawbone?",
+  "source": ["card spindown_dice", "R-MECH-38", "R-MECH-23"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "the_broken", "items": ["spindown_dice"]}, {"character": "cain", "items": ["spoon_bender"]}],
+    "active": 0,
+    "shop": ["jawbone"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "spindown_dice", "choices": ["spoon_bender", "jawbone"]},
+  "expect": {
+    "allowed": true,
+    "discards": {"treasure": ["spoon_bender"]},
+    "after": [{"player": 0, "items": ["spindown_dice"], "deactivated": ["spindown_dice"]}, {"player": 1, "items": ["jawbone"]}]
+  }
+}

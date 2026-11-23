@@ -1,0 +1,19 @@
+{
+  "title": "A roll of 3 resolves: Lodestone gives the Leech -1 DC (3); Isaac's attack roll of 3 then kills it, and Lodestone gives the Fly -1 DC (1)?",
+  "source": ["card lodestone", "card leech", "card fly", "R-ABIL-16", "R-ATK-12"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["lodestone"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "stack": [{"dice_roll": 3, "owner": 0}],
+    "rolls": [3]
+  },
+  "steps": [
+    {"player": 0, "kind": "pass", "choices": ["leech"],
+     "expect": {"allowed": true, "resolved_rolls": [3], "monsters": [{"card": "leech", "evasion": 3}, {"card": "fly", "evasion": 2}]}},
+    {"player": 0, "kind": "attack", "choices": ["leech", "fly"],
+     "expect": {"allowed": true, "resolved_rolls": [3], "monsters": [{"card": "leech", "dead": true}, {"card": "fly", "evasion": 1}], "after": [{"player": 0, "hand": 1, "damage": 0}]}}
+  ],
+  "expect": {"allowed": true}
+}

@@ -1,0 +1,16 @@
+{
+  "title": "On Cain's turn he plays Mega Bomb! on Isaac, who has Gnawed Leaf and does not cancel it: is all the damage prevented?",
+  "source": ["card gnawed_leaf", "card mega_bomb", "R-ABIL-30", "R-MECH-46"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "cain", "hand": ["mega_bomb"]}, {"character": "isaac", "items": ["gnawed_leaf"]}, {"character": "samson"}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "mega_bomb", "choices": ["player 2 (isaac)", "ask.no"]},
+  "expect": {
+    "allowed": true,
+    "discards": {"loot": ["mega_bomb"]},
+    "events": [{"kind": "died", "none": true}],
+    "after": [{"player": 1, "damage": 0, "hp": 2}]
+  }
+}

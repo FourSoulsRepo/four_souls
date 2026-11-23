@@ -1,0 +1,11 @@
+{
+  "title": "The Miser uses Keeper's Bargain; Cain takes 1¢ and Isaac does not: does the Miser gain 1¢ + 1¢?",
+  "source": ["card keepers_bargain", "R-MECH-27"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "the_miser", "items": ["keepers_bargain"]}, {"character": "cain"}, {"character": "isaac"}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "keepers_bargain", "choices": ["ask.yes", "ask.no"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 2, "deactivated": ["keepers_bargain"]}, {"player": 1, "cents": 1}, {"player": 2, "cents": 0}]}
+}

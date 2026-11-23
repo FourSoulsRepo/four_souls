@@ -1,0 +1,17 @@
+{
+  "title": "Cain has 2 souls and Isaac none: on Isaac's turn, does Handicapped Placard give the Leech DC 2, so a 2 kills it?",
+  "source": ["card handicapped_placard", "card leech", "R-ATK-12", "R-CARD-21"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["handicapped_placard"]}, {"character": "cain", "souls": ["monstro", "gurdy"]}],
+    "active": 0,
+    "monsters": ["leech"],
+    "rolls": [2]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "expect": {"allowed": true, "prompt": {"player": 0}, "monsters": [{"card": "leech", "evasion": 2}]}},
+    {"kind": "choose", "choices": ["leech"],
+     "expect": {"allowed": true, "resolved_rolls": [2], "monsters": [{"card": "leech", "dead": true}], "after": [{"player": 0, "hand": 1, "damage": 0}]}}
+  ],
+  "expect": {"allowed": true}
+}

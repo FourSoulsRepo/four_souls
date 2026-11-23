@@ -1,0 +1,14 @@
+{
+  "title": "At the start of Isaac's turn he looks at the treasure deck's top 3 with Spelunker Hat and puts them back as Spoon Bender, The Battery, Boomerang: is that the new order?",
+  "source": ["card spelunker_hat", "R-TURN-03", "R-ZONE-04"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "cain"}, {"character": "isaac", "items": ["spelunker_hat"]}],
+    "active": 0,
+    "decks": {"treasure": ["boomerang", "the_battery", "spoon_bender"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "choices": ["ask.deck.treasure", "spoon_bender", "the_battery", "boomerang"]}
+  ],
+  "expect": {"allowed": true, "active": 1, "decks": {"treasure": ["spoon_bender", "the_battery", "boomerang"]}}
+}

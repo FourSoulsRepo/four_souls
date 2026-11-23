@@ -6,16 +6,6 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-func TestIBS(t *testing.T) {
-	tb := setup(t, engine.SituationSetup{Players: []engine.SituationPlayer{
-		{Character: "the_soiled", Items: []engine.CardRef{"ibs"}, Hand: []engine.CardRef{"bomb", "a_nickel", "dice_shard"}}, seat("cain"),
-	}})
-	tb.Activate(0, "ibs", 0, "Gain 3¢.", "bomb")
-	if tb.G.Players[0].Cents != 3 {
-		t.Error("discard a card: gain 3¢")
-	}
-}
-
 // A deck attack is an attack on the revealed monster (Q-24, 19.62).
 func TestIBSCancelsDeckAttack(t *testing.T) {
 	tb := setup(t, engine.SituationSetup{

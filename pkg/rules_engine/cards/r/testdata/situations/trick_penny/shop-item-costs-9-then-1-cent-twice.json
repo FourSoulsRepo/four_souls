@@ -1,0 +1,16 @@
+{
+  "title": "Isaac with Trick Penny buys the shop's Spoon Bender for 9¢, gains 1¢ for the purchase, and 1¢ at the end of his turn?",
+  "source": ["card trick_penny", "R-SHOP-03", "R-TURN-10"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["trick_penny"], "cents": 9}, {"character": "cain"}],
+    "active": 0,
+    "shop": ["spoon_bender"]
+  },
+  "steps": [
+    {"player": 0, "kind": "purchase", "choices": ["spoon_bender"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 1, "items": ["trick_penny", "spoon_bender"]}]}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "cents": 2}]}}
+  ],
+  "expect": {"allowed": true}
+}

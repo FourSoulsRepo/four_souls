@@ -1,0 +1,17 @@
+{
+  "title": "At the start of Isaac's turn he chooses no item with Playdough Cookie and gains 1¢; on his next turn he puts a counter on his Spoon Bender?",
+  "source": ["card playdough_cookie", "R-TURN-03"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "cain"}, {"character": "isaac", "items": ["playdough_cookie", "spoon_bender"]}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "choices": ["ask.none"],
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 1, "cents": 1}]}},
+    {"player": 1, "kind": "end_turn"},
+    {"player": 0, "kind": "end_turn", "choices": ["spoon_bender", "ask.counter.add"],
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 1, "cents": 1, "counters": [{"card": "spoon_bender", "count": 1}]}]}}
+  ],
+  "expect": {"allowed": true}
+}

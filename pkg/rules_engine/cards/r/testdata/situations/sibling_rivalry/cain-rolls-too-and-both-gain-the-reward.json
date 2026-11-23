@@ -1,0 +1,23 @@
+{
+  "title": "Isaac declared an attack; Cain uses Sibling Rivalry on himself, then Isaac attacks the Pooter: after Isaac's hit Cain rolls and hits, the Pooter dies; do both gain its reward?",
+  "source": ["card sibling_rivalry", "card pooter", "R-ATK-21", "R-ATK-04", "R-ATK-02"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "items": ["sibling_rivalry"]}],
+    "active": 0,
+    "monsters": ["pooter"],
+    "declared": "attack",
+    "priority": 1,
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 1, "kind": "activate", "card": "sibling_rivalry", "choices": ["player 2 (cain)", "pooter"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "attacks": 0,
+    "resolved_rolls": [6, 6],
+    "monsters": [{"card": "pooter", "dead": true}],
+    "after": [{"player": 0, "hand": 1}, {"player": 1, "hand": 1, "deactivated": ["sibling_rivalry"]}]
+  }
+}

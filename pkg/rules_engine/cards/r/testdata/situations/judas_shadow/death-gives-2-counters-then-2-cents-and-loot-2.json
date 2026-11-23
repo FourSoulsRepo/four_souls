@@ -1,0 +1,17 @@
+{
+  "title": "Cain's Mega Bomb! kills Isaac: does Judas' Shadow get 2 counters, and when the penalty destroys it, does he gain 2¢ and loot 2?",
+  "source": ["card judas_shadow", "card mega_bomb", "R-DEATH-13", "R-DEATH-14"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "cain", "hand": ["mega_bomb"]}, {"character": "isaac", "items": ["judas_shadow"]}],
+    "active": 0,
+    "shop": ["spoon_bender"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "mega_bomb", "choices": ["player 2 (isaac)", "judas_shadow"]},
+  "expect": {
+    "allowed": true,
+    "events": [{"kind": "died", "player": 1}],
+    "discards": {"treasure": ["judas_shadow"], "loot": ["mega_bomb"]},
+    "after": [{"player": 1, "cents": 2, "hand": 2, "items": []}]
+  }
+}

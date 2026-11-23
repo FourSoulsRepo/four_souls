@@ -1,0 +1,20 @@
+{
+  "title": "Isaac buys Rock Bottom with 2 loot cards in hand (2 counters), plays one: at the end of his turn, with 1 card, does he loot 2?",
+  "source": ["card rock_bottom", "card bomb", "R-CARD-37", "R-TURN-10"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["bomb", "bomb"], "cents": 10}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "pooter"],
+    "decks": {"treasure": ["rock_bottom"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "purchase", "choices": ["ask.deck.treasure"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 0, "items": ["rock_bottom"], "counters": [{"card": "rock_bottom", "count": 2}]}]}},
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["pooter"],
+     "expect": {"allowed": true, "after": [{"player": 0, "hand": 1}]}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "hand": 3}]}}
+  ],
+  "expect": {"allowed": true}
+}

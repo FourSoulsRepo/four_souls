@@ -107,15 +107,6 @@ func settleAny(tb *enginetest.Table) {
 	tb.T.Fatal("settleAny: the stack never emptied")
 }
 
-// Tests of the simple passive treasures; the others have their own files.
-
-// table2 seats Isaac with the items and Cain.
-
-func table2(t *testing.T, items ...engine.CardRef) *enginetest.Table {
-	t.Helper()
-	return setup(t, engine.SituationSetup{Players: []engine.SituationPlayer{seat("isaac", items...), seat("cain")}})
-}
-
 // Attacks on players, attackable items and helpers (R-ATK-20, R-ATK-21,
 // R-MECH-04), through the cards that allow them.
 

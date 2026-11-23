@@ -1,0 +1,11 @@
+{
+  "title": "Isaac with Trick Penny and 3¢ uses The Jar (pay 4¢): does it cost 3¢?",
+  "source": ["card trick_penny", "card the_jar", "R-ABIL-07", "R-MECH-44"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["trick_penny", "the_jar"], "cents": 3}, {"character": "cain"}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "the_jar", "choices": ["player 2 (cain)"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 0}]}
+}
