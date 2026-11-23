@@ -18,8 +18,18 @@ export function trend(live: number, printed: number): Trend {
 
 // sumOf adds up the sources of one stat.
 export function sumOf(sources: StatSource[] | undefined, stat: StatSource['stat']): number {
-  return (sources ?? []).filter((s) => s.stat === stat).reduce((n, s) => n + s.amount, 0);
+  return (sources ?? []).filter((s) => s.stat === stat).reduce((n, s) => n + amountOf(s), 0);
 }
+
+// amountOf is a source's amount; a shield of the whole next damage has
+// none (18.30).
+function amountOf(s: StatSource): number {
+  return s.amount ?? 0;
+}
+
+// shields are the shield keys (ADR 037 item 1.8): one source each, never
+// summed, and a whole-damage shield has no amount.
+const shields = new Set<StatSource['stat']>(['shield', 'shield_cap']);
 
 // Printed are the stats a card prints; dc only on monsters.
 export interface Printed {
@@ -36,15 +46,20 @@ export interface Live {
 
 // merged adds up one source's parts of one stat (18.29, ADR 037): two
 // "+1" of the Trick card this turn are one "+2". Parts that last or
-// apply differently stay apart. The order is each first part's.
+// apply differently stay apart, and so does each shield (18.31). The
+// order is each first part's.
 export function merged(sources: StatSource[]): StatSource[] {
   const sums = new Map<string, StatSource>();
-  for (const s of sources) {
+  sources.forEach((s, i) => {
+    if (shields.has(s.stat)) {
+      sums.set(`shield-${String(i)}`, s);
+      return;
+    }
     const key = JSON.stringify([s.stat, s.source ?? null, s.card ?? '', s.lasts, s.when ?? null]);
     const known = sums.get(key);
-    sums.set(key, known ? { ...known, amount: known.amount + s.amount } : s);
-  }
-  return [...sums.values()].filter((s) => s.amount !== 0);
+    sums.set(key, known ? { ...known, amount: amountOf(known) + amountOf(s) } : s);
+  });
+  return [...sums.values()].filter((s) => shields.has(s.stat) || amountOf(s) !== 0);
 }
 
 // statLines are the sums the zoom shows beside a card: "ATK 4 = 1 printed
@@ -58,7 +73,7 @@ export function statLines(sources: StatSource[] | undefined, printed: Printed, l
   const formula = (stat: StatSource['stat'], base: number, now: number, line: (v: { n: number; base: number; terms: string }) => string) => {
     const parts = list.filter((s) => s.stat === stat);
     if (parts.length === 0) return;
-    const terms = parts.map((s) => `${s.amount < 0 ? '−' : '+'} ${String(Math.abs(s.amount))} ${name(s.card)}${suffix(s)}`);
+    const terms = parts.map((s) => `${amountOf(s) < 0 ? '−' : '+'} ${String(Math.abs(amountOf(s)))} ${name(s.card)}${suffix(s)}`);
     lines.push(line({ n: now, base, terms: terms.join(' ') }));
   };
   formula('hp', printed.hp, printed.hp + sumOf(list, 'hp'), (v) => t('stats.sum_hp', v));
@@ -69,7 +84,7 @@ export function statLines(sources: StatSource[] | undefined, printed: Printed, l
   }
   const rolls = (stat: StatSource['stat'], line: (list: string) => string, unit = '') => {
     const parts = list.filter((s) => s.stat === stat);
-    if (parts.length > 0) lines.push(line(parts.map((s) => `${signed(s.amount)}${unit} ${name(s.card)}${suffix(s)}`).join(', ')));
+    if (parts.length > 0) lines.push(line(parts.map((s) => `${signed(amountOf(s))}${unit} ${name(s.card)}${suffix(s)}`).join(', ')));
   };
   rolls('roll', (l) => t('stats.rolls', { list: l }));
   rolls('attack_roll', (l) => t('stats.attack_rolls', { list: l }));
@@ -85,7 +100,7 @@ export function statLines(sources: StatSource[] | undefined, printed: Printed, l
 function takenLine(list: StatSource[], name: Name): string {
   const parts = list.filter((s) => s.stat === 'damage_taken').sort((a, b) => Number(a.lasts !== 'turn') - Number(b.lasts !== 'turn'));
   if (parts.length === 0) return '';
-  const terms = parts.map((s, i) => `${i === 0 ? signed(s.amount) : ` ${s.amount < 0 ? '−' : '+'} ${String(Math.abs(s.amount))}`} ${name(s.card)}${suffix(s)}`);
+  const terms = parts.map((s, i) => `${i === 0 ? signed(amountOf(s)) : ` ${amountOf(s) < 0 ? '−' : '+'} ${String(Math.abs(amountOf(s)))}`} ${name(s.card)}${suffix(s)}`);
   return t('stats.sum_damage_taken', { n: signed(sumOf(parts, 'damage_taken')), terms: terms.join('') });
 }
 
@@ -96,43 +111,118 @@ export function damageTaken(sources: StatSource[] | undefined): number {
   return Math.max(sumOf(sources, 'damage_taken'), 0);
 }
 
-// TempSource is one icon on a card: an effect of this turn or one that
-// waits for the next attack roll (SB-04). lines say what it does.
-export interface TempSource {
+// EffectIcon is one icon on a card (ADR 037 item 3): one source card's
+// effects, or one that waits for the next attack roll (SB-04). lines
+// say what it does; number is the sum an icon of one number stat shows.
+export interface EffectIcon {
   key: string;
   card?: string;
   nextRoll: boolean;
   lines: string[];
+  number?: string;
 }
 
-// tempSources are a card's icons, one per source and lasting: lasting
-// sources show only in the sums (owner, 2026-10-22). One source's
-// changes of one stat are one line: "+2 damage taken", not two "+1"
-// (18.29).
-export function tempSources(sources: StatSource[] | undefined): TempSource[] {
-  const out: TempSource[] = [];
+// effectIcons are a card's icons, one per source and lasting (ADR 037
+// item 3). own are the objects in the player's own area: their lasting
+// effects get no icon, as the card lies beside the character. Without
+// own (a monster) no lasting effect gets one (owner, 2026-10-22). A
+// this-turn effect keeps its icon wherever its card is (item 3.8). One
+// source's changes of one stat are one line: "+2 damage taken", not
+// two "+1" (18.29).
+export function effectIcons(sources: StatSource[] | undefined, own?: ReadonlySet<number>): EffectIcon[] {
+  const out: (EffectIcon & { parts: StatSource[] })[] = [];
   merged(sources ?? []).forEach((s, i) => {
-    if (s.lasts === 'in_play') return;
+    if (s.lasts === 'in_play' && (own === undefined || (s.source !== undefined && own.has(s.source)))) return;
+    const text = effect(s);
+    if (text === '') return; // a stat without words: no icon line
     const nextRoll = s.lasts === 'next_roll';
     const key = `${s.source !== undefined ? String(s.source) : `x${String(i)}`}-${s.lasts}`;
-    const text = effect(s);
-    if (text === '') return; // no words for this stat yet (18.31)
     const when = whenText(s);
-    const line = `${nextRoll ? text : t('stats.this_turn_effect', { effect: text })}${when ? ` (${when})` : ''}`;
+    const line = `${s.lasts === 'turn' ? t('stats.this_turn_effect', { effect: text }) : text}${when ? ` (${when})` : ''}`;
     const known = out.find((t) => t.key === key);
     if (known) {
       known.lines.push(line);
+      known.parts.push(s);
       return;
     }
-    out.push({ key, ...(s.card ? { card: s.card } : {}), nextRoll, lines: [line] });
+    out.push({ key, ...(s.card ? { card: s.card } : {}), nextRoll, lines: [line], parts: [s] });
   });
-  return out;
+  return out.map(({ parts, ...icon }) => {
+    const n = iconNumber(parts);
+    return n === undefined ? icon : { ...icon, number: n };
+  });
 }
 
-// effect says what one source does: "+1 ATK", "+1 to the next attack roll";
-// '' for a stat it has no words for.
-function effect(s: StatSource): string {
-  const amount = signed(s.amount);
+// MAX_ICONS is how many icons a card shows; the rest are a "+K" chip
+// (ADR 037 item 3.6).
+export const MAX_ICONS = 4;
+
+// shownIcons splits a card's icons into the ones it draws and how many
+// more the "+K" chip stands for. Five icons are four and "+1": the chip
+// takes the fifth one's place.
+export function shownIcons<T>(icons: T[]): { shown: T[]; more: number } {
+  if (icons.length <= MAX_ICONS) return { shown: icons, more: 0 };
+  return { shown: icons.slice(0, MAX_ICONS), more: icons.length - MAX_ICONS };
+}
+
+// numberStats change a number by their amount (ADR 037 item 3.5). Not
+// in it: flags (amount 1), caps (max hand size), the DC to be attacked
+// (the DC itself) and shields (an amount prevented, not a change).
+const numberStats = new Set<StatSource['stat']>([
+  'hp',
+  'atk',
+  'dc',
+  'roll',
+  'attack_roll',
+  'attacked_dc',
+  'damage_taken',
+  'shop_price',
+  'loot_plays',
+  'attacks',
+  'purchases',
+  'loot_step',
+  'paid_discount',
+  'attack_tax',
+]);
+
+// iconNumber is the number an icon shows: the sum of its lines when all
+// are one number stat, as a change ("+2", "−5"); undefined otherwise.
+// Attacks of 98 or more are "any number" and a shop price of −99 or
+// less is free: no number then.
+function iconNumber(parts: StatSource[]): string | undefined {
+  const stat = parts.at(0)?.stat;
+  if (stat === undefined || !numberStats.has(stat) || parts.some((p) => p.stat !== stat || anyAttacks(p) || freeShop(p))) return undefined;
+  const sum = parts.reduce((n, p) => n + amountOf(p), 0);
+  if (sum === 0) return undefined;
+  // A $ ability's discount lowers its cost: −1, as a shop price.
+  return signed(stat === 'paid_discount' ? -sum : sum);
+}
+
+// anyAttacks: Skeleton Key's 98 and Bum-Bo's 99 more attacks mean any
+// number of them (18.30).
+function anyAttacks(s: StatSource): boolean {
+  return s.stat === 'attacks' && amountOf(s) >= 98;
+}
+
+// freeShop: Pity for the Poor's −1000 makes a shop item 0¢.
+function freeShop(s: StatSource): boolean {
+  return s.stat === 'shop_price' && amountOf(s) <= -99;
+}
+
+// yourTurn are the lasting effects that count on their player's own
+// turn only; the server sends them on other turns too (18.30).
+const yourTurn = new Set<StatSource['stat']>(['loot_plays', 'attacks', 'purchases', 'lock_others']);
+
+// effect says what one source does: "+1 ATK", "Can't gain souls"; ''
+// for a stat it has no words for (a newer server's).
+export function effect(s: StatSource): string {
+  const text = effectWords(s);
+  return text !== '' && s.lasts === 'in_play' && yourTurn.has(s.stat) && !anyAttacks(s) ? t('stats.on_your_turn', { effect: text }) : text;
+}
+
+function effectWords(s: StatSource): string {
+  const n = Math.abs(amountOf(s));
+  const amount = signed(amountOf(s));
   switch (s.stat) {
     case 'hp':
       return t('stats.effect.hp', { amount });
@@ -148,8 +238,55 @@ function effect(s: StatSource): string {
       return t('stats.effect.attacked_dc', { amount });
     case 'damage_taken':
       return t('stats.effect.damage_taken', { amount });
+    case 'shop_price':
+      return freeShop(s) ? t('stats.effect.shop_free') : t('stats.effect.shop_price', { amount });
+    case 'loot_plays':
+      return t('stats.effect.loot_plays', { amount, n });
+    case 'attacks':
+      return anyAttacks(s) ? t('stats.effect.attacks_any') : t('stats.effect.attacks', { amount, n });
+    case 'purchases':
+      return t('stats.effect.purchases', { amount, n });
+    case 'loot_step':
+      return t('stats.effect.loot_step', { amount, n });
+    case 'lock_others':
+    case 'lock_turn':
+      return t('stats.effect.lock_others');
+    case 'loot_double':
+      return t('stats.effect.loot_double');
+    case 'death_ward':
+      return t('stats.effect.death_ward');
+    case 'recharge_limit':
+      return t('stats.effect.recharge_limit');
+    case 'hand_cap':
+      return t('stats.effect.hand_cap', { n });
+    case 'no_char_recharge':
+      return t('stats.effect.no_char_recharge');
+    case 'reveal_hand':
+      return t('stats.effect.reveal_hand');
+    case 'choose_attack':
+      return t('stats.effect.choose_attack');
+    case 'no_forced_loss':
+      return t('stats.effect.no_forced_loss');
+    case 'paid_discount':
+      return t('stats.effect.paid_discount', { n });
+    case 'no_souls':
+      return t('stats.effect.no_souls');
+    case 'penalty_item_to':
+      return t('stats.effect.penalty_item_to');
+    case 'player_attack_dc':
+      return t('stats.effect.player_attack_dc', { n });
+    case 'one_ability':
+      return t('stats.effect.one_ability');
+    case 'one_loot':
+      return t('stats.effect.one_loot');
+    case 'attack_tax':
+      return t('stats.effect.attack_tax', { n });
+    case 'shield':
+      return s.amount === undefined ? t('stats.effect.shield_all') : t('stats.effect.shield', { n });
+    case 'shield_cap':
+      return t('stats.effect.shield_cap', { n });
     default:
-      return ''; // a stat without words yet: no icon line (18.30)
+      return ''; // a newer server's stat: no icon line (18.30)
   }
 }
 
@@ -182,10 +319,10 @@ const rollStats = new Set<StatSource['stat']>(['roll', 'attack_roll']);
 export function oddsLine(odds: OddsView, printedATK: number, name: Name): string {
   const list = odds.sources ?? [];
   const rolls = list.filter((s) => rollStats.has(s.stat));
-  const terms = rolls.map((s) => ` ${s.amount > 0 ? '−' : '+'} ${String(Math.abs(s.amount))} ${name(s.card)}${suffix(s)}`).join('');
+  const terms = rolls.map((s) => ` ${amountOf(s) > 0 ? '−' : '+'} ${String(Math.abs(amountOf(s)))} ${name(s.card)}${suffix(s)}`).join('');
   const hit = t('stats.odds_hit', { hits: hitsText(odds.hits), dc: odds.dc, terms });
   const atk = list.filter((s) => s.stat === 'atk');
-  const sum = atk.map((s) => ` ${s.amount < 0 ? '−' : '+'} ${String(Math.abs(s.amount))} ${name(s.card)}${suffix(s)}`).join('');
+  const sum = atk.map((s) => ` ${amountOf(s) < 0 ? '−' : '+'} ${String(Math.abs(amountOf(s)))} ${name(s.card)}${suffix(s)}`).join('');
   return `${hit} · ${atk.length > 0 ? t('stats.odds_atk_sum', { n: odds.atk, base: printedATK, terms: sum }) : t('stats.odds_atk', { n: odds.atk })}`;
 }
 
@@ -194,7 +331,7 @@ export function oddsLine(odds: OddsView, printedATK: number, name: Name): string
 export function rollChanges(sources: StatSource[] | undefined, name: Name): string {
   return (sources ?? [])
     .filter((s) => rollStats.has(s.stat))
-    .map((s) => `${signed(s.amount)} ${name(s.card)}${suffix(s)}`)
+    .map((s) => `${signed(amountOf(s))} ${name(s.card)}${suffix(s)}`)
     .join(', ');
 }
 

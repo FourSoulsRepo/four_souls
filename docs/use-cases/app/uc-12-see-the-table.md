@@ -190,7 +190,7 @@
   * Effects of this turn are small icons on the card's right edge.
   * Each icon is cut from its source card's art.
   * Hover an icon: its card zooms, with what it does.
-  * Lasting items get no icon; they show only in the sums.
+  * Lasting cards in the player's own area get no icon (3k).
   * A text card's icon shows its initial; a hidden source a "?".
 * **3i. Effects that end (15.93):** an effect's icon leaves when it ends.
   * A boost for the next attack roll has a small die on its icon.
@@ -286,6 +286,21 @@
   * Each step flips the number in; a soul crystal flips as it fills.
   * Reduced motion: it still counts, with no flip.
   * Animations off: the number jumps.
+* **3k. Every effect on a player has an icon (18.31, ADR 037):** each source card, one icon.
+  * Lasting cards in the player's own area: no icon; the card lies there.
+  * Lasting cards elsewhere get one: rooms, monsters, others' items.
+  * A room with a condition: only on the players it hits now.
+  * This turn's effects keep their icon, own cards and gone ones too.
+  * Shields too: "Prevents the next 1 damage this turn".
+  * Hover lists each effect: "Can't gain souls", "Max hand size 2".
+  * Lasting "on your turn" effects say so.
+  * One stat from one card adds up: "+2 attacks", not two "+1".
+  * An icon of one number stat shows its sum in a corner: "+2".
+  * No number for locks, caps, the DC to be attacked, shields.
+  * Three icons go down the right edge; then a second column.
+  * Above 4 icons: the first 4, then a "+K" chip.
+  * Hover the chip: the character zooms, as from the card.
+  * Monsters keep the old rule: icons for this turn's effects only.
 
 ## Postconditions
 

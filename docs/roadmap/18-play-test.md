@@ -1045,7 +1045,7 @@ Ideas: B-04, B-05, B-08.
        1. `make e2e`: 638 passed, 22 skipped, first run.
        2. `make fuzz-sets FUZZTIME=60s` passes.
 
-### [ ] 18.31 Client: effect icons for every effect
+### [x] 18.31 Client: effect icons for every effect
 
 1. Goal: the character's icons show every effect from elsewhere (ADR 037 item 3).
 2. Tasks:
@@ -1070,6 +1070,52 @@ Ideas: B-04, B-05, B-08.
    3. Screenshots: few icons, many icons, without images.
    4. UC-12, wiki `Client.md`, `Animations.md`.
    5. Gates: `make lint`, `make frontend e2e`.
+4. Result (2026-11-24)
+   1. `tempSources` is now `effectIcons(sources, own)` in `stats.ts`.
+   2. Own area: the character and the player's `in_play` objects.
+      1. `statsOf` in `PlayerArea.tsx` passes them as `own`.
+      2. Items, souls and curses; their lasting effects get no icon.
+      3. A monster passes none: icons for this turn only, as before.
+   3. Every stat key has words in `stats.effect.*`; 26 new lines.
+      1. Also `stats.on_your_turn`, `badge.more_effects`.
+      2. Loot plays, attacks, purchases, Trinity Shield: "on your turn".
+      3. Pity for the Poor: "May buy a shop item for 0¢".
+      4. Skeleton Key, Bum-Bo!: "May attack any number of times".
+   4. Shields: one line each, never summed (`merged` keeps them apart).
+   5. Icon number: the sum when all lines are one number stat.
+      1. Number stats: HP, ATK, DC, rolls, attacked DC, damage taken.
+      2. Also shop price, loot plays, attacks, purchases, loot step.
+      3. Also attack tax, and a $ discount shown as "−N".
+      4. None: flags, hand cap, attack DC, shields, 98+ attacks, free shop.
+   6. Layout: 3 icons down the edge, then a column to their left.
+      1. Four icons hit the ATK badge in one column.
+   7. Above 4: `shownIcons` keeps 4; `MoreIcons` draws "+K".
+      1. The chip has no zoom of its own: the card's zoom shows.
+   8. `StatSource.amount` is optional now: a whole shield sends none.
+   9. No new animation; `source-icon` row updated.
+   10. 5.26, every place that draws sources:
+       1. `Card.tsx`: character and monster icons, zoom sums.
+       2. `stack.ts`: roll rows (`rollChanges`), odds line (`oddsLine`).
+       3. `history.ts`: roll changes (`rollChanges`).
+       4. All read amounts through `amountOf`; none gets shields.
+   11. Tests: Vitest `stats` (grouping, sums, numbers, chip, every key).
+       1. e2e `effect-icons.spec.ts`: room, gone card, "+K" chip.
+       2. Room: Tax for the Mighty on the player with a soul only.
+       3. Gone card: Soul Heart's shield after the card is discarded.
+   12. Docs: UC-12 3k; wiki `Client.md`, `Animations.md`.
+       1. ADR 037 items 3.10–3.14 (drift).
+   13. Screenshots: `.cache/screenshots/18.31/before/` and `after/`.
+       1. Few: `effects-room`, `effects-gone-card`; many: `effects-many`.
+       2. Without images: `*-noimages.png`; `crop-*` close-ups.
+   14. For 18.32: the chip zooms the character; the list goes there.
+       1. `effect()` in `stats.ts` gives each line's words.
+   15. Gates: `make lint`, `make test`, `make frontend` (774 Vitest) pass.
+       1. `make e2e` run 1: 643 passed, 1 failed: `playback.spec.ts:1975`, chromium.
+          1. The 19.237 flake; passed alone, same seed.
+       2. Run 2: 643 passed, 1 failed: the new gone-card test, webkit.
+          1. It waited for an empty stack, true before the play; fixed (5.16.10).
+       3. Run 3: 644 passed, 22 skipped.
+       4. Evidence: `.cache/e2e-evidence/18.31-run1/`, `18.31-run2/`.
 
 ### [ ] 18.32 Client: "Effects on you" in the zoom
 

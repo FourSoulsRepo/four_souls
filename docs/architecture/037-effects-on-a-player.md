@@ -89,6 +89,15 @@ Use option 1.
    7. The chip opens the character's zoom (level 3).
    8. A this-turn effect keeps its icon, its card's place aside (owner, 2026-11-24).
    9. The chip opens the zoom on hover, as an icon does.
+   10. Own area: the character and the player's `in_play` cards (18.31).
+       1. Items, souls and curses; the client reads it from the view.
+   11. Monsters keep icons for this turn's effects only (18.31).
+   12. The number shows only for a change of a number (18.31).
+       1. None for flags, caps, the DC to be attacked, shields.
+       2. None for any number of attacks or a free shop item.
+   13. A lasting "on your turn" effect says so (18.31).
+       1. The server sends it on other turns too.
+   14. Three icons per column; a second column to their left (18.31).
 4. Level 3, the zoomed character: "Effects on you".
    1. Every effect, groups A, B and C.
    2. "This turn" first, then "while in play".

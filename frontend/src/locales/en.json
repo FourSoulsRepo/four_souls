@@ -537,6 +537,13 @@
     "text": "Kept dice: {n}",
     "note": "Tooltip of a die a card keeps on its art. n: the number."
   },
+  "badge.more_effects": {
+    "text": {
+      "one": "{n} more effect",
+      "other": "{n} more effects"
+    },
+    "note": "The '+K' chip under a character's first 4 effect icons: its name and tooltip. Hover shows the character's zoom. n: the hidden icons."
+  },
   "badge.must_attack": {
     "text": "Must be attacked this turn",
     "note": "Card zoom, a line under a card the active player must attack this turn (Monster Manual)."
@@ -4544,9 +4551,28 @@
     "text": "{amount} to attack rolls",
     "note": "Tooltip of an effect icon on a character. amount: '+1' or '−1'."
   },
+  "stats.effect.attack_tax": {
+    "text": "Pays {n}¢ to each other player to attack",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Tax for the Mighty. n: cents."
+  },
   "stats.effect.attacked_dc": {
     "text": "{amount} DC of monsters you attack",
     "note": "Tooltip of an effect icon on a character. amount: '+1' or '−1'."
+  },
+  "stats.effect.attacks": {
+    "text": {
+      "one": "{amount} attack",
+      "other": "{amount} attacks"
+    },
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). amount: '+1'; n: the number without its sign."
+  },
+  "stats.effect.attacks_any": {
+    "text": "May attack any number of times",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Skeleton Key, Bum-Bo!."
+  },
+  "stats.effect.choose_attack": {
+    "text": "You choose which monster others attack",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Mom's Eye Shadow."
   },
   "stats.effect.damage_taken": {
     "text": "{amount} damage taken",
@@ -4556,17 +4582,111 @@
     "text": "{amount} DC",
     "note": "Tooltip of an effect icon on a monster. amount: '+1' or '−1'."
   },
+  "stats.effect.death_ward": {
+    "text": "Your next death is prevented",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Holy Mantle and the like."
+  },
+  "stats.effect.hand_cap": {
+    "text": "Max hand size {n}",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). n: the most loot cards the player may hold (Curse of Tiny Hands)."
+  },
   "stats.effect.hp": {
     "text": "{amount} max HP",
     "note": "Tooltip of an effect icon on a card. amount: '+1' or '−1'."
+  },
+  "stats.effect.lock_others": {
+    "text": "Others can't play loot cards or activate items",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Trinity Shield, Get Out of Jail Card. 'on your turn' or 'this turn' is added after it."
+  },
+  "stats.effect.loot_double": {
+    "text": "Loots double the cards",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Two of Clubs: each loot gives twice as many cards."
+  },
+  "stats.effect.loot_plays": {
+    "text": {
+      "one": "{amount} loot play",
+      "other": "{amount} loot plays"
+    },
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). amount: '+1'; n: the number without its sign."
+  },
+  "stats.effect.loot_step": {
+    "text": "{amount} loot in your loot step",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). amount: '+1'; n: the number without its sign."
   },
   "stats.effect.next_attack_roll": {
     "text": "{amount} to the next attack roll",
     "note": "Tooltip of an effect icon with a small die on a character. amount: '+1' or '−1'."
   },
+  "stats.effect.no_char_recharge": {
+    "text": "Your character doesn't recharge in the recharge step",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Mama Haunt."
+  },
+  "stats.effect.no_forced_loss": {
+    "text": "Abilities and the death penalty can't make you discard loot or lose ¢",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Rib of Greed."
+  },
+  "stats.effect.no_souls": {
+    "text": "Can't gain souls",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Curse of the Soulless, All Hallows' Eve."
+  },
+  "stats.effect.one_ability": {
+    "text": "At most one ability each turn",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Shadow of Famine."
+  },
+  "stats.effect.one_loot": {
+    "text": "At most one loot card each turn",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Shadow of Famine."
+  },
+  "stats.effect.paid_discount": {
+    "text": "$ abilities of your items cost {n}¢ less",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Trick Penny. n: cents."
+  },
+  "stats.effect.penalty_item_to": {
+    "text": "Your death-penalty item goes to the active player",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Lust for Blood: the item the player would destroy when they die."
+  },
+  "stats.effect.player_attack_dc": {
+    "text": "Can be attacked, at DC {n}",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Backstabber, Lust for Blood. n: the dice the attacker needs."
+  },
+  "stats.effect.purchases": {
+    "text": {
+      "one": "{amount} purchase",
+      "other": "{amount} purchases"
+    },
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). amount: '+1'; n: the number without its sign."
+  },
+  "stats.effect.recharge_limit": {
+    "text": "Recharges at most 1 item in the recharge step",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Curse of Fatigue, Heavy Is the Head."
+  },
+  "stats.effect.reveal_hand": {
+    "text": "Your hand is revealed to everyone",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Guppy's Eye."
+  },
   "stats.effect.roll": {
     "text": "{amount} to rolls",
     "note": "Tooltip of an effect icon on a character. amount: '+1' or '−1'."
+  },
+  "stats.effect.shield": {
+    "text": "Prevents the next {n} damage",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). A shield, e.g. Soul Heart's. n: how much damage it prevents."
+  },
+  "stats.effect.shield_all": {
+    "text": "Prevents the next damage",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). A shield of all of the next damage, e.g. The Poop's."
+  },
+  "stats.effect.shield_cap": {
+    "text": "The next damage is at most {n}",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). A shield that lowers the next damage to n."
+  },
+  "stats.effect.shop_free": {
+    "text": "May buy a shop item for 0¢",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Pity for the Poor."
+  },
+  "stats.effect.shop_price": {
+    "text": "{amount}¢ to shop prices",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). amount: '−5' or '+1'."
   },
   "stats.hidden_card": {
     "text": "a hidden card",
@@ -4595,6 +4715,10 @@
   "stats.odds_hit": {
     "text": "{hits} (DC {dc}{terms})",
     "note": "Stack panel, an open attack's fight line. hits: 'Hits on 4+'; dc: the monster's dice; terms: ' − 1 Meat!'."
+  },
+  "stats.on_your_turn": {
+    "text": "{effect} on your turn",
+    "note": "An effect icon's line for an effect that counts on its player's own turn only. effect: '+1 attack'."
   },
   "stats.reward.cents": {
     "text": "{n}¢",

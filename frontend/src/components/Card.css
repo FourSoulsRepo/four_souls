@@ -969,16 +969,44 @@
   padding-left: 26cqi;
 }
 
-/* Effects of this turn (15.92, SB-01): a column of small icons on the
-   card's right edge, each cut from its source card's art. Hover zooms
-   the source, so the icons take the pointer, unlike the badges. */
+/* Effects on a card (15.92, SB-01, ADR 037 item 3): small icons on the
+   card's right edge, each cut from its source card's art. Three go
+   down the edge, above the ATK badge; the fourth and the "+K" chip
+   start a column to their left (right to left, so the first column is
+   on the edge). Hover zooms the source, so the icons take the pointer,
+   unlike the badges. */
 .card-sources {
   position: absolute;
   top: 20cqi;
   right: 3cqi;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(3, 22cqi);
   gap: 2.5cqi;
+  direction: rtl;
+}
+
+.card-sources > * {
+  direction: ltr;
+}
+
+/* The icons past the fourth (ADR 037 item 3.6): "+K" on a dark chip,
+   in the badges' letters. The pointer on it zooms the character. */
+.card-sources-more {
+  display: grid;
+  place-items: center;
+  width: 22cqi;
+  height: 15cqi;
+  align-self: center;
+  border: 1.6cqi solid #1d120a;
+  border-radius: 40%;
+  background: #3a2a1c;
+  filter: drop-shadow(0 1.2cqi 0 #1d120a);
+  font-family: var(--font-game);
+  font-size: 12cqi;
+  line-height: 1;
+  color: #f3ead2;
+  cursor: help;
 }
 
 .card-source {
@@ -1010,6 +1038,26 @@
   font-size: 14cqi;
   line-height: 1;
   color: #1d120a;
+}
+
+/* An icon of one number stat shows its sum (ADR 037 item 3.5): "+2"
+   in the lower left corner, in the badges' letters. */
+.card-source-number {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  padding: 0 1cqi;
+  border-top-right-radius: 3cqi;
+  background: #1d120a;
+  font-family: var(--font-game);
+  font-size: 8.5cqi;
+  line-height: 1.1;
+  color: #f3ead2;
+}
+
+/* A text icon's initial moves up and right, clear of the number. */
+.card-source.has-number .card-source-mark {
+  translate: 2cqi -2.5cqi;
 }
 
 /* A boost for the next attack roll (15.93): a small die in the corner. */
