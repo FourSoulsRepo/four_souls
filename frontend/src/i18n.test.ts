@@ -21,11 +21,13 @@ describe('t', () => {
     expect(t('settings.save')).toBe('Save');
   });
 
-  it('falls back to English for Russian, which has no file yet', () => {
+  // Russian has the menus only (12.12): a line ru.json lacks is English (LO-06).
+  it('reads Russian and falls back to English for a missing line', () => {
     setCardLanguages(['en', 'ru']);
     setLanguage('ru');
     expect(language()).toBe('ru');
-    expect(t('settings.save')).toBe('Save');
+    expect(t('settings.save')).toBe('Сохранить');
+    expect(t('lobby.join')).toBe('Join');
   });
 });
 

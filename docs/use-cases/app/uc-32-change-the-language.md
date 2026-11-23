@@ -27,8 +27,10 @@
 * **2a. First start:** no language is saved yet.
   * The app takes the OS language, if it is listed.
   * Else English.
-* **3a. Russian (16.2):** it has no interface file yet.
-  * The texts stay English; card names are Russian (16.5).
+* **3a. Russian (12.12):** its interface file is partial.
+  * Main menu, settings and host setup are Russian.
+  * Other screens stay English until 12.11.
+  * Card names are Russian (16.5).
 * **5a. A line missing in the language:** the English line shows.
 * **6a. A saved language this build lacks:** as on the first start.
 * **2b. Test language `qps`:** listed in development builds only.

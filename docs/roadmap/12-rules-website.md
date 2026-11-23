@@ -248,7 +248,7 @@ Rules of this step (owner, 2026-11-06):
    2. A full game plays in Russian.
    3. **Owner** checks the screenshots.
 
-### [ ] 12.12 Russian menus first
+### [x] 12.12 Russian menus first
 
 Added by the owner (2026-11-24): a partial Russian interface ships before 12.11.
 
@@ -270,3 +270,15 @@ Added by the owner (2026-11-24): a partial Russian interface ships before 12.11.
    2. `make lint` and `make frontend e2e` pass with the partial file.
    3. **Owner** checks the screenshots.
 4. 12.11 then fills the remaining areas.
+5. Result: `ru.json` with 122 keys; the rest falls back to English.
+   1. Areas in full: `menu` 14, `settings` 21, `host` 37.
+   2. Borrowed: `app.title`, `lobby.nickname`, `lobby.back`.
+   3. Borrowed: `set.*` 4, `mat.*` 4, `challenge.name.*` 2, `challenge.difficulty.*` 3.
+   4. Borrowed: `dice.rolled` (settings dice preview).
+   5. Borrowed: `refuse.deck_ratios`, `refuse.ratio.*` 27 (deck ratios tooltip).
+   6. Borrowed errors: `nickname_length`, `setting_value`, `hosting`, `unknown`, `deck_ratios`.
+   7. Kept English: `app.title` «Four Souls», `set.four_souls_plus`.
+   8. e2e reads every language file, as the app does (`locale.ts`).
+   9. Tests that found a key by another screen's same English now use their own key.
+      1. `history.mode_god`, not `host.rollback_god`.
+      2. `board.bonus_souls`, not `host.bonus_souls`.

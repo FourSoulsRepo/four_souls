@@ -245,4 +245,7 @@ Use options 5, 7, 11, 12 and 14.
 
 1. LO-03 (a card in other languages in game) is not part of this.
 2. The rules text and the rules website are not translated here.
-3. Interface ships in English only; Russian gets card names first.
+3. Russian ships in parts; a missing line shows English.
+   1. Card names first (16.5).
+   2. Then the main menu, settings and host setup (12.12).
+   3. The rest follows in 12.11.

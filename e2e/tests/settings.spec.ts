@@ -4,7 +4,7 @@ import { startGame } from './game';
 import { appURL } from './server';
 import { realAssets, shot } from './shot';
 import { pseudo } from '../../frontend/src/locale';
-import { languageNames, locale, tr, trRe } from './locale';
+import { languageNames, locale, tr, trIn, trRe } from './locale';
 
 // One dark theme (15.80, ST-07): nothing to pick, nothing on the page.
 test('there is no theme to pick', async ({ page }) => {
@@ -204,8 +204,9 @@ test('without dice images there is no dice menu', async ({ page }) => {
 });
 
 // Language (16.2, ADR 021): each in its own name; English and Russian
-// for players, the test language in development builds. Russian has no
-// interface file yet, so it shows English. It applies on Save.
+// for players, the test language in development builds. Russian has the
+// menus only (12.12): its own lines there, English elsewhere. It
+// applies on Save.
 test('the language applies at once and survives a restart', async ({ page }) => {
   await page.goto('/?fake&nosplash');
   await page.getByRole('button', { name: tr('menu.settings') }).click();
@@ -223,12 +224,11 @@ test('the language applies at once and survives a restart', async ({ page }) => 
 
   await lang.selectOption('ru');
   await save.click();
-  // Russian has no interface file yet: English shows.
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Settings');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(trIn('ru', 'settings.title'));
   await page.reload();
-  await page.getByRole('button', { name: 'Settings' }).click();
-  await expect(page.getByRole('combobox', { name: 'Language' })).toHaveValue('ru');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Settings');
+  await page.getByRole('button', { name: trIn('ru', 'menu.settings') }).click();
+  await expect(page.getByRole('combobox', { name: trIn('ru', 'settings.language') })).toHaveValue('ru');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(trIn('ru', 'settings.title'));
 });
 
 // A language with card names only (16.10): listed without a locale
@@ -261,8 +261,9 @@ test('the language follows the OS until one is picked', async ({ browser }) => {
   ]) {
     const page = await (await browser.newContext({ locale: os })).newPage();
     await page.goto('/?fake&nosplash');
-    await page.getByRole('button', { name: tr('menu.settings') }).click();
-    await expect(page.getByRole('combobox', { name: tr('settings.language') })).toHaveValue(want ?? '');
+    // The page starts in the OS language: Russian shows its own lines.
+    await page.getByRole('button', { name: trIn(want ?? 'en', 'menu.settings') }).click();
+    await expect(page.getByRole('combobox', { name: trIn(want ?? 'en', 'settings.language') })).toHaveValue(want ?? '');
   }
 });
 

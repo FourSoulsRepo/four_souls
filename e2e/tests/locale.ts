@@ -2,7 +2,7 @@
 // English without it. tr gives a line as that language shows it, so a
 // test finds what the player reads (ADR 021); cardName does the same for
 // a card's name (16.5).
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cardLanguagesOf, languageList, languageName, languageOfFile, localeOf, pseudoLocale, requiredForms, textOf, translate, type Entry, type Locale, type Text, type Values } from '../../frontend/src/locale';
 
@@ -18,10 +18,14 @@ const locales = new Map<string, Locale>([
   ['qps', pseudoLocale(english)],
 ]);
 // A language with an interface file shows its lines (16.7): the tests
-// read the same file the app does; a line it lacks stays English.
-const own = join(dir, `${locale}.json`);
-if (languageOfFile(`${locale}.json`) && existsSync(own)) {
-  locales.set(locale, localeOf(JSON.parse(readFileSync(own, 'utf8')) as Record<string, Text>));
+// read the same files the app does; a line one lacks stays English.
+// Every file, not only LOCALE's: a page switched to Russian shows its
+// lines in an English run too (trIn, 12.12).
+for (const name of readdirSync(dir)) {
+  const lang = languageOfFile(name);
+  if (lang) {
+    locales.set(lang, localeOf(JSON.parse(readFileSync(join(dir, name), 'utf8')) as Record<string, Text>));
+  }
 }
 
 interface DataCard {
@@ -54,7 +58,7 @@ export function languageNames(...extra: string[]): string[] {
 
 // cardName is the card ref's name in the tests' language: card_db's
 // text.<LOCALE>.name, else English, as the store's inLanguage picks it.
-// With LOCALE=ru the names are Russian on English screens (16.5).
+// With LOCALE=ru the names are Russian, on screens partly English (16.5).
 export function cardName(ref: string): string {
   const card = cards.get(ref);
   const name = card?.text[locale]?.name ?? card?.text.en?.name;

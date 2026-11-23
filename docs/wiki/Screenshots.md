@@ -4,7 +4,7 @@
 
 `make screenshots LOCALE=qps` takes them in the test language (ADR 021) into `.cache/screenshots/qps/`; other codes work the same way. The variable is `LOCALE`, not `LANG`, which the shell sets.
 
-`make screenshots LOCALE=xx` with a file `frontend/src/locales/xx.json` shows that file's lines on every screen, English where a line is missing; a translator checks them by eye ([Client](Client#translation-checks)). The tests read the same file, so they still find each text. Card names follow card_db's `text.xx.name`: `LOCALE=ru` has no interface file, so it shows English screens with Russian card names.
+`make screenshots LOCALE=xx` with a file `frontend/src/locales/xx.json` shows that file's lines on every screen, English where a line is missing; a translator checks them by eye ([Client](Client#translation-checks)). The tests read the same file, so they still find each text. Card names follow card_db's `text.xx.name`: `LOCALE=ru` has a partial interface file (12.12): Russian main menu, settings and host setup, English elsewhere, Russian card names everywhere.
 
 The folder is git-ignored: the UI changes often, so `.cache/screenshots/` is for checks while you work.
 
