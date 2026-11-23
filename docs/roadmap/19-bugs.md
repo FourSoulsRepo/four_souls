@@ -6807,3 +6807,7 @@ Totals by system (226 items):
    2. Check every copy refusal and every R-ABIL-04 denial, all sets (5.24).
    3. The file then checks `"rule": "R-ABIL-40"`.
    4. File: `cards/fsp2/testdata/situations/questionmark_card/needs-an-item.json`.
+5. Done (2026-11-23)
+   1. `prompt.go` denies a copy with nothing to copy by R-ABIL-40.
+   2. Checked: no other refusal cites R-ABIL-04; its other uses are questions.
+   3. The ? Card file checks `"rule": "R-ABIL-40"`.

@@ -10,6 +10,7 @@
   "action": {"player": 0, "kind": "play", "card": "questionmark_card"},
   "expect": {
     "allowed": false,
+    "rule": "R-ABIL-40",
     "loot_plays": 1,
     "after": [{"player": 0, "hand_cards": ["questionmark_card"]}]
   }
