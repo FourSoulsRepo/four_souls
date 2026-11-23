@@ -6432,7 +6432,7 @@ Totals by system (227 items):
 6. Owner notes (2026-11-18)
    1. Owner marks 19.224 solved.
 
-### [ ] 19.225 A forced attack is refused by R-ABIL-12, a static ability rule
+### [x] 19.225 A forced attack is refused by R-ABIL-12, a static ability rule
 
 1. Goal: a forced attack's refusal cites the rule that says it.
 2. Report (24.14 bulk move, 2026-11-18)
@@ -6456,8 +6456,10 @@ Totals by system (227 items):
    5. The random minion attack cites R-KRAMPUS-13, its own rule (Q-31).
    6. The Monster Manual file expects R-ATK-03.
    7. Other R-ABIL-12 denials are a card's static "can't"; they fit.
+6. Owner notes (2026-11-23)
+   1. Owner marks 19.225 solved.
 
-### [ ] 19.226 The Bone's soul is refused by R-ABIL-09, a controller rule
+### [x] 19.226 The Bone's soul is refused by R-ABIL-09, a controller rule
 
 1. Goal: the refusal cites the rule that says it.
 2. Report (24.14 bulk move, 2026-11-18)
@@ -6480,6 +6482,8 @@ Totals by system (227 items):
    2. Other R-ABIL-09 denials: a card the player doesn't control; they fit.
    3. `TestTheBoneSoulHasNoAbilities` moved to a step in
       `the_bone/deals-damage-then-becomes-a-soul.json`.
+6. Owner notes (2026-11-23)
+   1. Owner marks 19.226 solved.
 
 ### [x] 19.227 The next roller gets no Throw button; everyone sees "throwing…"
 
@@ -6667,7 +6671,7 @@ Totals by system (227 items):
    1. Decision: ADR 037; plan: 18.28–18.32.
    2. The fix is 18.29.
 
-### [ ] 19.233 A Roll- result skips the order of same-time roll triggers
+### [x] 19.233 A Roll- result skips the order of same-time roll triggers
 
 1. Goal: a roll ability's result and a "when you roll N" trigger are ordered by R-ABIL-15.
 2. Report (24.15 bulk move, 2026-11-23)
@@ -6702,6 +6706,8 @@ Totals by system (227 items):
    8. They keep the old order: the result first, the other trigger resolves first.
    9. Go: Charged Baby, Crystal Ball, Holy monsters, Hourglass, Fruitcake, …
    10. Files: 15 in `cards/b2/testdata/situations/`, R-ABIL-15 in each source.
+8. Owner notes (2026-11-23)
+   1. Owner marks 19.233 solved.
 
 ### [x] 19.234 Situation files: a monster check with only `card` checks nothing
 
@@ -6767,7 +6773,7 @@ Totals by system (227 items):
    1. Owner marks 19.234 solved.
    2. The totals table correction (219 to 224 items) is fine.
 
-### [ ] 19.235 A setup with Krampus in a slot lets the active player skip it
+### [x] 19.235 A setup with Krampus in a slot lets the active player skip it
 
 1. Goal: a situation setup in the action phase keeps Krampus's duty.
 2. Report (24.19 bulk move, 2026-11-23)
@@ -6835,8 +6841,10 @@ Totals by system (227 items):
    9. All reach the duty by a turn start or a card; none set by hand.
    10. Challenge `pilfering_krampus_norm_test.go` sets two by hand.
    11. `RandomAttackMade` and `MustAttack`; it starts a challenge, so stays Go.
+9. Owner notes (2026-11-23)
+   1. Owner marks 19.235 solved.
 
-### [ ] 19.236 ? Card with nothing to copy is refused by R-ABIL-04
+### [x] 19.236 ? Card with nothing to copy is refused by R-ABIL-04
 
 1. Goal: the refusal cites the rule that says it.
 2. Report (24.19 bulk move, 2026-11-23)
@@ -6856,8 +6864,10 @@ Totals by system (227 items):
    1. `prompt.go` denies a copy with nothing to copy by R-ABIL-40.
    2. Checked: no other refusal cites R-ABIL-04; its other uses are questions.
    3. The ? Card file checks `"rule": "R-ABIL-40"`.
+6. Owner notes (2026-11-23)
+   1. Owner marks 19.236 solved.
 
-### [ ] 19.237 Lord of the Pit is usable with no attack to cancel
+### [x] 19.237 Lord of the Pit is usable with no attack to cancel
 
 1. Goal: a card that cancels an attack needs an attack to cancel.
 2. Report (24.20 bulk move; owner, 2026-11-23)
@@ -6940,3 +6950,5 @@ Totals by system (227 items):
    6. playback.spec.ts:1975 (webkit, seed 114790418): Pass came live after the banner went.
    7. Eden with The D10, Samson with Blood Lust; a timing check under load.
    8. Each passed alone on the first rerun, the same seed too; no new item.
+12. Owner notes (2026-11-23)
+   1. Owner marks 19.237 solved.
