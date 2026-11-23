@@ -4,7 +4,7 @@ Goal: check rules in the browser, in English and Russian; no server.
 
 Ideas: A-03, LR-08, LR-09, LR-10.
 
-Order: 12.7, 12.1, 12.2, 12.3, 12.5, 12.4, 12.6, 12.10, 12.8, 12.11, 12.9.
+Order: 12.7, 12.1, 12.2, 12.3, 12.5, 12.4, 12.6, 12.10, 12.12, 12.8, 12.11, 12.9.
 
 Moved before step 18 (owner, 2026-11-06).
 12.5 and 12.6 came from step 11 (11.8, 11.7).
@@ -225,3 +225,26 @@ Rules of this step (owner, 2026-11-06):
    1. `make i18n LOCALE=ru` reports no missing key.
    2. A full game plays in Russian.
    3. **Owner** checks the screenshots.
+
+### [ ] 12.12 Russian menus first
+
+Added by the owner (2026-11-24): a partial Russian interface ships before 12.11.
+
+1. Goal: main menu, settings and host setup in Russian; the rest stays English.
+2. Tasks:
+   1. Start `frontend/src/locales/ru.json`; fill it with `make i18n LOCALE=ru AREA=…`.
+   2. Areas: `menu`, `settings`, `host`.
+   3. Plus the keys these screens borrow from other areas:
+      1. `app.title`, `lobby.nickname`, `lobby.back`.
+      2. `set.*`, `mat.*`, `challenge.name.*`, `challenge.difficulty.*`.
+      3. Any other key these screens show; list them in the result.
+   4. Game terms from the glossary (12.10).
+   5. Every other key stays missing; English fills it (LO-06, LO-09).
+   6. `make screenshots LOCALE=ru`: the three screens, no cut text.
+   7. ADR 021: drop "interface ships in English only" (12.11 task 5).
+   8. Update the use case "change the language" (UC-32).
+3. Done when:
+   1. The three screens show no English text in Russian.
+   2. `make lint` and `make frontend e2e` pass with the partial file.
+   3. **Owner** checks the screenshots.
+4. 12.11 then fills the remaining areas.
