@@ -41,7 +41,7 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119, 19.167, 19.200, 19.230 | 14 |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166, 19.198                          | 4     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194, 19.197, 19.217, 19.231 | 46 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194, 19.197, 19.217, 19.231, 19.239, 19.240 | 48 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179, 19.189, 19.196, 19.202, 19.203, 19.219, 19.220 | 36 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91, 19.201, 19.218             | 6     |
@@ -61,7 +61,7 @@ This step never closes; new reports are appended.
 | Z  | Situation runner: a check checks nothing | Go tests   | 19.234                                                 | 1     |
 | AA | Situation setup: a start-of-turn duty lost | Engine   | 19.235                                                 | 1     |
 
-Totals by system (228 items):
+Totals by system (230 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -69,7 +69,7 @@ Totals by system (228 items):
 | Card data | C       | 3     |
 | Client    | D–G, O, P, S, V, Y | 56 |
 | Server    | H, N    | 5     |
-| e2e       | I, J    | 82    |
+| e2e       | I, J    | 84    |
 | Release   | K       | 6     |
 | None      | L       | 2     |
 | Go tests  | M, Z    | 2     |
@@ -7026,3 +7026,37 @@ Totals by system (228 items):
    1. The cross-set tree `cards/testdata/situations/` is the place for these files.
    2. It holds only `interactions/`; a card's own files stay in its set's tree.
    3. `enginetest.RunInteractionSituations` checks that; the layout test covers it.
+
+### [ ] 19.239 Card zoom credit test fails with Russian card names
+
+1. Goal: `the zoom credits the card artist` passes in every language.
+2. Report (agent in 12.12, 2026-11-24)
+   1. `make screenshots LOCALE=ru` fails `cards.spec.ts:67`.
+   2. It expects 1 credit line; Russian shows 2.
+   3. Russian cards also credit their translators (CD-06).
+   4. Fails since 16.5 made Russian a card-name language; not new in 12.12.
+3. Cause (the e2e test)
+   1. The test assumes English: "English credits no translators" (line 66).
+   2. In `LOCALE=ru` the zoom adds the translators' line; the app is right.
+4. Tasks:
+   1. The test checks the artist line in any language.
+   2. The translators' line is checked only where the language has one.
+   3. Check every e2e spec for the same English-only credit check (5.26).
+   4. `make screenshots LOCALE=ru` and `make e2e` pass.
+
+### [ ] 19.240 Eden start test checks the English card name
+
+1. Goal: the Eden start-of-game test passes in every language.
+2. Report (agent in 12.12, 2026-11-24)
+   1. `make screenshots LOCALE=ru` fails the Eden test in `start.spec.ts`.
+   2. Line 62 expects the caption with the literal card name `'Eden'`.
+   3. With Russian card names the caption names Eden in Russian.
+   4. Fails since 16.5; not new in 12.12.
+3. Cause (the e2e test)
+   1. A hard-coded English card name, not `cardName('eden')`.
+   2. The app shows the right name; the test is wrong.
+4. Tasks:
+   1. The test takes the name from the card data, as other specs do.
+   2. Search every e2e spec for literal card names in shown text (5.26).
+   3. Fix them all in the same change.
+   4. `make screenshots LOCALE=ru` and `make e2e` pass.

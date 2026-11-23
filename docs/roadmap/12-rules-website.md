@@ -233,6 +233,7 @@ Rules of this step (owner, 2026-11-06):
    9. Dice: S-RU says «кубик»; «Комната игральной кости!» says «игральная кость».
       1. Not a glossary term; `roll` is «бросок» in both.
    10. Owner kept all three picks of items 5–7 (2026-11-24).
+5. Owner marks 12.10 solved (2026-11-24).
 
 ### [ ] 12.11 Russian app interface
 
@@ -283,3 +284,5 @@ Added by the owner (2026-11-24): a partial Russian interface ships before 12.11.
    9. Tests that found a key by another screen's same English now use their own key.
       1. `history.mode_god`, not `host.rollback_god`.
       2. `board.bonus_souls`, not `host.bonus_souls`.
+6. Owner marks 12.12 solved (2026-11-24).
+   1. Two Russian test bugs found here: 19.239, 19.240.
