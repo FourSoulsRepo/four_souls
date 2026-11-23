@@ -1,0 +1,23 @@
+{
+  "title": "Spider Webs: at the end of Isaac's turn his character is deactivated; it stays so on Cain's turn",
+  "source": ["card spider_webs", "R-TURN-10", "R-MECH-22", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["spider_webs"]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 1,
+    "events": [{"kind": "deactivated", "player": 0}],
+    "after": [{"player": 0, "deactivated": ["character"]}, {"player": 1, "deactivated": []}]
+  }
+}

@@ -7,15 +7,8 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-func TestSpiderWebs(t *testing.T) {
-	tb := roomTable(t, "spider_webs")
-	tb.EndTurn()
-	if tb.G.Object(tb.G.Players[0].Character).Charged {
-		t.Error("Isaac's character is deactivated at the end of his turn")
-	}
-}
-
-// The deactivation has its event (19.176).
+// The deactivation has its event (19.176); the event's Object stays Go
+// (24.21): the file checks only its kind and player.
 func TestSpiderWebsDeactivatedEvent(t *testing.T) {
 	tb := roomTable(t, "spider_webs")
 	char := tb.G.Players[0].Character

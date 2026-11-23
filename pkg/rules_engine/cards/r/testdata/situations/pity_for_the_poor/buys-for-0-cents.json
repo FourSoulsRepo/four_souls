@@ -1,0 +1,18 @@
+{
+  "title": "Pity For The Poor: Isaac and Cain have no souls; Isaac with 0¢ buys the Jawbone for 0¢",
+  "source": ["card pity_for_the_poor", "Q-21", "R-SHOP-04"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "shop": ["jawbone", "spoon_bender"],
+    "rooms": ["pity_for_the_poor"]
+  },
+  "steps": [
+    {"player": 0, "kind": "purchase", "choices": ["jawbone"]}
+  ],
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 0, "items": ["jawbone"]}]}
+}

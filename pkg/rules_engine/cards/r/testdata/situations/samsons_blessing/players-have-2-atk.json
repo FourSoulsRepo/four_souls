@@ -1,0 +1,18 @@
+{
+  "title": "Samson's Blessing: Isaac and Cain each have 2 ATK",
+  "source": ["card samsons_blessing", "card isaac", "card cain"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["samsons_blessing"]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {"allowed": true, "after": [{"player": 0, "atk": 2}, {"player": 1, "atk": 2}]}
+}

@@ -1,0 +1,23 @@
+{
+  "title": "Shadow Of War: Isaac's Bomb! kills Cain; before the penalty Cain destroys the Jawbone, then the penalty destroys the Spoon Bender",
+  "source": ["card shadow_of_war", "card bomb", "R-DEATH-13", "R-DEATH-14"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["bomb"]},
+      {"character": "cain", "items": ["spoon_bender", "jawbone"], "damage": 1}
+    ],
+    "active": 0,
+    "rooms": ["shadow_of_war"]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["player 2 (cain)", "jawbone", "spoon_bender"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved": ["shadow_of_war", "death_penalty"],
+    "events": [{"kind": "died", "player": 1}],
+    "after": [{"player": 1, "dead": true, "items": []}],
+    "discards": {"treasure": ["jawbone", "spoon_bender"], "loot": ["bomb"]}
+  }
+}

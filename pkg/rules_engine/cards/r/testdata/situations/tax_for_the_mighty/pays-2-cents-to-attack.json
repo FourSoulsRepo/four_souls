@@ -1,0 +1,25 @@
+{
+  "title": "Tax For The Mighty: Isaac controls the most souls; he pays Cain 2¢ to attack and kills the Fly",
+  "source": ["card tax_for_the_mighty", "card fly", "R-MECH-44"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "cents": 2, "souls": ["chub"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["tax_for_the_mighty"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "events": [{"kind": "gave_cents", "player": 0}],
+    "monsters": [{"card": "fly", "dead": true}],
+    "after": [{"player": 0, "cents": 1}, {"player": 1, "cents": 2}]
+  }
+}

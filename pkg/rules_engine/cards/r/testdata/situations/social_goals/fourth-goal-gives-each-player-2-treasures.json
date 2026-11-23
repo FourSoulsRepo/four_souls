@@ -1,0 +1,39 @@
+{
+  "title": "Social Goals with 3 goals done: Cain pays Isaac 6¢ for Auction Gavel's Spoon Bender, the 4th goal; each player gains 2 treasures",
+  "source": ["card social_goals", "card auction_gavel", "Q-20", "R-MECH-27", "R-CARD-02"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["auction_gavel"]},
+      {"character": "cain", "cents": 6},
+      {"character": "samson"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "shop": ["spoon_bender"],
+    "rooms": ["social_goals"],
+    "counters": [
+      {"card": "social_goals", "name": "2. Kill 3 monsters.", "count": 3},
+      {"card": "social_goals", "name": "4. Purchase 3 items.", "count": 3},
+      {"card": "social_goals", "name": "5. Roll a 6 three times.", "count": 3},
+      {"card": "social_goals", "name": "goals", "count": 3}
+    ],
+    "decks": {"treasure": ["book_of_sin", "book_of_sin", "book_of_sin", "book_of_sin", "book_of_sin", "book_of_sin", "book_of_sin"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "auction_gavel", "choices": ["spoon_bender", "card.auction_gavel.bid 6", "card.auction_gavel.pass"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "events": [{"kind": "gave_cents", "player": 1}],
+    "counters": [
+      {"card": "social_goals", "name": "3. Give at least 6¢ to another player at one time.", "count": 1},
+      {"card": "social_goals", "name": "goals", "count": 4}
+    ],
+    "after": [
+      {"player": 0, "cents": 6, "items": ["auction_gavel", "book_of_sin", "book_of_sin"]},
+      {"player": 1, "cents": 0, "items": ["spoon_bender", "book_of_sin", "book_of_sin"]},
+      {"player": 2, "items": ["book_of_sin", "book_of_sin"]}
+    ]
+  }
+}

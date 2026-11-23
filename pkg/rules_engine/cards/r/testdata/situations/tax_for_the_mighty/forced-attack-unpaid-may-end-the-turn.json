@@ -1,0 +1,20 @@
+{
+  "title": "Tax For The Mighty: Isaac must attack the monster deck but can't pay the tax, so he is not able and may end the turn",
+  "source": ["card tax_for_the_mighty", "card blind_rage", "R-ATK-22"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "souls": ["chub"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["tax_for_the_mighty"],
+    "must_attacks": 1,
+    "must_attack_deck": 1
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {"allowed": true, "active": 1}
+}

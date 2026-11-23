@@ -1,0 +1,25 @@
+{
+  "title": "Splash Damage: Isaac hits the Leech; he deals 1 damage to Cain, the player to his left, not to Samson",
+  "source": ["card splash_damage", "card leech", "R-TURN-01", "R-ATK-12"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"},
+      {"character": "samson"}
+    ],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "rooms": ["splash_damage"],
+    "decks": {"monster": ["clotty"], "loot": ["a_penny"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["leech"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "leech", "dead": true}],
+    "after": [{"player": 0, "damage": 0, "hand_cards": ["a_penny"]}, {"player": 1, "damage": 1}, {"player": 2, "damage": 0}]
+  }
+}
