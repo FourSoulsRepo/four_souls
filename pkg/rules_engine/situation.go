@@ -153,7 +153,8 @@ type Expectation struct {
 	// order: several cards go to the bottom in random order (Q-22);
 	// [] expects an empty deck.
 	DeckBottoms map[string][]CardRef `json:"deck_bottoms,omitempty"`
-	// Active, LootPlays and Attacks check the turn, as in setup.
+	// Active checks the turn's player; LootPlays and Attacks what that
+	// player can still use, bonus ones too, unlike setup (24.28).
 	Active    *int `json:"active,omitempty"`
 	LootPlays *int `json:"loot_plays,omitempty"`
 	Attacks   *int `json:"attacks,omitempty"`

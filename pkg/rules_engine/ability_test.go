@@ -30,6 +30,8 @@ var abilitySet = CardSet{Name: "abilities", Cards: []CardDef{
 	}},
 	{Ref: "sale", Kind: TreasureCard, Outside: true, Statics: []Static{YouHave(StatShopPrice, -5)}}, // like Steamy Sale
 	{Ref: "sword", Kind: TreasureCard, Outside: true, Statics: []Static{YouHave(StatPlayerATK, 1)}},
+	{Ref: "belt", Kind: TreasureCard, Outside: true, Statics: []Static{YouHave(StatAttacks, 1)}},     // like Champion Belt
+	{Ref: "finger", Kind: TreasureCard, Outside: true, Statics: []Static{YouHave(StatLootPlays, 1)}}, // like Polydactyly
 	{Ref: "bomb_loot", Kind: LootCard, Outside: true, Abilities: []Ability{ // like Bomb!
 		{
 			Kind: LootAbility, Text: "Deal 1 damage to a monster or player.",

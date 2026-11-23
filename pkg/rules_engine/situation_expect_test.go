@@ -156,6 +156,38 @@ func TestSituationExpectOldCounts(t *testing.T) {
 	}
 }
 
+// bonusTable: hero_a has belt ("You may attack an additional time on
+// your turn", like Champion Belt) and finger ("You may play an
+// additional loot card on your turn", like Polydactyly), and 1 extra
+// loot play (as Cain's ↷ gives); the turn's own loot play and attack
+// are used. hero_a plays a penny; expect is the step's.
+func bonusTable(expect string) string {
+	return `{"sets": ["test", "abilities"],
+		"setup": {"players": [{"character": "hero_a", "items": ["belt", "finger"], "hand": ["penny"], "extra_loot_plays": 1}, {"character": "hero_b"}],
+			"active": 0, "monsters": ["gaper"], "loot_plays": 0, "attacks": 0},
+		"steps": [{"player": 0, "kind": "play", "card": "penny", "expect": ` + expect + `}]}`
+}
+
+// attacks and loot_plays count what the active player can still do,
+// bonus ones too (24.28).
+func TestSituationExpectBonusCounts(t *testing.T) {
+	// belt's text: 1 attack beyond the turn's (R-TURN-07), which is
+	// used. finger's text and the extra play: 2 loot plays beyond the
+	// turn's (R-TURN-05); the penny uses one of them.
+	if got := runExpect(t, bonusTable(`{"allowed": true, "attacks": 1, "loot_plays": 1}`)); len(got) != 0 {
+		t.Errorf("mismatch %q; want none", got)
+	}
+	for _, c := range []struct{ expect, want string }{
+		{`"attacks": 0`, "attacks is 1, expected 0"},
+		{`"loot_plays": 0`, "loot_plays is 1, expected 0"},
+	} {
+		got := runExpect(t, bonusTable(`{"allowed": true, `+c.expect+`}`))
+		if want := "step 1 (play penny): " + c.want; len(got) != 1 || got[0] != want {
+			t.Errorf("%s: mismatch %q; want %q", c.expect, got, want)
+		}
+	}
+}
+
 // promptTable: hero_a activates razor ("Pay 5¢: Deal 1 damage to a
 // monster or player.") with no choices; expect is the step's.
 func promptTable(expect string) string {

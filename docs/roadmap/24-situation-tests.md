@@ -1172,7 +1172,7 @@ Ideas: TS-13, LR-04, R-03.
 
 1. Goal: Challenge and Challenge Boss (about 50 tests).
 
-### [ ] 24.28 Turn checks count every attack and loot play left
+### [x] 24.28 Turn checks count every attack and loot play left
 
 1. Why (owner, 2026-11-24)
    1. `expect.attacks` reads only `Turn.Attacks`.
@@ -1196,3 +1196,31 @@ Ideas: TS-13, LR-04, R-03.
    1. Go: a pass and a fail for a static bonus attack and loot play.
    2. Wiki `Situation-payload.md`: the two checks, and the dump if it changes.
    3. ADR 034: drift edited in place, if any.
+5. Done (2026-11-24)
+   1. `checkGame`: `attacks` reads `attacksLeft`, `loot_plays` `lootPlaysFor(active)`.
+   2. No engine game code changed; no version bump.
+   3. Only one file failed with the new counts: Champion Belt, attacks twice.
+6. Files changed, values from the card text:
+   1. Champion Belt, attacks twice: `attacks` 1 after the first attack, 0 after the second.
+   2. Champion Belt, a second time: `attacks` 0 after the bonus attack.
+   3. Might For The Meek: `attacks` 1 after the Fly; 0 after the Leech kept.
+   4. Skeleton Key: `attacks` 98 after one attack, 97 after two ("up to 99").
+   5. Polydactyly: `loot_plays` 1 after the first A Penny!, 0 after the second.
+   6. Belly Button: `loot_plays` 2; no loot played; R-TURN-05 added to `source`.
+   7. Polydactyly: R-TURN-05 added to `source`.
+7. Other checks searched (5.26):
+   1. Player `hp`, `atk`, `souls`; monster `hp`, `atk`, `evasion`: engine counts already.
+   2. Expect has no other turn count; `after` has none.
+   3. The 74 files with an `attacks` or `loot_plays` check were read.
+   4. `AddLootPlays` on one's own turn adds to `Turn.LootPlays`; those files keep their values.
+   5. Dump: writes setup only, base counts; no change.
+   6. Go card tests read `Turn.Attacks`, `Turn.LootPlays` (about 20 files).
+   7. None has a bonus card; left as is.
+8. Note, no change: a stacked `attack_roll` in setup uses a base attack only.
+   1. With `setup.attacks` 0 it uses no bonus attack; the engine would.
+   2. No file does that today.
+9. Tests: `TestSituationExpectBonusCounts`, a pass and two fails.
+   1. Test cards `belt` and `finger`, like Champion Belt and Polydactyly.
+10. Wiki `Situation-payload.md`: the two checks and the setup meaning.
+11. ADR 034: no drift; it does not say what the counts read.
+12. No rules bug found.

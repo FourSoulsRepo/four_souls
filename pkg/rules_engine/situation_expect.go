@@ -308,11 +308,13 @@ func checkRolls(c *checks, want []int, events []Event) {
 	}
 }
 
-// checkGame compares the turn and the game's end.
+// checkGame compares the turn and the game's end. LootPlays and Attacks
+// are what the active player can still do, bonus ones too (24.28): the
+// engine's own counts, lootPlaysFor and attacksLeft.
 func (g *Game) checkGame(c *checks, e Expectation) {
 	c.int("active", e.Active, int(g.Turn.Active))
-	c.int("loot_plays", e.LootPlays, g.Turn.LootPlays)
-	c.int("attacks", e.Attacks, g.Turn.Attacks)
+	c.int("loot_plays", e.LootPlays, g.lootPlaysFor(g.Turn.Active))
+	c.int("attacks", e.Attacks, g.attacksLeft())
 	c.bool("over", e.Over, g.Over)
 	if e.Winners != nil {
 		got := make([]int, len(g.Winners))
