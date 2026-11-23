@@ -6702,7 +6702,7 @@ Totals by system (224 items):
    9. Go: Charged Baby, Crystal Ball, Holy monsters, Hourglass, Fruitcake, …
    10. Files: 15 in `cards/b2/testdata/situations/`, R-ABIL-15 in each source.
 
-### [ ] 19.234 Situation files: a monster check with only `card` checks nothing
+### [x] 19.234 Situation files: a monster check with only `card` checks nothing
 
 1. Goal: every `expect` entry checks what the wiki says it means.
 2. Report (24.17 bulk move, 2026-11-23)
@@ -6762,3 +6762,6 @@ Totals by system (224 items):
    2. A pass and a fail for each fix; `rightExpect` adds `{"card": "boss"}`.
    3. Wiki `Situation-payload.md`: Checks, the example, `setup.bonus_souls`.
    4. ADR 034: no drift; unchanged.
+9. Owner notes (2026-11-23)
+   1. Owner marks 19.234 solved.
+   2. The totals table correction (219 to 224 items) is fine.
