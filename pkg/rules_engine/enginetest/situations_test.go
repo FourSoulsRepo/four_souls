@@ -106,6 +106,10 @@ func TestCheckSituationLayout(t *testing.T) {
 		{enginetest.RuleTree, "attack/hits-cain.json", false},
 		{enginetest.RuleTree, "razor_blade/hits-cain.json", false},
 		{enginetest.RuleTree, "interactions/hits-cain.json", false},
+		// The cross-set tree holds interactions/ only (19.238).
+		{enginetest.InteractionTree, "interactions/razor-blade-cain.json", true},
+		{enginetest.InteractionTree, "razor_blade/hits-cain.json", false},
+		{enginetest.InteractionTree, "abil/hits-cain.json", false},
 	} {
 		got := check(c.tree, c.path, data)
 		if c.ok != (len(got) == 0) {

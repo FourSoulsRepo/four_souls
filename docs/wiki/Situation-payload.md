@@ -416,7 +416,7 @@ func TestSituations(t *testing.T) {
 }
 ```
 
-`go:embed` fails on a folder with no files, so a package adds this test with its first file, not before. A cross-set file in `cards/testdata/situations/` passes every set (`cards.Sets()` and the challenge set) the same way.
+`go:embed` fails on a folder with no files, so a package adds this test with its first file, not before. A cross-set file in `cards/testdata/situations/` passes every set (`cards.Sets()` and the challenge set) through `enginetest.RunInteractionSituations`; that tree holds only `interactions/`, so a card's own files stay in its set's tree.
 
 ## Dump a Go test
 

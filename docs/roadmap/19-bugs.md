@@ -7022,3 +7022,7 @@ Totals by system (228 items):
    3. playback.spec.ts:1975 (chromium, seed 114790418): the 19.237 flake.
    4. Eden with The D10, Samson with Blood Lust; no ? Card; unrelated.
    5. It passed alone on the first rerun, the same seed; no new item.
+11. Owner decision (2026-11-24)
+   1. The cross-set tree `cards/testdata/situations/` is the place for these files.
+   2. It holds only `interactions/`; a card's own files stay in its set's tree.
+   3. `enginetest.RunInteractionSituations` checks that; the layout test covers it.
