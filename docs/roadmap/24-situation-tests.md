@@ -985,9 +985,87 @@ Ideas: TS-13, LR-04, R-03.
    3. Also `testStats`, `sackFirst`; the files spell the Sack's label.
 16. `cardgen -report` unchanged.
 
-### [ ] 24.20 Bulk: g2
+### [x] 24.20 Bulk: g2
 
 1. Goal: every g2 test (about 71 tests).
+2. Counts (2026-11-23): 77 tests in 58 `_test.go` files of `cards/g2`.
+   1. `common_test.go` holds helpers only.
+   2. g2 gets its runner: `situations_test.go`, with its first files.
+   3. Every file names `"sets": ["b2", "g2"]`: g2 plays with the Base Game.
+3. Moved: 71 tests, as 82 files; 52 `_test.go` files are gone.
+   1. Tables, one file per case (owner answer 11): I Am Error! 3.
+   2. Also Crooked Penny, Gaper, Infamy, Joker, Trap Door! 2 each.
+   3. Also Lord of the Pit, The Missing Page, Pills! (3 / 5) 2 each.
+   4. TestHolyMantleOnYourTurn: 2 files; see item 7.
+   5. Every other test: one file in its card folder.
+   6. No `interactions/`: a second g2 card is only a prop.
+   7. E.g. The Butter Bean rolls for Fruitcake and The Missing Page.
+   8. No cross-set file; `cards/testdata/situations/` stays unwired.
+4. Split: 4, the characters' `testCharacter`.
+   1. Apollyon, Azazel, The Keeper, The Lost: `<character>/extra-loot-play.json`.
+   2. Their starting item stays Go: `testStartingItem` (a real game start).
+   3. The Lost also: `the_lost/recharges-a-character-at-end-of-turn.json`.
+5. Stayed Go whole: 2.
+   1. Save and load: TestPlanCSaveAtKill (ADR 034 1.5).
+   2. TestCurseOfTinyHands: needs a format change.
+   3. A step can't answer a hand-size discard, and `prompt` can't check it.
+   4. Max hand size shows only in that discard (R-TURN-11).
+6. Engine calls in Go, said by a game action in the file:
+   1. `DealDamageTo` on a monster: Bomb! steps (Begotten, Fistula, Gurglings).
+   2. The first check is at the target question, at full HP.
+   3. `DealDamageTo` on a player: an attack that misses (Holy Card, Holy Mantle).
+   4. Another player's turn: `phase: loot`, `priority` 1, as 24.10.
+   5. Boil at 1 HP: `setup.monster_damage`.
+   6. `MustAttacks`, `MustAttackDeck` (Gaper, I Am Error!): `attacks` 1.
+   7. Then an end of turn refused by R-ATK-03; an attack offers only the deck.
+   8. `Turn.Attacks` after a cancel: a second attack is allowed.
+   9. `Evasion`, `MonsterATK`, `HP`, `PlayerATK`: a prompt check stops at the target question.
+   10. `Lingering` (Lemon Mishap): Cain's 1 on his turn leaves Monstro unhurt.
+   11. `len(Shop)` (Ouija Board, Void): a purchase offers the new shop items.
+   12. Responses: `setup.stack` (owner answer 7).
+   13. Lord of the Pit, The Bible: an `attack_roll`; I Can't Believe…: Lil Battery.
+   14. Fruitcake (Q-10): the three activations, Fruitcake on top.
+7. Setups changed to prove the card text:
+   1. Holy Mantle's "next death only": two Bombs on the Lost on Isaac's turn.
+   2. The Go test's second damage came after its turn had ended.
+   3. Breakfast for 3 HP: Imp (was Placenta, a g2 card), Knight, Polycephalus, Pills! on 5.
+   4. Knight: throw steps check each 1; the order of the two damages is no rule.
+   5. Credit Card after a purchase: 23¢, so Breakfast can be paid.
+8. Checks added from the card text (owner answer 8):
+   1. Every kill: the monster died, its reward, its soul, the refill.
+   2. Roll cards and attacks: `resolved_rolls`; used items: `deactivated`.
+   3. Loot cards and events: their discard pile.
+   4. Charger, Hush, The Cage: stats at the target question, then a kill.
+   5. Fistula: DC back to 2 on Cain's turn; Death's Head: not offered as a target.
+   6. Curse of Fatigue: the options; The Lost: hers, with `hp` 1, `souls` 1.
+   7. Ouija Board: the other 3 at the bottom, 2 attacks; Trap Door!: the deck order.
+   8. Steven on 2: the roll resolves, Steven takes no damage; on 6: no kill.
+   9. Joker: `looked_at`; Plan C: the soul, 6¢, then both `died`.
+9. Go tests that did not check what they claimed: 3.
+   1. TestCreditCardAfterAPurchase: 3¢ left either way.
+   2. With 3¢ Breakfast can't be bought at 10¢, nor would a free one cost.
+   3. TestTheLost: Cain's own recharge step recharged him anyway.
+   4. The file recharges Isaac, the third seat, before his turn.
+   5. TestPolycephalus: "dies at 3" was wrong; the 4th roll is a 1 (R-ATK-19).
+   6. Isaac died; the check only counted 4 rolls.
+   7. Weak, not wrong: I Can't Believe…'s refusal accepted any rule.
+   8. The file checks R-ABIL-40; Holy Mantle's recharge was a `t.Log`.
+10. Refusals: rules from the rules text.
+   1. I Can't Believe… on another player's item: R-ABIL-40 fits.
+   2. Second ↷ of a character: R-ABIL-07 fits.
+   3. End of turn with an attack owed: R-ATK-03 fits.
+11. Choice made here: Lord of the Pit with no attack is allowed.
+   1. "Cancel an attack" names no target, so R-ABIL-40 does not apply.
+   2. It does nothing: 1 attack left.
+12. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 813 changes.
+13. No rules bug found.
+14. Helpers removed, no use left: `table`, `lootTable`, `inDiscard`, `foe`.
+   1. Also `declareAttack`, `settleAny`, `fight`, `topID`, `engineRef`.
+   2. Also `attackIntent`, `attackRolls`, `testStats`, `beanFirst`.
+   3. `testCharacter` is now `testStartingItem`; the files spell the Bean's label.
+15. Old step 19 entries name removed Go tests; left as history.
+16. `cardgen -report` unchanged.
 
 ### [ ] 24.21 Bulk: r rooms
 

@@ -1,0 +1,18 @@
+{
+  "title": "Isaac ends his turn with 9 Volt: which items is he offered, with The Bible spent, The Butter Bean charged and Breakfast (passive) marked spent?",
+  "source": ["card 9_volt", "R-MECH-54", "R-TURN-10"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["9_volt", "the_bible", "the_butter_bean", "breakfast"], "deactivated": ["the_bible", "breakfast"]},
+      {"character": "cain"}
+    ],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["the_bible", "ask.none"]}}},
+    {"kind": "choose", "choices": ["the_bible"]}
+  ],
+  "expect": {"allowed": true}
+}

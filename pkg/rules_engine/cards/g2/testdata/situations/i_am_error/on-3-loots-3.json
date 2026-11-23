@@ -1,0 +1,19 @@
+{
+  "title": "Isaac reveals I Am Error! and rolls a 3: does he loot 3, with no attack owed?",
+  "source": ["card i_am_error", "R-ATK-09", "R-CARD-06"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fatty", "monstro"],
+    "decks": {"loot": ["a_penny", "a_dime", "two_cents"]},
+    "rolls": [3]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "i_am_error",
+     "expect": {"allowed": true, "resolved_rolls": [3], "attacks": 0, "discards": {"monster": ["i_am_error"]},
+                "after": [{"player": 0, "hand_cards": ["a_penny", "a_dime", "two_cents"]}]}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1}}
+  ],
+  "expect": {"allowed": true}
+}

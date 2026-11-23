@@ -1,0 +1,11 @@
+{
+  "title": "Azazel uses Lord of the Pit with no attack going on: does he keep just his 1 attack?",
+  "source": ["card lord_of_the_pit", "R-TURN-07"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "azazel", "items": ["lord_of_the_pit"]}, {"character": "cain"}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "lord_of_the_pit"},
+  "expect": {"allowed": true, "attacks": 1, "after": [{"player": 0, "deactivated": ["lord_of_the_pit"]}]}
+}

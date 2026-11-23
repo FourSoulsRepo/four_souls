@@ -1,0 +1,16 @@
+{
+  "title": "Isaac uses Crooked Penny on Cain (5¢) and rolls a 2: does Cain double to 10¢?",
+  "source": ["card crooked_penny", "R-ABIL-10"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["crooked_penny"]}, {"character": "cain", "cents": 5}],
+    "active": 0,
+    "rolls": [2]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "crooked_penny", "choices": ["player 2 (cain)"]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [2],
+    "after": [{"player": 0, "cents": 0, "deactivated": ["crooked_penny"]}, {"player": 1, "cents": 10}]
+  }
+}

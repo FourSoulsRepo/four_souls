@@ -1,0 +1,19 @@
+{
+  "title": "Isaac (3 HP with Breakfast) rolls 4, 4, 3, 3, 3 on Polycephalus (3 HP, DC 3): does each hit make the next roll 2 lower?",
+  "source": ["card polycephalus", "card breakfast", "R-ATK-19", "R-ATK-12", "R-ATK-13", "R-CARD-14"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["breakfast"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["polycephalus", "fly"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [4, 4, 3, 3, 3]
+  },
+  "action": {"player": 0, "kind": "attack", "choices": ["polycephalus"]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [4, 2, 3, 1, 3],
+    "monsters": [{"card": "polycephalus", "dead": true}, {"slot": 1, "card": "dip"}],
+    "after": [{"player": 0, "damage": 2, "hand": 3, "soul_cards": ["polycephalus"]}]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "title": "Azazel's attack roll of 6 on the Fly waits on the stack; he cancels the attack with Lord of the Pit: does the Fly live, and may he attack again?",
+  "source": ["card lord_of_the_pit", "R-ATK-15", "R-STACK-06"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "azazel", "items": ["lord_of_the_pit"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["dip"]},
+    "stack": [{"kind": "attack_roll", "dice_roll": 6, "card": "fly", "owner": 0}],
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "lord_of_the_pit",
+     "expect": {"allowed": true, "resolved_rolls": [], "attacks": 1,
+                "monsters": [{"slot": 1, "card": "fly", "damage": 0}],
+                "after": [{"player": 0, "cents": 0, "deactivated": ["lord_of_the_pit"]}]}},
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "resolved_rolls": [6], "attacks": 0,
+                "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "cents": 1}]}}
+  ],
+  "expect": {"allowed": true}
+}

@@ -1,0 +1,23 @@
+{
+  "title": "Isaac uses Ouija Board on Trite, Leech, Shop Upgrade!, Fly: does Shop Upgrade! enter slot 2 and resolve, and do the rest go to the bottom?",
+  "source": ["card ouija_board", "card shop_upgrade", "R-CARD-15", "R-ZONE-11", "Q-22"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["ouija_board"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["monstro", "fatty"],
+    "shop": ["the_d6", "breakfast"],
+    "decks": {"monster": ["trite", "leech", "shop_upgrade", "fly"], "treasure": ["dinner", "meat"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "ouija_board", "choices": ["shop_upgrade", "ask.slot 2"],
+     "expect": {"allowed": true, "attacks": 2,
+                "monsters": [{"slot": 1, "card": "monstro"}, {"slot": 2, "card": "fatty"}],
+                "discards": {"monster": ["shop_upgrade"]},
+                "deck_bottoms": {"monster": ["trite", "leech", "fly"]},
+                "after": [{"player": 0, "deactivated": ["ouija_board"]}]}},
+    {"player": 0, "kind": "purchase",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["the_d6", "breakfast", "dinner", "meat", "ask.deck.treasure"]}}}
+  ],
+  "expect": {"allowed": true}
+}

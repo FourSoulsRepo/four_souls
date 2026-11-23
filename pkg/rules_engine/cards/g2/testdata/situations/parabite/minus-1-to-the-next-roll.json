@@ -1,0 +1,19 @@
+{
+  "title": "Isaac rolls 3, 3, 3 on Parabite (DC 3): does its damage make the second roll a 2, a miss?",
+  "source": ["card parabite", "R-ATK-12", "R-ATK-13", "R-ATK-19", "R-CARD-13"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["parabite", "fly"],
+    "decks": {"monster": ["dip"], "loot": ["a_penny"]},
+    "rolls": [3, 3, 3]
+  },
+  "action": {"player": 0, "kind": "attack", "choices": ["parabite"]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [3, 2, 3],
+    "monsters": [{"card": "parabite", "dead": true}, {"slot": 1, "card": "dip"}],
+    "after": [{"player": 0, "damage": 1, "hand_cards": ["a_penny"]}]
+  }
+}

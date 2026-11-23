@@ -1,0 +1,18 @@
+{
+  "title": "Isaac rolls a 6 on Steven: is everything cancelled and his turn ended, with no kill?",
+  "source": ["card steven", "R-MECH-52", "R-DICE-06"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["steven", "fly"],
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["steven"],
+     "expect": {"allowed": true, "active": 1, "resolved_rolls": [6],
+                "events": [{"kind": "turn_ended_early", "player": 0}],
+                "monsters": [{"slot": 1, "card": "steven"}], "after": [{"player": 0, "souls": 0, "items": []}]}}
+  ],
+  "expect": {"allowed": true}
+}

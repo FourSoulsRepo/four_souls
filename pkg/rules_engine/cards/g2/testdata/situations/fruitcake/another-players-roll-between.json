@@ -1,0 +1,26 @@
+{
+  "title": "Isaac rolls 4 (Fruitcake), Cain rolls 1 (Crooked Penny), Isaac rolls 4 (The Butter Bean): does Fruitcake recharge, as Cain's roll is not Isaac's?",
+  "source": ["card fruitcake", "card the_butter_bean", "card crooked_penny", "R-DICE-08", "Q-10", "R-STACK-02", "R-ABIL-15"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["fruitcake", "the_butter_bean"], "deactivated": ["fruitcake", "the_butter_bean"]},
+      {"character": "cain", "items": ["crooked_penny"], "deactivated": ["crooked_penny"]}
+    ],
+    "active": 0,
+    "stack": [
+      {"kind": "activate", "card": "the_butter_bean", "owner": 0},
+      {"kind": "activate", "card": "crooked_penny", "owner": 1, "choices": ["player 1 (isaac)"]},
+      {"kind": "activate", "card": "fruitcake", "owner": 0}
+    ],
+    "rolls": [4, 1, 4]
+  },
+  "action": {"player": 0, "kind": "pass", "choices": ["ask.deck.loot", "the_butter_bean: ↷: Roll- 6: Recharge this."]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [4, 1, 4],
+    "resolved": ["fruitcake", "crooked_penny", "the_butter_bean"],
+    "events": [{"kind": "looked_at", "player": 0}],
+    "after": [{"player": 0, "deactivated": ["the_butter_bean"]}, {"player": 1, "deactivated": ["crooked_penny"]}]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "title": "Apollyon uses Void to discard his 3 cards: does he loot 3?",
+  "source": ["card void", "R-CARD-06"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "apollyon", "items": ["void"], "hand": ["bomb", "bomb", "a_penny"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "shop": ["the_d6", "breakfast"],
+    "decks": {"loot": ["a_dime", "two_cents", "three_cents"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "void", "choices": ["Discard your hand, then loot equal to the number of cards discarded."]},
+  "expect": {
+    "allowed": true,
+    "discards": {"loot": ["bomb", "bomb", "a_penny"]},
+    "after": [{"player": 0, "hand_cards": ["a_dime", "two_cents", "three_cents"], "deactivated": ["void"]}]
+  }
+}

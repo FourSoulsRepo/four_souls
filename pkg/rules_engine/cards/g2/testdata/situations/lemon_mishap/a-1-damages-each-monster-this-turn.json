@@ -1,0 +1,26 @@
+{
+  "title": "Isaac uses Lemon Mishap, then rolls 1, 3, 3, 3 on the Fatty: does the 1 deal 1 to each monster, and no longer on Cain's turn?",
+  "source": ["card lemon_mishap", "card fatty", "R-ABIL-27", "R-ATK-12", "R-ATK-13", "R-TURN-13"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["lemon_mishap"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["monstro", "fatty"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [1, 3, 3, 3, 1, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "lemon_mishap",
+     "expect": {"allowed": true, "after": [{"player": 0, "deactivated": ["lemon_mishap"]}]}},
+    {"player": 0, "kind": "attack", "choices": ["fatty", "ask.rest_in_slot_order"],
+     "expect": {"allowed": true, "resolved_rolls": [1, 3, 3, 3],
+                "monsters": [{"slot": 1, "card": "monstro", "damage": 1}, {"card": "fatty", "dead": true}, {"slot": 2, "card": "dip"}],
+                "after": [{"player": 0, "damage": 1}]}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1}},
+    {"player": 1, "kind": "attack", "choices": ["dip"],
+     "expect": {"allowed": true, "resolved_rolls": [1, 6],
+                "monsters": [{"slot": 1, "card": "monstro", "damage": 0}, {"card": "dip", "dead": true}],
+                "after": [{"player": 1, "damage": 1}]}}
+  ],
+  "expect": {"allowed": true}
+}

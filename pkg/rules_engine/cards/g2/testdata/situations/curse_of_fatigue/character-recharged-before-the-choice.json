@@ -1,0 +1,23 @@
+{
+  "title": "Cain has Curse of Fatigue: when he is asked which item to recharge, is his character already recharged, with its event?",
+  "source": ["card curse_of_fatigue", "R-TURN-02"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain", "items": ["the_bible", "crooked_penny"], "deactivated": ["the_bible", "crooked_penny", "character"]}
+    ],
+    "active": 0,
+    "monsters": ["fatty", "monstro"]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "curse_of_fatigue", "choices": ["player 2 (cain)"]},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "prompt": {"player": 1, "options": ["the_bible", "crooked_penny"]},
+                "events": [{"kind": "recharged", "player": 1}],
+                "after": [{"player": 1, "deactivated": ["the_bible", "crooked_penny"]}]}},
+    {"kind": "choose", "choices": ["the_bible"],
+     "expect": {"allowed": true, "after": [{"player": 1, "deactivated": ["crooked_penny"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

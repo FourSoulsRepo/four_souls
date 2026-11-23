@@ -1,0 +1,20 @@
+{
+  "title": "Isaac kills Boil (at 1 HP) with a 6: does he gain its printed reward, 3¢ and no loot?",
+  "source": ["card boil", "R-ATK-12", "R-CARD-13", "R-DEATH-09"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["boil", "fly"],
+    "monster_damage": {"boil": 1},
+    "decks": {"monster": ["dip"]},
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "attack", "choices": ["boil"]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "monsters": [{"card": "boil", "dead": true}, {"slot": 1, "card": "dip"}],
+    "after": [{"player": 0, "cents": 3, "hand": 0, "souls": 0}]
+  }
+}

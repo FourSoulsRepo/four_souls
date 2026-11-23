@@ -1,0 +1,11 @@
+{
+  "title": "Isaac pays 3¢ for Succubus: does the turn have 3 loot plays?",
+  "source": ["card succubus", "R-TURN-05", "R-ABIL-07"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["succubus"], "cents": 3}, {"character": "cain"}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "succubus"},
+  "expect": {"allowed": true, "loot_plays": 3, "after": [{"player": 0, "cents": 0, "deactivated": []}]}
+}

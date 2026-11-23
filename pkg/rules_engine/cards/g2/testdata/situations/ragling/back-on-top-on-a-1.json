@@ -1,0 +1,19 @@
+{
+  "title": "Isaac kills Ragling and its roll is a 1: after his loot 1, does Ragling go on top of the monster deck and refill its slot?",
+  "source": ["card ragling", "R-DEATH-07", "R-DEATH-09"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["ragling", "fly"],
+    "decks": {"loot": ["a_penny"]},
+    "rolls": [6, 6, 1]
+  },
+  "action": {"player": 0, "kind": "attack", "choices": ["ragling"]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 1],
+    "monsters": [{"slot": 1, "card": "ragling", "damage": 0}],
+    "after": [{"player": 0, "hand_cards": ["a_penny"]}]
+  }
+}

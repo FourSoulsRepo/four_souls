@@ -1,0 +1,18 @@
+{
+  "title": "Isaac has Guppy's Tail: does he discard a loot card at the end of his turn, and loot 2 in his next loot step?",
+  "source": ["card guppys_tail", "R-TURN-04", "R-TURN-10"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["guppys_tail"], "hand": ["bomb", "a_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "decks": {"loot": ["a_penny", "a_dime", "two_cents"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "choices": ["bomb"],
+     "expect": {"allowed": true, "active": 1, "discards": {"loot": ["bomb"]},
+                "after": [{"player": 0, "hand_cards": ["a_sack"]}, {"player": 1, "hand_cards": ["a_penny"]}]}},
+    {"player": 1, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 0, "after": [{"player": 0, "hand_cards": ["a_sack", "a_dime", "two_cents"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

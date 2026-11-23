@@ -1,0 +1,18 @@
+{
+  "title": "Isaac discards Bomb! for Dad's Key and picks slot 2: does Charger, the top of the monster deck, cover the Leech there?",
+  "source": ["card dads_key", "R-ABIL-07", "R-ZONE-10"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["dads_key"], "hand": ["bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["charger"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "dads_key", "choices": ["bomb", "ask.slot 2"]},
+  "expect": {
+    "allowed": true,
+    "monsters": [{"slot": 1, "card": "fly"}, {"slot": 2, "card": "charger"}],
+    "discards": {"loot": ["bomb"]},
+    "after": [{"player": 0, "hand": 0, "deactivated": []}]
+  }
+}

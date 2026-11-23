@@ -1,0 +1,19 @@
+{
+  "title": "Isaac (23¢, There's Options) buys The D6, then plays Credit Card and buys Breakfast: does Breakfast still cost 10¢?",
+  "source": ["card credit_card", "card theres_options", "R-SHOP-03", "R-SHOP-04"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["theres_options"], "hand": ["credit_card"], "cents": 23}, {"character": "cain"}],
+    "active": 0,
+    "shop": ["the_d6", "breakfast"]
+  },
+  "steps": [
+    {"player": 0, "kind": "purchase", "choices": ["the_d6"], "expect": {"allowed": true, "after": [{"player": 0, "cents": 13}]}},
+    {"player": 0, "kind": "play", "card": "credit_card"},
+    {"player": 0, "kind": "purchase", "choices": ["breakfast"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "after": [{"player": 0, "cents": 3, "items": ["theres_options", "the_d6", "breakfast"]}]
+  }
+}

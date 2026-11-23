@@ -1,0 +1,20 @@
+{
+  "title": "Isaac plays Cancer, then attacks the Leech (DC 4) and rolls a 3: does Cancer stay as an item and make the roll a 4?",
+  "source": ["card cancer", "card leech", "R-DICE-06", "R-ATK-12"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["cancer"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"monster": ["dip"], "loot": ["a_penny"]},
+    "rolls": [3]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "cancer",
+     "expect": {"allowed": true, "after": [{"player": 0, "items": ["cancer"], "hand": 0}]}},
+    {"player": 0, "kind": "attack", "choices": ["leech"],
+     "expect": {"allowed": true, "resolved_rolls": [4], "monsters": [{"card": "leech", "dead": true}, {"slot": 1, "card": "dip"}],
+                "after": [{"player": 0, "damage": 0, "hand_cards": ["a_penny"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

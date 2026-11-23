@@ -1,0 +1,21 @@
+{
+  "title": "Isaac uses Plan C on Monstro: is Plan C destroyed, Monstro killed for its reward and soul, and do all players die at the end of the turn?",
+  "source": ["card plan_c", "R-ATK-07", "R-CARD-13", "R-CARD-14", "R-DEATH-14"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["plan_c"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["monstro", "fatty"],
+    "decks": {"monster": ["dip"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "plan_c", "choices": ["monstro"],
+     "expect": {"allowed": true, "monsters": [{"card": "monstro", "dead": true}, {"slot": 1, "card": "dip"}],
+                "discards": {"treasure": ["plan_c"]},
+                "after": [{"player": 0, "items": [], "cents": 6, "soul_cards": ["monstro"]}]}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "events": [{"kind": "died", "player": 0}, {"kind": "died", "player": 1}],
+                "after": [{"player": 0, "cents": 5}]}}
+  ],
+  "expect": {"allowed": true}
+}

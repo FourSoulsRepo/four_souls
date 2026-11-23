@@ -1,0 +1,19 @@
+{
+  "title": "Isaac has Infamy and rolls 3, then 6, on the Trite (DC 5): does the 3 still deal him 1 combat damage?",
+  "source": ["card infamy", "card trite", "R-ATK-13"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["infamy"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["trite", "fly"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [3, 6]
+  },
+  "action": {"player": 0, "kind": "attack", "choices": ["trite"]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [3, 6],
+    "monsters": [{"card": "trite", "dead": true}],
+    "after": [{"player": 0, "damage": 1, "hand": 2}]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "title": "Isaac (3 HP with Breakfast) rolls 1, 1 on Knight (2 HP, DC 6): does each 1 also deal Knight 1, so it dies?",
+  "source": ["card knight", "card breakfast", "R-ATK-13", "R-CARD-13"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["breakfast"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["knight", "fly"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [1, 1]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["knight"]},
+    {"kind": "throw",
+     "expect": {"allowed": true, "resolved_rolls": [1], "monsters": [{"slot": 1, "card": "knight", "damage": 1}], "after": [{"player": 0, "damage": 1}]}},
+    {"kind": "throw",
+     "expect": {"allowed": true, "resolved_rolls": [1], "monsters": [{"card": "knight", "dead": true}, {"slot": 1, "card": "dip"}],
+                "events": [{"kind": "died", "player": 0, "none": true}], "after": [{"player": 0, "hand": 2}]}}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [1, 1]}
+}

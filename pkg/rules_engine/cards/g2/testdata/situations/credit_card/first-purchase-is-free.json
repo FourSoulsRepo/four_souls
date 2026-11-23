@@ -1,0 +1,19 @@
+{
+  "title": "Isaac (3¢) plays Credit Card, then buys The D6: is it free?",
+  "source": ["card credit_card", "R-SHOP-03", "R-SHOP-04"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["credit_card"], "cents": 3}, {"character": "cain"}],
+    "active": 0,
+    "shop": ["the_d6", "breakfast"]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "credit_card"},
+    {"player": 0, "kind": "purchase", "choices": ["the_d6"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "discards": {"loot": ["credit_card"]},
+    "after": [{"player": 0, "cents": 3, "items": ["the_d6"]}]
+  }
+}

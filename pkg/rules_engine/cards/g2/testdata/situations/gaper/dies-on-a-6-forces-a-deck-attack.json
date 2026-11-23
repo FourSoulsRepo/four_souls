@@ -1,0 +1,20 @@
+{
+  "title": "Isaac kills Gaper with a 6: must he make an additional attack, on the monster deck, before he ends his turn?",
+  "source": ["card gaper", "R-ATK-03", "R-ATK-02", "R-CARD-13"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["gaper", "fly"],
+    "decks": {"monster": ["dip", "pooter"]},
+    "rolls": [5, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["gaper"],
+     "expect": {"allowed": true, "resolved_rolls": [5, 6], "attacks": 1,
+                "monsters": [{"card": "gaper", "dead": true}, {"slot": 1, "card": "dip"}], "after": [{"player": 0, "cents": 3}]}},
+    {"player": 0, "kind": "end_turn", "expect": {"rule": "R-ATK-03", "active": 0}},
+    {"player": 0, "kind": "attack", "expect": {"allowed": true, "prompt": {"player": 0, "options": ["ask.deck.monster"]}}}
+  ],
+  "expect": {"rule": "R-ATK-03"}
+}

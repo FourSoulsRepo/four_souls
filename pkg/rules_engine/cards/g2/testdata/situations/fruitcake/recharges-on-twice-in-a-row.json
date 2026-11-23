@@ -1,0 +1,17 @@
+{
+  "title": "Isaac rolls 2 with Fruitcake, then 2 with The Butter Bean: does Fruitcake recharge?",
+  "source": ["card fruitcake", "card the_butter_bean", "R-DICE-08", "R-ABIL-15"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["fruitcake", "the_butter_bean"]}, {"character": "cain"}],
+    "active": 0,
+    "rolls": [2, 2]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "fruitcake",
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 1, "deactivated": ["fruitcake"]}]}},
+    {"player": 0, "kind": "activate", "card": "the_butter_bean", "choices": ["the_butter_bean: ↷: Roll- 6: Recharge this."],
+     "expect": {"allowed": true, "after": [{"player": 0, "deactivated": ["the_butter_bean"]}]}}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [2, 2], "after": [{"player": 0, "cents": 1}]}
+}

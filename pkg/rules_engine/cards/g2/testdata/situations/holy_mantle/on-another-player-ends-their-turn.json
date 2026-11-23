@@ -1,0 +1,21 @@
+{
+  "title": "In Isaac's loot step the Lost uses Holy Mantle on Isaac; he then misses the Leech (2 ATK): is his death prevented and his turn ended?",
+  "source": ["card holy_mantle", "card leech", "R-TURN-04", "R-PRIO-02", "R-ATK-13", "R-MECH-52"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "the_lost", "items": ["holy_mantle"]}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "phase": "loot",
+    "priority": 1,
+    "rolls": [1]
+  },
+  "steps": [
+    {"player": 1, "kind": "activate", "card": "holy_mantle", "choices": ["player 1 (isaac)"],
+     "expect": {"allowed": true, "active": 0, "after": [{"player": 1, "deactivated": ["holy_mantle"]}]}},
+    {"player": 0, "kind": "attack", "choices": ["leech"],
+     "expect": {"allowed": true, "resolved_rolls": [1], "active": 1,
+                "events": [{"kind": "turn_ended_early", "player": 0}, {"kind": "died", "player": 0, "none": true}]}}
+  ],
+  "expect": {"allowed": true}
+}

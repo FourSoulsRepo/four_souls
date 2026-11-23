@@ -1,0 +1,19 @@
+{
+  "title": "Isaac has Infamy and rolls 1, then 6, on the Leech (2 ATK): does the 1 deal him no combat damage?",
+  "source": ["card infamy", "card leech", "R-ATK-13"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["infamy"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [1, 6]
+  },
+  "action": {"player": 0, "kind": "attack", "choices": ["leech"]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 6],
+    "monsters": [{"card": "leech", "dead": true}],
+    "after": [{"player": 0, "damage": 0, "hand": 1}]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "title": "Isaac uses The Butter Bean twice, rolling 6 then 3: does only the 6 recharge it?",
+  "source": ["card the_butter_bean", "R-ABIL-10"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_butter_bean"]}, {"character": "cain"}],
+    "active": 0,
+    "rolls": [6, 3]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "the_butter_bean",
+     "expect": {"allowed": true, "resolved_rolls": [6], "after": [{"player": 0, "deactivated": []}]}},
+    {"player": 0, "kind": "activate", "card": "the_butter_bean",
+     "expect": {"allowed": true, "resolved_rolls": [3], "after": [{"player": 0, "deactivated": ["the_butter_bean"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

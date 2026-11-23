@@ -1,0 +1,17 @@
+{
+  "title": "Isaac ends his turn with 9 Volt and three spent items: does he recharge the two he picks, and only them?",
+  "source": ["card 9_volt", "R-TURN-10"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["9_volt", "the_bible", "fruitcake", "the_butter_bean"], "deactivated": ["the_bible", "fruitcake", "the_butter_bean"]},
+      {"character": "cain"}
+    ],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "choices": ["the_bible", "the_butter_bean"],
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "deactivated": ["fruitcake"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

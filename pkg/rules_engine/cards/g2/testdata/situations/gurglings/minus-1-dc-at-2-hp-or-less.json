@@ -1,0 +1,20 @@
+{
+  "title": "Isaac bombs Gurglings (4 HP, DC 5) twice: is its DC 5 at 4 and 3 HP, and 4 at 2 HP?",
+  "source": ["card gurglings", "card bomb", "R-ABIL-04"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["bomb", "bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["gurglings", "fly"],
+    "loot_plays": 2
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "bomb",
+     "expect": {"allowed": true, "prompt": {"player": 0}, "monsters": [{"slot": 1, "card": "gurglings", "hp": 4, "evasion": 5}]}},
+    {"kind": "choose", "choices": ["gurglings"],
+     "expect": {"allowed": true, "monsters": [{"slot": 1, "card": "gurglings", "hp": 3, "evasion": 5}]}},
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["gurglings"],
+     "expect": {"allowed": true, "monsters": [{"slot": 1, "card": "gurglings", "hp": 2, "evasion": 4}]}}
+  ],
+  "expect": {"allowed": true}
+}

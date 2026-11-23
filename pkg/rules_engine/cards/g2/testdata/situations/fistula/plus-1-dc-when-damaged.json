@@ -1,0 +1,17 @@
+{
+  "title": "Isaac bombs Fistula (DC 2): is its DC 3 this turn, and back to 2 on Cain's turn?",
+  "source": ["card fistula", "card bomb", "R-ABIL-27", "R-TURN-13"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fistula", "fly"]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["fistula"],
+     "expect": {"allowed": true, "monsters": [{"slot": 1, "card": "fistula", "damage": 1, "evasion": 3}]}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "monsters": [{"slot": 1, "card": "fistula", "damage": 0, "evasion": 2}]}}
+  ],
+  "expect": {"allowed": true}
+}

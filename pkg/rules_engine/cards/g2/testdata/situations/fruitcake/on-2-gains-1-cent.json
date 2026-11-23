@@ -1,0 +1,16 @@
+{
+  "title": "Isaac uses Fruitcake and rolls a 2: does he gain 1¢?",
+  "source": ["card fruitcake", "R-ABIL-10"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["fruitcake"]}, {"character": "cain"}],
+    "active": 0,
+    "rolls": [2]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "fruitcake"},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [2],
+    "after": [{"player": 0, "cents": 1, "hand": 0, "deactivated": ["fruitcake"]}]
+  }
+}

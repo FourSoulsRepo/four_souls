@@ -1,0 +1,17 @@
+{
+  "title": "Isaac plays A Sack: does he loot 3, and does A Sack go to the loot discard?",
+  "source": ["card a_sack", "R-CARD-06", "R-CARD-07"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["a_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"loot": ["a_penny", "a_dime", "two_cents"]}
+  },
+  "action": {"player": 0, "kind": "play", "card": "a_sack"},
+  "expect": {
+    "allowed": true,
+    "discards": {"loot": ["a_sack"]},
+    "after": [{"player": 0, "hand": 3, "hand_cards": ["a_penny", "a_dime", "two_cents"]}]
+  }
+}

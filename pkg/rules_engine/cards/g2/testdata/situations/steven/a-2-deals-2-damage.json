@@ -1,0 +1,18 @@
+{
+  "title": "Isaac (2 HP) rolls a 2 on Steven (DC 2): does he take 2 damage and die, so the attack ends before Steven takes damage?",
+  "source": ["card steven", "R-DICE-06", "R-STACK-08", "R-DEATH-12", "R-ATK-15"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["steven", "fly"],
+    "rolls": [2]
+  },
+  "action": {"player": 0, "kind": "attack", "choices": ["steven"]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [2],
+    "events": [{"kind": "died", "player": 0}],
+    "monsters": [{"slot": 1, "card": "steven", "damage": 0}]
+  }
+}
