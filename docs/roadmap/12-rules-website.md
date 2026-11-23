@@ -201,7 +201,7 @@ Rules of this step (owner, 2026-11-06):
 3. Done when:
    1. One payload answers in both languages, with working rule links.
 
-### [ ] 12.10 Russian glossary
+### [x] 12.10 Russian glossary
 
 1. Goal: one Russian word per game term, before any translation.
 2. Tasks:
@@ -210,6 +210,28 @@ Rules of this step (owner, 2026-11-06):
    3. Where they disagree, list both; the **Owner** picks.
 3. Done when:
    1. Every English glossary term has a Russian word.
+4. Result: `glossary/ru.json`, all 24 terms.
+   1. Card data (16.5) has Russian names only, no effect texts.
+   2. So most words come from the S-RU rules pages.
+   3. Second source: card types of the foursouls.ru site database.
+   4. Words match the card names where they meet.
+      1. «4 цента!», «Душа Гордыни», «Комната ангела», «Проклятие …».
+      2. «Улучшение магазина!», «Двойное сокровище!».
+   5. **Owner**: `eternal`, picked «вечный».
+      1. «вечный»: the S-RU keyword; «не-вечный предмет» in effects.
+      2. «стартовый предмет»: S-RU setup (15 uses) and the site card type.
+      3. Picked the keyword; the starting item is a separate idea.
+   6. **Owner**: `monster`, picked «монстр».
+      1. «монстр»: S-RU (171 uses), site type «Карта монстра».
+      2. «противник»: site subtypes («обычный противник»), S-RU 7 uses.
+      3. Picked the far more common word.
+   7. **Owner**: `recharge`, picked «перезарядить» (verb).
+      1. S-RU key term «Перезарядить»; noun «перезарядка» in its section.
+      2. No disagreement on the word; only verb or noun.
+   8. Not in any source: «лут» for loot, «счётчик» for counter.
+      1. S-RU uses «добыча» and «жетон» throughout.
+   9. Dice: S-RU says «кубик»; «Комната игральной кости!» says «игральная кость».
+      1. Not a glossary term; `roll` is «бросок» in both.
 
 ### [ ] 12.11 Russian app interface
 
