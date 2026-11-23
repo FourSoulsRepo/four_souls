@@ -1171,3 +1171,28 @@ Ideas: TS-13, LR-04, R-03.
 ### [ ] 24.27 Bulk: challenge
 
 1. Goal: Challenge and Challenge Boss (about 50 tests).
+
+### [ ] 24.28 Turn checks count every attack and loot play left
+
+1. Why (owner, 2026-11-24)
+   1. `expect.attacks` reads only `Turn.Attacks`.
+   2. A bonus from a card always in effect is left out (24.13, 24.21 item 13).
+   3. Might For The Meek: `attacks` 0 after the first attack; a second is allowed.
+   4. Owner: the check counts what the player can still do.
+2. Change
+   1. `attacks`: the attacks the active player has left, bonus ones too.
+   2. The engine's own count: `attacksLeft` (`combat.go`).
+   3. `loot_plays`: the same, by `lootPlaysFor` (`activate.go`).
+   4. It then counts `extra_loot_plays` and static bonus loot plays.
+   5. Same mechanism, same fix (CLAUDE.md 5.26).
+   6. Setup fields keep their meaning: base counts, bonus ones on top.
+   7. No rules change; the game already counts them so.
+3. Files
+   1. Every file whose `attacks` or `loot_plays` check changes is fixed.
+   2. The new value comes from the card text, not from the run (5.25).
+   3. Might For The Meek, Champion Belt and similar: check the bonus at once.
+   4. List each file changed and why in the report.
+4. Tests and docs
+   1. Go: a pass and a fail for a static bonus attack and loot play.
+   2. Wiki `Situation-payload.md`: the two checks, and the dump if it changes.
+   3. ADR 034: drift edited in place, if any.
