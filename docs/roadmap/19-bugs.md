@@ -6931,3 +6931,12 @@ Totals by system (227 items):
    3. Wiki `Adding-a-card.md`: the `Attack` field.
    4. 24.20 item 11: reversed by 19.237.
    5. `Situation-payload.md`: no change.
+11. Gates (2026-11-23)
+   1. `make lint test` and `make site` passed; site: engine 0.5.7.
+   2. `make e2e`: 636 passed, 2 failed; evidence in `.cache/e2e-evidence/19.237/`.
+   3. Neither deal had a card changed here; both are unrelated.
+   4. aim.spec.ts:406 (chromium): a shop item's hover mark stayed after the mouse left.
+   5. Hover presence is client to client; no engine refusal in it.
+   6. playback.spec.ts:1975 (webkit, seed 114790418): Pass came live after the banner went.
+   7. Eden with The D10, Samson with Blood Lust; a timing check under load.
+   8. Each passed alone on the first rerun, the same seed too; no new item.
