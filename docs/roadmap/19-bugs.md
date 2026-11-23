@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226, 19.233, 19.236, 19.237 | 30 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226, 19.233, 19.236, 19.237, 19.238 | 31 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193, 19.232 | 19 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45, 19.224                                   | 3     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
@@ -61,11 +61,11 @@ This step never closes; new reports are appended.
 | Z  | Situation runner: a check checks nothing | Go tests   | 19.234                                                 | 1     |
 | AA | Situation setup: a start-of-turn duty lost | Engine   | 19.235                                                 | 1     |
 
-Totals by system (227 items):
+Totals by system (228 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U, W, AA | 53 |
+| Engine    | A, B, T, U, W, AA | 54 |
 | Card data | C       | 3     |
 | Client    | D–G, O, P, S, V, Y | 56 |
 | Server    | H, N    | 5     |
@@ -6952,3 +6952,25 @@ Totals by system (227 items):
    8. Each passed alone on the first rerun, the same seed too; no new item.
 12. Owner notes (2026-11-23)
    1. Owner marks 19.237 solved.
+
+### [ ] 19.238 ? Card copies an ability with no valid target
+
+1. Goal: ? Card copies only an ability with a valid target, as Placebo.
+2. Report (owner, 2026-11-23)
+   1. ? Card: "As you play this, choose an item. This copies one of that item's ↷ abilities."
+   2. It may copy Lord of the Pit with no attack in progress.
+   3. It offers a copied ability whose targets don't exist.
+   4. Picking one leads to a target prompt with only Cancel.
+   5. Owner: "match with Placebo".
+3. Cause (the engine)
+   1. `tapAbilitiesInPlay` lists every ↷ ability of the items in play.
+   2. `lootPlayable` only checks that the list is not empty.
+   3. Neither asks `targetsAvailable`, so R-ABIL-40 is skipped (Q-55).
+   4. Placebo checks each copied ability in `activatable`, so it refuses them.
+4. Tasks:
+   1. The copy prompt offers only abilities with a valid target.
+   2. None: playing ? Card is refused by R-ABIL-40.
+   3. Check every user of the list: aims, situation stack, bots, client, the answer.
+   4. Check every copy mechanism, all sets (5.24).
+   5. Situation files: refused; only the other item offered; copy during an attack.
+   6. The copy fizzles when the attack ends first (R-ABIL-06, R-MECH-32).
