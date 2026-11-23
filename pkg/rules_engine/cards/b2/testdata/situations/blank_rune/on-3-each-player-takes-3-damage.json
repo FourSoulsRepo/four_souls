@@ -1,0 +1,13 @@
+{
+  "title": "Isaac plays Blank Rune and rolls a 3: each player takes 3 damage; do both 2 HP players die?",
+  "source": ["card blank_rune", "card isaac", "card cain", "R-DEATH-01", "R-DEATH-02"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["blank_rune"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [3]
+  },
+  "action": {"player": 0, "kind": "play", "card": "blank_rune"},
+  "expect": {"allowed": true, "resolved_rolls": [3], "events": [{"kind": "died", "player": 0}, {"kind": "died", "player": 1}]}
+}

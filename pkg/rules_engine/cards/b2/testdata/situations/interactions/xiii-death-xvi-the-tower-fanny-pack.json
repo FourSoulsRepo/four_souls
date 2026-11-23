@@ -1,0 +1,21 @@
+{
+  "title": "Cain is dead from XIII. Death; The Tower rolls a 1 and each player takes 1 damage: does dead Cain's Fanny Pack loot?",
+  "source": ["card xiii_death", "card xvi_the_tower", "card fanny_pack", "R-MECH-51", "R-ABIL-35", "R-DEATH-17"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["xiii_death", "xvi_the_tower"], "extra_loot_plays": 1},
+      {"character": "cain", "items": ["fanny_pack", "breakfast"]}
+    ],
+    "active": 0,
+    "rolls": [1]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "xiii_death", "choices": ["player 2 (cain)", "breakfast"],
+     "expect": {"allowed": true, "after": [{"player": 1, "dead": true, "hand": 0, "items": ["fanny_pack"]}]}},
+    {"player": 0, "kind": "play", "card": "xvi_the_tower",
+     "expect": {"allowed": true, "resolved_rolls": [1],
+       "events": [{"kind": "looted", "player": 1}, {"kind": "died", "player": 1, "none": true}]}}
+  ],
+  "expect": {"allowed": true, "after": [{"player": 0, "hp": 1}, {"player": 1, "dead": true, "hand": 1}]}
+}

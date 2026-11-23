@@ -1,0 +1,20 @@
+{
+  "title": "Isaac buys Mom's Shovel: it enters deactivated; on his next turn, does it steal Cain's Monstro soul?",
+  "source": ["card moms_shovel", "card monstro", "R-ABIL-31", "R-TURN-02", "R-SHOP-03", "R-MECH-03"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "cents": 10}, {"character": "cain", "souls": ["monstro"]}],
+    "active": 0,
+    "shop": ["moms_shovel"]
+  },
+  "steps": [
+    {"player": 0, "kind": "purchase", "choices": ["moms_shovel"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 0, "items": ["moms_shovel"], "deactivated": ["moms_shovel"]}]}},
+    {"player": 0, "kind": "end_turn"},
+    {"player": 1, "kind": "end_turn", "expect": {"allowed": true, "active": 0, "after": [{"player": 0, "deactivated": []}]}},
+    {"player": 0, "kind": "activate", "card": "moms_shovel", "choices": ["monstro"]}
+  ],
+  "expect": {"allowed": true,
+    "discards": {"treasure": ["moms_shovel"]},
+    "after": [{"player": 0, "items": [], "souls": 1, "soul_cards": ["monstro"]}, {"player": 1, "souls": 0, "soul_cards": []}]}
+}

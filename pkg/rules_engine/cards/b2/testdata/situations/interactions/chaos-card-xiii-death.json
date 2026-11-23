@@ -1,0 +1,22 @@
+{
+  "title": "Isaac's Chaos Card is on the stack to kill the Leech; Cain kills Isaac with XIII. Death in response: does Chaos Card still kill the Leech?",
+  "source": ["card chaos_card", "card xiii_death", "R-ABIL-03", "R-DEATH-12", "R-DEATH-14", "R-ATK-15"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["chaos_card", "breakfast"], "deactivated": ["chaos_card"]},
+      {"character": "cain", "hand": ["xiii_death"], "extra_loot_plays": 1}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "stack": [{"kind": "activate", "card": "chaos_card", "owner": 0, "choices": ["Kill a player or monster.", "leech"]}],
+    "priority": 1
+  },
+  "action": {"player": 1, "kind": "play", "card": "xiii_death", "choices": ["player 1 (isaac)", "breakfast"]},
+  "expect": {"allowed": true,
+    "resolved": ["xiii_death", "chaos_card"],
+    "events": [{"kind": "died", "player": 0}],
+    "monsters": [{"card": "leech", "dead": true}],
+    "discards": {"treasure": ["breakfast", "chaos_card"], "loot": ["xiii_death"]},
+    "after": [{"player": 0, "items": []}, {"player": 1, "hand": 0}]}
+}

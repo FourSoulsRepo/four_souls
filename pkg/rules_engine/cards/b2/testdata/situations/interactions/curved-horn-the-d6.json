@@ -1,0 +1,20 @@
+{
+  "title": "Isaac's first attack roll on Big Spider is a 1; he rerolls it with The D6 into a 6: does the hit keep Curved Horn's +1 and deal 2?",
+  "source": ["card curved_horn", "card the_d6", "card big_spider", "card isaac", "R-MECH-47", "R-ATK-12"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["curved_horn", "the_d6"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["big_spider"],
+    "stack": [{"kind": "attack_roll", "dice_roll": 1, "card": "big_spider", "owner": 0}],
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "the_d6", "choices": ["ask.roll_of 1"]},
+    {"kind": "throw",
+     "expect": {"allowed": true, "resolved_rolls": [6], "monsters": [{"card": "big_spider", "damage": 2, "hp": 1}], "after": [{"player": 0, "damage": 0}]}},
+    {"kind": "throw",
+     "expect": {"allowed": true, "resolved_rolls": [6], "monsters": [{"card": "big_spider", "dead": true}]}}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [6, 6], "after": [{"player": 0, "damage": 0, "deactivated": ["the_d6"]}]}
+}

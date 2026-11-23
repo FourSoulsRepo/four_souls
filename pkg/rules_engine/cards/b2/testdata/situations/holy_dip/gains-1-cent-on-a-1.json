@@ -1,0 +1,13 @@
+{
+  "title": "Holy Dip is in a monster slot; Isaac rolls a 1 with Mystery Sack: does he loot 1 and gain 1¢?",
+  "source": ["card holy_dip", "card mystery_sack", "R-ABIL-16", "R-ABIL-15"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["mystery_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["holy_dip"],
+    "rolls": [1]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢."]},
+  "expect": {"allowed": true, "resolved_rolls": [1], "after": [{"player": 0, "cents": 1, "hand": 1}, {"player": 1, "cents": 0}]}
+}

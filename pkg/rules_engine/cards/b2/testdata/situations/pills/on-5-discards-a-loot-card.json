@@ -1,0 +1,13 @@
+{
+  "title": "Isaac plays Pills! (loot 1, loot 3 or discard) and rolls a 5: does he discard A Dime!!, his last card?",
+  "source": ["card pills", "R-CARD-07", "R-ZONE-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["pills", "a_dime"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [5]
+  },
+  "action": {"player": 0, "kind": "play", "card": "pills", "choices": ["a_dime"]},
+  "expect": {"allowed": true, "resolved_rolls": [5], "discards": {"loot": ["pills", "a_dime"]}, "after": [{"player": 0, "hand": 0, "hand_cards": []}]}
+}

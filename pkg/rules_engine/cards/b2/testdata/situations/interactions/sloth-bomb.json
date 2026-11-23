@@ -1,0 +1,25 @@
+{
+  "title": "Isaac's attack roll of 1 on Sloth (1 HP left) is on the stack; Cain kills Sloth with Bomb!: who discards their hand?",
+  "source": ["card sloth", "card bomb", "R-MECH-17", "R-CARD-13", "R-CARD-14", "R-ATK-14", "R-ATK-15"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["a_penny"]},
+      {"character": "cain", "hand": ["bomb", "a_dime"], "extra_loot_plays": 1}
+    ],
+    "active": 0,
+    "monsters": ["sloth"],
+    "monster_damage": {"sloth": 2},
+    "stack": [{"kind": "attack_roll", "dice_roll": 1, "card": "sloth", "owner": 0}],
+    "priority": 1
+  },
+  "action": {"player": 1, "kind": "play", "card": "bomb", "choices": ["sloth"]},
+  "expect": {"allowed": true,
+    "resolved_rolls": [],
+    "monsters": [{"card": "sloth", "dead": true}],
+    "discards": {"loot": ["bomb", "a_dime"]},
+    "after": [
+      {"player": 0, "hand_cards": ["a_penny"], "damage": 0, "cents": 1, "soul_cards": ["sloth"]},
+      {"player": 1, "hand_cards": [], "soul_cards": []}
+    ]}
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Isaac has 5¢, plays Pills! (gain 4¢, gain 7¢ or lose 4¢) and rolls a 2: does he gain 4¢?",
+  "source": ["card pills_2", "R-CARD-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["pills_2"], "cents": 5}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [2]
+  },
+  "action": {"player": 0, "kind": "play", "card": "pills_2"},
+  "expect": {"allowed": true, "resolved_rolls": [2], "discards": {"loot": ["pills_2"]}, "after": [{"player": 0, "cents": 9}]}
+}

@@ -1,0 +1,18 @@
+{
+  "title": "Isaac's Chaos Card is eternal; he uses it to kill the Leech: can it destroy itself, and does the Leech die?",
+  "source": ["card chaos_card", "R-ABIL-18", "R-MECH-03"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["chaos_card", "breakfast"], "eternal": ["chaos_card"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "chaos_card", "choices": ["Kill a player or monster.", "leech"]},
+  "expect": {"allowed": true,
+    "monsters": [{"card": "leech", "slot": 2, "damage": 0}],
+    "discards": {"treasure": [], "monster": []},
+    "after": [{"player": 0, "items": ["chaos_card", "breakfast"], "deactivated": ["chaos_card"]}]}
+}

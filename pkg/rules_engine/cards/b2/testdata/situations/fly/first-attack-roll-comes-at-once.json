@@ -1,0 +1,18 @@
+{
+  "title": "Isaac picks the Fly, which has no trigger on the pick, as the target: is his first attack roll thrown at once, with no priority window first?",
+  "source": ["card fly", "R-ATK-25", "R-ATK-11", "R-DICE-02"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack"},
+    {"kind": "choose", "choices": ["fly"],
+     "expect": {"allowed": true, "resolved": [], "events": [{"kind": "passed_priority", "none": true}]}},
+    {"kind": "throw", "expect": {"allowed": true, "events": [{"kind": "dice_rolled", "player": 0}], "resolved_rolls": [6]}}
+  ],
+  "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "cents": 1}]}
+}

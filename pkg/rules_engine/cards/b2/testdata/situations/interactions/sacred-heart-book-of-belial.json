@@ -1,0 +1,12 @@
+{
+  "title": "Isaac's roll of 2 is on the stack; Book of Belial makes it a 1: does Sacred Heart then turn it into a 6?",
+  "source": ["card sacred_heart", "card book_of_belial", "R-DICE-04", "R-DICE-05"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["sacred_heart", "book_of_belial"]}, {"character": "cain"}],
+    "active": 0,
+    "stack": [{"dice_roll": 2, "owner": 0}]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "book_of_belial", "choices": ["Subtract 1 from a roll.", "ask.roll_of 2", "ask.yes"]},
+  "expect": {"allowed": true, "resolved_rolls": [6], "after": [{"player": 0, "deactivated": ["book_of_belial"]}]}
+}

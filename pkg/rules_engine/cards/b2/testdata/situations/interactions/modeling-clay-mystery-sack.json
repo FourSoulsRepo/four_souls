@@ -1,0 +1,15 @@
+{
+  "title": "Isaac's Modeling Clay becomes a copy of Cain's Mystery Sack: can he use the copy's ↷ before it is recharged?",
+  "source": ["card modeling_clay", "card mystery_sack", "R-MECH-08", "R-ABIL-07", "R-ABIL-10"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["modeling_clay"]}, {"character": "cain", "items": ["mystery_sack"]}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "modeling_clay", "choices": ["mystery_sack"],
+     "expect": {"allowed": true, "after": [{"player": 0, "deactivated": ["modeling_clay"]}]}},
+    {"player": 0, "kind": "activate", "card": "modeling_clay", "expect": {"allowed": false, "rule": "R-ABIL-07"}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-07", "resolved_rolls": []}
+}

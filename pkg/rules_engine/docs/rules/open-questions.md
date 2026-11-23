@@ -367,7 +367,7 @@ On 2026-10-09 the owner parked every open decision for later.
 3. Options:
    1. (a) The trigger resolves first; then the first roll; the engine does this now.
    2. (b) The die is thrown at once, under the trigger (before 19.151).
-4. Status: **Owner** (2026-11-10): (a). Tests: `TestPrideResolvesBeforeTheAttackRoll` and three in `cards/r`.
+4. Status: **Owner** (2026-11-10): (a). Tests: the b2 file `pride/resolves-before-the-first-roll-is-thrown.json` and three in `cards/r`.
 5. Basis: **Community**: S-RED and an S-YUG purchase ruling; no official one.
 
 ### Q-30 "Souls controlled by all players" in a challenge
@@ -809,7 +809,7 @@ Tests: FAQ row 1 is in `cards/b2/interactions_test.go`, with Yuggy's "above 6 co
 
 ## Card rulings from Yuggy (S-YUG)
 
-Searched 2026-10-12 (8.7): his r/FourSouls comments and tweets that name a Base Game card, 294 questions. Rulings on V1 wording that V2 changed (Placebo, Butter Bean, Evil Twin, Eve, Judas) are left out. Tests: `cards/b2/yuggy_test.go`.
+Searched 2026-10-12 (8.7): his r/FourSouls comments and tweets that name a Base Game card, 294 questions. Rulings on V1 wording that V2 changed (Placebo, Butter Bean, Evil Twin, Eve, Judas) are left out. Tests: situation files in `cards/b2/testdata/situations/` (24.18).
 
 Requiem searched 2026-10-19 (14.2): 96 of his posts and tweets name a Requiem card; rows 36 on. Tests come with the cards in 14.3.
 

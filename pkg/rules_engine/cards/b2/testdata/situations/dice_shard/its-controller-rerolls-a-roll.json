@@ -1,0 +1,16 @@
+{
+  "title": "Cain's roll of 2 is on the stack; Isaac plays Dice Shard on it: does Cain reroll it, so it resolves as the new 6?",
+  "source": ["card dice_shard", "R-MECH-47", "R-DICE-04", "R-CARD-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["dice_shard"]}, {"character": "cain"}],
+    "active": 0,
+    "stack": [{"dice_roll": 2, "owner": 1}],
+    "priority": 0,
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "play", "card": "dice_shard", "choices": ["ask.roll_of 2"]},
+  "expect": {"allowed": true, "resolved_rolls": [6],
+    "events": [{"kind": "dice_rolled", "player": 1}, {"kind": "dice_rolled", "player": 0, "none": true}],
+    "discards": {"loot": ["dice_shard"]}}
+}

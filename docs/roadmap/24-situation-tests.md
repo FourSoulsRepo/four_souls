@@ -817,9 +817,78 @@ Ideas: TS-13, LR-04, R-03.
 14. Helpers `testPlainMonster`, `killWithSixes` removed: no use left.
    1. `testExtraLoot` is now `testExtraLootOnAnotherTurn`.
 
-### [ ] 24.18 Bulk: b2 other
+### [x] 24.18 Bulk: b2 other
 
 1. Goal: b2 test files with no card kind (about 57 tests).
+2. Counts (2026-11-23): 57 tests looked at.
+   1. 33 in files of no card: history 5, interactions 2, pride 3, three_plus 1, yuggy 22.
+   2. 22 of card kinds no family had (24.12-24.17 left them).
+   3. 1 Cent to 4 Cent, Pill/Rune, Dice Shard/Soul Heart, One-Use Treasure.
+   4. Also Holy/Charmed Monster; Charged Baby's test sat in `holy_moms_eye_test.go`.
+   5. 2 in `godhead_test.go`, reported by no sub-step.
+   6. Not looked at again: Go tests reported "stays Go" before.
+3. Moved: 47 tests, as 55 files; their Go tests are gone.
+   1. Yuggy's rulings, 22: 17 in `interactions/`, 5 in card folders.
+   2. Card folders: Chaos Card (eternal), Mom's Shovel, Guppy's Paw (dead).
+   3. Also Soul of Gluttony (once per game), The D20 (a shop item).
+   4. TestPrideDeckAttackTriggersBeforeTheRoll, TestPrideResolvesBeforeTheAttackRoll: `pride/`.
+   5. TestAttackWithNoTargetTriggerRollsAtOnce: `fly/` (R-ATK-25 shown with the Fly).
+   6. Coins: TestAPenny, TestTwoCents, TestThreeCents, TestFourCents.
+   7. Runes and pills: TestBlankRune (2 files), TestEhwaz.
+   8. TestPills, TestPills2, TestPills3: 3 files each (owner answer 11).
+   9. TestDiceShard, TestSoulHeart, TestBox, TestChaosCard, TestTheD4, TestMomsShovel.
+   10. Holy: Dinga, Dip, Keeper Head, Squirt, Mom's Eye (2 tests).
+   11. TestChargedBabyOffersOnlySpentActiveItems: `charged_baby/`.
+4. Split: 1. TestGodheadAsksForDiceValues.
+   1. `godhead/offers-1-or-6.json`: the options 1 and 6, then a 1 resolves.
+   2. The options' key (`ask.dice`) stays Go: no check reads a key.
+5. Stayed Go, complicated (ADR 034 1.5, 1.6): 7, and 2 from 24.8.
+   1. Views and stack item fields (`Text`, `TargetCard`): the 5 history tests.
+   2. Real game start, decks counted: TestThreePlusCards.
+   3. Engine API (`cardkit.DieFaces`): TestDieFacesAreDiceValues.
+   4. The 2 of `interactions_test.go`: Go since 24.8, not judged again.
+6. Needed a format change: 0.
+7. Engine state read in Go, said by a game action in the file:
+   1. Placebo's `AbilitiesOf`: Placebo copies the shop's Mystery Sack; 3 gains 4¢.
+   2. The D20's shop slot: a purchase offers the treasure deck's Dinner.
+   3. Guppy's Paw's `Shields`: no `shielded` event.
+   4. Pride before the roll: a `throw` step stops at the first throw.
+   5. Its step checks `resolved` Pride and no roll yet.
+   6. The roll at once: no `passed_priority` between the pick and the throw.
+8. Drafts: 34 of 55 files kept the dumped setup and steps.
+   1. A response is `setup.stack` and `priority` 1 (owner answer 7): 9.
+   2. Chaos Card (3), Sloth, Decoy, Glass Cannon, Godhead, Dice Shard.
+   3. Curved Horn: the first attack roll starts on `setup.stack`.
+   4. Deck tops in `setup.decks`, so cards are named: Ehwaz, Pills (2), The D4, The D20.
+   5. Pride's deck attack also answers the slot (`ask.slot_card 1 fly`).
+   6. No draft: Placebo (no step), Soul of Gluttony (a real game).
+9. Checks added from the card text (owner answer 8):
+   1. Every loot card in the loot discard; roll cards: `resolved_rolls`.
+   2. Ehwaz: Pooter and Spider fill the slots; Fly and Leech in the discard.
+   3. Dice Shard: Cain, the roll's controller, throws the reroll.
+   4. Soul Heart: `prevented`, the Fly dies; Box!: each play allowed.
+   5. Chaos Card, The D4, Mom's Shovel: the treasure discard; The D4 the new items.
+   6. Mom's Shovel recharged on Isaac's next turn; the soul is Monstro.
+   7. The Dead Cat: 8 counters left; Yum Heart: no `died`.
+   8. Curved Horn: 2 damage on Big Spider, then the second 6 kills it.
+   9. Chaos Card and XIII. Death: the treasure discard has both items.
+   10. Sloth: no attack roll resolves; Isaac gains its soul and 1¢.
+   11. Decoy: Isaac has the Decoy; Glass Cannon and The D20: no roll.
+   12. Holy monsters: the Sack's own result beside the trigger.
+10. Go tests that did not check what they claimed: 1.
+   1. TestYuggyBonusSoulOncePerGame always skipped, as TestSoulOfGluttony (24.16).
+   2. `soul_of_gluttony/gained-once-per-game.json` checks it for real.
+   3. Isaac gains it, Chaos Card destroys it, a play leaves 10 cards: no soul.
+11. Sources: Yuggy's Reddit comment IDs have no thread ID, so no link.
+   1. The files cite the card text and the R-rules made from them.
+   2. R-ABIL-34, R-ABIL-35, R-DICE-07, R-CARD-24, R-CARD-34, R-MECH-51.
+12. Refusal: Modeling Clay's tapped copy cites R-ABIL-07; it fits (with R-ABIL-10).
+13. No rules bug found; `cardgen -report` unchanged.
+14. Helpers:
+   1. `attackRoll`, `ownRoll` moved to `common_test.go`: other tests use them.
+   2. Removed, no use left: `inDiscard`, `testGain`, `slayTable`, `bonusGame`.
+   3. Also `runSome`, `rollTable`, `resolvedRoll`.
+15. `open-questions.md`: Q-29's and S-YUG's test references point at the files.
 
 ### [ ] 24.19 Bulk: fsp2
 

@@ -1,0 +1,13 @@
+{
+  "title": "Mystery Sack is a shop item and nobody controls another item; Isaac uses Placebo and rolls a 3: does it copy the shop item's ↷ and gain 4¢?",
+  "source": ["card placebo", "card mystery_sack", "R-CARD-34", "R-MECH-11"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["placebo"]}, {"character": "cain"}],
+    "active": 0,
+    "shop": ["mystery_sack"],
+    "rolls": [3]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "placebo"},
+  "expect": {"allowed": true, "resolved_rolls": [3], "after": [{"player": 0, "cents": 4, "items": ["placebo"], "deactivated": ["placebo"]}]}
+}

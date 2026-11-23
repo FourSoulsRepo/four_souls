@@ -1,0 +1,13 @@
+{
+  "title": "Holy Squirt is in a monster slot; Isaac rolls a 5 with Mystery Sack: does he loot 1?",
+  "source": ["card holy_squirt", "card mystery_sack", "R-ABIL-16", "R-ABIL-15", "R-CARD-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["mystery_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["holy_squirt"],
+    "rolls": [5]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢."]},
+  "expect": {"allowed": true, "resolved_rolls": [5], "after": [{"player": 0, "hand": 1, "cents": 0}, {"player": 1, "hand": 0}]}
+}

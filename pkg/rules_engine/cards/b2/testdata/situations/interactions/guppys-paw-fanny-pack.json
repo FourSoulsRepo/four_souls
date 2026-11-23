@@ -1,0 +1,14 @@
+{
+  "title": "Isaac pays 1 HP for Guppy's Paw: is that taking damage, so Fanny Pack loots?",
+  "source": ["card guppys_paw", "card fanny_pack", "card isaac", "R-MECH-44", "R-ABIL-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["guppys_paw", "fanny_pack"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "guppys_paw", "choices": ["player 1 (isaac)"]},
+  "expect": {"allowed": true,
+    "events": [{"kind": "looted", "player": 0, "none": true}, {"kind": "shielded", "player": 0}],
+    "after": [{"player": 0, "hp": 1, "hand": 0, "deactivated": ["guppys_paw"]}]}
+}

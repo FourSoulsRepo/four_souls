@@ -1,0 +1,17 @@
+{
+  "title": "Charged Baby: Isaac rolls a 2 with Mystery Sack; which of his items may he recharge, with The D6 charged and Breakfast passive?",
+  "source": ["card charged_baby", "card mystery_sack", "R-ABIL-16", "R-MECH-54", "R-ABIL-10"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["charged_baby", "mystery_sack", "the_d6", "breakfast"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [2]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "mystery_sack"},
+    {"kind": "choose", "choices": ["mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢."],
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["mystery_sack", "ask.none"]}}}
+  ],
+  "expect": {"allowed": true}
+}

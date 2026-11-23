@@ -1,0 +1,15 @@
+{
+  "title": "Holy Dinga is in a monster slot; Isaac, with 1 damage, rolls a 6 with Mystery Sack: does he heal 1?",
+  "source": ["card holy_dinga", "card mystery_sack", "R-ABIL-16", "R-ABIL-15", "R-MECH-40"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["mystery_sack"], "damage": 1}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["holy_dinga"],
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢."]},
+  "expect": {"allowed": true, "resolved_rolls": [6],
+    "events": [{"kind": "healed", "player": 0}],
+    "after": [{"player": 0, "damage": 0, "cents": 0, "hand": 0, "deactivated": ["mystery_sack"]}]}
+}
