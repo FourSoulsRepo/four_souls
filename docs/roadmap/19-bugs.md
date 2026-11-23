@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226, 19.233, 19.236 | 29 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226, 19.233, 19.236, 19.237 | 30 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193, 19.232 | 19 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45, 19.224                                   | 3     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
@@ -61,11 +61,11 @@ This step never closes; new reports are appended.
 | Z  | Situation runner: a check checks nothing | Go tests   | 19.234                                                 | 1     |
 | AA | Situation setup: a start-of-turn duty lost | Engine   | 19.235                                                 | 1     |
 
-Totals by system (226 items):
+Totals by system (227 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U, W, AA | 52 |
+| Engine    | A, B, T, U, W, AA | 53 |
 | Card data | C       | 3     |
 | Client    | D–G, O, P, S, V, Y | 56 |
 | Server    | H, N    | 5     |
@@ -6856,3 +6856,26 @@ Totals by system (226 items):
    1. `prompt.go` denies a copy with nothing to copy by R-ABIL-40.
    2. Checked: no other refusal cites R-ABIL-04; its other uses are questions.
    3. The ? Card file checks `"rule": "R-ABIL-40"`.
+
+### [ ] 19.237 Lord of the Pit is usable with no attack to cancel
+
+1. Goal: a card that cancels an attack needs an attack to cancel.
+2. Report (24.20 bulk move; owner, 2026-11-23)
+   1. Lord of the Pit: "↷: Cancel an attack. That player may attack an additional time this turn."
+   2. With no attack going on it taps and does nothing.
+   3. 24.20 allowed it: "Cancel an attack" names no target.
+   4. Owner: only allow a valid attack; with none there is nothing to cancel.
+   5. So the attack is what it acts on: its target (R-ABIL-05).
+   6. No attack: refused by R-ABIL-40, as Q-55.
+3. Cause (the engine)
+   1. `targetsAvailable` sees only `TargetSpec`s.
+   2. A card that cancels an attack has none; the attack is checked on resolution.
+   3. So nothing refuses it while no attack is in progress.
+4. Tasks:
+   1. One shared check in the engine: an attack the ability acts on.
+   2. `targetsAvailable` sees it; the refusal is R-ABIL-40, "no valid target".
+   3. Decide which attack states count as in progress, from the rules.
+   4. Check every card that cancels an attack, all sets (5.24).
+   5. Situation files: refused with no attack; works during one.
+   6. Lord of the Pit's `no-attack-no-extra-attack.json` expects the refusal.
+   7. Q-55: an attack to cancel counts as a target.
