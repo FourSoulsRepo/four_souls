@@ -1,0 +1,24 @@
+{
+  "title": "Blessing Of Gluttony: Isaac ends his turn; in Cain's loot step Cain loots 2",
+  "source": ["card blessing_of_gluttony", "R-TURN-04", "R-CARD-06", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["blessing_of_gluttony"],
+    "decks": {"loot": ["a_penny", "a_dime", "bomb"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 1,
+    "after": [{"player": 0, "hand": 0}, {"player": 1, "hand": 2, "hand_cards": ["a_penny", "a_dime"]}],
+    "decks": {"loot": ["bomb"]}
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "title": "All Hallows' Eve: Isaac kills Chub and Cain kills Little Horn; neither gains a soul",
+  "source": ["card all_hallows_eve", "card chub", "card little_horn", "R-DEATH-06", "R-DEATH-08", "R-CARD-14", "R-TURN-12"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["chub", "little_horn"],
+    "monster_damage": {"chub": 3},
+    "rooms": ["all_hallows_eve"],
+    "decks": {"monster": ["clotty", "pooter"], "loot": ["a_penny", "a_dime", "bomb", "a_nickel"]},
+    "rolls": [6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["chub"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 7, "souls": 0, "soul_cards": []}], "discards": {"monster": ["chub"]}}},
+    {"player": 0, "kind": "end_turn", "choices": ["ask.keep"]},
+    {"player": 1, "kind": "attack", "choices": ["little_horn"],
+     "expect": {"allowed": true, "after": [{"player": 1, "hand": 3, "souls": 0, "soul_cards": []}], "discards": {"monster": ["chub", "little_horn"]}}}
+  ],
+  "expect": {"allowed": true, "after": [{"player": 0, "souls": 0}, {"player": 1, "souls": 0}]}
+}

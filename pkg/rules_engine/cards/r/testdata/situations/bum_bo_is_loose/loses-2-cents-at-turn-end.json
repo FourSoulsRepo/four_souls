@@ -1,0 +1,18 @@
+{
+  "title": "Bum-Bo Is Loose!: Isaac ends his turn with 5¢ and loses 2¢",
+  "source": ["card bum_bo_is_loose", "R-TURN-10", "R-MECH-42", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "cents": 5},
+      {"character": "cain", "cents": 5}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["bum_bo_is_loose"]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "cents": 3}, {"player": 1, "cents": 5}]}
+}

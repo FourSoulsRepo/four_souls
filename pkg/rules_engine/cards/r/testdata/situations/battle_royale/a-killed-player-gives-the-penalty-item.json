@@ -1,0 +1,25 @@
+{
+  "title": "Battle Royale!!!: Isaac hits Cain (3+) twice; Cain dies and gives Isaac the Spoon Bender he would destroy",
+  "source": ["card battle_royale", "R-ATK-20", "R-ATK-12", "R-DEATH-14"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain", "items": ["spoon_bender"]}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["battle_royale"],
+    "rolls": [3, 3]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["player 2 (cain)", "spoon_bender"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [3, 3],
+    "events": [{"kind": "died", "player": 1}, {"kind": "died", "player": 0, "none": true}],
+    "after": [{"player": 0, "damage": 0, "items": ["spoon_bender"]}, {"player": 1, "dead": true, "items": []}],
+    "discards": {"treasure": []}
+  }
+}

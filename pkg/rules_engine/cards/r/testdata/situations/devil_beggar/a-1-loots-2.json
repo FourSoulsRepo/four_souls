@@ -1,0 +1,20 @@
+{
+  "title": "Devil Beggar: Isaac pays 1 HP and rolls a 1; he loots 2 and takes no more damage",
+  "source": ["card devil_beggar", "R-MECH-44", "R-ABIL-24", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["devil_beggar"],
+    "decks": {"loot": ["a_penny", "a_dime"]},
+    "rolls": [1]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "devil_beggar"}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [1], "after": [{"player": 0, "damage": 1, "hand_cards": ["a_penny", "a_dime"]}]}
+}

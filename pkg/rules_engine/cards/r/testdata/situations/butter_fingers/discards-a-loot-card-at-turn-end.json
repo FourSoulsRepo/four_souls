@@ -1,0 +1,18 @@
+{
+  "title": "Butter Fingers: Isaac ends his turn and discards A Dime!!, keeping A Penny!",
+  "source": ["card butter_fingers", "R-TURN-10", "R-MECH-25", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["a_penny", "a_dime"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["butter_fingers"]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "choices": ["a_dime"]}
+  ],
+  "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "hand_cards": ["a_penny"]}], "discards": {"loot": ["a_dime"]}}
+}

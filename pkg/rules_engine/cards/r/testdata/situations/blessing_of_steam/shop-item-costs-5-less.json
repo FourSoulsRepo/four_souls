@@ -1,0 +1,18 @@
+{
+  "title": "Blessing Of Steam: Isaac with 5¢ buys the 10¢ Jawbone for 5¢",
+  "source": ["card blessing_of_steam", "R-SHOP-03", "R-SHOP-04", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "cents": 5},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "shop": ["jawbone", "spoon_bender"],
+    "rooms": ["blessing_of_steam"]
+  },
+  "steps": [
+    {"player": 0, "kind": "purchase", "choices": ["jawbone"]}
+  ],
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 0, "items": ["jawbone"]}]}
+}

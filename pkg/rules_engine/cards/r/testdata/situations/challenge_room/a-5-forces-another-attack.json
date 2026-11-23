@@ -1,0 +1,22 @@
+{
+  "title": "Challenge Room: Isaac kills the Fly, the room rolls 5, so he must attack again and can't end the turn",
+  "source": ["card challenge_room", "card fly", "R-ATK-03", "R-ABIL-24", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["challenge_room"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6, 5]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "resolved_rolls": [6, 5], "attacks": 1, "monsters": [{"card": "fly", "dead": true}]}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": false, "rule": "R-ATK-03"}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ATK-03"}
+}

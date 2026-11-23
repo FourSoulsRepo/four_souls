@@ -1,0 +1,27 @@
+{
+  "title": "Blessing Of The Inner Eye: Isaac declares an attack, puts the Pooter on top of the Leech, then attacks the deck and kills the Pooter",
+  "source": ["card blessing_of_the_inner_eye", "card pooter", "R-ATK-02", "R-ATK-08", "R-ZONE-11"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["blessing_of_the_inner_eye"],
+    "decks": {"monster": ["leech", "pooter", "clotty"], "loot": ["a_penny"]},
+    "rolls": [6, 5]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["pooter", "leech", "clotty", "ask.deck.monster", "ask.slot_card 1 fly"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 5],
+    "discards": {"monster": ["pooter"]},
+    "monsters": [{"slot": 1, "card": "fly"}],
+    "decks": {"monster": ["leech", "clotty"]},
+    "after": [{"player": 0, "hand_cards": ["a_penny"]}]
+  }
+}

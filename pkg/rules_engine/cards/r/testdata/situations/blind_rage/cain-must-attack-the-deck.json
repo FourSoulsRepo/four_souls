@@ -1,0 +1,20 @@
+{
+  "title": "Blind Rage: on Cain's turn he can't end it before attacking, and his attack may only go to the monster deck",
+  "source": ["card blind_rage", "R-ATK-03", "R-ATK-22", "R-TURN-03", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["blind_rage"]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1}},
+    {"player": 1, "kind": "end_turn", "expect": {"allowed": false, "rule": "R-ATK-03"}},
+    {"player": 1, "kind": "attack", "expect": {"allowed": true, "prompt": {"player": 1, "options": ["ask.deck.monster"]}}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ATK-03"}
+}

@@ -1,0 +1,19 @@
+{
+  "title": "Black Champions: at Isaac's attack target question the Fly has 2 ATK and the Leech 3",
+  "source": ["card black_champions", "card fly", "card leech", "R-ATK-02"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["black_champions"]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0}, "monsters": [{"card": "fly", "atk": 2}, {"card": "leech", "atk": 3}]}}
+  ],
+  "expect": {"allowed": true}
+}
