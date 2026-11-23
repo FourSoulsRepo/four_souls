@@ -52,4 +52,4 @@ Sources: S-OFF Abilities, Effects; S-RU Способности, Эффекты.
 37. **R-ABIL-37** *(Requiem)* "Up to N" includes zero (S-YUG: Rag Mega).
 38. **R-ABIL-38** *(Requiem)* **Gaining abilities** (Glitch, Golden Trinket) keeps the object's own abilities, Eternal too; a gained "Destroy this. If you do" does nothing on an eternal object (S-YUG).
 39. **R-ABIL-39** *(Requiem, engine limit)* **Magic Marker** changes only numbers the engine knows: loot N, gain N¢, deal N damage, and roll results in a roll table (owner, Q-14).
-40. **R-ABIL-40** A loot card or an ability with targets can't be played or used while it has no valid target; with modes, at least one mode needs its targets (owner, Q-55).
+40. **R-ABIL-40** A loot card or an ability with targets can't be played or used while it has no valid target; with modes, at least one mode needs its targets; an attack it cancels counts as a target (owner, Q-55).

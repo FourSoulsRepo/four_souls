@@ -57,8 +57,12 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 }
 
 // targetsAvailable checks every target spec has something to choose (R-ABIL-40); an
-// ability with modes needs one mode whose targets are there.
+// ability with modes needs one mode whose targets are there. An attack
+// the ability acts on counts as a target (Ability.Attack, Q-55).
 func (g *Game) targetsAvailable(a Ability, p PlayerID, src ObjectID) error {
+	if !g.AttackFor(a.Attack, p) {
+		return deny("R-ABIL-40", refuseNoTarget.Msg(), "no attack to act on")
+	}
 	if len(a.Modes) > 0 {
 		if len(g.availableModes(a, p, src)) == 0 {
 			return deny("R-ABIL-40", refuseNoTarget.Msg(), "no option has a valid target")
@@ -84,7 +88,7 @@ func (g *Game) hasTargets(specs []TargetSpec, p PlayerID, src ObjectID) bool {
 func (g *Game) availableModes(a Ability, p PlayerID, src ObjectID) []int {
 	var out []int
 	for i, m := range a.Modes {
-		if g.hasTargets(m.Targets, p, src) {
+		if g.AttackFor(m.Attack, p) && g.hasTargets(m.Targets, p, src) {
 			out = append(out, i)
 		}
 	}

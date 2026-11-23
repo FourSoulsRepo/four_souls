@@ -1,0 +1,12 @@
+{
+  "title": "No attack is going on: does IBS's first ability offer only \"Gain 3¢.\", not \"Cancel your attack on a monster.\"?",
+  "source": ["card ibs", "R-ABIL-04", "R-ABIL-40"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "the_soiled", "items": ["ibs"], "hand": ["bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "ibs"},
+  "expect": {"allowed": true, "prompt": {"player": 0, "options": ["Gain 3¢.", "ask.cancel"]}}
+}

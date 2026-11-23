@@ -19,8 +19,8 @@ var theBible = engine.CardDef{
 		Costs: []engine.Cost{engine.Tap()},
 		Modes: []engine.Mode{
 			{Text: "Destroy a curse.", Targets: []engine.TargetSpec{engine.Choose(engine.TargetCurse)}, Effects: []engine.Effect{engine.DestroyTarget(0)}},
-			{Text: "Cancel your attack.", Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
-				if c.Controller == c.G.Turn.Active {
+			{Text: "Cancel your attack.", Attack: engine.NeedsYourAttack, Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
+				if c.G.AttackFor(engine.NeedsYourAttack, c.Controller) {
 					c.Do(engine.CancelAttack())
 				}
 			})}},

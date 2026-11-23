@@ -6,6 +6,9 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- Lord of the Pit, The Bible's "Cancel your attack.", IBS's "Cancel your attack on a monster." and Emergency Contact need an attack to cancel; with none they are not offered.
+- Rules engine 0.5.7.
+
 ## 0.6.4 - 2026-11-20
 
 - A character that takes more damage (Ghostly Trickery, Daddy Haunt) shows a red "+N" badge above its heart; the zoomed card lists where it comes from.

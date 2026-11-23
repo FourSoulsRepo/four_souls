@@ -1057,6 +1057,7 @@ Ideas: TS-13, LR-04, R-03.
 11. Choice made here: Lord of the Pit with no attack is allowed.
    1. "Cancel an attack" names no target, so R-ABIL-40 does not apply.
    2. It does nothing: 1 attack left.
+   3. Reversed by 19.237 (owner, 2026-11-23): refused by R-ABIL-40.
 12. Every file failed with each expected value changed, then passed.
    1. An in-memory run changed each `expect` leaf: 813 changes.
 13. No rules bug found.

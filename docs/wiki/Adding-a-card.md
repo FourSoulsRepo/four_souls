@@ -127,6 +127,8 @@ Questions many cards ask are shared: `cardkit.AskDiscardWhich`, `cardkit.May(key
 
 A card that takes from a player no target names sets `Takes` on that ability: it steals, or makes a player discard, lose ¢, or destroy an item or soul, and picks that player only as it resolves (XV. The Devil, Joker, "each player discards their hand"). `TakesOthers` means any player but its controller; `TakesEventPlayer` means the player of the triggering event, e.g. Dead Bird's "a player rolls a 3". The server then stops "Wait for my turn" for those players while the card is on the stack, so they can still answer it (15.85). Add the card to `TestTakes` in `pkg/rules_engine/cards/cards_test.go`. A card whose targets name every victim (Jawbone) and damage need no `Takes`: the server sees them already.
 
+A card whose effect acts on the attack in progress sets `Attack` on that ability, or on that "choose one-" mode: `NeedsAnAttack` ("Cancel an attack.", Lord of the Pit), `NeedsYourAttack` (The Bible), `NeedsAttackOnMonster` (Emergency Contact), `NeedsYourAttackOnMonster` (IBS). The attack counts as its target: with no such attack the card can't be played or used, and a mode is not offered (R-ABIL-40, Q-55, 19.237). An attack is in progress from its declaration till it ends; it is on a monster once its target is one. The effect checks the same on resolution with `c.G.AttackFor(need, c.Controller)`. A triggered ability needs no `Attack`: it is never played.
+
 Rules follow our rules text in `pkg/rules_engine/docs/rules/`; each rule has an ID such as `R-DEATH-14`. When the card text and a rule seem to disagree, add the case to `open-questions.md` instead of guessing.
 
 ## 3. Test it
@@ -220,4 +222,5 @@ After the set's cards are in: `make bot-values`, then `make bots`, as for one ca
 * A loot card or item has its bot value: `make bot-values`, then `make bots`; `values.json` is committed with it.
 * `make lint` passes (see [Linters](Linters)).
 * A card that takes from a player no target names sets `Takes`.
+* A card that cancels an attack sets `Attack`.
 * Its questions and options are keys with lines in `en.json`; `server-keys.json` is rewritten.

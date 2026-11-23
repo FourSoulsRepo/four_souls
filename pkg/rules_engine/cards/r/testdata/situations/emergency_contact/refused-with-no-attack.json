@@ -1,0 +1,12 @@
+{
+  "title": "No attack is going on: may Isaac play Emergency Contact?",
+  "source": ["card emergency_contact", "R-ABIL-40"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["emergency_contact"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "emergency_contact"},
+  "expect": {"allowed": false, "rule": "R-ABIL-40", "loot_plays": 1, "after": [{"player": 0, "hand_cards": ["emergency_contact"]}]}
+}

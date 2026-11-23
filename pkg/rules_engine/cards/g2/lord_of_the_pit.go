@@ -18,6 +18,7 @@ var lordOfThePit = engine.CardDef{
 			Kind:    engine.Activated,
 			Text:    "↷: Cancel an attack. That player may attack an additional time this turn.",
 			Costs:   []engine.Cost{engine.Tap()},
+			Attack:  engine.NeedsAnAttack, // nothing to cancel: R-ABIL-40 (19.237)
 			Effects: []engine.Effect{engine.CancelAttack(engine.ActivePlayerAttacksAgain())},
 		},
 	},

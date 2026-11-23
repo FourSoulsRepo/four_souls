@@ -774,6 +774,10 @@ On 2026-10-09 the owner parked every open decision for later.
    1. Otherwise anything could be played anytime, to no effect.
    2. That would confuse newcomers.
 5. Basis: **House**: no ruling found.
+6. An attack to cancel counts as a target (owner, 2026-11-23, 19.237).
+   1. E.g. Lord of the Pit with no attack going on: refused.
+   2. In progress: from the declaration till the attack ends (R-ATK-02, R-ATK-14).
+   3. "On a monster": once its target is a monster, a revealed one too (Q-24).
 
 ## Old rulings re-checked (R-07)
 
@@ -957,6 +961,6 @@ Every row of "Card rulings from Discord (S-DIS)" is Community too.
 | Q-48 | Trick/Treat | Reward changes apply in the order made | House |
 | Q-50 | Mischievous The Haunt | One fear counter per instance of damage | House |
 | Q-51 | Mischievous The Haunt, Trick/Treat | The active player picks who loses a fear counter | House |
-| Q-55 | Lil Battery, The D6, any targeted card | No valid target: it can't be played or used | House |
+| Q-55 | Lil Battery, The D6, Lord of the Pit, any targeted card | No valid target, or no attack to cancel: it can't be played or used | House |
 | Q-53 | Trick/Treat | Attack-start rolls after the target's triggers | House |
 | Q-54 | Trick/Treat | Every monster death counts; one removal per rewards gained | House |

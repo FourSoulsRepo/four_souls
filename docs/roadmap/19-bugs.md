@@ -6879,3 +6879,55 @@ Totals by system (227 items):
    5. Situation files: refused with no attack; works during one.
    6. Lord of the Pit's `no-attack-no-extra-attack.json` expects the refusal.
    7. Q-55: an attack to cancel counts as a target.
+5. Done (2026-11-23)
+   1. `Ability.Attack` and `Mode.Attack`: the attack it acts on (`AttackNeed`).
+   2. Kinds: an attack; your attack; an attack on a monster; your attack on a monster.
+   3. `Game.AttackFor` decides it; `targetsAvailable` and `availableModes` ask it.
+   4. None: denied by R-ABIL-40, "no valid target"; a mode is not offered.
+   5. Card effects re-check with `AttackFor` on resolution (R-ABIL-06).
+   6. Rules engine 0.5.7; CHANGELOG Unreleased.
+6. In progress: which attack states count
+   1. From the declaration, before the target (R-ATK-02, R-ATK-04).
+   2. Through the target, its rolls and their damage on the stack (R-ATK-11).
+   3. Till it ends: a death, 0 HP, a cancel, the turn's end (R-ATK-14).
+   4. An ended attack is gone (`Attack.On` false); nothing to cancel.
+   5. "On a monster": once the target is a monster (R-ATK-04).
+   6. A deck attack counts once a monster is revealed (R-ATK-05, Q-24).
+   7. An attack on a player, item or room is not "on a monster".
+   8. "Your attack": only the active player attacks (R-ATK-01).
+7. Checked (5.24): every card that cancels or ends an attack, all sets.
+   1. g2 Lord of the Pit, "Cancel an attack.": fixed, an attack.
+   2. g2 The Bible, mode "Cancel your attack.": fixed, your attack.
+   3. Its other modes still need a curse or a Mom!; with none, refused.
+   4. r IBS, mode "Cancel your attack on a monster.": fixed.
+   5. Its "Gain 3¢." mode stays; so IBS is offered with that mode only.
+   6. r Emergency Contact: fixed, an attack on a monster.
+   7. r Gello: already a target, "a monster being attacked"; unchanged.
+   8. fsp2 1-Up: a trigger, and it prevents death too; unchanged.
+   9. r The Harbingers: a trigger on its own death; unchanged.
+   10. r Turdlings, r Angelic Intervention: triggers during an attack; unchanged.
+   11. Triggers are never played or used, so R-ABIL-40 does not apply.
+   12. b2 Mom's Hand, g2 Steven, fsp2 Cursed Eye: end the turn; triggers.
+   13. fsp2 20/20: already a target, an attack roll; unchanged.
+   14. r Red Key: "can't be activated during an attack", the reverse; unchanged.
+   15. b2, challenge: no card cancels an attack.
+   16. Helpers: `CancelAttack`, `CancelAttackAfterDamage`, `endAttack` callers.
+8. Tests: situation files, each failed with the check off.
+   1. Lord of the Pit: `no-attack-no-extra-attack.json` now refused.
+   2. Also `cancels-a-declared-attack.json`, `refused-after-the-attack-ended.json`.
+   3. The Bible: `refused-with-nothing-to-act-on.json`, `no-cancel-without-an-attack.json`.
+   4. Also `refused-on-another-players-attack.json`.
+   5. Emergency Contact: `refused-with-no-attack.json`, `refused-before-the-target.json`.
+   6. Also `cancels-an-attack-on-a-monster.json`.
+   7. IBS: `only-gain-3-cents-with-no-attack.json`.
+9. Bots and clients: no change needed.
+   1. `Allowed` tries each intent through `check`, so through `targetsAvailable`.
+   2. Bots pick from `Allowed`; the client gets `Allowed` in each update.
+   3. `Blocked` shows the refusal's words: "no valid target".
+   4. A player with only such a card no longer gets a window to act in (`CanAct`).
+10. Docs
+   1. R-ABIL-40: an attack it cancels counts as a target.
+   2. Q-55 item 6; its "Rulings to revisit" row names Lord of the Pit.
+   3. Wiki `Adding-a-card.md`: the `Attack` field.
+   4. 24.20 item 11: reversed by 19.237.
+   5. `Situation-payload.md`: no change.

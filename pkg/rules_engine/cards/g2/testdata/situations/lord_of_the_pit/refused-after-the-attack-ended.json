@@ -1,0 +1,19 @@
+{
+  "title": "Azazel kills the Fly with an attack roll of 6, so the attack ends; may he still use Lord of the Pit?",
+  "source": ["card lord_of_the_pit", "R-ATK-14", "R-ABIL-40"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "azazel", "items": ["lord_of_the_pit"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "attacks": 0, "monsters": [{"card": "fly", "dead": true}]}},
+    {"player": 0, "kind": "activate", "card": "lord_of_the_pit",
+     "expect": {"allowed": false, "rule": "R-ABIL-40", "attacks": 0, "after": [{"player": 0, "deactivated": []}]}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-40"}
+}

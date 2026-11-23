@@ -28,6 +28,45 @@ type Ability struct {
 	Modes []Mode
 	// Takes: whom it may take from with no target naming them (15.85).
 	Takes Takes
+	// Attack: the attack in progress it acts on, if any ("Cancel an
+	// attack."); with none it can't be played or used (R-ABIL-40).
+	Attack AttackNeed
+}
+
+// AttackNeed says which attack in progress an ability acts on, when the
+// attack is its target ("Cancel an attack.", R-ABIL-05). With no such
+// attack it has no valid target (R-ABIL-40, Q-55, 19.237).
+type AttackNeed int
+
+// The attacks an ability may act on.
+const (
+	NoAttackNeeded           AttackNeed = iota
+	NeedsAnAttack                       // "Cancel an attack."
+	NeedsYourAttack                     // "Cancel your attack."
+	NeedsAttackOnMonster                // "Cancel an attack on a monster."
+	NeedsYourAttackOnMonster            // "Cancel your attack on a monster."
+)
+
+// AttackFor reports whether an attack in progress fits n for player p.
+// An attack is in progress from its declaration (R-ATK-02, R-ATK-04)
+// till it ends (R-ATK-14); it is on a monster once its target is a
+// monster, a revealed one too (R-ATK-05, Q-24). Only the active player
+// attacks (R-ATK-01), so "your attack" is on p's turn.
+func (g *Game) AttackFor(n AttackNeed, p PlayerID) bool {
+	a := g.Attack
+	switch n {
+	case NoAttackNeeded:
+		return true
+	case NeedsAnAttack:
+		return a.On
+	case NeedsYourAttack:
+		return a.On && g.Turn.Active == p
+	case NeedsAttackOnMonster:
+		return a.On && a.Started && g.Object(a.Target).Role == RoleMonster
+	case NeedsYourAttackOnMonster:
+		return a.On && a.Started && g.Object(a.Target).Role == RoleMonster && g.Turn.Active == p
+	}
+	return false
 }
 
 // Takes says whom an ability may take loot cards, ¢, items or souls
@@ -48,6 +87,7 @@ type Mode struct {
 	Text    string
 	Targets []TargetSpec
 	Effects []Effect
+	Attack  AttackNeed // as Ability.Attack
 }
 
 // Ctx is what an effect sees while it resolves.
