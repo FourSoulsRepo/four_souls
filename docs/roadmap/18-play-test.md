@@ -902,6 +902,12 @@ Ideas: B-04, B-05, B-08.
       1. Damage taken shows on the character, not on the rule card.
       2. Not in the monster's attack line: it changes every damage, bombs too.
       3. Every other effect shows too, by the ADR's three levels.
+5. Owner decisions for 18.30–18.32 (2026-11-24)
+   1. Shields on a player show as effects (ADR 037 item 1.8).
+   2. This-turn effects keep their icons, own cards too (item 3.8).
+   3. The zoom list repeats no sum line (item 4.4).
+   4. 18.30–18.32 run one after another; the owner reviews once, after 18.32.
+   5. Each sub-step still commits; the main agent checks it before the next.
 
 ### [x] 18.29 Damage taken on the character card
 
@@ -988,8 +994,12 @@ Ideas: B-04, B-05, B-08.
       1. Search all sets for "till end of turn" and "you can't" effects.
       2. List each; one that is a player effect becomes a stat part.
       3. Ask the owner before changing any rule code beyond that.
+      4. No owner stop in this run: list such cases in the result only.
    6. Effects on one object (Algiz's eternal) stay out (ADR 037 item 1.7).
    7. View size: sources only while an effect is on.
+   8. Shields on a player: stat `shield` or `shield_cap` (ADR 037 item 1.8).
+      1. One source per shield, from `Game.Shields`; lasts `turn`.
+      2. Lingering, markers, extra turn, compost: listed only (task 5).
 3. Done when:
    1. One Go view test per group A, B, C, with real cards.
       1. B: a "fewest souls" room on one player, not the other.
@@ -1004,12 +1014,15 @@ Ideas: B-04, B-05, B-08.
    1. `tempSources` becomes the icon list for groups B and C.
       1. Group A (card in the player's own area): no icon.
       2. Lasting B sources get icons too (owner change of V-41.4).
+      3. A this-turn effect keeps its icon, own cards too (ADR 037 item 3.8).
+      4. Shields get icons: "Prevents the next N damage (this turn)".
    2. Each stat key gets an effect text: `stats.effect.<key>`.
       1. E.g. "Can't gain souls", "Max hand size 2", "+5¢ to attack".
    3. One source's lines of one stat add up.
    4. An icon whose lines are one number stat shows the sum.
    5. Above 4 icons: the first 4 and a "+K" chip.
       1. The chip opens the character's zoom (18.32).
+      2. On hover, as an icon's zoom opens (ADR 037 item 3.9).
    6. Icons appear and leave as now (SB-12, SB-13; ADR 012).
    7. Words in `en.json` and every locale; `make i18n`.
    8. 5.26: every place that draws sources (stack, history, odds line).
@@ -1030,6 +1043,8 @@ Ideas: B-04, B-05, B-08.
    4. A hidden source: "a hidden card".
    5. Own and opponents' characters alike.
    6. Words in `en.json` and every locale; `make i18n`.
+   7. No repeats: HP, ATK, rolls and damage taken stay in their sum lines.
+   8. Shields are in the list.
 3. Done when:
    1. Vitest: the order and the lines.
    2. e2e: the "+K" chip opens this list.

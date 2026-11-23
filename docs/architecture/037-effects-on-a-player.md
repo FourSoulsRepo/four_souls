@@ -31,6 +31,9 @@
 6. Today A shows its card; B and C show nothing for most stats.
    1. B rooms with a condition are worst: "fewest souls" players.
    2. Only the engine knows whom such a room applies to now.
+7. Shields are no stat parts (owner question, 2026-11-24).
+   1. `Game.Shields`: "prevent the next damage" till end of turn.
+   2. Soul Heart, Holy Chest, The Poop: their card is gone once played.
 
 ## Considered options
 
@@ -58,22 +61,29 @@ Use option 1.
    5. A conditional static is sent only to the players it applies to now.
    6. Every boost names its source; a hidden one sends no card.
    7. Effects on one object (Algiz's eternal items) are not in this ADR.
+   8. Shields on a player are effects too (owner, 2026-11-24).
+      1. Sent in `Sources`: stat `shield`, or `shield_cap` for a cap.
+      2. Amount is the shield's amount or cap; lasts `turn`.
+      3. Shields on monsters or items stay out.
 2. Level 1, badges: numbers that change a fight.
    1. HP and ATK, as now.
    2. New: damage taken, red, "+N", only while above 0.
    3. No other stat gets a badge without a new decision.
 3. Level 2, icons: one per source card, in groups B and C.
-   1. Group A has no icon: its card lies next to the character.
+   1. Lasting group A effects have no icon: the card lies next to the character.
    2. This changes the owner's rule of 2026-10-22 (V-41.4) for B.
    3. Each icon's hover lists its effects, one line each.
    4. One source's lines of one stat add up: "+3", not three "+1".
    5. An icon whose lines are all one number stat shows that sum.
    6. Above 4 icons: the first 4, then a "+K" chip.
    7. The chip opens the character's zoom (level 3).
+   8. A this-turn effect keeps its icon, its card's place aside (owner, 2026-11-24).
+   9. The chip opens the zoom on hover, as an icon does.
 4. Level 3, the zoomed character: "Effects on you".
    1. Every effect, groups A, B and C.
    2. "This turn" first, then "while in play".
    3. Each line: what it does, then the source card's name.
+   4. No repeats of a sum line: HP, ATK, rolls, damage taken (owner, 2026-11-24).
 5. Words are keys in `en.json`, one per stat (ADR 021).
 6. Every player sees every player's effects: they are public.
 
