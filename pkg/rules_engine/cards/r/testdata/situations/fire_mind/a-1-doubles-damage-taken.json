@@ -1,0 +1,22 @@
+{
+  "title": "Isaac (2 HP) with Fire Mind misses the Pooter (1 ATK) with a 1: is the damage doubled, so he dies and the penalty takes his Spoon Bender?",
+  "source": ["card fire_mind", "card pooter", "R-ATK-13", "R-DEATH-14"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["fire_mind", "spoon_bender"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["pooter"],
+    "rolls": [1]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["pooter", "spoon_bender"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1],
+    "events": [{"kind": "died", "player": 0}],
+    "discards": {"treasure": ["spoon_bender"]},
+    "monsters": [{"card": "pooter", "damage": 0}],
+    "after": [{"player": 0, "items": ["fire_mind"]}]
+  }
+}

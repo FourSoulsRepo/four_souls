@@ -7,7 +7,10 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-func TestClassicRoller(t *testing.T) {
+// TestClassicRollerThrowsBothDice: the reroll throws both dice at once
+// (19.39); the event's dice are no situation check. The kill is in
+// testdata/situations/classic_roller/.
+func TestClassicRollerThrowsBothDice(t *testing.T) {
 	tb := setup(t, engine.SituationSetup{
 		Players:  []engine.SituationPlayer{seat("flash_isaac", "classic_roller"), seat("cain"), seat("samson")},
 		Monsters: []engine.CardRef{"leech"},
@@ -22,11 +25,7 @@ func TestClassicRoller(t *testing.T) {
 	tb.Choose("leech")
 	tb.ThrowPending() // a 1: the attack roll waits
 	ev := tb.Activate(0, "classic_roller", 0, "ask.roll_of 1", "player 3 (samson)", "6")
-	// The reroll throws both dice at once (19.39).
 	if i := slices.IndexFunc(ev, func(e engine.Event) bool { return e.Kind == engine.EvDiceRolled }); i < 0 || !slices.Equal(ev[i].Dice, []int{6, 2}) {
 		t.Errorf("the reroll shows dice 6 and 2: %+v", ev)
-	}
-	if top(tb, 0) == "leech" {
-		t.Error("Samson picks the 6: a hit kills the leech")
 	}
 }

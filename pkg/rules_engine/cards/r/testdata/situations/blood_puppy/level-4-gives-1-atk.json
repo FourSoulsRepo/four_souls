@@ -1,0 +1,19 @@
+{
+  "title": "Isaac's Blood Puppy is level 3; his Mega Bomb! kills Cain: does it level up to 4 and give him +1 ATK?",
+  "source": ["card blood_puppy", "card mega_bomb", "R-MECH-41"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["blood_puppy"], "hand": ["mega_bomb"], "counters": [{"card": "blood_puppy", "name": "level", "count": 3}]},
+      {"character": "cain"}
+    ],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "mega_bomb", "choices": ["player 2 (cain)"]},
+  "expect": {
+    "allowed": true,
+    "events": [{"kind": "died", "player": 1}],
+    "discards": {"loot": ["mega_bomb"]},
+    "after": [{"player": 0, "atk": 2, "counters": [{"card": "blood_puppy", "name": "level", "count": 4}]}]
+  }
+}

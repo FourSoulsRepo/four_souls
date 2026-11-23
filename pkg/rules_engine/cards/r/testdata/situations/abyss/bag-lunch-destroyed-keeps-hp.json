@@ -1,0 +1,21 @@
+{
+  "title": "The Empty has 2 damage and Bag Lunch with a counter (3 HP, 1 left); Abyss destroys the Bag Lunch: does she keep 1 HP, with 1 damage on 2 HP, and live?",
+  "source": ["card abyss", "card bag_lunch", "R-MECH-21", "R-ABIL-04", "R-ZONE-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "the_empty", "items": ["abyss", "bag_lunch"], "damage": 2, "counters": [{"card": "bag_lunch", "count": 1}]},
+      {"character": "cain"}
+    ],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "abyss",
+     "expect": {"allowed": true, "prompt": {"player": 0}, "after": [{"player": 0, "hp": 1, "damage": 2}]}},
+    {"kind": "choose", "choices": ["bag_lunch"],
+     "expect": {"allowed": true, "discards": {"loot": ["bag_lunch"]},
+                "events": [{"kind": "died", "none": true}],
+                "after": [{"player": 0, "hp": 1, "damage": 1, "items": ["abyss"], "counters": [{"card": "abyss", "count": 1}]}]}}
+  ],
+  "expect": {"allowed": true}
+}

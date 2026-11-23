@@ -1,0 +1,23 @@
+{
+  "title": "Isaac has Backstabber; Cain has a soul and Samson none: may Isaac attack only Cain, at DC 3, and loot 1 when he kills him?",
+  "source": ["card backstabber", "R-ATK-20", "R-MECH-06", "R-ATK-12"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["backstabber"]},
+      {"character": "cain", "souls": ["monstro"]},
+      {"character": "samson"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [3, 3]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["fly", "leech", "ask.deck.monster", "player 2 (cain)"]}}},
+    {"kind": "choose", "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "resolved_rolls": [3, 3], "events": [{"kind": "died", "player": 1}, {"kind": "died", "player": 2, "none": true}],
+                "after": [{"player": 0, "hand": 1, "damage": 0}, {"player": 1, "souls": 1}]}}
+  ],
+  "expect": {"allowed": true}
+}

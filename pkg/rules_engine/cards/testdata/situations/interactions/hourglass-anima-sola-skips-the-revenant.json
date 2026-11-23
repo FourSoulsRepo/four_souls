@@ -1,0 +1,28 @@
+{
+  "title": "The Deserter's Anima Sola is The Revenant, recharged; Isaac's Mystery Sack rolls 2 and Hourglass lets him deactivate an item: is Boomerang offered and The Revenant not?",
+  "source": ["card hourglass", "card anima_sola", "card mystery_sack", "R-MECH-54", "R-ABIL-16", "R-ABIL-15", "R-TURN-02", "R-PRIO-02"],
+  "sets": ["b2", "fsp2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["hourglass", "mystery_sack"]},
+      {"character": "the_deserter", "items": ["anima_sola", "boomerang"]}
+    ],
+    "active": 0,
+    "phase": "loot",
+    "priority": 1,
+    "shop": ["breakfast", "dinner"],
+    "rolls": [2]
+  },
+  "steps": [
+    {"player": 1, "kind": "activate", "card": "anima_sola",
+     "expect": {"allowed": true, "after": [{"player": 1, "deactivated": ["anima_sola"]}]}},
+    {"player": 0, "kind": "end_turn"},
+    {"player": 1, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 0, "after": [{"player": 1, "deactivated": []}]}},
+    {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢."],
+     "expect": {"allowed": true, "resolved_rolls": [2], "prompt": {"player": 0, "options": ["boomerang", "ask.none"]}}},
+    {"kind": "choose", "choices": ["boomerang"],
+     "expect": {"allowed": true, "after": [{"player": 1, "deactivated": ["boomerang"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

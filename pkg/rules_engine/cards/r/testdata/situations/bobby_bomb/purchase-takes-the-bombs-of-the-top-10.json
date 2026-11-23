@@ -1,0 +1,19 @@
+{
+  "title": "Isaac buys Bobby Bomb from the treasure deck; the top 10 loot cards hold Bomb! and Mega Bomb!: do both go to his hand and the other 8 to the bottom?",
+  "source": ["card bobby_bomb", "R-CARD-37", "R-SHOP-03"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "cents": 10}, {"character": "cain"}],
+    "active": 0,
+    "decks": {
+      "loot": ["bomb", "a_nickel", "mega_bomb", "a_penny", "two_cents", "three_cents", "four_cents", "a_dime", "butter_bean", "soul_heart"],
+      "treasure": ["bobby_bomb"]
+    }
+  },
+  "action": {"player": 0, "kind": "purchase", "choices": ["ask.deck.treasure"]},
+  "expect": {
+    "allowed": true,
+    "deck_bottoms": {"loot": ["a_nickel", "a_penny", "two_cents", "three_cents", "four_cents", "a_dime", "butter_bean", "soul_heart"]},
+    "after": [{"player": 0, "cents": 0, "items": ["bobby_bomb"], "hand_cards": ["bomb", "mega_bomb"]}]
+  }
+}

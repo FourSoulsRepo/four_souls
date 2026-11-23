@@ -1,0 +1,19 @@
+{
+  "title": "Cain's Mega Bomb! kills The Enigma, who has Flip and 2 Bomb!: after the penalty, does her character flip to amginE ehT (2 ATK) and recharge, and does she discard her hand and loot 3?",
+  "source": ["card flip", "card the_enigma", "card mega_bomb", "R-DEATH-14", "R-CARD-39", "R-MECH-33"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "cain", "hand": ["mega_bomb"]},
+      {"character": "the_enigma", "items": ["flip"], "hand": ["bomb", "bomb"]}
+    ],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "mega_bomb", "choices": ["player 2 (the_enigma)", "bomb"]},
+  "expect": {
+    "allowed": true,
+    "events": [{"kind": "died", "player": 1}],
+    "discards": {"loot": ["mega_bomb", "bomb", "bomb"]},
+    "after": [{"player": 1, "atk": 2, "hand": 3, "deactivated": [], "items": ["flip"]}]
+  }
+}

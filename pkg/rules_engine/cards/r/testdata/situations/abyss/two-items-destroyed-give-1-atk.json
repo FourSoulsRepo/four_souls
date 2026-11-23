@@ -1,0 +1,24 @@
+{
+  "title": "The Empty uses Abyss on the Spoon Bender, is refused a second use that turn, and on her next turn destroys the Jawbone: do 2 counters give her +1 ATK?",
+  "source": ["card abyss", "R-ABIL-07", "R-ABIL-10", "R-TURN-02", "R-ABIL-18"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "the_empty", "items": ["abyss", "spoon_bender", "jawbone"]},
+      {"character": "cain"}
+    ],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "abyss", "choices": ["spoon_bender"],
+     "expect": {"allowed": true, "discards": {"treasure": ["spoon_bender"]},
+                "after": [{"player": 0, "atk": 1, "items": ["abyss", "jawbone"], "deactivated": ["abyss"], "counters": [{"card": "abyss", "count": 1}]}]}},
+    {"player": 0, "kind": "activate", "card": "abyss", "expect": {"allowed": false, "rule": "R-ABIL-07"}},
+    {"player": 0, "kind": "end_turn"},
+    {"player": 1, "kind": "end_turn"},
+    {"player": 0, "kind": "activate", "card": "abyss", "choices": ["jawbone"],
+     "expect": {"allowed": true, "discards": {"treasure": ["spoon_bender", "jawbone"]},
+                "after": [{"player": 0, "atk": 2, "items": ["abyss"], "deactivated": ["abyss"], "counters": [{"card": "abyss", "count": 2}]}]}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-07"}
+}

@@ -1,0 +1,21 @@
+{
+  "title": "The Savage with Berserk kills the Fly: does she gain +1 HP and have a second attack, and kill the Leech with it for another +1 HP?",
+  "source": ["card berserk", "card fly", "card leech", "R-TURN-07", "R-ATK-12", "R-SHOP-07"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "the_savage", "items": ["berserk"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["clotty", "pooter"], "loot": ["a_penny"]},
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "attacks": 1, "monsters": [{"card": "fly", "dead": true}, {"slot": 1, "card": "clotty"}],
+                "after": [{"player": 0, "hp": 3, "cents": 1}]}},
+    {"player": 0, "kind": "attack", "choices": ["leech"],
+     "expect": {"allowed": true, "attacks": 0, "monsters": [{"card": "leech", "dead": true}, {"slot": 2, "card": "pooter"}],
+                "after": [{"player": 0, "hp": 4, "hand_cards": ["a_penny"]}]}}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [6, 6]}
+}

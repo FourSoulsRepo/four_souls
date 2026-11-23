@@ -1,0 +1,16 @@
+{
+  "title": "Cain's Mega Bomb! kills Isaac: is Damocles destroyed before the penalty?",
+  "source": ["card damocles", "card mega_bomb", "R-DEATH-13", "R-MECH-23"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "cain", "hand": ["mega_bomb"]}, {"character": "isaac", "items": ["damocles"]}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "mega_bomb", "choices": ["player 2 (isaac)"]},
+  "expect": {
+    "allowed": true,
+    "events": [{"kind": "died", "player": 1}],
+    "discards": {"treasure": ["damocles"], "loot": ["mega_bomb"]},
+    "after": [{"player": 1, "items": []}]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "title": "Isaac (1 ATK) with Fire Mind hits the Pooter (2 HP) with a 6: is the damage doubled, so one hit kills it?",
+  "source": ["card fire_mind", "card pooter", "R-ATK-12"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["fire_mind"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["pooter"],
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["pooter"]}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [6], "monsters": [{"card": "pooter", "dead": true}], "after": [{"player": 0, "hand": 1}]}
+}

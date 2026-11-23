@@ -1,0 +1,12 @@
+{
+  "title": "Isaac with Damocles buys the top of the treasure deck: does he gain 2 treasures instead of 1?",
+  "source": ["card damocles", "R-CARD-37", "R-ABIL-29", "R-SHOP-03"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["damocles"], "cents": 10}, {"character": "cain"}],
+    "active": 0,
+    "decks": {"treasure": ["breakfast", "dinner"]}
+  },
+  "action": {"player": 0, "kind": "purchase", "choices": ["ask.deck.treasure"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 0, "items": ["damocles", "breakfast", "dinner"]}]}
+}

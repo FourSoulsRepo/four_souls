@@ -1,0 +1,23 @@
+{
+  "title": "On Isaac's loot step the Deserter flips Anima Sola to The Revenant; Isaac attacks it and hits twice: does he loot 2, she loot 1 as it flips back, and may he attack again?",
+  "source": ["card anima_sola", "R-MECH-04", "R-ABIL-18", "R-DEATH-03", "R-TURN-04", "R-PRIO-02"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "the_deserter", "items": ["anima_sola"]}],
+    "active": 0,
+    "phase": "loot",
+    "priority": 1,
+    "monsters": ["fly", "leech"],
+    "rolls": [3, 3]
+  },
+  "steps": [
+    {"player": 1, "kind": "activate", "card": "anima_sola",
+     "expect": {"allowed": true, "after": [{"player": 1, "hand": 0, "deactivated": ["anima_sola"]}]}},
+    {"player": 0, "kind": "attack", "choices": ["anima_sola"],
+     "expect": {"allowed": true, "resolved_rolls": [3, 3], "attacks": 1,
+                "after": [{"player": 0, "hand": 2, "damage": 0}, {"player": 1, "hand": 1, "items": ["anima_sola"]}]}},
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["fly", "leech", "ask.deck.monster"]}}}
+  ],
+  "expect": {"allowed": true}
+}

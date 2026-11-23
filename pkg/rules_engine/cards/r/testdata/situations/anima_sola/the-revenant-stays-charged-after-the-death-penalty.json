@@ -1,0 +1,23 @@
+{
+  "title": "The Deserter flips Anima Sola to The Revenant; recharged on her next turn, she dies to the Leech: does the death penalty leave The Revenant charged?",
+  "source": ["card anima_sola", "card leech", "R-DEATH-14", "R-MECH-54", "R-ATK-13", "R-TURN-02"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "the_deserter", "items": ["anima_sola"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech"],
+    "decks": {"loot": ["a_penny", "bomb"]},
+    "rolls": [1]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "anima_sola"},
+    {"player": 0, "kind": "end_turn"},
+    {"player": 1, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 0, "after": [{"player": 0, "deactivated": []}]}},
+    {"player": 0, "kind": "attack", "choices": ["leech", "bomb"],
+     "expect": {"allowed": true, "resolved_rolls": [1], "active": 1, "discards": {"loot": ["bomb"]},
+                "events": [{"kind": "died", "player": 0}],
+                "after": [{"player": 0, "items": ["anima_sola"], "deactivated": ["character"]}]}}
+  ],
+  "expect": {"allowed": true}
+}
