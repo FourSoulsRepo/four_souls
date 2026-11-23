@@ -1,0 +1,19 @@
+{
+  "title": "Greed Looms: Isaac bought nothing this turn, so at its end he discards his hand",
+  "source": ["card greed_looms", "R-TURN-10", "R-MECH-25", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["a_penny", "a_dime"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["greed_looms"],
+    "decks": {"loot": ["bomb"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "hand": 0}, {"player": 1, "hand_cards": ["bomb"]}], "discards": {"loot": ["a_penny", "a_dime"]}}
+}

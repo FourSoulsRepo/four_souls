@@ -1,0 +1,20 @@
+{
+  "title": "Isaac's Blessing: Isaac rerolls his attack roll of 1, then keeps the 6 and kills the Fly",
+  "source": ["card isaacs_blessing", "card fly", "R-DICE-05", "R-DICE-13", "R-MECH-47"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["isaacs_blessing"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [1, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly", "ask.yes", "ask.no"]}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [6], "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "cents": 1, "damage": 0}]}
+}

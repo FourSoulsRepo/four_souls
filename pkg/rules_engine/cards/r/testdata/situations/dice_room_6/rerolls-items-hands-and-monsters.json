@@ -1,0 +1,27 @@
+{
+  "title": "Dice Room!!!!!!: as it enters play Isaac's item and both shop items are rerolled, both players discard their hands and loot 3, and both monsters go to discard",
+  "source": ["card dice_room_6", "R-MECH-48", "R-MECH-29", "R-MECH-27", "R-ZONE-02", "R-SHOP-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["spoon_bender"], "hand": ["a_penny"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "shop": ["jawbone", "lucky_foot"],
+    "rooms": ["dice_room_6"],
+    "decks": {"treasure": ["book_of_sin"], "monster": ["dip", "pooter"]},
+    "stack": [{"kind": "trigger", "card": "dice_room_6", "owner": 0}]
+  },
+  "steps": [
+    {"player": 0, "kind": "pass"}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved": ["dice_room_6"],
+    "after": [{"player": 0, "items": ["book_of_sin"], "hand": 3}, {"player": 1, "hand": 3}],
+    "discards": {"treasure": ["spoon_bender", "jawbone", "lucky_foot"], "loot": ["a_penny"], "monster": ["fly", "leech"]},
+    "monsters": [{"card": "dip"}, {"card": "pooter"}]
+  }
+}

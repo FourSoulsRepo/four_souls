@@ -1,0 +1,21 @@
+{
+  "title": "Equality: Isaac kills the Fly for 1¢; instead each player gains 1¢",
+  "source": ["card equality", "card fly", "R-DEATH-06", "R-ABIL-29"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"},
+      {"character": "samson"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["equality"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"]}
+  ],
+  "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "cents": 1}, {"player": 1, "cents": 1}, {"player": 2, "cents": 1}]}
+}

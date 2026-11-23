@@ -1,0 +1,26 @@
+{
+  "title": "Fortune Teller: Isaac pays 3¢ and rolls a 6; he loots 6, the room goes to discard and White Champions refills the slot",
+  "source": ["card fortune_teller", "R-ABIL-24", "R-SHOP-06", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "cents": 3},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["fortune_teller"],
+    "decks": {"room": ["white_champions"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "fortune_teller"}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [{"player": 0, "cents": 0, "hand": 6}],
+    "discards": {"room": ["fortune_teller"]},
+    "monsters": [{"card": "white_champions"}]
+  }
+}

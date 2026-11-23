@@ -1,0 +1,23 @@
+{
+  "title": "Dice Room!: as it enters play Isaac rerolls his Spoon Bender, Cain keeps his Jawbone; at the end of the turn the room goes to discard and the slot refills",
+  "source": ["card dice_room_1", "R-MECH-48", "R-TURN-10", "R-TURN-17", "R-SHOP-06", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["spoon_bender"]},
+      {"character": "cain", "items": ["jawbone"]}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["dice_room_1"],
+    "decks": {"treasure": ["book_of_sin"], "room": ["white_champions"]},
+    "stack": [{"kind": "trigger", "card": "dice_room_1", "owner": 0}]
+  },
+  "steps": [
+    {"player": 0, "kind": "pass",
+     "expect": {"allowed": true, "resolved": ["dice_room_1"], "after": [{"player": 0, "items": ["book_of_sin"]}, {"player": 1, "items": ["jawbone"]}], "discards": {"treasure": ["spoon_bender"]}}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "discards": {"room": ["dice_room_1"]}, "monsters": [{"card": "white_champions"}]}}
+  ],
+  "expect": {"allowed": true}
+}

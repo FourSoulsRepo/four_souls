@@ -1,0 +1,18 @@
+{
+  "title": "Eden's Blessing (room): at the start of Cain's turn he rerolls his Spoon Bender into a Book Of Sin",
+  "source": ["card edens_blessing_r", "R-MECH-48", "R-TURN-03", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain", "items": ["spoon_bender"]}
+    ],
+    "active": 0,
+    "rooms": ["edens_blessing_r"],
+    "decks": {"treasure": ["book_of_sin"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "choices": ["spoon_bender"]}
+  ],
+  "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "items": []}, {"player": 1, "items": ["book_of_sin"]}], "discards": {"treasure": ["spoon_bender"]}}
+}

@@ -1,0 +1,28 @@
+{
+  "title": "Dice Room!!: as it enters play Isaac and Cain each discard their hand and loot 3, in turn order",
+  "source": ["card dice_room_2", "R-MECH-25", "R-MECH-27", "R-CARD-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["a_penny"]},
+      {"character": "cain", "hand": ["bomb"]}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["dice_room_2"],
+    "decks": {"loot": ["a_dime", "a_nickel", "two_cents", "three_cents", "four_cents", "blank_rune"]},
+    "stack": [{"kind": "trigger", "card": "dice_room_2", "owner": 0}]
+  },
+  "steps": [
+    {"player": 0, "kind": "pass"}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved": ["dice_room_2"],
+    "after": [
+      {"player": 0, "hand": 3, "hand_cards": ["a_dime", "a_nickel", "two_cents"]},
+      {"player": 1, "hand": 3, "hand_cards": ["three_cents", "four_cents", "blank_rune"]}
+    ],
+    "discards": {"loot": ["a_penny", "bomb"]}
+  }
+}

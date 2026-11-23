@@ -1,0 +1,25 @@
+{
+  "title": "Floor Spikes: Isaac (3 HP with Breakfast) rolls a 1 against the Fly; he takes the Fly's 1 and the spikes' 1, then kills the Fly with a 6",
+  "source": ["card floor_spikes", "card fly", "card breakfast", "R-ATK-13", "R-ABIL-16"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["breakfast"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["floor_spikes"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [1, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 6],
+    "monsters": [{"card": "fly", "dead": true}],
+    "after": [{"player": 0, "damage": 2, "hp": 1, "cents": 1}, {"player": 1, "damage": 0}]
+  }
+}

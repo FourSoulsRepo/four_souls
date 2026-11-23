@@ -1,0 +1,17 @@
+{
+  "title": "Heavy Is The Head: Cain controls the most items; in his recharge step he recharges only the Spoon Bender",
+  "source": ["card heavy_is_the_head", "R-TURN-02"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["book_of_sin"]},
+      {"character": "cain", "items": ["spoon_bender", "jawbone"], "deactivated": ["spoon_bender", "jawbone"]}
+    ],
+    "active": 0,
+    "rooms": ["heavy_is_the_head"]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "choices": ["spoon_bender"]}
+  ],
+  "expect": {"allowed": true, "active": 1, "after": [{"player": 1, "deactivated": ["jawbone"]}]}
+}

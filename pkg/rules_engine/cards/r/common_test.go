@@ -235,32 +235,6 @@ func lootRoomTable(t *testing.T, room engine.CardRef, hand ...engine.CardRef) *e
 	return setup(t, s)
 }
 
-// fightRoom: Isaac (active) and Cain; the monster in slot 1, a fly in
-// slot 2, and the room.
-func fightRoom(t *testing.T, room, monster engine.CardRef) *enginetest.Table {
-	t.Helper()
-	return setup(t, engine.SituationSetup{
-		Players:  []engine.SituationPlayer{seat("isaac"), seat("cain")},
-		Monsters: []engine.CardRef{monster, "fly"},
-		Rooms:    []engine.CardRef{room},
-	})
-}
-
-// enterRoom puts the room into play mid-turn, as a refill would, and
-// settles its "enters play" abilities.
-func enterRoom(tb *enginetest.Table, card engine.CardRef) {
-	tb.T.Helper()
-	tb.G.PutOnDeck(engine.RoomDeck, card)
-	if len(tb.G.Rooms) == 0 {
-		tb.G.Rooms = append(tb.G.Rooms, engine.Slot{})
-	} else if id, ok := tb.G.Rooms[0].TopOf(); ok {
-		tb.G.DiscardRoom(id)
-	}
-	tb.G.RefillSlots()
-	tb.G.Run()
-	settleAny(tb)
-}
-
 // sackFirst puts the roll result on the stack first, so the other card's
 // "each time a player rolls" trigger resolves first (R-ABIL-15, 19.233).
 const sackFirst = "mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢."
