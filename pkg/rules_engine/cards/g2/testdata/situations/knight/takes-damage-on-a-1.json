@@ -1,6 +1,6 @@
 {
-  "title": "Isaac (3 HP with Breakfast) rolls 1, 1 on Knight (2 HP, DC 6): does each 1 also deal Knight 1, so it dies?",
-  "source": ["card knight", "card breakfast", "R-ATK-13", "R-CARD-13"],
+  "title": "Isaac (3 HP with Breakfast) rolls 1, 1 on Knight (2 HP, DC 6): does each 1 also deal Knight 1, so it dies, and its trigger resolves before Isaac's damage, so the second 1 never hurts Isaac?",
+  "source": ["card knight", "card breakfast", "R-ATK-13", "R-CARD-13", "R-DICE-06", "R-ABIL-14", "R-STACK-02", "R-ATK-15"],
   "sets": ["b2", "g2"],
   "setup": {
     "players": [{"character": "isaac", "items": ["breakfast"]}, {"character": "cain"}],
@@ -12,10 +12,10 @@
   "steps": [
     {"player": 0, "kind": "attack", "choices": ["knight"]},
     {"kind": "throw",
-     "expect": {"allowed": true, "resolved_rolls": [1], "monsters": [{"slot": 1, "card": "knight", "damage": 1}], "after": [{"player": 0, "damage": 1}]}},
+     "expect": {"allowed": true, "resolved_rolls": [1], "resolved": ["knight", "damage"], "monsters": [{"slot": 1, "card": "knight", "damage": 1}], "after": [{"player": 0, "damage": 1}]}},
     {"kind": "throw",
      "expect": {"allowed": true, "resolved_rolls": [1], "monsters": [{"card": "knight", "dead": true}, {"slot": 1, "card": "dip"}],
-                "events": [{"kind": "died", "player": 0, "none": true}], "after": [{"player": 0, "hand": 2}]}}
+                "events": [{"kind": "died", "player": 0, "none": true}], "after": [{"player": 0, "hand": 2, "damage": 1}]}}
   ],
   "expect": {"allowed": true, "resolved_rolls": [1, 1]}
 }
