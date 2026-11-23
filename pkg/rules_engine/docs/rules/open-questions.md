@@ -778,6 +778,9 @@ On 2026-10-09 the owner parked every open decision for later.
    1. E.g. Lord of the Pit with no attack going on: refused.
    2. In progress: from the declaration till the attack ends (R-ATK-02, R-ATK-14).
    3. "On a monster": once its target is a monster, a revealed one too (Q-24).
+7. A copied ability needs a valid target too (owner, 2026-11-23, 19.238).
+   1. ? Card offers only the ↷ abilities with one; with none it is refused.
+   2. So it matches Placebo, whose copy is checked as it is used.
 
 ## Old rulings re-checked (R-07)
 

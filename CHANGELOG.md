@@ -7,7 +7,8 @@ Rules engine versions are in each release's notes.
 ## Unreleased
 
 - Lord of the Pit, The Bible's "Cancel your attack.", IBS's "Cancel your attack on a monster." and Emergency Contact need an attack to cancel; with none they are not offered.
-- Rules engine 0.5.7.
+- ? Card offers only the ↷ abilities it could use now: it no longer copies Lord of the Pit with no attack to cancel, nor an ability with no valid target; with none it can't be played.
+- Rules engine 0.5.8.
 
 ## 0.6.4 - 2026-11-20
 

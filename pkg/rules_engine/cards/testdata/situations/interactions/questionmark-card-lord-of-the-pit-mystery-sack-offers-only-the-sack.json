@@ -1,0 +1,15 @@
+{
+  "title": "No attack is in progress; Cain has Lord of the Pit and a Mystery Sack. Isaac plays ? Card: is only the Sack's ↷ ability offered to copy?",
+  "source": ["card questionmark_card", "card lord_of_the_pit", "card mystery_sack", "R-ABIL-40", "Q-55"],
+  "sets": ["b2", "fsp2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["questionmark_card"]}, {"character": "cain", "items": ["lord_of_the_pit", "mystery_sack"]}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "questionmark_card"},
+  "expect": {
+    "allowed": true,
+    "prompt": {"player": 0, "options": ["mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢.", "ask.cancel"]}
+  }
+}

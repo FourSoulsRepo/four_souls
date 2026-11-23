@@ -507,6 +507,20 @@ func (g *Game) choosablePlayers(ids []PlayerID) []PlayerID {
 	return living
 }
 
+// copyableTapAbilities lists the ↷ abilities p may copy with the loot
+// card self ("? Card"): those in play with a valid target, as Placebo's
+// copies are checked in activatable (R-ABIL-40, Q-55, 19.238). The copy
+// pays no cost, so only its targets count.
+func (g *Game) copyableTapAbilities(p PlayerID, self ObjectID) []AbilityRef {
+	var out []AbilityRef
+	for _, r := range g.tapAbilitiesInPlay(self) {
+		if g.targetsAvailable(g.ability(r), p, self) == nil {
+			out = append(out, r)
+		}
+	}
+	return out
+}
+
 // tapAbilitiesInPlay lists every ↷ ability of the items in play, shop
 // items included, for a card that copies one ("? Card"; R-CARD-34).
 func (g *Game) tapAbilitiesInPlay(self ObjectID) []AbilityRef {

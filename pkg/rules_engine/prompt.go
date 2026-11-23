@@ -294,7 +294,7 @@ func (g *Game) apply(in Intent) {
 		g.Waiting = Prompt{}
 	case IntentPlayLoot:
 		if g.def(in.Objects[0]).CopiesTapOnPlay {
-			refs := g.tapAbilitiesInPlay(in.Objects[0])
+			refs := g.copyableTapAbilities(in.Player, in.Objects[0])
 			labels := make([]Msg, 0, len(refs)+1)
 			for _, r := range refs {
 				labels = append(labels, g.abilityOption(r))
@@ -346,8 +346,13 @@ func (g *Game) lootPlayable(p PlayerID, id ObjectID) error {
 	if g.locked(p) {
 		return deny("R-ABIL-12", refuseLootForbidden.Msg(), "the active player's card forbids playing loot on their turn")
 	}
-	if g.def(id).CopiesTapOnPlay && len(g.tapAbilitiesInPlay(id)) == 0 {
-		return deny("R-ABIL-40", refuseNothingToCopy.Msg(), "no item in play has a ↷ ability to copy")
+	if g.def(id).CopiesTapOnPlay {
+		if len(g.tapAbilitiesInPlay(id)) == 0 {
+			return deny("R-ABIL-40", refuseNothingToCopy.Msg(), "no item in play has a ↷ ability to copy")
+		}
+		if len(g.copyableTapAbilities(p, id)) == 0 {
+			return deny("R-ABIL-40", refuseNoTarget.Msg(), "no ↷ ability in play has a valid target to copy")
+		}
 	}
 	if ab, ok := g.lootAbility(id); ok {
 		return g.targetsAvailable(ab, p, id)

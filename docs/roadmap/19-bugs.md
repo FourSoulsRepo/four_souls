@@ -6974,3 +6974,51 @@ Totals by system (228 items):
    4. Check every copy mechanism, all sets (5.24).
    5. Situation files: refused; only the other item offered; copy during an attack.
    6. The copy fizzles when the attack ends first (R-ABIL-06, R-MECH-32).
+5. Done (2026-11-23)
+   1. New `copyableTapAbilities(p, self)`: `tapAbilitiesInPlay` through `targetsAvailable`.
+   2. The same check Placebo's copies get in `activatable`; no second copy of the rule.
+   3. The copy pays no cost (`finishActivation`, `Loot`), so only targets count.
+   4. The copy prompt (`apply`, IntentPlayLoot) offers only that list.
+   5. `lootPlayable`: no ↷ ability in play: R-ABIL-40, `refuseNothingToCopy` (19.236).
+   6. ↷ abilities, none with a valid target: R-ABIL-40, `refuseNoTarget`.
+   7. "No valid target now" says why; "No item with a ↷ ability" would be false.
+   8. Rules engine 0.5.8; CHANGELOG Unreleased.
+   9. Q-55 item 7: a copied ability needs a valid target too.
+6. Checked: every user of the list and the flag.
+   1. `prompt.go` `apply` and `lootPlayable`: changed.
+   2. `choice.go` `ChooseCopyAbility`: starts the chosen one from the filtered list; unchanged.
+   3. `aims.go:41`: ? Card asks no target first, so no aim; unchanged.
+   4. `situation_stack.go:107`: ? Card can't start on the stack; unchanged.
+   5. `Allowed` and `Blocked` ask `check`, so `lootPlayable`; bots and client follow.
+   6. Bot `choiceWeights` (`ChooseCopyAbility`): weighs the offered options; unchanged.
+   7. Server `asksFirst` (rollback): the purpose only; unchanged.
+7. Checked (5.24): every copy mechanism, all sets.
+   1. fsp2 ? Card (`CopiesTapOnPlay`): fixed.
+   2. b2 Placebo (`CopiesTapAbilities`): `activatable` checks each copy; unchanged.
+   3. It skips eternal items, so it never copies Lord of the Pit.
+   4. b2 Blank Card: copies a played loot with its chosen targets; unchanged.
+   5. b2 Modeling Clay, b2 Diplopia, r Birthright, r Undefined: become a copy.
+   6. Their own target is a `TargetSpec`, checked already; unchanged.
+   7. The copy's abilities are then used through `activatable`; unchanged.
+   8. r Glitch (`GainAbilities`): gained abilities use `activatable`; unchanged.
+   9. g2, challenge: no other card copies an ability.
+8. Tests
+   1. Cross-set files: `cards/testdata/situations/interactions/`.
+   2. The fsp2 runner loads b2 and fsp2 only; Lord of the Pit is g2.
+   3. So the layout's cross-set tree (ADR 034 5.3); `cards/situations_test.go` wires it.
+   4. `questionmark-card-lord-of-the-pit-refused-with-no-attack.json`: R-ABIL-40.
+   5. `questionmark-card-lord-of-the-pit-mystery-sack-offers-only-the-sack.json`.
+   6. `questionmark-card-lord-of-the-pit-cancels-an-attack.json`: 1 attack, then the Fly dies.
+   7. The first two failed with the check off; the third is the working case.
+   8. Go: `TestQuestionmarkCardCopyFizzlesWhenTheAttackEnds` (fsp2).
+   9. Cain's Lord of the Pit cancels first; the copy fizzles; 1 attack, not 2.
+   10. Go, as Cain responds mid-stack (24 owner answer 7).
+9. Docs
+   1. Q-55 item 7; R-ABIL-40 already covers it ("a loot card … with targets").
+   2. Cross-set tree now wired, as `Situation-payload.md` says; no wiki change.
+10. Gates (2026-11-23)
+   1. `make lint test` and `make site` passed; site: engine 0.5.8.
+   2. `make e2e`: 637 passed, 1 failed; evidence in `.cache/e2e-evidence/19.238/`.
+   3. playback.spec.ts:1975 (chromium, seed 114790418): the 19.237 flake.
+   4. Eden with The D10, Samson with Blood Lust; no ? Card; unrelated.
+   5. It passed alone on the first rerun, the same seed; no new item.
