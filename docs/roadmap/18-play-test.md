@@ -1252,6 +1252,8 @@ Ideas: B-04, B-05, B-08.
           1. The 19.237 flake, seed 114790418; passed alone after.
           2. Evidence: `.cache/e2e-evidence/18.34-run2/`.
        3. Run 3: 648 passed, 22 skipped.
+5. Owner notes (2026-11-24)
+   1. Owner marks 18.34 solved.
 
 ### [x] 18.35 Client: "must attack" on the attack button
 
@@ -1300,6 +1302,8 @@ Ideas: B-04, B-05, B-08.
       2. Close-ups: `crop-must-attack-monster*`.
    8. Gates: `make lint`, `make test`, `make frontend` (784 Vitest) pass.
       1. `make e2e` run 1: 652 passed, 22 skipped.
+6. Owner notes (2026-11-24)
+   1. Owner marks 18.35 solved.
 
 ### [x] 18.36 Engine: hidden effects that are not stats
 
@@ -1372,6 +1376,8 @@ Ideas: B-04, B-05, B-08.
    14. Records: no effect on playing or watching (ADR 031 plays views).
        1. Only `engine.Replay` (tests) checks old checksums; none differ today.
        2. A record kept from before could differ at a 100th-step state check.
+5. Owner notes (2026-11-24)
+   1. Owner marks 18.36 solved.
 
 ### [x] 18.37 Client: icons for the new hidden effects; Red Candle's die
 
@@ -1430,6 +1436,8 @@ Ideas: B-04, B-05, B-08.
           1. The 19.237 flake, seed 114790418.
           2. Evidence: `.cache/e2e-evidence/18.37-run1/`.
        2. Run 2: 660 passed, 22 skipped.
+5. Owner notes (2026-11-24)
+   1. Owner marks 18.37 solved.
 
 ### [x] 18.38 Sibling Rivalry: the chosen player shows it
 
