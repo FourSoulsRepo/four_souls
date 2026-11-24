@@ -4,6 +4,7 @@ import { claimed } from '../animations';
 import { iconText, kindOf, landscape, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
 import { diceImage } from '../dice';
 import { feel } from '../feel';
+import { seatNameOf } from '../lobby';
 import { t } from '../i18n';
 import { scaleFor } from '../playback';
 import { fighters, mustTargets } from '../prompt';
@@ -122,6 +123,9 @@ export function Card({
   const cards = useApp((s) => s.cards);
   const name: Name = (ref) => (ref ? (cards.get(ref)?.name ?? ref) : t('stats.hidden_card'));
   const sources = stats?.sources ?? monster?.sources;
+  // Sibling Rivalry's line names the active player (18.38).
+  const helps = sources?.some((s) => s.stat === 'next_attack_helper') ?? false;
+  const active = useApp((s) => (helps && s.game ? seatNameOf(s.game.seats, s.game.view.turn.active) : ''));
   const sums = sources ? statLines(sources, printedOf(stats, monster), liveOf(stats, monster), name) : [];
   // A monster's rewards changed this turn (14.33): a mark on the card,
   // and a line under its zoom.
@@ -135,7 +139,7 @@ export function Card({
   const zoomCounters = [...counters.filter((c) => c.count > 0), ...(fear > 0 ? [{ name: 'fear', count: fear }] : [])];
   // A character's zoom lists the hidden effects on its player (18.32,
   // 18.34).
-  const effects = stats?.effectsOn === undefined ? undefined : { title: stats.effectsOn, ...effectList(sources, name) };
+  const effects = stats?.effectsOn === undefined ? undefined : { title: stats.effectsOn, ...effectList(sources, name, active) };
   const zoomEffects = effects && effects.turn.length + effects.later.length > 0 ? effects : undefined;
   const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines, zoomCounters, zoomEffects);
   const preview = useCostPreview(cost);
@@ -261,7 +265,7 @@ export function Card({
           {rewardsText(monster?.rewards)}
         </span>
       )}
-      {badges && <SourceIcons list={effectIcons(sources, name)} name={name} onLeave={backToCard} />}
+      {badges && <SourceIcons list={effectIcons(sources, name, active)} name={name} onLeave={backToCard} />}
     </motion.div>
   );
 }

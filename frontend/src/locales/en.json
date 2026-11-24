@@ -4527,6 +4527,10 @@
     "text": "Start of game",
     "note": "Screen-reader name of the \"is choosing\" banner on the board."
   },
+  "stats.active_player": {
+    "text": "the active player",
+    "note": "Stands for the active player's name in stats.effect.next_attack_helper when it is not known."
+  },
   "stats.always_hits": {
     "text": "Always hits",
     "note": "Stack panel, an open attack's fight line: every die face hits."
@@ -4640,6 +4644,10 @@
   "stats.effect.many_dice": {
     "text": "The next roll is {n} dice; you choose the result",
     "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Mutant Spider: the next roll by any player is n dice. 'you': this character's player. Shown inside stats.for_everyone."
+  },
+  "stats.effect.next_attack_helper": {
+    "text": "Rolls with {player}'s next attack; shares its rewards",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Sibling Rivalry: this player makes an attack roll after each attack roll of the active player's next attack this turn, and also gains its rewards if the monster dies. player: the active player's name, or stats.active_player."
   },
   "stats.effect.next_attack_roll": {
     "text": "{amount} to the next attack roll",

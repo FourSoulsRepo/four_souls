@@ -183,6 +183,15 @@ Use option 1.
         3. This turn's lines come first; the 8-line cut counts both.
     6. `extra_turn` says when itself; no "this turn" after it.
     7. Red Candle's die already showed on its card (item 8); no change.
+11. Sibling Rivalry's chosen player shows it (owner, 2026-11-24; 18.38).
+    1. Key `next_attack_helper`, a hidden effect (item 3.17); lasts `turn`.
+    2. Sent while `Turn.NextHelpers` holds the player.
+    3. Also through that attack, from `Attack.Share`; gone when it ends.
+    4. Its card: `Player.HelpSource`, `omitempty` (ADR 031 item 5).
+    5. Line: "Rolls with Ann's next attack; shares its rewards".
+       1. Ann: the active player; no number, no "this turn".
+    6. Monster helpers (Gus, Sisters Vis, Ultra Greed) send nothing.
+       1. Their card lies on the table; they share no rewards.
 
 ## Consequences
 

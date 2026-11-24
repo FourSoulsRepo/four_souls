@@ -1034,6 +1034,10 @@ const (
 	rollToOneKey     = "roll_to_one"    // game-wide: a roll of 2 or 3 becomes 1
 	compostKey       = "compost"        // game-wide: the next loot comes from the discard
 	manyDiceKey      = "many_dice"      // game-wide: the next roll is Amount dice
+	// nextAttackHelperKey: they roll after each attack roll of the active
+	// player's next attack this turn, or the open one, and share its
+	// rewards (Sibling Rivalry, 18.38).
+	nextAttackHelperKey = "next_attack_helper"
 )
 
 // gameWideBoosts are the boosts for every player that hiddenViews sends;
@@ -1069,6 +1073,12 @@ func (g *Game) hiddenViews(p PlayerID) []StatSourceView {
 	}
 	if pl.CopyNextLoot {
 		add(copyNextLootKey, pl.CopySource, 1, LastsTurn, false)
+	}
+	// Sibling Rivalry's chosen player, till that attack ends: then the
+	// attack's Share is cleared. Other helpers come from a monster on the
+	// table (Gus, Sisters Vis, Ultra Greed) and share no rewards.
+	if slices.Contains(g.Turn.NextHelpers, p) || slices.Contains(g.Attack.Share, p) {
+		add(nextAttackHelperKey, pl.HelpSource, 1, LastsTurn, false)
 	}
 	for _, l := range g.Lingering {
 		if on := g.ability(l.Ability).ShownOn; on != nil {

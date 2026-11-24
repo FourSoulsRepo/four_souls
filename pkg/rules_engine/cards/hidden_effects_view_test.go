@@ -305,6 +305,59 @@ func TestViewHiddenRedCandleOnNoPlayer(t *testing.T) {
 	}
 }
 
+// Sibling Rivalry: "Choose a non-active player. The next time the active
+// player declares an attack this turn, the chosen player must make an
+// attack roll after each attack roll the active player makes for the
+// attack. If that monster dies this attack, the chosen player also gains
+// the rewards." Once the card is tapped nothing on the table names the
+// chosen player, so the effect shows on them only, till that attack ends
+// (18.38).
+func TestViewHiddenSiblingRivalry(t *testing.T) {
+	s := engine.SituationSetup{Players: []engine.SituationPlayer{
+		{Character: "isaac", Items: []engine.CardRef{"sibling_rivalry"}},
+		{Character: "cain"},
+		{Character: "maggy"},
+	}}
+	s.Monsters = []engine.CardRef{"pooter", "fly"}
+	tb := plainTable(t, s)
+	tb.Activate(0, "sibling_rivalry", 0, "player 2 (cain)")
+	want := []hidden{{"next_attack_helper", "sibling_rivalry", 1, "turn", false}}
+	check := func(when string) {
+		t.Helper()
+		if got := hiddenOf(tb, 1); !slices.Equal(got, want) {
+			t.Errorf("%s Cain's effects %v, want %v", when, got, want)
+		}
+		for _, p := range []int{0, 2} {
+			if got := hiddenOf(tb, p); got != nil {
+				t.Errorf("%s player %d's effects %v, want none: only Cain was chosen", when, p+1, got)
+			}
+		}
+	}
+	check("before the attack")
+	// The attack is open: Cain rolls after Isaac's rolls, still shown.
+	// Isaac and Cain hit with ATK 1 each: the Pooter (HP 2) dies.
+	tb.G.ForceRolls(6, 6)
+	if _, err := tb.G.Apply(engine.Intent{Player: 0, Kind: engine.IntentAttack}); err != nil {
+		t.Fatal(err)
+	}
+	for p := range 3 {
+		tb.Pass(p)
+	}
+	tb.Choose("pooter")
+	if !tb.G.Attack.Started {
+		t.Fatal("the attack on the Pooter has not started")
+	}
+	check("during the attack")
+	pooter := tb.G.Attack.Target
+	tb.Settle()
+	if tb.G.Attack.On || tb.G.Object(pooter).Zone.Kind == engine.ZoneInPlay {
+		t.Fatal("the attack is still on, or the Pooter lives")
+	}
+	if got := hiddenOf(tb, 1); got != nil {
+		t.Errorf("after the attack Cain's effects %v, want none: it was that attack only", got)
+	}
+}
+
 // plainTable is viewTable whose refills and treasure gains draw plain
 // cards first, so no test depends on the deal: Clotty has no abilities,
 // Book of Sin only a ↷ one.

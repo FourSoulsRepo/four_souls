@@ -20,7 +20,7 @@ var siblingRivalry = engine.CardDef{
 		Costs:   []engine.Cost{engine.Tap()},
 		Targets: []engine.TargetSpec{engine.ChooseWhere(engine.TargetPlayer, func(g *engine.Game, _ engine.ObjectID, c engine.Chosen) bool { return c.Player != g.Turn.Active })},
 		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
-			c.G.HelpNextAttack(c.Targets[0].Player, true)
+			c.G.HelpNextAttack(c.Targets[0].Player, true, c.Source)
 		})},
 	}},
 }

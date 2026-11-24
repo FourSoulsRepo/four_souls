@@ -230,3 +230,51 @@ test("Red Candle: the chosen number is a die on its card, on no character (18.37
     await expect(page.locator('.card-source')).toHaveCount(0);
   }
 });
+
+test("Sibling Rivalry: the chosen player shows it, the user does not (18.38)", async ({ browser }) => {
+  const names = repeatNames(['Ann', 'Bo']);
+  // The pages offer Requiem (?requiem), so they can continue a game
+  // with Sibling Rivalry's set; the deal stays the Base Game's.
+  const pages = await startGame(browser, names, {
+    url: `${appURL()}&anim=off&requiem`,
+    setup: (host) => host.getByRole('group', { name: tr('host.sets') }).getByLabel(tr('set.requiem')).uncheck(),
+  });
+  await activePage(pages, click);
+  await saveAndContinue(pages, names.join(', '), 'bomb', 'sibling_rivalry', false, { r: 'Requiem' });
+  const active = await activePage(pages, click);
+  const seat = pages.indexOf(active);
+  const seenNow = await seenOf(active);
+  const own = seenNow.characters[seat]?.id ?? -1;
+  const chosenSeat = seenNow.characters.findIndex((_, i) => i !== seat);
+  const chosen = seenNow.characters[chosenSeat]?.id ?? -1;
+  // Sibling Rivalry: "↷: Choose a non-active player. The next time the
+  // active player declares an attack this turn, the chosen player must
+  // make an attack roll after each attack roll the active player makes
+  // for the attack. If that monster dies this attack, the chosen player
+  // also gains the rewards." Its one ability asks for a target, so a
+  // click aims from it (15.25).
+  await click(active, ownItem(active, 'sibling_rivalry'));
+  await expect(characterOf(active, chosen)).toHaveClass(/hl-aim/);
+  await click(active, characterOf(active, chosen));
+  // Wait for the exact state (5.16.10): the card spent, its ability
+  // resolved, the stack empty.
+  await settle(pages, click, async () => (await seenOf(active)).items.some((c) => c.card === 'sibling_rivalry' && !c.charged) && (await quiet(active)));
+  await active.mouse.move(1, 1);
+  await shot(active, 'effects-sibling-rivalry');
+  // The line names the active player; it says when itself, so no
+  // "this turn", and has no number (ADR 037 item 3.12).
+  const line = tr('stats.effect.next_attack_helper', { player: names[seat] ?? '' });
+  for (const page of pages) {
+    const icon = characterOf(page, chosen).locator('.card-source');
+    await expect(icon).toHaveCount(1);
+    await expect(icon).toHaveAttribute('aria-label', `${cardName('sibling_rivalry')}: ${line}`);
+    await expect(icon.locator('.card-source-number')).toHaveCount(0);
+    await expect(characterOf(page, own).locator('.card-source')).toHaveCount(0);
+  }
+  await characterOf(active, chosen).hover();
+  const list = active.getByTestId('card-zoom').getByRole('list', { name: tr('zoom.effects_on', { player: names[chosenSeat] ?? '' }) });
+  await expect(list.getByRole('list', { name: tr('zoom.effects_turn') }).getByRole('listitem')).toHaveText([
+    tr('stats.effect_from', { effect: line, card: cardName('sibling_rivalry') }),
+  ]);
+  await shot(active, 'effects-sibling-rivalry-zoom');
+});

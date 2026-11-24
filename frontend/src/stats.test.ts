@@ -314,6 +314,26 @@ describe('hidden effects (18.37)', () => {
   });
 });
 
+// Sibling Rivalry's chosen player (18.38): "the chosen player must make
+// an attack roll after each attack roll the active player makes for the
+// attack. If that monster dies this attack, the chosen player also gains
+// the rewards." The line names the active player; no number.
+describe('Sibling Rivalry (18.38)', () => {
+  const rivalry: StatSource = { stat: 'next_attack_helper', source: 70, card: 'sibling_rivalry', amount: 1, lasts: 'turn' };
+  it('names the active player, says it shares the rewards, no "this turn"', () => {
+    const icons = effectIcons([rivalry], name, 'Ann');
+    expect(icons.map((i) => i.lines)).toEqual([["Rolls with Ann's next attack; shares its rewards"]]);
+    expect(icons.map((i) => i.number)).toEqual([undefined]);
+    expect(icons.map((i) => i.card)).toEqual(['sibling_rivalry']);
+  });
+  it('lists it under "This turn" in the zoom', () => {
+    expect(effectList([rivalry], name, 'Ann')).toEqual({ turn: ["Rolls with Ann's next attack; shares its rewards — sibling_rivalry"], later: [] });
+  });
+  it('says "the active player" without a name', () => {
+    expect(effect(rivalry)).toBe("Rolls with the active player's next attack; shares its rewards");
+  });
+});
+
 describe('shownIcons: four, then a "⋯ K" chip (ADR 037 items 3.6, 3.16)', () => {
   it('shows up to four icons and no chip', () => {
     expect(shownIcons([1, 2, 3, 4])).toEqual({ shown: [1, 2, 3, 4], more: 0 });

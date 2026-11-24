@@ -136,12 +136,13 @@ const SHIELDS = 'shields';
 // share one icon whose number is how many (item 3.15): each blocks one
 // damage, oldest first (R-MECH-46), and the server sends them in that
 // order. Its lines name each card; its art and zoom are the first known
-// one's.
-export function effectIcons(sources: StatSource[] | undefined, name: Name): EffectIcon[] {
+// one's. active names the active player, whose attack a helper joins
+// (18.38); '' says "the active player".
+export function effectIcons(sources: StatSource[] | undefined, name: Name, active = ''): EffectIcon[] {
   const out: (EffectIcon & { parts: StatSource[] })[] = [];
   merged(sources ?? []).forEach((s, i) => {
     if (s.lasts === 'in_play') return;
-    const text = effect(s);
+    const text = effectWith(s, active);
     if (text === '') return; // a stat without words: no icon line
     const nextRoll = s.lasts === 'next_roll';
     const when = whenText(s);
@@ -172,7 +173,8 @@ const sumStats = new Set<StatSource['stat']>(['hp', 'atk', 'dc', 'roll', 'attack
 
 // saysWhen are the stats whose words already say when they happen:
 // "Takes an extra turn after this one" gets no "this turn" (18.37).
-const saysWhen = new Set<StatSource['stat']>(['extra_turn']);
+// Nor does Sibling Rivalry's "next attack" (18.38).
+const saysWhen = new Set<StatSource['stat']>(['extra_turn', 'next_attack_helper']);
 
 // EffectList is the zoomed character's list of the hidden effects on
 // its player (ADR 037 item 4): this turn's lines, then the ones that
@@ -193,11 +195,11 @@ const waits = new Set<StatSource['lasts']>(['next_turn', 'next_loot', 'next_roll
 // then its card; a hidden card is named so. In the server's order;
 // shields in the order they block. One source's parts of one stat add
 // up (merged); shields stay apart. Lasting effects, stats with a sum
-// line and stats without words are left out.
-export function effectList(sources: StatSource[] | undefined, name: Name): EffectList {
+// line and stats without words are left out. active as for effectIcons.
+export function effectList(sources: StatSource[] | undefined, name: Name, active = ''): EffectList {
   const list: EffectList = { turn: [], later: [] };
   for (const s of merged(sources ?? [])) {
-    const text = s.lasts === 'in_play' || sumStats.has(s.stat) ? '' : effect(s);
+    const text = s.lasts === 'in_play' || sumStats.has(s.stat) ? '' : effectWith(s, active);
     if (text === '') continue;
     const when = whenText(s);
     (waits.has(s.lasts) ? list.later : list.turn).push(t('stats.effect_from', { effect: `${text}${when ? ` (${when})` : ''}`, card: name(s.card) }));
@@ -288,11 +290,16 @@ function freeShop(s: StatSource): boolean {
 // for a stat it has no words for (a newer server's). A game-wide one
 // says it is for every player (ADR 037 item 3.18.2, 18.37).
 export function effect(s: StatSource): string {
-  const text = effectText(s);
+  return effectWith(s, '');
+}
+
+// effectWith is effect with the active player's name, '' when unknown.
+function effectWith(s: StatSource, active: string): string {
+  const text = effectText(s, active);
   return text !== '' && s.everyone ? t('stats.for_everyone', { effect: text }) : text;
 }
 
-function effectText(s: StatSource): string {
+function effectText(s: StatSource, active: string): string {
   const n = Math.abs(amountOf(s));
   const amount = signed(amountOf(s));
   switch (s.stat) {
@@ -374,6 +381,10 @@ function effectText(s: StatSource): string {
       return t('stats.effect.compost');
     case 'many_dice':
       return t('stats.effect.many_dice', { n });
+    // Sibling Rivalry's chosen player (18.38): they roll with the active
+    // player's next attack, or the open one, and share its rewards.
+    case 'next_attack_helper':
+      return t('stats.effect.next_attack_helper', { player: active || t('stats.active_player') });
     default:
       return ''; // a newer server's stat: no icon line (18.30)
   }

@@ -1431,7 +1431,7 @@ Ideas: B-04, B-05, B-08.
           2. Evidence: `.cache/e2e-evidence/18.37-run1/`.
        2. Run 2: 660 passed, 22 skipped.
 
-### [ ] 18.38 Sibling Rivalry: the chosen player shows it
+### [x] 18.38 Sibling Rivalry: the chosen player shows it
 
 1. Goal: the player Sibling Rivalry chose shows it till the attack ends.
 2. Owner (2026-11-24): yes, as a hidden effect (ADR 037 item 3.17).
@@ -1454,3 +1454,27 @@ Ideas: B-04, B-05, B-08.
    2. Vitest for the text; e2e: the icon shows on the chosen player.
    3. Screenshots, also without images; UC-12; ADR 037 appended.
    4. Gates as 18.34.
+5. Result (2026-11-24)
+   1. Engine: key `next_attack_helper` in `hiddenViews`; lasts `turn`.
+      1. While `Turn.NextHelpers` holds the player.
+      2. Through that attack from `Attack.Share`; gone when it ends.
+      3. New `Player.HelpSource` (`omitempty`), set by `HelpNextAttack`.
+      4. `HelpNextAttack` takes the source; cleared at end of turn.
+   2. Client: line `stats.effect.next_attack_helper`.
+      1. "Rolls with Ann's next attack; shares its rewards".
+      2. Ann: the active player (`seatNameOf`), passed as `active`.
+      3. Fallback `stats.active_player`: "the active player".
+      4. In `saysWhen`: no "this turn"; no number.
+   3. Cards checked (5.24), card_db texts of every set:
+      1. Only Sibling Rivalry (r) helps the next attack and shares rewards.
+      2. Gus, Sisters Vis, Ultra Greed (r): helpers of an attack on them.
+         1. Their card lies on the table; nothing sent.
+      3. Jacob and Esau (r): starts with Sibling Rivalry; covered.
+   4. Tests: Go `TestViewHiddenSiblingRivalry` (before, during, after).
+      1. Vitest `stats.test.ts` "Sibling Rivalry (18.38)".
+      2. e2e `hidden-effects.spec.ts`: icon on the chosen player only; zoom.
+   5. Docs: UC-12 3o; ADR 037 item 11; wiki `Client.md`, `Rules-engine.md`.
+   6. Screenshots: `.cache/screenshots/18.38/before/` and `after/`.
+      1. `effects-sibling-rivalry`; after also `-zoom`; `*-noimages.png`.
+   7. Gates: `make lint`, `make test`, `make frontend` (792 Vitest) pass.
+      1. `make e2e` run 1: 662 passed, 22 skipped.

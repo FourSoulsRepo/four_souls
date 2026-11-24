@@ -420,8 +420,8 @@ func TestViewShowsTheAttackHelpers(t *testing.T) {
 	a := g.Turn.Active
 	h, s := g.next(a), g.next(g.next(a))
 	putMonster(g, 0, "gaper")
-	g.HelpNextAttack(h, true)
-	g.HelpNextAttack(s, false)
+	g.HelpNextAttack(h, true, 0)
+	g.HelpNextAttack(s, false, 0)
 	attack(t, g)
 	g.forcedRolls = []int{1}
 	choose(t, g, "gaper")

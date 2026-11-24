@@ -232,6 +232,10 @@ type Player struct {
 	// CopySource is the object that made CopyNextLoot, for the view
 	// (ADR 037 item 3.17); 0 when unknown.
 	CopySource ObjectID `json:"copy_source,omitempty"`
+	// HelpSource is the object that made p a helper of the active
+	// player's next attack (Sibling Rivalry, Turn.NextHelpers), for the
+	// view (ADR 037 item 3.17, 18.38); 0 when unknown.
+	HelpSource ObjectID `json:"help_source,omitempty"`
 	// SkipTurns: the player skips this many of their next turns (Famine).
 	SkipTurns int `json:"skip_turns,omitempty"`
 	// SkipSources are the objects that made the last skips, oldest

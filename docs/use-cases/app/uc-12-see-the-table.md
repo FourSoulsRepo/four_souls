@@ -331,6 +331,12 @@
   * No number on these icons; the line says how many turns or dice.
   * The zoom files a skip, Compost and Mutant Spider under "Until used".
   * Red Candle shows no icon: its chosen number is a die on its card (2f).
+* **3o. Sibling Rivalry's chosen player (18.38, ADR 037 item 11):** an icon on that player.
+  * Its card's art; on the chosen player only, not on its user.
+  * Hover: "Rolls with Ann's next attack; shares its rewards".
+  * Ann is the active player; no number, no "this turn".
+  * The zoom lists it under "This turn".
+  * It stays through that attack and goes once the attack ends.
 
 ## Postconditions
 

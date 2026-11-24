@@ -663,11 +663,12 @@ func (g *Game) AddAttackHelpers(ps ...PlayerID) {
 
 // HelpNextAttack makes p a helper of the active player's next attack
 // this turn; with share p also gains the rewards if the target dies
-// (Sibling Rivalry).
-func (g *Game) HelpNextAttack(p PlayerID, share bool) {
+// (Sibling Rivalry). source is the card that did it, for the view.
+func (g *Game) HelpNextAttack(p PlayerID, share bool, source ObjectID) {
 	if p == g.Turn.Active {
 		return
 	}
+	g.Players[p].HelpSource = source
 	g.Turn.NextHelpers = append(g.Turn.NextHelpers, p)
 	if share {
 		g.Turn.NextShare = append(g.Turn.NextShare, p)

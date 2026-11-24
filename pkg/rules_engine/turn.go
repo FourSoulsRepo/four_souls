@@ -420,6 +420,7 @@ func (g *Game) healAll() {
 			o.endGains(GainEndOfTurn)
 		}
 		g.Players[pl.ID].CopyNextLoot, g.Players[pl.ID].CopySource = false, 0
+		g.Players[pl.ID].HelpSource = 0
 	}
 	for _, id := range g.MonstersInPlay() {
 		g.Object(id).endGains(GainEndOfTurn) // a monster's gained abilities (Q-47)

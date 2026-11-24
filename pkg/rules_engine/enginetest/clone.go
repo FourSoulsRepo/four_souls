@@ -37,7 +37,7 @@ var CloneRules = map[string]string{
 	"Intent":     "Player Kind Objects* Choice",
 	"RNG":        "State Inc",
 	"Player": "ID Character Cents Hand* InPlay* Damage Dead CopyNextLoot CopySource " +
-		"SkipTurns SkipSources* Activations LootPlayed TimesDamaged ExtraLootPlays Rolls " +
+		"HelpSource SkipTurns SkipSources* Activations LootPlayed TimesDamaged ExtraLootPlays Rolls " +
 		"LastRoll LastAttack KilledBy Counters*",
 	"Counter": "Name Count",
 	"Object": "ID Card Zone Role Controller Charged Damage Counters* Eternal " +
