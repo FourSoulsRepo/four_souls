@@ -1024,7 +1024,7 @@
 
 /* Effects on a card (15.92, SB-01, ADR 037 item 3): small icons on the
    card's right edge, each cut from its source card's art. Three go
-   down the edge, above the ATK badge; the fourth and the "+K" chip
+   down the edge, above the ATK badge; the fourth and the "⋯ K" chip
    start a column to their left (right to left, so the first column is
    on the edge). Hover zooms the source, so the icons take the pointer,
    unlike the badges. */
@@ -1043,21 +1043,20 @@
   direction: ltr;
 }
 
-/* The icons past the fourth (ADR 037 item 3.6): "+K" on a dark chip,
-   in the badges' letters. The pointer on it zooms the character. */
+/* The icons past the fourth (ADR 037 items 3.6, 3.16): "⋯ K" on a
+   dark pill, no frame or card art, so it never reads as an icon's
+   "+N". The pointer on it zooms the character. */
 .card-sources-more {
-  display: grid;
-  place-items: center;
-  width: 22cqi;
-  height: 15cqi;
+  justify-self: center;
   align-self: center;
-  border: 1.6cqi solid #1d120a;
-  border-radius: 40%;
-  background: #3a2a1c;
-  filter: drop-shadow(0 1.2cqi 0 #1d120a);
+  padding: 0.6cqi 2.4cqi;
+  border-radius: 999px;
+  background: rgb(29 18 10 / 85%);
+  box-shadow: 0 0 0 0.6cqi rgb(243 234 210 / 55%);
   font-family: var(--font-game);
-  font-size: 12cqi;
-  line-height: 1;
+  font-size: 8.5cqi;
+  line-height: 1.1;
+  white-space: nowrap;
   color: #f3ead2;
   cursor: help;
 }

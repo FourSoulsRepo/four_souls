@@ -542,7 +542,7 @@
       "one": "{n} more effect",
       "other": "{n} more effects"
     },
-    "note": "The '+K' chip under a character's first 4 effect icons: its name and tooltip. Hover shows the character's zoom. n: the hidden icons."
+    "note": "The '⋯ K' pill after a character's first 4 effect icons: its name and tooltip. Hover shows the character's zoom. n: the hidden icons."
   },
   "badge.must_attack": {
     "text": "Must be attacked this turn",
@@ -4720,10 +4720,6 @@
     "text": "{hits} (DC {dc}{terms})",
     "note": "Stack panel, an open attack's fight line. hits: 'Hits on 4+'; dc: the monster's dice; terms: ' − 1 Meat!'."
   },
-  "stats.on_your_turn": {
-    "text": "{effect} on your turn",
-    "note": "An effect icon's line for an effect that counts on its player's own turn only. effect: '+1 attack'."
-  },
   "stats.reward.cents": {
     "text": "{n}¢",
     "note": "One part of a monster's changed rewards. n: cents."
@@ -4761,6 +4757,13 @@
   "stats.rolls": {
     "text": "Rolls: {list}",
     "note": "Zoomed card, under it: changes to all its player's rolls. list: '+1 Meat!, −2 Round Worm (next roll)'."
+  },
+  "stats.shields": {
+    "text": {
+      "one": "{n} shield",
+      "other": "{n} shields"
+    },
+    "note": "Name of the one effect icon all of a player's shields share (ADR 037 item 3.15), before its lines. n: how many shields; each blocks one damage."
   },
   "stats.sum_atk": {
     "text": "ATK {n} = {base} printed {terms}",
@@ -5164,10 +5167,6 @@
   "zoom.counters": {
     "text": "Counters",
     "note": "Zoomed card: screen-reader name of the counter list under it, one line a kind."
-  },
-  "zoom.effects_lasting": {
-    "text": "While in play",
-    "note": "Zoomed character's effect list: heading of the effects that last while their card is in play."
   },
   "zoom.effects_more": {
     "text": {

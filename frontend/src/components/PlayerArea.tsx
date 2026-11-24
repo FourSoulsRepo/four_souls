@@ -399,12 +399,10 @@ function NextAttack({ line }: { line: string }) {
 }
 
 // statsOf is a character's live stats, its print and their sources
-// (15.92, V-41). own are the character and the cards in the player's
-// area: their lasting effects get no icon (ADR 037 item 3.1). effectsOn
-// titles the zoom's list of every effect on the player (18.32).
+// (15.92, V-41). effectsOn titles the zoom's list of the hidden effects
+// on the player (18.32, 18.34).
 function statsOf(player: PlayerView, effectsOn: string) {
-  const own = [player.character.id, ...(player.in_play ?? []).map((c) => c.id)];
-  return { hp: player.hp, atk: player.atk, printed_hp: player.printed_hp, printed_atk: player.printed_atk, sources: player.sources, own, effectsOn };
+  return { hp: player.hp, atk: player.atk, printed_hp: player.printed_hp, printed_atk: player.printed_atk, sources: player.sources, effectsOn };
 }
 
 // PlayCard is a character or item in play; owner's dice look draws the

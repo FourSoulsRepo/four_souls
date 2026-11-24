@@ -112,42 +112,54 @@ export function damageTaken(sources: StatSource[] | undefined): number {
 }
 
 // EffectIcon is one icon on a card (ADR 037 item 3): one source card's
-// effects, or one that waits for the next attack roll (SB-04). lines
-// say what it does; number is the sum an icon of one number stat shows.
+// effects, one that waits for the next attack roll (SB-04), or all the
+// shields (item 3.15). lines say what it does; number is the sum an
+// icon of one number stat shows, or how many shields; title names an
+// icon that stands for more than one card.
 export interface EffectIcon {
   key: string;
   card?: string;
   nextRoll: boolean;
   lines: string[];
   number?: string;
+  title?: string;
 }
 
-// effectIcons are a card's icons, one per source and lasting (ADR 037
-// item 3). own are the objects in the player's own area: their lasting
-// effects get no icon, as the card lies beside the character. Without
-// own (a monster) no lasting effect gets one (owner, 2026-10-22). A
-// this-turn effect keeps its icon wherever its card is (item 3.8). One
-// source's changes of one stat are one line: "+2 damage taken", not
-// two "+1" (18.29).
-export function effectIcons(sources: StatSource[] | undefined, own?: ReadonlySet<number>): EffectIcon[] {
+// SHIELDS is the key of the one icon all of a player's shields share.
+const SHIELDS = 'shields';
+
+// effectIcons are a card's icons: hidden effects only (ADR 037 item 3,
+// owner, 2026-11-24). A lasting effect never gets one, wherever its card
+// lies: the card on the table shows it (item 3.1). This turn's and the
+// next roll's do, one icon per source; one source's changes of one stat
+// are one line: "+2 damage taken", not two "+1" (18.29). All shields
+// share one icon whose number is how many (item 3.15): each blocks one
+// damage, oldest first (R-MECH-46), and the server sends them in that
+// order. Its lines name each card; its art and zoom are the first known
+// one's.
+export function effectIcons(sources: StatSource[] | undefined, name: Name): EffectIcon[] {
   const out: (EffectIcon & { parts: StatSource[] })[] = [];
   merged(sources ?? []).forEach((s, i) => {
-    if (s.lasts === 'in_play' && (own === undefined || (s.source !== undefined && own.has(s.source)))) return;
+    if (s.lasts === 'in_play') return;
     const text = effect(s);
     if (text === '') return; // a stat without words: no icon line
     const nextRoll = s.lasts === 'next_roll';
-    const key = `${s.source !== undefined ? String(s.source) : `x${String(i)}`}-${s.lasts}`;
     const when = whenText(s);
     const line = `${s.lasts === 'turn' ? t('stats.this_turn_effect', { effect: text }) : text}${when ? ` (${when})` : ''}`;
+    const shield = shields.has(s.stat);
+    const key = shield ? SHIELDS : `${s.source !== undefined ? String(s.source) : `x${String(i)}`}-${s.lasts}`;
     const known = out.find((t) => t.key === key);
+    const shown = shield ? t('stats.effect_from', { effect: line, card: name(s.card) }) : line;
     if (known) {
-      known.lines.push(line);
+      known.lines.push(shown);
       known.parts.push(s);
+      if (known.card === undefined && s.card) known.card = s.card;
       return;
     }
-    out.push({ key, ...(s.card ? { card: s.card } : {}), nextRoll, lines: [line], parts: [s] });
+    out.push({ key, ...(s.card ? { card: s.card } : {}), nextRoll, lines: [shown], parts: [s] });
   });
   return out.map(({ parts, ...icon }) => {
+    if (icon.key === SHIELDS) return { ...icon, number: String(parts.length), title: t('stats.shields', { n: parts.length }) };
     const n = iconNumber(parts);
     return n === undefined ? icon : { ...icon, number: n };
   });
@@ -157,28 +169,26 @@ export function effectIcons(sources: StatSource[] | undefined, own?: ReadonlySet
 // effect list leaves them out, so nothing shows twice (ADR 037 item 4.4).
 const sumStats = new Set<StatSource['stat']>(['hp', 'atk', 'dc', 'roll', 'attack_roll', 'attacked_dc', 'damage_taken']);
 
-// EffectList is the zoomed character's list of every effect on its
-// player (ADR 037 item 4): this turn's lines, then the lasting ones.
+// EffectList is the zoomed character's list of the hidden effects on
+// its player (ADR 037 item 4): this turn's lines. A lasting effect has
+// none (item 4.1), so the list has no "while in play" part (18.34).
 export interface EffectList {
   turn: string[];
-  lasting: string[];
 }
 
-// effectList lists every effect on a player, groups A, B and C alike
-// (ADR 037 item 4): "−5¢ to shop prices — Steamy Sale!", what it does,
-// then its card; a hidden card is named so. This turn's effects come
-// first, then the ones that last while their card is in play; each in
-// the server's order. One source's parts of one stat add up (merged);
-// shields stay apart. Stats with a sum line and stats without words are
-// left out.
+// effectList lists the effects on a player that the icons show (ADR 037
+// item 4.1): "Prevents the next 1 damage — Soul Heart", what it does,
+// then its card; a hidden card is named so. In the server's order;
+// shields in the order they block. One source's parts of one stat add
+// up (merged); shields stay apart. Lasting effects, stats with a sum
+// line and stats without words are left out.
 export function effectList(sources: StatSource[] | undefined, name: Name): EffectList {
-  const list: EffectList = { turn: [], lasting: [] };
+  const list: EffectList = { turn: [] };
   for (const s of merged(sources ?? [])) {
-    const text = sumStats.has(s.stat) ? '' : effect(s);
+    const text = s.lasts === 'in_play' || sumStats.has(s.stat) ? '' : effect(s);
     if (text === '') continue;
     const when = whenText(s);
-    const line = t('stats.effect_from', { effect: `${text}${when ? ` (${when})` : ''}`, card: name(s.card) });
-    (s.lasts === 'in_play' ? list.lasting : list.turn).push(line);
+    list.turn.push(t('stats.effect_from', { effect: `${text}${when ? ` (${when})` : ''}`, card: name(s.card) }));
   }
   return list;
 }
@@ -189,27 +199,30 @@ export function effectList(sources: StatSource[] | undefined, name: Name): Effec
 // high window.
 export const MAX_EFFECT_LINES = 8;
 
-// shownEffects cuts the list to MAX_EFFECT_LINES, this turn's lines
-// first, and says how many more there are. Nine lines are eight and
-// "1 more": the count takes the ninth one's place, as the "+K" chip does.
+// shownEffects cuts the list to MAX_EFFECT_LINES and says how many
+// more there are. Nine lines are eight and "1 more": the count takes the
+// ninth one's place, as the "⋯ K" chip does.
 export function shownEffects(list: EffectList): EffectList & { more: number } {
-  const all = list.turn.length + list.lasting.length;
-  if (all <= MAX_EFFECT_LINES) return { ...list, more: 0 };
-  const turn = list.turn.slice(0, MAX_EFFECT_LINES);
-  const lasting = list.lasting.slice(0, MAX_EFFECT_LINES - turn.length);
-  return { turn, lasting, more: all - turn.length - lasting.length };
+  if (list.turn.length <= MAX_EFFECT_LINES) return { ...list, more: 0 };
+  return { turn: list.turn.slice(0, MAX_EFFECT_LINES), more: list.turn.length - MAX_EFFECT_LINES };
 }
 
-// MAX_ICONS is how many icons a card shows; the rest are a "+K" chip
-// (ADR 037 item 3.6).
+// MAX_ICONS is how many icons a card shows; the rest are a "⋯ K" chip
+// (ADR 037 items 3.6, 3.16).
 export const MAX_ICONS = 4;
 
 // shownIcons splits a card's icons into the ones it draws and how many
-// more the "+K" chip stands for. Five icons are four and "+1": the chip
+// more the "⋯ K" chip stands for. Five icons are four and "⋯ 1": the chip
 // takes the fifth one's place.
 export function shownIcons<T>(icons: T[]): { shown: T[]; more: number } {
   if (icons.length <= MAX_ICONS) return { shown: icons, more: 0 };
   return { shown: icons.slice(0, MAX_ICONS), more: icons.length - MAX_ICONS };
+}
+
+// chipText is the chip's text: "⋯ 2", a pill with no card art, never
+// "+2", which an icon of one number stat shows (ADR 037 item 3.16).
+export function chipText(more: number): string {
+  return `⋯ ${String(more)}`;
 }
 
 // numberStats change a number by their amount (ADR 037 item 3.5). Not
@@ -256,18 +269,9 @@ function freeShop(s: StatSource): boolean {
   return s.stat === 'shop_price' && amountOf(s) <= -99;
 }
 
-// yourTurn are the lasting effects that count on their player's own
-// turn only; the server sends them on other turns too (18.30).
-const yourTurn = new Set<StatSource['stat']>(['loot_plays', 'attacks', 'purchases', 'lock_others']);
-
 // effect says what one source does: "+1 ATK", "Can't gain souls"; ''
 // for a stat it has no words for (a newer server's).
 export function effect(s: StatSource): string {
-  const text = effectWords(s);
-  return text !== '' && s.lasts === 'in_play' && yourTurn.has(s.stat) && !anyAttacks(s) ? t('stats.on_your_turn', { effect: text }) : text;
-}
-
-function effectWords(s: StatSource): string {
   const n = Math.abs(amountOf(s));
   const amount = signed(amountOf(s));
   switch (s.stat) {

@@ -9,7 +9,7 @@ import { scaleFor } from '../playback';
 import { fighters, mustTargets } from '../prompt';
 import { counterColor, ghostPath } from '../counters';
 import type { CounterView, MonsterStats, StatSource } from '../protocol';
-import { damageTaken, effectIcons, effectList, rewardsLine, rewardsText, shownIcons, statLines, sumOf, trend, type EffectIcon, type Name, type Trend } from '../stats';
+import { chipText, damageTaken, effectIcons, effectList, rewardsLine, rewardsText, shownIcons, statLines, sumOf, trend, type EffectIcon, type Name, type Trend } from '../stats';
 import { useApp, viewScale, type ZoomEffects } from '../store';
 import { arrowShows } from '../aim';
 import { boxOf, restWatch, type RestWatch } from '../zoom';
@@ -63,11 +63,10 @@ interface Props {
   // highlight marks a card the player may act on or pick (7.7).
   highlight?: 'act' | 'pick' | 'aim';
   // stats shows live health and attack as big numbers (H-15); the print
-  // and the sources say why they changed (15.92, V-41). own are the
-  // objects in the player's area: their lasting effects get no icon
-  // (ADR 037 item 3.1). effectsOn titles the zoom's list of every effect
-  // on the player (ADR 037 item 4); without it the zoom has no list.
-  stats?: { hp: number; atk: number; printed_hp?: number; printed_atk?: number; sources?: StatSource[]; own?: number[]; effectsOn?: string };
+  // and the sources say why they changed (15.92, V-41). effectsOn
+  // titles the zoom's list of the hidden effects on the player (ADR 037
+  // item 4); without it the zoom has no list.
+  stats?: { hp: number; atk: number; printed_hp?: number; printed_atk?: number; sources?: StatSource[]; effectsOn?: string };
   // monster shows the stats that differ from the print (C-03).
   monster?: MonsterStats;
   // noZoom: the card does not zoom itself; its row does (15.21).
@@ -134,9 +133,10 @@ export function Card({
   const lines = [...copies.map((c) => t('badge.copy', { card: name(c) })), ...sums, ...(rewards ? [rewards] : []), ...(must ? [t('badge.must_attack')] : [])];
   // The zoom names the player's fear with the card's counters (18.26).
   const zoomCounters = [...counters.filter((c) => c.count > 0), ...(fear > 0 ? [{ name: 'fear', count: fear }] : [])];
-  // A character's zoom lists every effect on its player (18.32).
+  // A character's zoom lists the hidden effects on its player (18.32,
+  // 18.34).
   const effects = stats?.effectsOn === undefined ? undefined : { title: stats.effectsOn, ...effectList(sources, name) };
-  const zoomEffects = effects && effects.turn.length + effects.lasting.length > 0 ? effects : undefined;
+  const zoomEffects = effects && effects.turn.length > 0 ? effects : undefined;
   const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines, zoomCounters, zoomEffects);
   const preview = useCostPreview(cost);
   const cardElRef = useRef<HTMLDivElement>(null);
@@ -261,7 +261,7 @@ export function Card({
           {rewardsText(monster?.rewards)}
         </span>
       )}
-      {badges && <SourceIcons list={effectIcons(sources, stats?.own ? new Set(stats.own) : undefined)} name={name} onLeave={backToCard} />}
+      {badges && <SourceIcons list={effectIcons(sources, name)} name={name} onLeave={backToCard} />}
     </motion.div>
   );
 }
@@ -570,7 +570,7 @@ function liveOf(stats: Props['stats'], monster: MonsterStats | undefined) {
 // SourceIcons are the effects on a character or monster (15.92, SB-01,
 // ADR 037 item 3): small icons cut from each source card's art, three
 // down the card's right edge, then a second column to their left. Above
-// 4 icons the fourth is followed by a "+K" chip. A new icon fades in, a
+// 4 icons the fourth is followed by a "⋯ K" chip. A new icon fades in, a
 // leaving one fades out (15.93); with animations off they come and go
 // at once.
 function SourceIcons({ list, name, onLeave }: { list: EffectIcon[]; name: Name; onLeave: (e: PointerEvent<HTMLElement>) => void }) {
@@ -596,21 +596,23 @@ function SourceIcons({ list, name, onLeave }: { list: EffectIcon[]; name: Name; 
   );
 }
 
-// MoreIcons is the "+K" chip for the icons past the fourth (ADR 037 items
-// 3.6, 3.7, 3.9). It is part of the card, so the pointer on it zooms the
-// character, as on the card itself; the zoom lists every effect (18.32).
+// MoreIcons is the "⋯ K" chip for the icons past the fourth (ADR 037
+// items 3.6, 3.7, 3.9): a pill with no card art, so it never looks like
+// an icon's "+N" (item 3.16). It is part of the card, so the pointer on
+// it zooms the character, as on the card itself; the zoom lists the
+// effects (18.32).
 function MoreIcons({ n }: { n: number }) {
   const text = t('badge.more_effects', { n });
   return (
     <span className="card-sources-more" role="img" aria-label={text} title={text}>
-      +{n}
+      {chipText(n)}
     </span>
   );
 }
 
 // SourceIcon is one source's effects: hover zooms its card with what
 // they do (SB-03); an icon of one number stat shows its sum in a corner
-// (ADR 037 item 3.5). A text card shows its initial; a hidden one a question mark.
+// (ADR 037 item 3.5), the shields' icon how many (item 3.15). A text card shows its initial; a hidden one a question mark.
 // A boost that waits for the next attack roll has a small die; used by
 // the roll, it pops and fades; at the end of the turn an icon shrinks
 // away (15.93, SB-12, SB-13). A leaving icon takes no pointer and
@@ -625,7 +627,7 @@ function SourceIcon({ source, name, onLeave, scale }: { source: EffectIcon; name
     <motion.span
       className={`card-source${source.nextRoll ? ' next-roll' : ''}${source.number !== undefined ? ' has-number' : ''}`}
       role="img"
-      aria-label={`${name}: ${source.lines.join(', ')}`}
+      aria-label={`${source.title ?? name}: ${source.lines.join(', ')}`}
       aria-hidden={present ? undefined : true}
       style={present ? undefined : { pointerEvents: 'none' }}
       initial={scale > 0 ? { opacity: 0, scale: 0.4 } : false}

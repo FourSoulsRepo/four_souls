@@ -1191,7 +1191,7 @@ Ideas: B-04, B-05, B-08.
    2. Consequences Positive 2 fixed.
    3. 18.34–18.37 plan the work; one owner review after 18.37.
 
-### [ ] 18.34 Client: icons only for hidden effects
+### [x] 18.34 Client: icons only for hidden effects
 
 1. Goal: no icon or list line for an effect whose card lies on the table (ADR 037 items 3, 4.1).
 2. Tasks:
@@ -1216,6 +1216,42 @@ Ideas: B-04, B-05, B-08.
       2. Steamy Sale: no icon, no line.
    4. Screenshots before and after; also without images.
    5. UC-12, wiki `Client.md`; gates `make lint`, `make test`, `make frontend`, `make e2e`.
+4. Result (2026-11-24)
+   1. `effectIcons(sources, name)`: an `in_play` source never gets an icon.
+      1. The `own` list is gone from `statsOf` and `Card`'s `stats`.
+   2. Shields: one icon, key `shields`; number: how many, even 1.
+      1. Name `stats.shields` ("3 shields"); lines name each card.
+      2. Lines in the server's order, the blocking order (`shieldViews`).
+      3. Art and zoom: the first shield with a known card.
+   3. `effectList`: `turn` only; `lasting` and "While in play" removed.
+      1. With nothing hidden, the zoom shows no list.
+   4. Chip: `chipText` "⋯ K", a dark pill (`card-sources-more`).
+   5. Removed: `stats.on_your_turn`, `zoom.effects_lasting`, `yourTurn`.
+   6. Zoom sum lines keyed by index: two equal shield lines (`CardZoom.tsx`).
+   7. Badges and sum lines unchanged.
+   8. 5.26: every place that draws effect icons or the list:
+      1. `Card.tsx`: characters and monsters share `effectIcons`.
+      2. `CardZoom.tsx`: `Effects` and the sum lines.
+      3. `PlayerArea.tsx`: `statsOf` for own, opponents, watched.
+      4. `stack.ts`, `history.ts`: roll changes only; unchanged.
+      5. e2e: `effect-icons.spec.ts`, `stats.spec.ts`; no other counts icons.
+   9. Tests: Vitest `stats` (lasting, three shields, chip, list).
+      1. e2e room: Might for the Meek; no icon, ATK sum names it.
+      2. e2e new: three shields, one icon "3", zoom lines in order.
+      3. e2e Steamy Sale!: no icon, no list.
+   10. Docs: UC-12 3h, 3k, 3l, new 3m; wiki `Client.md`, `Animations.md`.
+       1. ADR 037 items 3.19, 4.8 (drift).
+   11. Screenshots: `.cache/screenshots/18.34/before/` and `after/`.
+       1. New: `effects-shields`, `effects-shields-zoom`; `*-noimages.png`.
+       2. Close-ups: `crop-effects-many`, `crop-effects-shields`.
+   12. Gates: `make lint`, `make test`, `make frontend` (783 Vitest) pass.
+       1. `make e2e` run 1: 642 passed, 6 failed, chromium, one 5 min stall.
+          1. hand, hover, info specs; saves and joins timed out.
+          2. Evidence: `.cache/e2e-evidence/18.34-run1/`.
+       2. Run 2: 646 passed, 2 failed: `playback.spec.ts:1975`, both browsers.
+          1. The 19.237 flake, seed 114790418; passed alone after.
+          2. Evidence: `.cache/e2e-evidence/18.34-run2/`.
+       3. Run 3: 648 passed, 22 skipped.
 
 ### [ ] 18.35 Client: "must attack" on the attack button
 

@@ -190,7 +190,7 @@
   * Effects of this turn are small icons on the card's right edge.
   * Each icon is cut from its source card's art.
   * Hover an icon: its card zooms, with what it does.
-  * Lasting cards in the player's own area get no icon (3k).
+  * Lasting effects get no icon; their card lies on the table (3m).
   * A text card's icon shows its initial; a hidden source a "?".
 * **3i. Effects that end (15.93):** an effect's icon leaves when it ends.
   * A boost for the next attack roll has a small die on its icon.
@@ -286,32 +286,41 @@
   * Each step flips the number in; a soul crystal flips as it fills.
   * Reduced motion: it still counts, with no flip.
   * Animations off: the number jumps.
-* **3k. Every effect on a player has an icon (18.31, ADR 037):** each source card, one icon.
-  * Lasting cards in the player's own area: no icon; the card lies there.
-  * Lasting cards elsewhere get one: rooms, monsters, others' items.
-  * A room with a condition: only on the players it hits now.
+* **3k. Hidden effects on a player have icons (18.31, 18.34, ADR 037):** each source card, one icon.
+  * Lasting effects: no icon, wherever the card lies (3m).
+  * A room with a condition: in the badge sum of the players it hits now.
   * This turn's effects keep their icon, own cards and gone ones too.
-  * Shields too: "Prevents the next 1 damage this turn".
+  * All shields share one icon (3m).
   * Hover lists each effect: "Can't gain souls", "Max hand size 2".
-  * Lasting "on your turn" effects say so.
   * One stat from one card adds up: "+2 attacks", not two "+1".
   * An icon of one number stat shows its sum in a corner: "+2".
-  * No number for locks, caps, the DC to be attacked, shields.
+  * No number for locks, caps, the DC to be attacked.
   * Three icons go down the right edge; then a second column.
-  * Above 4 icons: the first 4, then a "+K" chip.
+  * Above 4 icons: the first 4, then a "⋯ K" pill.
   * Hover the chip: the character zooms, as from the card.
   * Monsters keep the old rule: icons for this turn's effects only.
-* **3l. Every effect in the character's zoom (18.32, ADR 037):** a list beside the card.
+* **3l. Hidden effects in the character's zoom (18.32, 18.34, ADR 037):** a list beside the card.
   * Title: "Effects on you"; another player's: "Effects on Ann".
-  * "This turn" first, then "While in play".
-  * Each line: what it does, then its card: "−5¢ to shop prices — Steamy Sale!".
+  * "This turn" only: lasting effects have no line (3m).
+  * Each line: what it does, then its card: "+1 attack — Holy Chest".
   * A hidden source: "a hidden card".
-  * Own-area cards are in it too, though they have no icon.
   * Shields are in it: "Prevents the next 1 damage — Soul Heart".
   * HP, ATK, rolls and damage taken only in their sums under the card.
   * Above 8 lines: the first 8, then "2 more effects".
-  * Hover the "+K" chip or the card: the zoom shows the list.
+  * Hover the "⋯ K" pill or the card: the zoom shows the list.
   * On touch, a long press shows it too.
+* **3m. Only what the table hides (18.34, ADR 037 items 3, 4.1):** no repeats of a card on the table.
+  * A lasting effect gets no icon and no zoom line.
+  * E.g. Steamy Sale! by the character, a room, Curse of Tiny Hands.
+  * A number it changes shows in the badge and its zoom sum.
+  * E.g. "ATK 2 = 1 printed + 1 Might for the Meek".
+  * Hidden effects keep icons: this turn's, the next roll's, shields.
+  * A gone card's effect too: a played Soul Heart.
+  * All of a player's shields share one icon; its number is how many.
+  * Each blocks one damage, oldest first (R-MECH-46).
+  * Hover lists them in that order, each with its card.
+  * E.g. "Prevents the next 1 damage this turn — Soul Heart".
+  * The "⋯ K" pill has no card art: it never looks like an icon's "+N".
 
 ## Postconditions
 

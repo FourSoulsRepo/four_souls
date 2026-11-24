@@ -118,6 +118,12 @@ Use option 1.
        1. The user: the controller of the card or ability that made it.
        2. Its line says it is for every player.
        3. A Lucky Penny!, Eternal D6, Compost, Lemon Mishap, Plan C.
+   19. Built in 18.34.
+       1. The shields' icon shows its count, even 1.
+       2. So item 3.12.1 no longer covers shields.
+       3. Its lines name each shield's card, in blocking order.
+       4. Its art and zoom: the first shield with a known card.
+       5. Item 3.13's "on your turn" went with the lasting icons.
 4. Level 3, the zoomed character: "Effects on you".
    1. The same effects as the icons: hidden ones only (owner, 2026-11-24).
    2. "This turn" first, then "while in play".
@@ -127,6 +133,9 @@ Use option 1.
       1. Under the sums it left a 720 px window.
    6. Above 8 lines: the first 8, then a count of the rest (18.32).
    7. A hidden source is "a hidden card" (18.32).
+   8. Only "This turn" is left (18.34).
+      1. Item 4.2's "while in play" part is gone: lasting effects have no line.
+      2. With nothing hidden, the zoom shows no list.
 5. Words are keys in `en.json`, one per stat (ADR 021).
 6. Every player sees every player's effects: they are public.
 7. "Must attack" shows on the attack button (owner, 2026-11-24).

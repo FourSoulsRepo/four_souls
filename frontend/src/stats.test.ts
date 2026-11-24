@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import protocol from './protocol.ts?raw';
 import type { StatSource } from './protocol';
 import en from './locales/en.json';
-import { damageTaken, effect, effectIcons, effectList, hitsText, oddsLine, rewardsLine, rollChanges, shownEffects, shownIcons, statLines, sumOf, trend } from './stats';
+import { chipText, damageTaken, effect, effectIcons, effectList, hitsText, oddsLine, rewardsLine, rollChanges, shownEffects, shownIcons, statLines, sumOf, trend } from './stats';
 
 const names = new Map([
   ['polyphemus', 'Polyphemus'],
@@ -94,7 +94,7 @@ describe('damage taken (18.29)', () => {
     ]);
   });
   it('gives the card of this turn one icon with one line', () => {
-    expect(effectIcons([trick, trick, haunt])).toEqual([{ key: '3-turn', card: 'trick_treat_normhardultra', nextRoll: false, lines: ['+2 damage taken this turn'], number: '+2' }]);
+    expect(effectIcons([trick, trick, haunt], name)).toEqual([{ key: '3-turn', card: 'trick_treat_normhardultra', nextRoll: false, lines: ['+2 damage taken this turn'], number: '+2' }]);
   });
   it('adds up one source in the other sums too', () => {
     expect(statLines([strength, strength], { hp: 2, atk: 1 }, { atk: 3 }, name)).toEqual(['ATK 3 = 1 printed + 2 XI. Strength (this turn)']);
@@ -103,22 +103,22 @@ describe('damage taken (18.29)', () => {
 
 describe('effectIcons', () => {
   it('gives an icon to effects of this turn and the next roll, not to lasting ones', () => {
-    expect(effectIcons([poly, strength, meat, worm])).toEqual([
+    expect(effectIcons([poly, strength, meat, worm], name)).toEqual([
       { key: '9-turn', card: 'xi_strength', nextRoll: false, lines: ['+1 ATK this turn'], number: '+1' },
       { key: '12-next_roll', card: 'round_worm', nextRoll: true, lines: ['+1 to the next attack roll'], number: '+1' },
     ]);
   });
   it('joins two changes of one source into one icon', () => {
     const hp: StatSource = { ...strength, stat: 'hp' };
-    expect(effectIcons([strength, hp])).toEqual([{ key: '9-turn', card: 'xi_strength', nextRoll: false, lines: ['+1 ATK this turn', '+1 max HP this turn'] }]);
+    expect(effectIcons([strength, hp], name)).toEqual([{ key: '9-turn', card: 'xi_strength', nextRoll: false, lines: ['+1 ATK this turn', '+1 max HP this turn'] }]);
   });
   it('drops a next-roll icon once the roll used its boost (15.93)', () => {
-    expect(effectIcons([meat, worm]).map((t) => t.key)).toEqual(['12-next_roll']);
+    expect(effectIcons([meat, worm], name).map((t) => t.key)).toEqual(['12-next_roll']);
     // The view after the roll no longer sends the used boost.
-    expect(effectIcons([meat])).toEqual([]);
+    expect(effectIcons([meat], name)).toEqual([]);
   });
   it('keeps a hidden source apart, with no card', () => {
-    expect(effectIcons([{ stat: 'atk', amount: 1, lasts: 'turn' }, { stat: 'hp', amount: 1, lasts: 'turn' }])).toEqual([
+    expect(effectIcons([{ stat: 'atk', amount: 1, lasts: 'turn' }, { stat: 'hp', amount: 1, lasts: 'turn' }], name)).toEqual([
       { key: 'x0-turn', nextRoll: false, lines: ['+1 ATK this turn'], number: '+1' },
       { key: 'x1-turn', nextRoll: false, lines: ['+1 max HP this turn'], number: '+1' },
     ]);
@@ -126,82 +126,103 @@ describe('effectIcons', () => {
   it('gives words to every effect; the sums leave the new ones out (18.31)', () => {
     const jail: StatSource = { stat: 'lock_turn', source: 7, card: 'get_out_of_jail_card', amount: 1, lasts: 'turn' };
     const shield = { stat: 'shield', source: 8, card: 'the_poop', lasts: 'turn' } as StatSource; // no amount: the whole next damage
-    expect(effectIcons([jail, shield, { ...jail, stat: 'hp' }])).toEqual([
+    expect(effectIcons([jail, shield, { ...jail, stat: 'hp' }], name)).toEqual([
       { key: '7-turn', card: 'get_out_of_jail_card', nextRoll: false, lines: ["Others can't play loot cards or activate items this turn", '+1 max HP this turn'] },
-      { key: '8-turn', card: 'the_poop', nextRoll: false, lines: ['Prevents the next damage this turn'] },
+      { key: 'shields', card: 'the_poop', nextRoll: false, lines: ['Prevents the next damage this turn — the_poop'], number: '1', title: '1 shield' },
     ]);
     expect(statLines([jail, shield], { hp: 2, atk: 1 }, { atk: 1 }, name)).toEqual([]);
   });
 });
 
-// Effect icons for every effect (18.31, ADR 037 item 3).
-describe('effectIcons on a player (18.31)', () => {
-  // The player's area: the character 1 and Polyphemus 5.
-  const own = new Set([1, 5]);
-  // All Hallows' Eve: "Players can't gain souls", a room (group B).
+// Effect icons for hidden effects only (18.31, 18.34, ADR 037 item 3).
+describe('effectIcons on a player (18.34)', () => {
+  // All Hallows' Eve: "Players can't gain souls", a room.
   const eve: StatSource = { stat: 'no_souls', source: 40, card: 'all_hallows_eve', amount: 1, lasts: 'in_play' };
   // Tax for the Mighty: "pay each other player 2¢ to attack", a room.
   const tax: StatSource = { stat: 'attack_tax', source: 41, card: 'tax_for_the_mighty', amount: 2, lasts: 'in_play' };
-  // Get Out of Jail Card, played and gone (group C).
+  // Steamy Sale!, an item in the player's own area: "Shop items you
+  // purchase cost 5¢ less."
+  const sale: StatSource = { stat: 'shop_price', source: 20, card: 'steamy_sale', amount: -5, lasts: 'in_play' };
+  // Get Out of Jail Card, played and gone.
   const jail: StatSource = { stat: 'lock_turn', source: 7, card: 'get_out_of_jail_card', amount: 1, lasts: 'turn' };
-  it('gives no icon to a lasting effect in the own area, one to a card elsewhere', () => {
-    expect(effectIcons([poly, eve, tax], own)).toEqual([
-      { key: '40-in_play', card: 'all_hallows_eve', nextRoll: false, lines: ["Can't gain souls"] },
-      { key: '41-in_play', card: 'tax_for_the_mighty', nextRoll: false, lines: ['Pays 2¢ to each other player to attack'], number: '+2' },
-    ]);
+  // Shields (R-MECH-46): Soul Heart "Prevent the next 1 damage"; The
+  // Poop prevents the whole next damage (no amount); The Jar's cap.
+  const heart: StatSource = { stat: 'shield', source: 46, card: 'soul_heart', amount: 1, lasts: 'turn' };
+  const poop = { stat: 'shield', source: 8, card: 'the_poop', lasts: 'turn' } as StatSource;
+  const jar: StatSource = { stat: 'shield_cap', source: 47, card: 'the_jar', amount: 1, lasts: 'turn' };
+  it('gives no icon to a lasting effect: own area, room, monster alike (item 3.1)', () => {
+    expect(effectIcons([poly, eve, tax, sale], name)).toEqual([]);
+    const baby: StatSource = { stat: 'dc', source: 3, card: 'baby_haunt', amount: 1, lasts: 'in_play' };
+    expect(effectIcons([baby], name)).toEqual([]);
   });
   it('keeps a this-turn icon of an own card and of a gone one (item 3.8)', () => {
     const ownTurn: StatSource = { ...strength, source: 5, card: 'polyphemus' };
-    expect(effectIcons([ownTurn, jail], own).map((i) => i.key)).toEqual(['5-turn', '7-turn']);
-  });
-  it('gives a monster no lasting icon, as before (owner, 2026-10-22)', () => {
-    const baby: StatSource = { stat: 'dc', source: 3, card: 'baby_haunt', amount: 1, lasts: 'in_play' };
-    expect(effectIcons([baby])).toEqual([]);
+    expect(effectIcons([ownTurn, sale, jail], name).map((i) => i.key)).toEqual(['5-turn', '7-turn']);
   });
   it('adds up one source of one stat, and shows the sum (items 3.4, 3.5)', () => {
-    const might: StatSource = { stat: 'attacks', source: 42, card: 'might_for_the_meek', amount: 1, lasts: 'in_play' };
-    expect(effectIcons([might, might], own)).toEqual([
-      { key: '42-in_play', card: 'might_for_the_meek', nextRoll: false, lines: ['+2 attacks on your turn'], number: '+2' },
-    ]);
+    // Holy Chest's 1–2: "You may attack an additional time this turn",
+    // twice from one source.
+    const extra: StatSource = { stat: 'attacks', source: 42, card: 'holy_chest', amount: 1, lasts: 'turn' };
+    expect(effectIcons([extra, extra], name)).toEqual([{ key: '42-turn', card: 'holy_chest', nextRoll: false, lines: ['+2 attacks this turn'], number: '+2' }]);
     // Two stats of one source: two lines, no number.
-    const icons = effectIcons([strength, { ...strength, stat: 'hp' }], own);
+    const icons = effectIcons([strength, { ...strength, stat: 'hp' }], name);
     expect(icons).toHaveLength(1);
     expect(icons[0]?.number).toBeUndefined();
     // One stat with two conditions: one icon, its lines sum up.
     const first: StatSource = { ...strength, when: { key: 'ask.when.first_attack_roll' } };
-    expect(effectIcons([strength, first], own)[0]?.number).toBe('+2');
+    expect(effectIcons([strength, first], name)[0]?.number).toBe('+2');
   });
-  it('shows no number for a flag, a cap, the attack DC, any number of attacks or a shield', () => {
-    const tiny: StatSource = { stat: 'hand_cap', source: 43, card: 'curse_of_tiny_hands', amount: 2, lasts: 'in_play' };
-    const stab: StatSource = { stat: 'player_attack_dc', source: 44, card: 'backstabber', amount: 3, lasts: 'in_play' };
-    const key: StatSource = { stat: 'attacks', source: 45, card: 'skeleton_key', amount: 98, lasts: 'in_play' };
-    const heart: StatSource = { stat: 'shield', source: 46, card: 'soul_heart', amount: 1, lasts: 'turn' };
-    const cap: StatSource = { stat: 'shield_cap', source: 47, card: 'the_jar', amount: 1, lasts: 'turn' };
-    const icons = effectIcons([eve, tiny, stab, key, heart, cap, jail], own);
-    expect(icons.map((i) => i.number)).toEqual([undefined, undefined, undefined, undefined, undefined, undefined, undefined]);
+  it('shows no number for a flag, a cap, the attack DC or any number of attacks', () => {
+    const turn = (s: StatSource): StatSource => ({ ...s, lasts: 'turn' });
+    const tiny: StatSource = { stat: 'hand_cap', source: 43, card: 'curse_of_tiny_hands', amount: 2, lasts: 'turn' };
+    const stab: StatSource = { stat: 'player_attack_dc', source: 44, card: 'backstabber', amount: 3, lasts: 'turn' };
+    const key: StatSource = { stat: 'attacks', source: 45, card: 'skeleton_key', amount: 98, lasts: 'turn' };
+    const icons = effectIcons([turn(eve), tiny, stab, key, jail], name);
+    expect(icons.map((i) => i.number)).toEqual([undefined, undefined, undefined, undefined, undefined]);
     expect(icons.map((i) => i.lines[0])).toEqual([
-      "Can't gain souls",
-      'Max hand size 2',
-      'Can be attacked, at DC 3',
-      'May attack any number of times',
-      'Prevents the next 1 damage this turn',
-      'The next damage is at most 1 this turn',
+      "Can't gain souls this turn",
+      'Max hand size 2 this turn',
+      'Can be attacked, at DC 3 this turn',
+      'May attack any number of times this turn',
       "Others can't play loot cards or activate items this turn",
     ]);
   });
-  it('keeps two shields of one source as two lines, never a sum', () => {
-    const poop = { stat: 'shield', source: 8, card: 'the_poop', lasts: 'turn' } as StatSource;
-    expect(effectIcons([poop, poop])).toEqual([
-      { key: '8-turn', card: 'the_poop', nextRoll: false, lines: ['Prevents the next damage this turn', 'Prevents the next damage this turn'] },
+  it('gives three shields one icon "3", one line each in the order they block (item 3.15)', () => {
+    // The server sends them oldest first, the order combat.go uses them.
+    expect(effectIcons([jail, heart, poop, jar], name)).toEqual([
+      { key: '7-turn', card: 'get_out_of_jail_card', nextRoll: false, lines: ["Others can't play loot cards or activate items this turn"] },
+      {
+        key: 'shields',
+        card: 'soul_heart',
+        nextRoll: false,
+        lines: ['Prevents the next 1 damage this turn — Soul Heart', 'Prevents the next damage this turn — the_poop', 'The next damage is at most 1 this turn — the_jar'],
+        number: '3',
+        title: '3 shields',
+      },
     ]);
   });
-  it('says "on your turn" for a lasting effect the card gives on its turn', () => {
-    const trinity: StatSource = { stat: 'lock_others', source: 48, card: 'trinity_shield', amount: 1, lasts: 'in_play' };
-    expect(effect(trinity)).toBe("Others can't play loot cards or activate items on your turn");
-    expect(effect({ stat: 'loot_plays', amount: 1, lasts: 'in_play' })).toBe('+1 loot play on your turn');
-    expect(effect({ stat: 'purchases', amount: 2, lasts: 'in_play' })).toBe('+2 purchases on your turn');
-    expect(effect({ stat: 'shop_price', amount: -1000, lasts: 'in_play' })).toBe('May buy a shop item for 0¢');
-    expect(effect({ stat: 'paid_discount', amount: 1, lasts: 'in_play' })).toBe('$ abilities of your items cost 1¢ less');
+  it('keeps two shields of one card as two lines, never a sum', () => {
+    expect(effectIcons([poop, poop], name)).toEqual([
+      {
+        key: 'shields',
+        card: 'the_poop',
+        nextRoll: false,
+        lines: ['Prevents the next damage this turn — the_poop', 'Prevents the next damage this turn — the_poop'],
+        number: '2',
+        title: '2 shields',
+      },
+    ]);
+  });
+  it("takes the shields' art from the first known card; a hidden one keeps its place", () => {
+    const hidden: StatSource = { stat: 'shield', amount: 2, lasts: 'turn' };
+    const icons = effectIcons([hidden, heart], name);
+    expect(icons.map((i) => i.card)).toEqual(['soul_heart']);
+    expect(icons.map((i) => i.lines)).toEqual([['Prevents the next 2 damage this turn — a hidden card', 'Prevents the next 1 damage this turn — Soul Heart']]);
+  });
+  it('says what a shop or $ change does', () => {
+    expect(effect({ stat: 'loot_plays', amount: 1, lasts: 'turn' })).toBe('+1 loot play');
+    expect(effect({ stat: 'shop_price', amount: -1000, lasts: 'turn' })).toBe('May buy a shop item for 0¢');
+    expect(effect({ stat: 'paid_discount', amount: 1, lasts: 'turn' })).toBe('$ abilities of your items cost 1¢ less');
   });
   it('has words for every stat the protocol names', () => {
     // The union is one line of protocol.ts (a Go test reads it too).
@@ -215,7 +236,7 @@ describe('effectIcons on a player (18.31)', () => {
   });
 });
 
-describe('shownIcons: four, then a "+K" chip (ADR 037 item 3.6)', () => {
+describe('shownIcons: four, then a "⋯ K" chip (ADR 037 items 3.6, 3.16)', () => {
   it('shows up to four icons and no chip', () => {
     expect(shownIcons([1, 2, 3, 4])).toEqual({ shown: [1, 2, 3, 4], more: 0 });
     expect(shownIcons([])).toEqual({ shown: [], more: 0 });
@@ -224,65 +245,67 @@ describe('shownIcons: four, then a "+K" chip (ADR 037 item 3.6)', () => {
     expect(shownIcons([1, 2, 3, 4, 5])).toEqual({ shown: [1, 2, 3, 4], more: 1 });
     expect(shownIcons([1, 2, 3, 4, 5, 6, 7])).toEqual({ shown: [1, 2, 3, 4], more: 3 });
   });
+  it('writes the chip as "⋯ K", never an icon\'s "+N" (item 3.16)', () => {
+    expect(chipText(2)).toBe('⋯ 2');
+    expect(chipText(2)).not.toMatch(/^\+/);
+  });
 });
 
-// The zoom's list of every effect on a player (18.32, ADR 037 item 4).
-describe('effectList (18.32)', () => {
-  // Group A, the own area. Steamy Sale!: "Shop items you purchase cost
-  // 5¢ less." Curse of the Soulless: "You can't gain souls."
+// The zoom's list of the hidden effects on a player (18.32, 18.34, ADR
+// 037 item 4).
+describe('effectList (18.34)', () => {
+  // The own area. Steamy Sale!: "Shop items you purchase cost 5¢
+  // less." Curse of the Soulless: "You can't gain souls."
   const sale: StatSource = { stat: 'shop_price', source: 20, card: 'steamy_sale', amount: -5, lasts: 'in_play' };
   const soulless: StatSource = { stat: 'no_souls', source: 21, card: 'curse_of_the_soulless', amount: 1, lasts: 'in_play' };
-  // Group B, a room. Tax for the Mighty: "... must pay each other player
-  // 2¢ to attack."
+  // A room. Tax for the Mighty: "... must pay each other player 2¢ to
+  // attack."
   const tax: StatSource = { stat: 'attack_tax', source: 41, card: 'tax_for_the_mighty', amount: 2, lasts: 'in_play' };
-  // Group C, played and gone. Get Out of Jail Card: "... other players
-  // can't play loot cards or activate items" till end of turn; Soul
-  // Heart: "Prevent the next 1 damage they would take this turn."
+  // Played and gone. Get Out of Jail Card: "... other players can't play
+  // loot cards or activate items" till end of turn; Soul Heart: "Prevent
+  // the next 1 damage they would take this turn."
   const jail: StatSource = { stat: 'lock_turn', source: 7, card: 'get_out_of_jail_card', amount: 1, lasts: 'turn' };
   const heart: StatSource = { stat: 'shield', source: 46, card: 'soul_heart', amount: 1, lasts: 'turn' };
-  it("lists this turn's effects, then the lasting ones, groups A, B and C (items 4.1, 4.2)", () => {
+  it("lists this turn's hidden effects only, as the icons (item 4.1)", () => {
     expect(effectList([sale, jail, tax, soulless, heart], name)).toEqual({
       turn: ["Others can't play loot cards or activate items — Get Out of Jail Card", 'Prevents the next 1 damage — Soul Heart'],
-      lasting: ['−5¢ to shop prices — Steamy Sale!', 'Pays 2¢ to each other player to attack — Tax for the Mighty', "Can't gain souls — Curse of the Soulless"],
     });
+  });
+  it('gives a lasting room or own-area effect no line (item 4.1)', () => {
+    expect(effectList([sale, sale, tax, soulless], name)).toEqual({ turn: [] });
   });
   it('says what it does, then the card; a hidden one is "a hidden card" (items 4.3, 1.6)', () => {
     const hidden: StatSource = { stat: 'purchases', amount: 1, lasts: 'turn' };
     expect(effectList([hidden], name).turn).toEqual(['+1 purchase — a hidden card']);
   });
   it('repeats no sum line: HP, ATK, rolls, attacked DC, damage taken (item 4.4)', () => {
-    const taken: StatSource = { stat: 'damage_taken', source: 30, card: 'daddy_haunt', amount: 1, lasts: 'in_play' };
-    const attacked: StatSource = { stat: 'attacked_dc', source: 31, card: 'curse', amount: -1, lasts: 'in_play' };
+    const taken: StatSource = { stat: 'damage_taken', source: 30, card: 'trick_treat_normhardultra', amount: 1, lasts: 'turn' };
+    const attacked: StatSource = { stat: 'attacked_dc', source: 31, card: 'curse', amount: -1, lasts: 'turn' };
     const roll: StatSource = { stat: 'roll', source: 32, card: 'meat', amount: 1, lasts: 'turn' };
-    const hp: StatSource = { ...poly, stat: 'hp' };
-    expect(effectList([poly, strength, hp, meat, worm, roll, attacked, taken], name)).toEqual({ turn: [], lasting: [] });
-    expect(effectList(undefined, name)).toEqual({ turn: [], lasting: [] });
+    const hp: StatSource = { ...strength, stat: 'hp' };
+    expect(effectList([poly, strength, hp, meat, worm, roll, attacked, taken], name)).toEqual({ turn: [] });
+    expect(effectList(undefined, name)).toEqual({ turn: [] });
   });
-  it('lists shields, two of one card apart; one source adds up', () => {
+  it('lists shields in the order they block, two of one card apart; one source adds up', () => {
     const poop = { stat: 'shield', source: 8, card: 'the_poop', lasts: 'turn' } as StatSource; // the whole next damage
     expect(effectList([poop, poop, heart], name).turn).toEqual([
       'Prevents the next damage — the_poop',
       'Prevents the next damage — the_poop',
       'Prevents the next 1 damage — Soul Heart',
     ]);
-    expect(effectList([sale, sale], name).lasting).toEqual(['−10¢ to shop prices — Steamy Sale!']);
-  });
-  it('says "on your turn" for a lasting turn-only effect', () => {
-    // Trinity Shield: "Other players can't play loot cards or activate
-    // items on your turn."
-    const trinity: StatSource = { stat: 'lock_others', source: 48, card: 'trinity_shield', amount: 1, lasts: 'in_play' };
-    expect(effectList([trinity], name).lasting).toEqual(["Others can't play loot cards or activate items on your turn — trinity_shield"]);
+    // Holy Chest's 1–2: "You may attack an additional time this turn".
+    const extra: StatSource = { stat: 'attacks', source: 50, card: 'holy_chest', amount: 1, lasts: 'turn' };
+    expect(effectList([extra, extra], name).turn).toEqual(['+2 attacks — holy_chest']);
   });
 });
 
 describe('shownEffects: eight lines, then a count (18.32)', () => {
   const lines = (n: number, tag: string) => Array.from({ length: n }, (_, i) => `${tag}${String(i)}`);
   it('shows up to eight lines and no count', () => {
-    expect(shownEffects({ turn: lines(3, 't'), lasting: lines(5, 'l') })).toEqual({ turn: lines(3, 't'), lasting: lines(5, 'l'), more: 0 });
+    expect(shownEffects({ turn: lines(8, 't') })).toEqual({ turn: lines(8, 't'), more: 0 });
   });
-  it("keeps this turn's lines first and counts the rest", () => {
-    expect(shownEffects({ turn: lines(3, 't'), lasting: lines(7, 'l') })).toEqual({ turn: lines(3, 't'), lasting: lines(5, 'l'), more: 2 });
-    expect(shownEffects({ turn: lines(10, 't'), lasting: lines(1, 'l') })).toEqual({ turn: lines(8, 't'), lasting: [], more: 3 });
+  it('counts the rest', () => {
+    expect(shownEffects({ turn: lines(11, 't') })).toEqual({ turn: lines(8, 't'), more: 3 });
   });
 });
 
