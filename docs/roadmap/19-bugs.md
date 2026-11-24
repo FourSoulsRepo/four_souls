@@ -7061,7 +7061,7 @@ Totals by system (230 items):
    3. Fix them all in the same change.
    4. `make screenshots LOCALE=ru` and `make e2e` pass.
 
-### [x] 19.241 Boss Rush!: the extra attack may go at any target
+### [ ] 19.241 Boss Rush!: the extra attack may go at any target
 
 1. Goal: Boss Rush!'s extra attack goes only at the bosses it revealed.
 2. Report (owner, 2026-11-24, from 18.35)
@@ -7143,3 +7143,14 @@ Totals by system (230 items):
    2. Before: the state the old engine left (`must_attacks` 1).
 13. Gates: `make lint`, `make test`, `make frontend` (793 Vitest) pass.
    1. `make e2e` run 1: 664 passed, 22 skipped.
+14. Owner decision (2026-11-24): the covered boss still counts.
+   1. Card: "on one of them"; the covered boss is one of the two revealed.
+   2. When: both bosses in one slot; the top one dies before the extra attack.
+   3. E.g. a Bomb, Chaos Card, or another player's damage kills it.
+   4. Then the boss under it comes up; the attack is still owed on it.
+   5. Tasks:
+      1. The duty names the bosses' cards, not their objects.
+      2. So a boss that comes up uncovered is still a target.
+      3. A boss in a discard, a deck or souls is still no target.
+      4. Situation test: one slot, the top boss killed by a Bomb.
+      5. Same check for Friendly Ball and Lust for Blood! (5.24).
