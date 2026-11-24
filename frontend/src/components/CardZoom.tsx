@@ -177,11 +177,12 @@ export function CardZoom() {
 
 // Effects is a zoomed character's list of the hidden effects on its
 // player (ADR 037 item 4, 18.32): beside the card, above its keyword
-// notes, so the zoom keeps the card's height. This turn's effects only:
-// a lasting one's card lies on the table (item 4.1, 18.34). Above
+// notes, so the zoom keeps the card's height. This turn's effects, then
+// "Until used" for the ones that may outlast it (18.37): a lasting
+// one's card lies on the table (item 4.1, 18.34). Above
 // MAX_EFFECT_LINES a last line counts the rest (shownEffects).
 function Effects({ list }: { list: ZoomEffects }) {
-  const { turn, more } = shownEffects(list);
+  const { turn, later, more } = shownEffects(list);
   const group = (title: string, lines: string[]) =>
     lines.length > 0 && (
       <li className="card-zoom-effects-group">
@@ -202,6 +203,7 @@ function Effects({ list }: { list: ZoomEffects }) {
       </h3>
       <ul aria-label={list.title}>
         {group(t('zoom.effects_turn'), turn)}
+        {group(t('zoom.effects_later'), later)}
         {more > 0 && <li className="card-zoom-effects-more">{t('zoom.effects_more', { n: more })}</li>}
       </ul>
     </section>

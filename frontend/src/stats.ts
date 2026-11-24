@@ -145,7 +145,8 @@ export function effectIcons(sources: StatSource[] | undefined, name: Name): Effe
     if (text === '') return; // a stat without words: no icon line
     const nextRoll = s.lasts === 'next_roll';
     const when = whenText(s);
-    const line = `${s.lasts === 'turn' ? t('stats.this_turn_effect', { effect: text }) : text}${when ? ` (${when})` : ''}`;
+    const turn = s.lasts === 'turn' && !saysWhen.has(s.stat);
+    const line = `${turn ? t('stats.this_turn_effect', { effect: text }) : text}${when ? ` (${when})` : ''}`;
     const shield = shields.has(s.stat);
     const key = shield ? SHIELDS : `${s.source !== undefined ? String(s.source) : `x${String(i)}`}-${s.lasts}`;
     const known = out.find((t) => t.key === key);
@@ -169,12 +170,23 @@ export function effectIcons(sources: StatSource[] | undefined, name: Name): Effe
 // effect list leaves them out, so nothing shows twice (ADR 037 item 4.4).
 const sumStats = new Set<StatSource['stat']>(['hp', 'atk', 'dc', 'roll', 'attack_roll', 'attacked_dc', 'damage_taken']);
 
+// saysWhen are the stats whose words already say when they happen:
+// "Takes an extra turn after this one" gets no "this turn" (18.37).
+const saysWhen = new Set<StatSource['stat']>(['extra_turn']);
+
 // EffectList is the zoomed character's list of the hidden effects on
-// its player (ADR 037 item 4): this turn's lines. A lasting effect has
-// none (item 4.1), so the list has no "while in play" part (18.34).
+// its player (ADR 037 item 4): this turn's lines, then the ones that
+// wait to be used and may outlast the turn (18.37): a skipped turn,
+// the next loot, the next roll. A lasting effect has none (item 4.1),
+// so the list has no "while in play" part (18.34).
 export interface EffectList {
   turn: string[];
+  later: string[];
 }
+
+// waits are the lasts of an effect that ends when it is used, maybe
+// after this turn (ADR 037 item 1.13): the "Until used" group.
+const waits = new Set<StatSource['lasts']>(['next_turn', 'next_loot', 'next_roll']);
 
 // effectList lists the effects on a player that the icons show (ADR 037
 // item 4.1): "Prevents the next 1 damage — Soul Heart", what it does,
@@ -183,12 +195,12 @@ export interface EffectList {
 // up (merged); shields stay apart. Lasting effects, stats with a sum
 // line and stats without words are left out.
 export function effectList(sources: StatSource[] | undefined, name: Name): EffectList {
-  const list: EffectList = { turn: [] };
+  const list: EffectList = { turn: [], later: [] };
   for (const s of merged(sources ?? [])) {
     const text = s.lasts === 'in_play' || sumStats.has(s.stat) ? '' : effect(s);
     if (text === '') continue;
     const when = whenText(s);
-    list.turn.push(t('stats.effect_from', { effect: `${text}${when ? ` (${when})` : ''}`, card: name(s.card) }));
+    (waits.has(s.lasts) ? list.later : list.turn).push(t('stats.effect_from', { effect: `${text}${when ? ` (${when})` : ''}`, card: name(s.card) }));
   }
   return list;
 }
@@ -201,10 +213,13 @@ export const MAX_EFFECT_LINES = 8;
 
 // shownEffects cuts the list to MAX_EFFECT_LINES and says how many
 // more there are. Nine lines are eight and "1 more": the count takes the
-// ninth one's place, as the "⋯ K" chip does.
+// ninth one's place, as the "⋯ K" chip does. This turn's lines come
+// first, then the ones that wait (18.37).
 export function shownEffects(list: EffectList): EffectList & { more: number } {
-  if (list.turn.length <= MAX_EFFECT_LINES) return { ...list, more: 0 };
-  return { turn: list.turn.slice(0, MAX_EFFECT_LINES), more: list.turn.length - MAX_EFFECT_LINES };
+  const all = list.turn.length + list.later.length;
+  if (all <= MAX_EFFECT_LINES) return { ...list, more: 0 };
+  const turn = list.turn.slice(0, MAX_EFFECT_LINES);
+  return { turn, later: list.later.slice(0, MAX_EFFECT_LINES - turn.length), more: all - MAX_EFFECT_LINES };
 }
 
 // MAX_ICONS is how many icons a card shows; the rest are a "⋯ K" chip
@@ -270,8 +285,14 @@ function freeShop(s: StatSource): boolean {
 }
 
 // effect says what one source does: "+1 ATK", "Can't gain souls"; ''
-// for a stat it has no words for (a newer server's).
+// for a stat it has no words for (a newer server's). A game-wide one
+// says it is for every player (ADR 037 item 3.18.2, 18.37).
 export function effect(s: StatSource): string {
+  const text = effectText(s);
+  return text !== '' && s.everyone ? t('stats.for_everyone', { effect: text }) : text;
+}
+
+function effectText(s: StatSource): string {
   const n = Math.abs(amountOf(s));
   const amount = signed(amountOf(s));
   switch (s.stat) {
@@ -336,6 +357,23 @@ export function effect(s: StatSource): string {
       return s.amount === undefined ? t('stats.effect.shield_all') : t('stats.effect.shield', { n });
     case 'shield_cap':
       return t('stats.effect.shield_cap', { n });
+    // Hidden effects that are no stats (ADR 037 items 3.17, 3.18, 18.36).
+    case 'skip_turn':
+      return t('stats.effect.skip_turn', { n });
+    case 'extra_turn':
+      return t('stats.effect.extra_turn');
+    case 'copy_next_loot':
+      return t('stats.effect.copy_next_loot');
+    case 'lingering':
+      return t('stats.effect.lingering');
+    case 'double_rewards':
+      return t('stats.effect.double_rewards');
+    case 'roll_to_one':
+      return t('stats.effect.roll_to_one');
+    case 'compost':
+      return t('stats.effect.compost');
+    case 'many_dice':
+      return t('stats.effect.many_dice', { n });
     default:
       return ''; // a newer server's stat: no icon line (18.30)
   }

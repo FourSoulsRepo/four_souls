@@ -4578,6 +4578,14 @@
     "text": "You choose which monster others attack",
     "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Mom's Eye Shadow."
   },
+  "stats.effect.compost": {
+    "text": "The next loot comes from the loot discard",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Compost: whoever loots next takes the top card of the loot discard instead."
+  },
+  "stats.effect.copy_next_loot": {
+    "text": "The next loot card you play is copied",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Blank Card. 'this turn' is added after it."
+  },
   "stats.effect.damage_taken": {
     "text": "{amount} damage taken",
     "note": "Tooltip of an effect icon on a character: each damage its player takes changes by this much. amount: '+1' or '−1'."
@@ -4590,6 +4598,14 @@
     "text": "Your next death is prevented",
     "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Holy Mantle and the like."
   },
+  "stats.effect.double_rewards": {
+    "text": "Rewards are doubled",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). A Lucky Penny!: monster rewards count twice. Shown inside stats.for_everyone; 'this turn' is added after it."
+  },
+  "stats.effect.extra_turn": {
+    "text": "Takes an extra turn after this one",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). XIX. The Sun. No 'this turn' is added."
+  },
   "stats.effect.hand_cap": {
     "text": "Max hand size {n}",
     "note": "Tooltip of an effect icon on a character, one line each (ADR 037). n: the most loot cards the player may hold (Curse of Tiny Hands)."
@@ -4597,6 +4613,10 @@
   "stats.effect.hp": {
     "text": "{amount} max HP",
     "note": "Tooltip of an effect icon on a card. amount: '+1' or '−1'."
+  },
+  "stats.effect.lingering": {
+    "text": "Its card's effect lasts",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). A card's till-end-of-turn effect that waits for something, e.g. Black Heart's 'when that player dies'. Hovering shows the card's text. 'this turn' is added after it."
   },
   "stats.effect.lock_others": {
     "text": "Others can't play loot cards or activate items",
@@ -4616,6 +4636,10 @@
   "stats.effect.loot_step": {
     "text": "{amount} loot in your loot step",
     "note": "Tooltip of an effect icon on a character, one line each (ADR 037). amount: '+1'; n: the number without its sign."
+  },
+  "stats.effect.many_dice": {
+    "text": "The next roll is {n} dice; you choose the result",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Mutant Spider: the next roll by any player is n dice. 'you': this character's player. Shown inside stats.for_everyone."
   },
   "stats.effect.next_attack_roll": {
     "text": "{amount} to the next attack roll",
@@ -4672,6 +4696,10 @@
     "text": "{amount} to rolls",
     "note": "Tooltip of an effect icon on a character. amount: '+1' or '−1'."
   },
+  "stats.effect.roll_to_one": {
+    "text": "A roll of 2 or 3 becomes 1",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Eternal D6. Shown inside stats.for_everyone; 'this turn' is added after it."
+  },
   "stats.effect.shield": {
     "text": "Prevents the next {n} damage",
     "note": "Tooltip of an effect icon on a character, one line each (ADR 037). A shield, e.g. Soul Heart's. n: how much damage it prevents."
@@ -4692,9 +4720,20 @@
     "text": "{amount}¢ to shop prices",
     "note": "Tooltip of an effect icon on a character, one line each (ADR 037). amount: '−5' or '+1'."
   },
+  "stats.effect.skip_turn": {
+    "text": {
+      "one": "Skips the next turn",
+      "other": "Skips the next {n} turns"
+    },
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Famine, Haunted!, Overflow!: the player skips their next turn(s). n: turns."
+  },
   "stats.effect_from": {
     "text": "{effect} — {card}",
     "note": "Zoomed character, one line of its effect list (ADR 037 item 4): what it does, then the source card. effect: '−5¢ to shop prices'; card: 'Steamy Sale!' or 'a hidden card'."
+  },
+  "stats.for_everyone": {
+    "text": "For every player: {effect}",
+    "note": "Tooltip line of a game-wide effect, shown on the character of the player who made it (ADR 037 item 3.18). effect: 'Rewards are doubled'."
   },
   "stats.hidden_card": {
     "text": "a hidden card",
@@ -5171,6 +5210,10 @@
   "zoom.counters": {
     "text": "Counters",
     "note": "Zoomed card: screen-reader name of the counter list under it, one line a kind."
+  },
+  "zoom.effects_later": {
+    "text": "Until used",
+    "note": "Zoomed character's effect list: heading of the effects that end when they happen, maybe after this turn: a skipped turn, the next loot, the next roll."
   },
   "zoom.effects_more": {
     "text": {

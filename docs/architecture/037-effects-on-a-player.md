@@ -170,6 +170,19 @@ Use option 1.
    1. Till end of turn; not on any character.
    2. The card view already sends it as `dice` (15.67, 18.36).
 9. A free shop item already shows as price 0 (Credit Card); no icon.
+10. Built in 18.37: the client shows items 1.12 and 1.13.
+    1. Each new key has a line `stats.effect.<key>` (ADR 021).
+    2. `everyone`: the line starts "For every player:" (item 3.18.2).
+    3. No number on their icons (item 3.12).
+        1. A skip's turns and Mutant Spider's dice are counts, not changes.
+        2. The line says them: "Skips the next 2 turns".
+    4. `next_turn` and `next_loot` get icons, as `turn` and `next_roll`.
+    5. The zoom's list has a second group: "Until used".
+        1. `next_turn`, `next_loot`, `next_roll`: they end when used.
+        2. They may outlast the turn, so not under "This turn".
+        3. This turn's lines come first; the 8-line cut counts both.
+    6. `extra_turn` says when itself; no "this turn" after it.
+    7. Red Candle's die already showed on its card (item 8); no change.
 
 ## Consequences
 

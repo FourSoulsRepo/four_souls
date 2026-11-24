@@ -321,6 +321,16 @@
   * Hover lists them in that order, each with its card.
   * E.g. "Prevents the next 1 damage this turn — Soul Heart".
   * The "⋯ K" pill has no card art: it never looks like an icon's "+N".
+* **3n. Hidden effects that are no stats (18.37, ADR 037 items 3.17, 3.18):** icons too.
+  * A skipped next turn: Famine, Haunted!, Overflow!: "Skips the next turn".
+  * An extra turn: XIX. The Sun; a copied next loot: Blank Card.
+  * A card's effect waiting this turn: Black Heart on the chosen player.
+  * Game-wide ones show on the character of the player who made them.
+  * Their line says so: "For every player: Rewards are doubled this turn".
+  * A Lucky Penny!, Eternal D6, Compost, Mutant Spider, Lemon Mishap, Plan C.
+  * No number on these icons; the line says how many turns or dice.
+  * The zoom files a skip, Compost and Mutant Spider under "Until used".
+  * Red Candle shows no icon: its chosen number is a die on its card (2f).
 
 ## Postconditions
 

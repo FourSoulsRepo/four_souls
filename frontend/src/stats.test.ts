@@ -229,13 +229,88 @@ describe('effectIcons on a player (18.34)', () => {
     const line = protocol.split('\n').find((l) => l.trim().startsWith('stat: "hp"')) ?? '';
     const stats = [...line.matchAll(/"([a-z_]+)"/g)].map((m) => m[1] as StatSource['stat']);
     expect(stats.length).toBeGreaterThan(30);
-    // 18.36's hidden effects get their words in 18.37; till then no icon.
-    const later = new Set(['skip_turn', 'extra_turn', 'copy_next_loot', 'lingering', 'double_rewards', 'roll_to_one', 'compost', 'many_dice']);
     for (const stat of stats) {
-      if (later.has(stat)) continue;
       expect(effect({ stat, amount: 1, lasts: 'turn' }), stat).not.toBe('');
     }
     expect(Object.keys(en).filter((k) => k.startsWith('stats.effect.')).length).toBeGreaterThan(30);
+  });
+});
+
+// Hidden effects that are no stats (18.36, 18.37, ADR 037 items 3.17,
+// 3.18): words for each key, "for every player" on a game-wide one,
+// no number on the icon (item 3.12), and the zoom's "Until used".
+describe('hidden effects (18.37)', () => {
+  // Famine: "When this dies, the active player skips their next turn."
+  const famine: StatSource = { stat: 'skip_turn', source: 60, card: 'famine', amount: 1, lasts: 'next_turn' };
+  // Haunted!: "Each time a player gains a soul, they skip their next
+  // turn." Two souls: two turns from one card, one source (18.36).
+  const haunted: StatSource = { stat: 'skip_turn', source: 61, card: 'haunted', amount: 2, lasts: 'next_turn' };
+  // XIX. The Sun: "take an extra turn after this one".
+  const sun: StatSource = { stat: 'extra_turn', source: 62, card: 'xix_the_sun', amount: 1, lasts: 'turn' };
+  // Blank Card: "The next time you play a non-trinket, non-ambush loot
+  // card this turn, copy it."
+  const blank: StatSource = { stat: 'copy_next_loot', source: 63, card: 'blank_card', amount: 1, lasts: 'turn' };
+  // Black Heart: "Till end of turn, when that player dies, deal 2
+  // damage …": on the chosen player only.
+  const black: StatSource = { stat: 'lingering', source: 64, card: 'black_heart', amount: 1, lasts: 'turn' };
+  // Game-wide, on the player who made them (item 3.18):
+  // A Lucky Penny!: "Rewards are doubled till end of turn."
+  const penny: StatSource = { stat: 'double_rewards', source: 65, card: 'a_lucky_penny', amount: 1, lasts: 'turn', everyone: true };
+  // Eternal D6: "Till end of turn, if a player would roll a 2 or 3, it
+  // becomes a 1 instead."
+  const d6: StatSource = { stat: 'roll_to_one', source: 66, card: 'eternal_d6', amount: 1, lasts: 'turn', everyone: true };
+  // Compost: "The next time a player would loot, they loot from the top
+  // of the loot discard instead."
+  const compost: StatSource = { stat: 'compost', source: 67, card: 'compost', amount: 1, lasts: 'next_loot', everyone: true };
+  // Mutant Spider: "The next time a player would roll a dice, they
+  // instead roll 4 dice. You choose one of the rolls as the result."
+  const spider: StatSource = { stat: 'many_dice', source: 68, card: 'mutant_spider', amount: 4, lasts: 'next_roll', everyone: true };
+  // Lemon Mishap: "Till end of turn, each time a player rolls an attack
+  // roll of 1 or 2, deal 1 damage to each monster."
+  const lemon: StatSource = { stat: 'lingering', source: 69, card: 'lemon_mishap', amount: 1, lasts: 'turn', everyone: true };
+
+  it('has words for each key; a game-wide one says it is for every player', () => {
+    expect([famine, haunted, sun, blank, black].map(effect)).toEqual([
+      'Skips the next turn',
+      'Skips the next 2 turns',
+      'Takes an extra turn after this one',
+      'The next loot card you play is copied',
+      "Its card's effect lasts",
+    ]);
+    expect([penny, d6, compost, spider, lemon].map(effect)).toEqual([
+      'For every player: Rewards are doubled',
+      'For every player: A roll of 2 or 3 becomes 1',
+      'For every player: The next loot comes from the loot discard',
+      'For every player: The next roll is 4 dice; you choose the result',
+      "For every player: Its card's effect lasts",
+    ]);
+  });
+  it('gives each an icon with no number (item 3.12); this turn\'s say so', () => {
+    const icons = effectIcons([famine, haunted, sun, blank, black, penny, d6, compost, spider, lemon], name);
+    expect(icons.map((i) => i.number)).toEqual(Array(10).fill(undefined));
+    expect(icons.map((i) => i.lines)).toEqual([
+      ['Skips the next turn'],
+      ['Skips the next 2 turns'],
+      ['Takes an extra turn after this one'],
+      ['The next loot card you play is copied this turn'],
+      ["Its card's effect lasts this turn"],
+      ['For every player: Rewards are doubled this turn'],
+      ['For every player: A roll of 2 or 3 becomes 1 this turn'],
+      ['For every player: The next loot comes from the loot discard'],
+      ['For every player: The next roll is 4 dice; you choose the result'],
+      ["For every player: Its card's effect lasts this turn"],
+    ]);
+    // Mutant Spider waits for the next roll: the small die (SB-04).
+    expect(icons.map((i) => i.nextRoll)).toEqual([false, false, false, false, false, false, false, false, true, false]);
+  });
+  it('still hides a lasting one (item 3.1)', () => {
+    expect(effectIcons([{ ...penny, lasts: 'in_play' }], name)).toEqual([]);
+  });
+  it('files the ones that wait under "Until used", not "This turn" (18.37)', () => {
+    expect(effectList([famine, penny, compost, blank, spider], name)).toEqual({
+      turn: ['For every player: Rewards are doubled — a_lucky_penny', 'The next loot card you play is copied — blank_card'],
+      later: ['Skips the next turn — famine', 'For every player: The next loot comes from the loot discard — compost', 'For every player: The next roll is 4 dice; you choose the result — mutant_spider'],
+    });
   });
 });
 
@@ -272,10 +347,11 @@ describe('effectList (18.34)', () => {
   it("lists this turn's hidden effects only, as the icons (item 4.1)", () => {
     expect(effectList([sale, jail, tax, soulless, heart], name)).toEqual({
       turn: ["Others can't play loot cards or activate items — Get Out of Jail Card", 'Prevents the next 1 damage — Soul Heart'],
+      later: [],
     });
   });
   it('gives a lasting room or own-area effect no line (item 4.1)', () => {
-    expect(effectList([sale, sale, tax, soulless], name)).toEqual({ turn: [] });
+    expect(effectList([sale, sale, tax, soulless], name)).toEqual({ turn: [], later: [] });
   });
   it('says what it does, then the card; a hidden one is "a hidden card" (items 4.3, 1.6)', () => {
     const hidden: StatSource = { stat: 'purchases', amount: 1, lasts: 'turn' };
@@ -286,8 +362,8 @@ describe('effectList (18.34)', () => {
     const attacked: StatSource = { stat: 'attacked_dc', source: 31, card: 'curse', amount: -1, lasts: 'turn' };
     const roll: StatSource = { stat: 'roll', source: 32, card: 'meat', amount: 1, lasts: 'turn' };
     const hp: StatSource = { ...strength, stat: 'hp' };
-    expect(effectList([poly, strength, hp, meat, worm, roll, attacked, taken], name)).toEqual({ turn: [] });
-    expect(effectList(undefined, name)).toEqual({ turn: [] });
+    expect(effectList([poly, strength, hp, meat, worm, roll, attacked, taken], name)).toEqual({ turn: [], later: [] });
+    expect(effectList(undefined, name)).toEqual({ turn: [], later: [] });
   });
   it('lists shields in the order they block, two of one card apart; one source adds up', () => {
     const poop = { stat: 'shield', source: 8, card: 'the_poop', lasts: 'turn' } as StatSource; // the whole next damage
@@ -305,10 +381,14 @@ describe('effectList (18.34)', () => {
 describe('shownEffects: eight lines, then a count (18.32)', () => {
   const lines = (n: number, tag: string) => Array.from({ length: n }, (_, i) => `${tag}${String(i)}`);
   it('shows up to eight lines and no count', () => {
-    expect(shownEffects({ turn: lines(8, 't') })).toEqual({ turn: lines(8, 't'), more: 0 });
+    expect(shownEffects({ turn: lines(8, 't'), later: [] })).toEqual({ turn: lines(8, 't'), later: [], more: 0 });
+    expect(shownEffects({ turn: lines(5, 't'), later: lines(3, 'l') })).toEqual({ turn: lines(5, 't'), later: lines(3, 'l'), more: 0 });
   });
   it('counts the rest', () => {
-    expect(shownEffects({ turn: lines(11, 't') })).toEqual({ turn: lines(8, 't'), more: 3 });
+    expect(shownEffects({ turn: lines(11, 't'), later: [] })).toEqual({ turn: lines(8, 't'), later: [], more: 3 });
+  });
+  it("cuts the waiting lines after this turn's (18.37)", () => {
+    expect(shownEffects({ turn: lines(6, 't'), later: lines(4, 'l') })).toEqual({ turn: lines(6, 't'), later: lines(2, 'l'), more: 2 });
   });
 });
 

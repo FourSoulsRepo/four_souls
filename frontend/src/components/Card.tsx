@@ -136,7 +136,7 @@ export function Card({
   // A character's zoom lists the hidden effects on its player (18.32,
   // 18.34).
   const effects = stats?.effectsOn === undefined ? undefined : { title: stats.effectsOn, ...effectList(sources, name) };
-  const zoomEffects = effects && effects.turn.length > 0 ? effects : undefined;
+  const zoomEffects = effects && effects.turn.length + effects.later.length > 0 ? effects : undefined;
   const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines, zoomCounters, zoomEffects);
   const preview = useCostPreview(cost);
   const cardElRef = useRef<HTMLDivElement>(null);

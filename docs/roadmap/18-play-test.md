@@ -1373,7 +1373,7 @@ Ideas: B-04, B-05, B-08.
        1. Only while a skip, Compost, Blank Card, The Sun or Mutant Spider is on.
        2. The new source fields are set then; the old record lacks them.
 
-### [ ] 18.37 Client: icons for the new hidden effects; Red Candle's die
+### [x] 18.37 Client: icons for the new hidden effects; Red Candle's die
 
 1. Goal: 18.36's effects show as icons; Red Candle shows its die (ADR 037 items 3.17, 3.18, 8).
 2. Tasks:
@@ -1390,3 +1390,43 @@ Ideas: B-04, B-05, B-08.
    2. e2e: Blank Card used shows its icon; Red Candle shows its die (saved games).
    3. Screenshots; also without images; UC-12; wiki `Client.md`.
    4. Gates as 18.34.
+4. Result (2026-11-24)
+   1. `effect` in `stats.ts`: a line per new key (`stats.effect.<key>`).
+      1. `skip_turn`: "Skips the next turn" / "Skips the next 2 turns".
+      2. `extra_turn`: "Takes an extra turn after this one"; no "this turn".
+      3. `copy_next_loot`: "The next loot card you play is copied".
+      4. `lingering`: "Its card's effect lasts"; the zoomed card says what.
+      5. `double_rewards`: "Rewards are doubled".
+      6. `roll_to_one`: "A roll of 2 or 3 becomes 1".
+      7. `compost`: "The next loot comes from the loot discard".
+      8. `many_dice`: "The next roll is 4 dice; you choose the result".
+   2. `everyone`: `stats.for_everyone`, "For every player: …" (ADR 3.18.2).
+      1. Read in `effect`; gone from the unread list (`viewFields.test.ts`).
+   3. Numbers: none on the new icons (ADR 3.12, item 10.3).
+   4. `next_turn`, `next_loot` get icons; only `in_play` stays hidden.
+   5. Zoom: a second group "Until used" (`zoom.effects_later`).
+      1. `next_turn`, `next_loot`, `next_roll`; "This turn" keeps `turn`.
+      2. `shownEffects` cuts at 8 lines over both, this turn's first.
+   6. Red Candle: its die showed already (15.67); no client change.
+      1. Seen on its card, during the turn, images on and off.
+      2. No icon on any character (ADR 037 item 8.1).
+      3. Test only: the fake bridge and `cardName` read Four Souls+ too.
+   7. 5.26: every place that draws effects:
+      1. `Card.tsx`: icons (characters, monsters) and the zoom's list.
+      2. `CardZoom.tsx`: `Effects`, now two groups.
+      3. `PlayerArea.tsx`: `statsOf` passes sources; unchanged.
+      4. `stack.ts`, `history.ts`: roll changes only; unchanged.
+   8. Tests: Vitest `stats` (each key's line, icon, no number, groups).
+      1. The "words for every stat" check has no skip list now.
+      2. e2e `hidden-effects.spec.ts`: Famine's skip ("Until used").
+      3. A Lucky Penny! on its user's character only; Blank Card.
+      4. Red Candle's chosen 4 as a die on its card.
+   9. Docs: UC-12 3n; wiki `Client.md`, `Frontend-tests.md`; ADR 037 item 10.
+   10. Screenshots: `.cache/screenshots/18.37/before/` and `after/`.
+       1. `effects-skip`, `-everyone`, `-blank-card`, `-red-candle`.
+       2. After also `-skip-zoom`, `-everyone-zoom`; `*-noimages.png`.
+   11. Gates: `make lint`, `make test`, `make frontend` (789 Vitest) pass.
+       1. `make e2e` run 1: 659 passed, 1 failed: `playback.spec.ts:1975`.
+          1. The 19.237 flake, seed 114790418.
+          2. Evidence: `.cache/e2e-evidence/18.37-run1/`.
+       2. Run 2: 660 passed, 22 skipped.
