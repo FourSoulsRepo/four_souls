@@ -39,6 +39,12 @@ type Turn struct {
 	// MustAttackDeck of them on the monster deck.
 	MustAttacks    int `json:"must_attacks,omitempty"`
 	MustAttackDeck int `json:"must_attack_deck,omitempty"`
+	// MustAttackOneOf are the cards the active player must make an
+	// additional attack on one of this turn (Boss Rush!, Friendly Ball,
+	// Lust for Blood!; 19.241). Only those in play and attackable count
+	// (owedTargets): a covered one (R-ZONE-10) or one that left play is
+	// none; with none left, the duty ends. An attack on one meets it.
+	MustAttackOneOf []ObjectID `json:"must_attack_one_of,omitempty"`
 	// RandomAttackMade: an attack this turn went to one of the monsters
 	// a MustAttackRandom card lists; the duty is met (Q-31).
 	RandomAttackMade bool `json:"random_attack_made,omitempty"`

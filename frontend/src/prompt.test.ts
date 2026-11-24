@@ -221,13 +221,14 @@ describe('forced attacks', () => {
 
   it('marks the monster the player must attack and names it in the banner (19.180, 19.181)', () => {
     const v = must({ must_attack: 9, must_attacks: 2 });
-    expect(forcedAttack(v)).toEqual({ target: 9, deck: false, left: 2, random: false });
+    expect(forcedAttack(v)).toEqual({ targets: [9], deck: false, left: 2, random: false });
     expect(mustTargets(v)).toEqual([9]);
     expect(mustAttackLine(v, names)).toBe('You must attack: GAPER (2 left)');
     expect(banner(v, 0)?.hint).toBe('You must attack: GAPER (2 left)');
     // Monster Manual owes no count, only the monster.
     expect(mustAttackLine(must({ must_attack: 9 }), names)).toBe('You must attack: GAPER');
-    // Lust for Blood names a player's character: the player by name.
+    // Lust for Blood named a player's character, with a count, before
+    // 19.241: such records still say it this way.
     expect(mustAttackLine(must({ must_attack: 2, must_attacks: 1 }), names)).toBe('You must attack: Bo (1 left)');
     expect(mustTargets(must({ must_attack: 2 }))).toEqual([2]);
   });
@@ -252,6 +253,37 @@ describe('forced attacks', () => {
     expect(forcedAttack(view)).toBeNull();
   });
 
+  // Boss Rush!: "Put them in one or more monster slots not being
+  // attacked ... The active player must make an additional attack on
+  // one of them this turn." (19.241)
+  it('names each boss Boss Rush! owes an attack on, and only those on top (19.241)', () => {
+    const bosses: GameView = {
+      ...view,
+      monsters: [{ top: { id: 9, card: 'gaper', charged: true } }, { top: { id: 11, card: 'monstro', charged: true } }, { top: { id: 12, card: 'widow', charged: true } }],
+    };
+    const owe = (turn: Partial<GameView['turn']>): GameView => ({ ...bosses, turn: { ...bosses.turn, ...turn } });
+    // Two slots: either boss, both framed red.
+    const two = owe({ must_attack_one_of: [11, 12] });
+    expect(forcedAttack(two)).toEqual({ targets: [11, 12], deck: false, left: 0, random: false });
+    expect(mustTargets(two)).toEqual([11, 12]);
+    expect(mustAttackTip(two, 0, names)).toBe('You must attack: MONSTRO or WIDOW');
+    // One slot: Widow covers Monstro (R-ZONE-10), so only Widow.
+    const one: GameView = {
+      ...bosses,
+      monsters: [{ top: { id: 9, card: 'gaper', charged: true } }, { top: { id: 12, card: 'widow', charged: true }, covered: [{ id: 11, card: 'monstro', charged: true }] }],
+      turn: { ...bosses.turn, must_attack_one_of: [11, 12] },
+    };
+    expect(mustTargets(one)).toEqual([12]);
+    expect(mustAttackTip(one, 0, names)).toBe('You must attack: WIDOW');
+    // A boss killed first: the other one is left.
+    expect(mustAttackTip(owe({ must_attack_one_of: [99, 12] }), 0, names)).toBe('You must attack: WIDOW');
+    // No boss left: the owed attack ends; no line, no red button.
+    expect(forcedAttack(owe({ must_attack_one_of: [98, 99] }))).toBeNull();
+    expect(mustAttackTip(owe({ must_attack_one_of: [98, 99] }), 0, names)).toBeUndefined();
+    // With Monster Manual on the Gaper too, all three; the attacker picks (R-ATK-03).
+    expect(mustAttackTip(owe({ must_attack: 9, must_attack_one_of: [11, 12] }), 0, names)).toBe('You must attack: GAPER or MONSTRO or WIDOW');
+  });
+
   it('shows the line to the active player only; others see their turn', () => {
     expect(banner(must({ must_attacks: 1 }), 1)?.hint).toBe('Playing their turn');
   });
@@ -264,8 +296,8 @@ describe('forced attacks', () => {
     // that monster this turn if able."
     expect(tip(must({ must_attack: 9 }))).toBe('You must attack: GAPER');
     // Lust for Blood!: "Choose a player. You must make an additional
-    // attack against them."
-    expect(tip(must({ must_attack: 2, must_attacks: 1 }))).toBe('You must attack: Bo (1 left)');
+    // attack against them." One attack, on them (19.241).
+    expect(tip(must({ must_attack_one_of: [2] }))).toBe('You must attack: Bo');
     // Ambush!: "The active player must attack the monster deck 2 times
     // this turn."
     expect(tip(must({ must_attacks: 2, must_attack_deck: 2 }))).toBe('You must attack: the monster deck (2 left)');
@@ -274,7 +306,7 @@ describe('forced attacks', () => {
     // Pilfering Krampus: "players must attack a random minion once each
     // turn if able".
     const krampus = { ...view, random_attack: true };
-    expect(forcedAttack(krampus)).toEqual({ target: 0, deck: false, left: 0, random: true });
+    expect(forcedAttack(krampus)).toEqual({ targets: [], deck: false, left: 0, random: true });
     expect(mustTargets(krampus)).toEqual([]);
     expect(tip(krampus)).toBe('You must attack: a random minion');
     // Another player's turn: their duty, not the viewer's.

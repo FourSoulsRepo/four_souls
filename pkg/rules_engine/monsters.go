@@ -116,6 +116,16 @@ func (g *Game) ForceAttacks(n int, deck bool) {
 	}
 }
 
+// ForceAttackOn gives the active player one more attack they must make
+// on one of ids ("must make an additional attack on it", "on one of
+// them"; 19.241). Only the ids in play and attackable count
+// (owedTargets); once none is left, the owed attack ends and the
+// extra attack stays as a free one. A new duty replaces the old one.
+func (g *Game) ForceAttackOn(ids ...ObjectID) {
+	g.Turn.Attacks++
+	g.Turn.MustAttackOneOf = append([]ObjectID(nil), ids...)
+}
+
 // TakeFromDeck takes a card out of a deck and puts it into play as an
 // item of p ("search the treasure deck for …, gain it").
 func (g *Game) TakeFromDeck(d DeckKind, id ObjectID, p PlayerID) {
@@ -170,10 +180,13 @@ func (g *Game) PutIntoDeck(d DeckKind, id ObjectID, n int) {
 }
 
 // PlaceFromDeck takes a card out of the monster deck and puts it on
-// top of monster slot i ("put it in a monster slot").
-func (g *Game) PlaceFromDeck(id ObjectID, i int) {
+// top of monster slot i ("put it in a monster slot"); it returns the
+// card's new object (R-ZONE-01).
+func (g *Game) PlaceFromDeck(id ObjectID, i int) ObjectID {
 	g.Decks[MonsterDeck] = remove(g.Decks[MonsterDeck], id)
-	g.enterMonsterSlot(g.coverMonsterSlot(id, i))
+	nid := g.coverMonsterSlot(id, i)
+	g.enterMonsterSlot(nid)
+	return nid
 }
 
 // PlaceRoomFromDeck takes a card out of the room deck and puts it on

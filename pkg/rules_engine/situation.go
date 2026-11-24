@@ -88,6 +88,10 @@ type SituationSetup struct {
 	MustAttack     CardRef `json:"must_attack,omitempty"`
 	MustAttacks    int     `json:"must_attacks,omitempty"`
 	MustAttackDeck int     `json:"must_attack_deck,omitempty"`
+	// MustAttackOneOf names the cards the active player must make an
+	// additional attack on one of (Boss Rush!, Friendly Ball, Lust for
+	// Blood!; 19.241). It adds no attack: `attacks` says how many.
+	MustAttackOneOf []CardRef `json:"must_attack_one_of,omitempty"`
 }
 
 // SituationPlayer is one seat.

@@ -18,7 +18,7 @@
 ## Alternative scenarios and errors
 
 * **3a. A count is owed (19.181):** the banner adds the attacks left.
-  * Lust for Blood: "You must attack: Bo (1 left)".
+  * Lust for Blood, in records from before 19.241: "You must attack: Bo (1 left)".
   * Envy names no target: "You must attack (1 left)".
 * **2a. Attacks on the monster deck are owed (19.182):** the deck gets the frame.
   * Ambush: "You must attack: the monster deck (2 left)".
@@ -39,6 +39,11 @@
   * Only on Ann's own button; the others' stay as they are.
 * **3e. Pilfering Krampus owes a random minion (18.35, UC-42):** no frame.
   * The banner and the tooltip: "You must attack: a random minion".
+* **3f. Boss Rush! owes an attack on one of its bosses (19.241):** both framed.
+  * The banner and the tooltip: "You must attack: Monstro or Widow".
+  * In one slot the top boss covers the other: only it is named.
+  * A boss that died is dropped; with none left, the line goes.
+  * Friendly Ball and Lust for Blood! name their one target the same way.
 
 ## Postconditions
 

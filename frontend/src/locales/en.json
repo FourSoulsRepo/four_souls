@@ -592,6 +592,10 @@
     "text": "play a card",
     "note": "Prompt banner, a part of the list under Your turn, lower case: 'Play a card, attack, or end the turn'."
   },
+  "banner.either": {
+    "text": "{a} or {b}",
+    "note": "Prompt banner and the attack button's tooltip: two targets, either will do, in You must attack: {target} (Boss Rush!: Monstro or Widow). a, b: a monster or a player; a may itself be a list joined this way."
+  },
   "banner.idle": {
     "text": "Nothing left to do: end the turn",
     "note": "Prompt banner, small line under Your turn, when only ending the turn is left."

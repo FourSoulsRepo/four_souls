@@ -408,6 +408,11 @@ func observe(g *engine.Game) engine.SituationSetup {
 	s.LootPlays, s.Attacks, s.Purchases = &loot, &attacks, &purchases
 	s.MustAttack = mustAttack(g)
 	s.MustAttacks, s.MustAttackDeck = g.Turn.MustAttacks, g.Turn.MustAttackDeck
+	for _, id := range g.Turn.MustAttackOneOf {
+		if ref := attackableRef(g, id); ref != "" {
+			s.MustAttackOneOf = append(s.MustAttackOneOf, ref)
+		}
+	}
 	return s
 }
 
@@ -416,7 +421,13 @@ func observe(g *engine.Game) engine.SituationSetup {
 // active player may attack. Otherwise the rebuilt table lacks the duty,
 // and the diff makes it a todo.
 func mustAttack(g *engine.Game) engine.CardRef {
-	id := g.Turn.MustAttack
+	return attackableRef(g, g.Turn.MustAttack)
+}
+
+// attackableRef is the ref of id when a setup duty can name it: a card
+// in play the active player may attack (19.235, 19.241). A covered one
+// (R-ZONE-10) has none.
+func attackableRef(g *engine.Game, id engine.ObjectID) engine.CardRef {
 	if id == 0 || g.Object(id).Zone.Kind != engine.ZoneInPlay || !g.CanBeAttacked(id) {
 		return ""
 	}

@@ -9,7 +9,7 @@ import { cardName, tr } from './locale';
 import { editSave, saveAndContinue, saveEditContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, Intent, Purpose, seen, settle, turnAction, untilPick } from './turn';
+import { activePage, canEndTurn, click, Intent, Purpose, seen, settle, turnAction, untilPick } from './turn';
 
 test.setTimeout(150_000);
 
@@ -144,4 +144,58 @@ test('Ambush!: the attack button is red and names the monster deck (18.35)', asy
   await shot(active, 'must-attack-ambush');
   await button.hover();
   await shot(active, 'must-attack-ambush-hover');
+});
+
+// BossSave is the part of a save the Boss Rush! test changes.
+interface BossSave {
+  state: {
+    objects: { card: string }[];
+    monsters: { cards: number[] }[];
+    turn: { attacks: number; must_attack_one_of?: number[] };
+  };
+}
+
+test('Boss Rush!: the attack button names both bosses, both framed (19.241)', async ({ browser }) => {
+  const names = repeatNames(['Eve', 'Fin']);
+  const pages = await startGame(browser, names, { url: `${appURL()}&anim=off` });
+  // The turn can't end while the attack is owed, so activePage would
+  // play it out: find the active page before the save.
+  const active = await activePage(pages, click);
+  // The turn as Boss Rush! leaves it with a boss in each of two slots:
+  // "The active player must make an additional attack on one of them
+  // this turn." One more attack, owed on Monstro or Widow (19.241).
+  let bosses: number[] = [];
+  await saveEditContinue(pages, names.join(', '), (game) => {
+    editSave(game, (save) => {
+      const { state } = save as unknown as BossSave;
+      bosses = ['monstro', 'widow'].map((card, i) => {
+        const top = state.monsters[i]?.cards.at(-1);
+        const obj = top === undefined ? undefined : state.objects[top];
+        if (top === undefined || !obj) {
+          throw new Error(`monster slot ${String(i + 1)} is empty`);
+        }
+        obj.card = card;
+        return top;
+      });
+      state.turn.attacks += 1;
+      state.turn.must_attack_one_of = bosses;
+    });
+  });
+  const button = turnAction(active, 'Attack');
+  await expect(button).toHaveClass(/\bmust\b/);
+  // Either boss will do: the tooltip names both.
+  const either = tr('banner.either', { a: cardName('monstro'), b: cardName('widow') });
+  await expect(button).toHaveAttribute('title', tip(tr('banner.must_attack', { target: either })));
+  // The turn can't end before it (R-ATK-03).
+  expect(await canEndTurn(active)).toBe(false);
+  // Both keep the dashed red frame, for everyone (19.180).
+  for (const page of pages) {
+    for (const boss of bosses) {
+      await expect(page.locator(`.card[data-zone="obj-${String(boss)}"]`)).toHaveClass(/\bmust-attack\b/);
+    }
+  }
+  await active.mouse.move(1, 1);
+  await shot(active, 'must-attack-boss-rush');
+  await button.hover();
+  await shot(active, 'must-attack-boss-rush-hover');
 });

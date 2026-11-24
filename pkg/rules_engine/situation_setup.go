@@ -269,27 +269,44 @@ func (g *Game) setUpDuties(s SituationSetup) error {
 			return fmt.Errorf("situation: %s %d is below 0", n.name, n.n)
 		}
 	}
-	if s.MustAttack == "" && s.MustAttacks == 0 && s.MustAttackDeck == 0 {
+	if s.MustAttack == "" && s.MustAttacks == 0 && s.MustAttackDeck == 0 && len(s.MustAttackOneOf) == 0 {
 		return nil
 	}
 	if g.Turn.Step == StepEndTriggers {
 		return errors.New("situation: phase end: the turn's end is declared, which R-ATK-03 refuses while an attack is owed; " +
-			"leave out must_attack, must_attacks and must_attack_deck")
+			"leave out must_attack, must_attacks, must_attack_deck and must_attack_one_of")
+	}
+	targets := g.attackTargets()
+	refs := make([]CardRef, len(targets))
+	for i, id := range targets {
+		refs[i] = g.Object(id).Card
+	}
+	// target finds the first card named ref the active player may
+	// attack now and has not named yet.
+	target := func(field string, ref CardRef, taken []ObjectID) (ObjectID, error) {
+		for i, r := range refs {
+			if r == ref && !slices.Contains(taken, targets[i]) {
+				if g.Attack.Started && g.Attack.Target == targets[i] {
+					return 0, fmt.Errorf("situation: %s: the attack roll on the stack attacks %q, so the duty is met (R-ATK-22); leave it out", field, ref)
+				}
+				return targets[i], nil
+			}
+		}
+		return 0, fmt.Errorf("situation: %s: the active player can't attack %q, options %v", field, ref, refs)
 	}
 	if s.MustAttack != "" {
-		targets := g.attackTargets()
-		refs := make([]CardRef, len(targets))
-		for i, id := range targets {
-			refs[i] = g.Object(id).Card
+		id, err := target("must_attack", s.MustAttack, nil)
+		if err != nil {
+			return err
 		}
-		i := slices.Index(refs, s.MustAttack)
-		if i < 0 {
-			return fmt.Errorf("situation: must_attack: the active player can't attack %q, options %v", s.MustAttack, refs)
+		g.Turn.MustAttack = id
+	}
+	for _, ref := range s.MustAttackOneOf {
+		id, err := target("must_attack_one_of", ref, g.Turn.MustAttackOneOf)
+		if err != nil {
+			return err
 		}
-		if g.Attack.Started && g.Attack.Target == targets[i] {
-			return fmt.Errorf("situation: must_attack: the attack roll on the stack attacks %q, so the duty is met (R-ATK-22); leave it out", s.MustAttack)
-		}
-		g.Turn.MustAttack = targets[i]
+		g.Turn.MustAttackOneOf = append(g.Turn.MustAttackOneOf, id)
 	}
 	g.Turn.MustAttacks, g.Turn.MustAttackDeck = s.MustAttacks, s.MustAttackDeck
 	return nil

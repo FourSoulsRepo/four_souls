@@ -1,0 +1,18 @@
+{
+  "title": "Set up as Boss Rush! leaves it: Isaac owes an extra attack on Monstro or Widow; is the Fatty no target, and can't he end the turn?",
+  "source": ["card boss_rush", "R-ATK-03", "R-ATK-02"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fatty", "monstro", "widow"],
+    "must_attack_one_of": ["monstro", "widow"]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": false, "rule": "R-ATK-03", "active": 0}},
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["monstro", "widow"]}}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ATK-03"}
+}

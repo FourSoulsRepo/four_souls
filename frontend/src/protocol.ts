@@ -437,6 +437,9 @@ export interface Turn {
   must_attack?: number;
   must_attacks?: number;
   must_attack_deck?: number;
+  // must_attack_one_of: the cards the active player owes an extra
+  // attack on one of (Boss Rush!, Friendly Ball, Lust for Blood!; 19.241).
+  must_attack_one_of?: number[];
   deck_attacks?: number;
   end_declared?: boolean;
   death_end?: boolean;

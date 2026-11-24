@@ -1,6 +1,9 @@
 package rulesengine
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // PromptKind is what the engine waits for.
 type PromptKind int
@@ -166,8 +169,12 @@ func (g *Game) check(in Intent) error {
 		if w.Kind != PromptPriority || !g.inOpenActionPhase() || in.Player != g.Turn.Active {
 			return refuse("R-TURN-06", "only the active player can end the turn, in the action phase, with an empty stack")
 		}
-		if m := g.Turn.MustAttack; m != 0 && g.canAttack(in.Player) && g.Object(m).Zone.Kind == ZoneInPlay && g.CanBeAttacked(m) {
-			return deny("R-ATK-03", refuseMustAttack.Msg(), "this turn you must attack %s first", g.Object(m).Card)
+		if owed := g.owedTargets(); len(owed) > 0 && g.canAttack(in.Player) {
+			refs := make([]string, len(owed))
+			for i, id := range owed {
+				refs[i] = string(g.Object(id).Card)
+			}
+			return deny("R-ATK-03", refuseMustAttack.Msg(), "this turn you must attack %s first", strings.Join(refs, " or "))
 		}
 		if g.Turn.MustAttacks > 0 && g.canAttack(in.Player) {
 			return deny("R-ATK-03", refuseMustAttack.Msg(), "you must make %d more attacks this turn", g.Turn.MustAttacks)

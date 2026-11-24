@@ -46,8 +46,7 @@ var friendlyBall = engine.CardDef{
 					return
 				}
 				if nid := c.G.FromUnder(c.Source, under[0], freeSlots(c.G)[a[0]]); nid != 0 && c.G.Object(nid).Role == engine.RoleMonster {
-					c.G.ForceAttacks(1, false)
-					c.G.Turn.MustAttack = nid
+					c.G.ForceAttackOn(nid) // "an additional attack on it" (19.241)
 				}
 			}, engine.Question{Text: cardkit.AskPutItInWhichMonster, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 				if len(c.G.Object(c.Source).Under) == 0 {

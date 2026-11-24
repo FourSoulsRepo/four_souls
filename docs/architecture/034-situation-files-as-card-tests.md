@@ -118,6 +118,7 @@ Use option 1.
    22. `expect.resolved_rolls`: each roll's final value, in order (R-DICE-06).
    23. A card in a slot sets no duty; the setup names it (owner, 2026-11-23).
    24. `setup.must_attack`, `must_attacks`, `must_attack_deck`: this turn's duties (19.235).
+   25. `setup.must_attack_one_of`: an extra attack owed on one of these cards (19.241).
 11. `expect` comes from the rules, never from a run (5.25).
    1. A tool may write `setup` and `steps`; never `expect` (24.7).
    2. `enginetest` dumps a Go test with `SITUATION_DUMP` (24.7).

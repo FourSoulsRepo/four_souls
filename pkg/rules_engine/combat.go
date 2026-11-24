@@ -435,10 +435,10 @@ func (g *Game) askAttackTarget() {
 		g.ask(c, labels)
 		return
 	}
-	if m := g.Turn.MustAttack; m != 0 && g.Object(m).Zone.Kind == ZoneInPlay && g.CanBeAttacked(m) {
-		c := Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Objects: []ObjectID{m}}
-		labels := g.targetLabels([]ObjectID{m})
-		if len(random) > 0 && !contains(random, m) {
+	if owed := g.owedTargets(); len(owed) > 0 {
+		c := Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Objects: owed}
+		labels := g.targetLabels(owed)
+		if len(random) > 0 && !slices.ContainsFunc(owed, func(id ObjectID) bool { return contains(random, id) }) {
 			c.Random, labels = true, append(labels, askAttackRandom.Msg())
 		}
 		g.ask(c, labels)
@@ -547,6 +547,9 @@ func (g *Game) startAttack(target ObjectID) {
 	g.Turn.NextHelpers, g.Turn.NextShare = nil, nil
 	if g.Turn.MustAttack == target {
 		g.Turn.MustAttack = 0 // the forced attack is made (Monster Manual, Krampus)
+	}
+	if contains(g.Turn.MustAttackOneOf, target) {
+		g.Turn.MustAttackOneOf = nil // made on one of them (Boss Rush!, 19.241)
 	}
 	if contains(g.randomAttackTargets(), target) {
 		g.Turn.RandomAttackMade = true // Q-31: an attack went to one of them

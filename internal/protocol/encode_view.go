@@ -110,6 +110,12 @@ func appendTurn(b []byte, t engine.Turn) []byte {
 	b = appendIntIfSet(b, "must_attack", int(t.MustAttack))
 	b = appendIntIfSet(b, "must_attacks", t.MustAttacks)
 	b = appendIntIfSet(b, "must_attack_deck", t.MustAttackDeck)
+	if len(t.MustAttackOneOf) > 0 {
+		b = appendMarshaled(b, `,"must_attack_one_of":`, t.MustAttackOneOf)
+	}
+	if t.RandomAttackMade {
+		b = append(b, `,"random_attack_made":true`...)
+	}
 	b = appendIntIfSet(b, "deck_attacks", t.DeckAttacks)
 	b = appendIntIfSet(b, "shop_bought", t.ShopBought)
 	if t.FreeShopItem {

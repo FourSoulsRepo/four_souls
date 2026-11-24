@@ -32,6 +32,8 @@ There are no maps in the saved state (map order is random). The card index is no
 
 Every card is an object with an ID. Moving a card to another zone gives it a new ID, as the rules treat it as a new object. So `g.Objects` only grows. Code that looks at "what is in play" must use `g.inPlay()` (characters, play areas, slot tops), not scan all objects.
 
+The attack duties live in `Turn` (R-ATK-03): `MustAttack` (one card, "must attack that monster": Monster Manual, Krampus, The Harbingers), `MustAttacks` (a count on any target: Envy, Portal), `MustAttackDeck` (on the monster deck) and `MustAttackOneOf` (one more attack on one of a few cards, set by `ForceAttackOn`: Boss Rush!'s two bosses, Friendly Ball's monster, Lust for Blood!'s player; 19.241). `owedTargets` (`guards.go`) is the one place that says which named cards are owed now: each only while in play (a covered card is not, R-ZONE-10) and attackable. The target question offers only those, ending the turn is refused while one is left and an attack remains, and with none left the duty ends. An attack on one of `MustAttackOneOf` meets it (`startAttack`).
+
 ### Copies and new state fields
 
 `Game.Clone` (`clone.go`) is a deep copy written by hand, no JSON (ADR 033, Decision 3): a bot copies the game for every move it tries, so it must stay cheap (`BenchmarkClone` in `cards/clone_test.go`: under 0.3 ms for a 4-player game with every set). The copy saves to the same bytes and has the same checksum, and shares no slice, map or pointer with the game; only the card definitions are shared. Like a save and a load, it drops the last step's events and the test dice.

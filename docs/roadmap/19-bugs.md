@@ -7061,7 +7061,7 @@ Totals by system (230 items):
    3. Fix them all in the same change.
    4. `make screenshots LOCALE=ru` and `make e2e` pass.
 
-### [ ] 19.241 Boss Rush!: the extra attack may go at any target
+### [x] 19.241 Boss Rush!: the extra attack may go at any target
 
 1. Goal: Boss Rush!'s extra attack goes only at the bosses it revealed.
 2. Report (owner, 2026-11-24, from 18.35)
@@ -7083,3 +7083,63 @@ Totals by system (230 items):
    4. Tooltip and red frame name the bosses (18.35, `mustAttackLine`).
    5. Search every set for "an additional attack on" a named group (5.24).
    6. Situation tests: one slot, two slots, a boss killed first.
+6. Cause, in full (the engine)
+   1. `ForceAttacks(1, false)` adds an attack and `MustAttacks` 1.
+   2. `MustAttacks` is a count on any target; nothing names the bosses.
+   3. `PlaceFromDeck` gave back no object, so the bosses' new IDs were lost (R-ZONE-01).
+   4. Friendly Ball and Lust for Blood! named one card in `MustAttack`.
+   5. They also set `MustAttacks` 1: with their card gone, any target was still owed.
+7. Result (2026-11-24)
+   1. New turn field `must_attack_one_of`, `omitempty` (ADR 031 item 5).
+   2. `ForceAttackOn(ids...)` in `monsters.go`: one more attack, owed on one of ids.
+   3. `owedTargets` in `guards.go`: the one place for named duties.
+      1. `MustAttack` and `MustAttackOneOf`, each in play and attackable.
+      2. A covered boss is not in play (R-ZONE-10); a dead one is gone.
+   4. The target question, the end-turn refusal and `startAttack` use it.
+      1. The question offers only the owed cards; the attacker picks (R-ATK-03).
+      2. An attack on one of them meets the duty.
+      3. None left: the duty ends; the extra attack stays, free.
+   5. `PlaceFromDeck` returns the placed object; Boss Rush! names both.
+   6. Situation setup `must_attack_one_of`; the dump writes it (ADR 034 10.25).
+   7. Protocol encoder: the new field; `random_attack_made` was missing too, now sent.
+   8. Client: `Forced.targets` lists every named card on top of its slot.
+      1. Each gets the dashed red frame (`mustTargets`).
+      2. Banner and tooltip: "You must attack: Monstro or Widow" (`banner.either`).
+      3. Old records keep `must_attack` with `must_attacks`: drawn as before.
+   9. Rules engine 0.5.9; CHANGELOG Unreleased.
+8. Checked (5.24): every "additional attack" and forced attack, all sets.
+   1. fsp2 Boss Rush!, "on one of them": fixed, both bosses.
+   2. r Friendly Ball, "an additional attack on it": fixed, `ForceAttackOn`.
+   3. r Lust for Blood!, "an additional attack against them": fixed, `ForceAttackOn`.
+   4. b2 Monster Manual, "must attack that monster": no extra attack; `MustAttack`, unchanged.
+   5. fsp2 Krampus, r The Harbingers, "attack this once each turn": `MustAttack`, unchanged.
+   6. b2 Portal, Envy, Conquest; r Gutted Fatty, Challenge Room (a roll): any target, unchanged.
+   7. r Blood Lust, fsp2 Curse of Blood Lust: any target, unchanged.
+   8. b2 Ambush!; g2 Gaper, I Am Error!; r Blind Rage: the monster deck, unchanged.
+   9. challenge Pilfering Krampus: a random minion (`MustAttackRandom`), unchanged.
+   10. r Gello, "may make an additional attack": not owed, unchanged.
+   11. Helpers: `ForceAttacks`, `ForceAttackOn`, `owedTargets`, `askAttackTarget`.
+   12. Also `startAttack`, the end-turn check in `prompt.go`, `PlaceFromDeck`.
+   13. Client: `forcedAttack`, `mustTargets`, `mustAttackLine`, `mustAttackTip`.
+   14. Client: `Card` (frame), `TurnActions` (button), `Board` (deck frame).
+9. Tests
+   1. Situations in `cards/fsp2/testdata/situations/boss_rush/`:
+      1. `one-slot-only-the-top-boss-may-be-attacked`: Widow only; then the turn ends.
+      2. `two-slots-either-boss`: Monstro or Widow; the turn can't end.
+      3. `a-boss-killed-first`: Chaos Card kills Monstro; Widow only.
+      4. `no-boss-left`: Tech X kills both; the turn ends, the attack unused.
+      5. `the-duty-as-a-setup-field`: `setup.must_attack_one_of`.
+   2. Go: `TestFriendlyBall` checks the duty names the leech.
+   3. Go: `TestAppendTurnMatchesJSON` in `internal/protocol`.
+   4. Vitest `prompt.test.ts`: two slots, one slot, one dead, none left.
+   5. e2e `must-attack.spec.ts`: Boss Rush!'s two bosses framed, tooltip names both.
+10. Open point for the owner
+   1. A covered boss comes up as a new object once the top one dies (R-ZONE-01).
+   2. So it is not "one of them" any more; the duty may end then.
+   3. Today that is only when the top boss dies before the extra attack.
+11. Docs: UC-46 3f; wiki `Client.md`, `Rules-engine.md`, `Situation-payload.md`, `Effect-blocks.md`.
+12. Screenshots: `.cache/screenshots/19.241/before/` and `after/`.
+   1. `must-attack-boss-rush`, `-hover`; `*-noimages.png`.
+   2. Before: the state the old engine left (`must_attacks` 1).
+13. Gates: `make lint`, `make test`, `make frontend` (793 Vitest) pass.
+   1. `make e2e` run 1: 664 passed, 22 skipped.

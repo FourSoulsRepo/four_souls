@@ -38,6 +38,20 @@ func (g *Game) noSpoils(dying ObjectID) bool {
 	return false
 }
 
+// owedTargets lists what the active player must attack now (R-ATK-03):
+// the MustAttack card and the MustAttackOneOf ones (19.241), each only
+// while it is in play (a covered card is not, R-ZONE-10) and can be
+// attacked. With several owed, the attacker picks (R-ATK-03).
+func (g *Game) owedTargets() []ObjectID {
+	var out []ObjectID
+	for _, id := range append([]ObjectID{g.Turn.MustAttack}, g.Turn.MustAttackOneOf...) {
+		if id != 0 && !contains(out, id) && g.Object(id).Zone.Kind == ZoneInPlay && g.CanBeAttacked(id) {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
 // randomAttackTargets lists the monsters the active player must attack
 // one of at random (MustAttackRandom) that can be attacked now; nil once
 // the duty is met this turn (Q-31).
