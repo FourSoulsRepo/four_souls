@@ -29,8 +29,8 @@ func TestFriendlyBall(t *testing.T) {
 	}
 	// "The active player must make an additional attack on it this
 	// turn": one more attack, owed on the leech only (19.241).
-	leech, _ := tb.G.Monsters[1].TopOf()
-	if one := tb.G.Turn.MustAttackOneOf; len(one) != 1 || one[0] != leech || tb.G.Turn.MustAttacks != 0 || tb.G.Turn.Attacks != 2 {
+	// The duty names the card, not its object (owner, 2026-11-24).
+	if one := tb.G.Turn.MustAttackOneOfCards; len(one) != 1 || one[0] != "leech" || tb.G.Turn.MustAttacks != 0 || tb.G.Turn.Attacks != 2 {
 		t.Errorf("must attack one of %v, must attacks %d, attacks %d; want one more attack, on the leech", one, tb.G.Turn.MustAttacks, tb.G.Turn.Attacks)
 	}
 	if _, err := tb.G.Apply(engine.Intent{Player: 0, Kind: engine.IntentEndTurn}); err == nil {

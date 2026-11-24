@@ -408,8 +408,8 @@ func observe(g *engine.Game) engine.SituationSetup {
 	s.LootPlays, s.Attacks, s.Purchases = &loot, &attacks, &purchases
 	s.MustAttack = mustAttack(g)
 	s.MustAttacks, s.MustAttackDeck = g.Turn.MustAttacks, g.Turn.MustAttackDeck
-	for _, id := range g.Turn.MustAttackOneOf {
-		if ref := attackableRef(g, id); ref != "" {
+	for _, ref := range g.Turn.MustAttackOneOfCards {
+		if attackableCard(g, ref) {
 			s.MustAttackOneOf = append(s.MustAttackOneOf, ref)
 		}
 	}
@@ -424,8 +424,8 @@ func mustAttack(g *engine.Game) engine.CardRef {
 	return attackableRef(g, g.Turn.MustAttack)
 }
 
-// attackableRef is the ref of id when a setup duty can name it: a card
-// in play the active player may attack (19.235, 19.241). A covered one
+// attackableRef is the ref of id when setup.must_attack can name it: a
+// card in play the active player may attack (19.235). A covered one
 // (R-ZONE-10) has none.
 func attackableRef(g *engine.Game, id engine.ObjectID) engine.CardRef {
 	if id == 0 || g.Object(id).Zone.Kind != engine.ZoneInPlay || !g.CanBeAttacked(id) {
@@ -439,6 +439,19 @@ func attackableRef(g *engine.Game, id engine.ObjectID) engine.CardRef {
 		}
 	}
 	return g.Object(id).Card
+}
+
+// attackableCard: setup.must_attack_one_of can name ref, a card the
+// active player may attack now (19.241). The duty names cards, but a
+// rebuilt table has no covered card, and one gone from the table is no
+// target, so both are left out.
+func attackableCard(g *engine.Game, ref engine.CardRef) bool {
+	for i := range g.Objects {
+		if id := engine.ObjectID(i); g.Object(id).Card == ref && attackableRef(g, id) != "" {
+			return true
+		}
+	}
+	return false
 }
 
 func counters(card engine.CardRef, cs []engine.Counter) []engine.SituationCounter {

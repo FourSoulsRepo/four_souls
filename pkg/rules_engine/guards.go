@@ -1,5 +1,7 @@
 package rulesengine
 
+import "slices"
+
 // Card hooks that guard monsters, force an attack at random, or take a
 // dead monster's spoils away (ADR 028, Decision 6.4). Pilfering Krampus
 // uses them (R-KRAMPUS-11, R-KRAMPUS-13, R-KRAMPUS-14); the engine
@@ -39,13 +41,22 @@ func (g *Game) noSpoils(dying ObjectID) bool {
 }
 
 // owedTargets lists what the active player must attack now (R-ATK-03):
-// the MustAttack card and the MustAttackOneOf ones (19.241), each only
-// while it is in play (a covered card is not, R-ZONE-10) and can be
-// attacked. With several owed, the attacker picks (R-ATK-03).
+// the MustAttack card while it is in play (a covered card is not,
+// R-ZONE-10) and can be attacked, and every attack target whose card
+// is one of MustAttackOneOfCards (19.241). Those are named by card, so
+// a boss that comes up uncovered as a new object (R-ZONE-01) still
+// counts; one in a discard, a deck or souls is no attack target. With
+// several owed, the attacker picks (R-ATK-03).
 func (g *Game) owedTargets() []ObjectID {
 	var out []ObjectID
-	for _, id := range append([]ObjectID{g.Turn.MustAttack}, g.Turn.MustAttackOneOf...) {
-		if id != 0 && !contains(out, id) && g.Object(id).Zone.Kind == ZoneInPlay && g.CanBeAttacked(id) {
+	if id := g.Turn.MustAttack; id != 0 && g.Object(id).Zone.Kind == ZoneInPlay && g.CanBeAttacked(id) {
+		out = append(out, id)
+	}
+	if len(g.Turn.MustAttackOneOfCards) == 0 {
+		return out
+	}
+	for _, id := range g.attackTargets() {
+		if !contains(out, id) && slices.Contains(g.Turn.MustAttackOneOfCards, g.Object(id).Card) {
 			out = append(out, id)
 		}
 	}

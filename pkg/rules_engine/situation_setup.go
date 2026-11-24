@@ -282,10 +282,10 @@ func (g *Game) setUpDuties(s SituationSetup) error {
 		refs[i] = g.Object(id).Card
 	}
 	// target finds the first card named ref the active player may
-	// attack now and has not named yet.
-	target := func(field string, ref CardRef, taken []ObjectID) (ObjectID, error) {
+	// attack now.
+	target := func(field string, ref CardRef) (ObjectID, error) {
 		for i, r := range refs {
-			if r == ref && !slices.Contains(taken, targets[i]) {
+			if r == ref {
 				if g.Attack.Started && g.Attack.Target == targets[i] {
 					return 0, fmt.Errorf("situation: %s: the attack roll on the stack attacks %q, so the duty is met (R-ATK-22); leave it out", field, ref)
 				}
@@ -295,18 +295,23 @@ func (g *Game) setUpDuties(s SituationSetup) error {
 		return 0, fmt.Errorf("situation: %s: the active player can't attack %q, options %v", field, ref, refs)
 	}
 	if s.MustAttack != "" {
-		id, err := target("must_attack", s.MustAttack, nil)
+		id, err := target("must_attack", s.MustAttack)
 		if err != nil {
 			return err
 		}
 		g.Turn.MustAttack = id
 	}
+	// must_attack_one_of names cards, not objects (19.241); a setup
+	// builds no covered card, so each is one the active player can
+	// attack now.
 	for _, ref := range s.MustAttackOneOf {
-		id, err := target("must_attack_one_of", ref, g.Turn.MustAttackOneOf)
-		if err != nil {
+		if slices.Contains(g.Turn.MustAttackOneOfCards, ref) {
+			return fmt.Errorf("situation: must_attack_one_of: %q is named twice", ref)
+		}
+		if _, err := target("must_attack_one_of", ref); err != nil {
 			return err
 		}
-		g.Turn.MustAttackOneOf = append(g.Turn.MustAttackOneOf, id)
+		g.Turn.MustAttackOneOfCards = append(g.Turn.MustAttackOneOfCards, ref)
 	}
 	g.Turn.MustAttacks, g.Turn.MustAttackDeck = s.MustAttacks, s.MustAttackDeck
 	return nil

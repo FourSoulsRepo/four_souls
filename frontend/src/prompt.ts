@@ -227,13 +227,16 @@ export interface Forced {
 // forcedAttack is what the turn owes, or null. A named card counts only
 // while it is on the table, on top of its slot: once it leaves or lies
 // covered (R-ZONE-10), it is no target, as the engine says (19.241).
-// With none of must_attack_one_of left, that duty is gone.
+// must_attack_one_of_cards names cards, so a boss that comes up from
+// under a dead one counts (owner, 2026-11-24); older records name
+// objects in must_attack_one_of. With none of them left, that duty is
+// gone.
 export function forcedAttack(view: GameView): Forced | null {
   if (view.over || beforeStart(view)) {
     return null;
   }
   const { turn } = view;
-  const named = [turn.must_attack ?? 0, ...(turn.must_attack_one_of ?? [])];
+  const named = [turn.must_attack ?? 0, ...(turn.must_attack_one_of ?? []), ...cardsOnTable(view, turn.must_attack_one_of_cards ?? [])];
   const targets = named.filter((id, i) => id !== 0 && named.indexOf(id) === i && onTable(view, id));
   const deck = (turn.must_attack_deck ?? 0) > 0;
   const left = turn.must_attacks ?? 0;
@@ -245,6 +248,16 @@ export function forcedAttack(view: GameView): Forced | null {
 // what a forced attack may name (Lust for Blood names a character).
 function onTable(view: GameView, id: number): boolean {
   return monsterRows(view).some((s) => s.top?.id === id) || view.players.some((p) => p.character.id === id);
+}
+
+// cardsOnTable are the objects on the table, as onTable, whose card is
+// one of cards: the monsters on top of their slots, then the characters.
+function cardsOnTable(view: GameView, cards: string[]): number[] {
+  if (cards.length === 0) {
+    return [];
+  }
+  const on = [...monsterRows(view).map((s) => s.top), ...view.players.map((p) => p.character)];
+  return on.flatMap((c) => (c && cards.includes(c.card) ? [c.id] : []));
 }
 
 // mustTargets are the cards marked as owed an attack, for everyone.

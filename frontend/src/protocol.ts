@@ -439,7 +439,11 @@ export interface Turn {
   must_attack_deck?: number;
   // must_attack_one_of: the cards the active player owes an extra
   // attack on one of (Boss Rush!, Friendly Ball, Lust for Blood!; 19.241).
+  // Only older records send it; newer servers send the cards below.
   must_attack_one_of?: number[];
+  // must_attack_one_of_cards: the same duty by card ref, so a boss that
+  // comes up from under a dead one still counts (19.241, owner 2026-11-24).
+  must_attack_one_of_cards?: string[];
   deck_attacks?: number;
   end_declared?: boolean;
   death_end?: boolean;

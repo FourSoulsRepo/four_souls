@@ -86,7 +86,7 @@ var CloneRules = map[string]string{
 	"StatSourceView": "Stat Source Card Amount Lasts When* Everyone",
 	"Turn": "Active Number Step LootPlays Attacks Purchases AttackRolls " +
 		"BonusLootUsed BonusAttacksUsed BonusPurchasesUsed MustAttack " +
-		"MustAttacks MustAttackDeck MustAttackOneOf* RandomAttackMade DeckAttacks ShopBought " +
+		"MustAttacks MustAttackDeck MustAttackOneOfCards* RandomAttackMade DeckAttacks ShopBought " +
 		"FreeShopItem EndDeclared DeathEnd NextHelpers* NextShare* " +
 		"MonsterDied RoomReplaced LateRooms* Entered",
 	"Priority": "Open Holder Passes Deferred",

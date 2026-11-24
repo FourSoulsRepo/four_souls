@@ -151,7 +151,7 @@ interface BossSave {
   state: {
     objects: { card: string }[];
     monsters: { cards: number[] }[];
-    turn: { attacks: number; must_attack_one_of?: number[] };
+    turn: { attacks: number; must_attack_one_of_cards?: string[] };
   };
 }
 
@@ -178,7 +178,8 @@ test('Boss Rush!: the attack button names both bosses, both framed (19.241)', as
         return top;
       });
       state.turn.attacks += 1;
-      state.turn.must_attack_one_of = bosses;
+      // The duty names the bosses' cards (owner, 2026-11-24).
+      state.turn.must_attack_one_of_cards = ['monstro', 'widow'];
     });
   });
   const button = turnAction(active, 'Attack');

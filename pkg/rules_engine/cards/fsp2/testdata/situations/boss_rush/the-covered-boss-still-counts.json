@@ -1,0 +1,22 @@
+{
+  "title": "Isaac puts both bosses of Boss Rush! in slot 2, Widow on Monstro, then kills Widow with Gold Bomb!! before his extra attack: is Monstro, now uncovered, still one of them, the only target, and can't he end the turn before attacking it?",
+  "source": ["card boss_rush", "card gold_bomb", "R-ZONE-10", "R-ZONE-01", "R-ATK-03"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["gold_bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fatty", "fly"],
+    "decks": {"monster": ["spider", "monstro", "dip", "widow"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "boss_rush", "choices": ["ask.slot 2", "ask.slot 2"],
+     "expect": {"allowed": true, "monsters": [{"slot": 2, "card": "widow"}], "attacks": 1}},
+    {"player": 0, "kind": "play", "card": "gold_bomb", "choices": ["widow"],
+     "expect": {"allowed": true, "monsters": [{"card": "widow", "dead": true}, {"slot": 2, "card": "monstro"}], "attacks": 1}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": false, "rule": "R-ATK-03", "active": 0}},
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["monstro"]}}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ATK-03"}
+}

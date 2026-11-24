@@ -1,5 +1,7 @@
 package rulesengine
 
+import "slices"
+
 // Events, curses and other monster-deck mechanics (step 5.6).
 
 // enterMonsterSlot runs what happens when a card enters a monster slot:
@@ -118,12 +120,19 @@ func (g *Game) ForceAttacks(n int, deck bool) {
 
 // ForceAttackOn gives the active player one more attack they must make
 // on one of ids ("must make an additional attack on it", "on one of
-// them"; 19.241). Only the ids in play and attackable count
-// (owedTargets); once none is left, the owed attack ends and the
-// extra attack stays as a free one. A new duty replaces the old one.
+// them"; 19.241). The duty names the ids' cards, so a covered card that
+// comes up later still counts (owner, 2026-11-24). Only those the active
+// player can attack now count (owedTargets); once none is left, the
+// owed attack ends and the extra attack stays as a free one. A new duty
+// replaces the old one.
 func (g *Game) ForceAttackOn(ids ...ObjectID) {
 	g.Turn.Attacks++
-	g.Turn.MustAttackOneOf = append([]ObjectID(nil), ids...)
+	g.Turn.MustAttackOneOfCards = nil
+	for _, id := range ids {
+		if card := g.Object(id).Card; !slices.Contains(g.Turn.MustAttackOneOfCards, card) {
+			g.Turn.MustAttackOneOfCards = append(g.Turn.MustAttackOneOfCards, card)
+		}
+	}
 }
 
 // TakeFromDeck takes a card out of a deck and puts it into play as an

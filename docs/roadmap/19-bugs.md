@@ -7061,7 +7061,7 @@ Totals by system (230 items):
    3. Fix them all in the same change.
    4. `make screenshots LOCALE=ru` and `make e2e` pass.
 
-### [ ] 19.241 Boss Rush!: the extra attack may go at any target
+### [x] 19.241 Boss Rush!: the extra attack may go at any target
 
 1. Goal: Boss Rush!'s extra attack goes only at the bosses it revealed.
 2. Report (owner, 2026-11-24, from 18.35)
@@ -7154,3 +7154,46 @@ Totals by system (230 items):
       3. A boss in a discard, a deck or souls is still no target.
       4. Situation test: one slot, the top boss killed by a Bomb.
       5. Same check for Friendly Ball and Lust for Blood! (5.24).
+   6. Result (2026-11-24)
+      1. Turn field `MustAttackOneOfCards`, `must_attack_one_of_cards`, `omitempty`.
+      2. It replaces `MustAttackOneOf` (object IDs) in the engine.
+      3. `ForceAttackOn(ids...)` keeps its signature; it stores the ids' cards.
+      4. `owedTargets` in `guards.go` stays the one place (5.24).
+         1. `MustAttack`: the object, in play and attackable, as before.
+         2. The card list: every current attack target with one of those cards.
+         3. So a boss that comes up uncovered is a target (R-ZONE-01).
+         4. A boss covered, in a discard, a deck or souls is none.
+      5. `startAttack`: an attack on one of those cards meets the duty.
+      6. The view sends the new field; old records keep `must_attack_one_of`.
+         1. ADR 031 item 5: a new field, the old one's meaning unchanged.
+         2. Client `forcedAttack` reads both; `cardsOnTable` finds the cards.
+      7. Setup `must_attack_one_of` names cards; a ref twice is an error.
+         1. The dump writes only cards attackable now.
+         2. A setup builds no covered card, so a covered one is left out.
+      8. A saved state from 0.5.9 loses its `must_attack_one_of` duty.
+         1. 0.5.9 was never released; no `StateMeaning` raise.
+      9. Rules engine 0.5.10; CHANGELOG Unreleased.
+   7. Checked (5.24)
+      1. fsp2 Boss Rush!: both bosses' cards; the uncovered one counts.
+      2. r Friendly Ball: the leech's card; it may be covered and come up too.
+      3. r Lust for Blood!: the character's card; it never changes zone.
+      4. Its owed target now also needs `PlayerAttackDC`, as every player target.
+      5. Helpers: `ForceAttackOn`, `owedTargets`, `startAttack`, `askAttackTarget`.
+      6. Also the end-turn check in `prompt.go`, `setUpDuties`, the dump.
+      7. Client: `forcedAttack`, `onTable`, `mustTargets`, `mustAttackLine`.
+   8. Tests
+      1. Situation `boss_rush/the-covered-boss-still-counts`.
+         1. Widow on Monstro in slot 2; Gold Bomb!! kills Widow (3 HP).
+         2. Monstro comes up; the turn can't end; the attack offers only Monstro.
+         3. Sources: card text, R-ZONE-10, R-ZONE-01, R-ATK-03.
+      2. Go: `TestFriendlyBall` checks the card "leech" is named.
+      3. Go: `TestAppendTurnMatchesJSON` with the new field.
+      4. Vitest `prompt.test.ts`: by card; one that came up; Lust for Blood!.
+      5. e2e `must-attack.spec.ts`: the save edit sets the new field.
+   9. Docs: UC-46 3f; ADR 034 10.26; wiki `Client.md`, `Rules-engine.md`.
+      1. Also `Situation-payload.md`, `Effect-blocks.md`.
+   10. No screen change: the frames and lines look as before; no screenshots.
+   11. Gates: `make lint`, `make test`, `make frontend` (794 Vitest) pass.
+      1. `make e2e` run 1: 663 passed, 1 failed: `playback.spec.ts:1975` (19.237 flake).
+      2. Evidence: `.cache/e2e-evidence/19.241b-run1/`.
+      3. Run 2: 664 passed, 22 skipped.

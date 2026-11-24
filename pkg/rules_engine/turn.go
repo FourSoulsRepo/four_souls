@@ -39,12 +39,16 @@ type Turn struct {
 	// MustAttackDeck of them on the monster deck.
 	MustAttacks    int `json:"must_attacks,omitempty"`
 	MustAttackDeck int `json:"must_attack_deck,omitempty"`
-	// MustAttackOneOf are the cards the active player must make an
+	// MustAttackOneOfCards are the cards the active player must make an
 	// additional attack on one of this turn (Boss Rush!, Friendly Ball,
-	// Lust for Blood!; 19.241). Only those in play and attackable count
-	// (owedTargets): a covered one (R-ZONE-10) or one that left play is
-	// none; with none left, the duty ends. An attack on one meets it.
-	MustAttackOneOf []ObjectID `json:"must_attack_one_of,omitempty"`
+	// Lust for Blood!; 19.241). They name cards, not objects: a boss
+	// that comes up uncovered is a new object (R-ZONE-01) and still one
+	// of them (owner, 2026-11-24). Only a card the active player can
+	// attack now counts (owedTargets): a covered one (R-ZONE-10), or one
+	// in a discard, a deck or souls, is none; with none left, the duty
+	// ends. An attack on one meets it. It replaced must_attack_one_of
+	// (object IDs), which only older records' views hold (ADR 031).
+	MustAttackOneOfCards []CardRef `json:"must_attack_one_of_cards,omitempty"`
 	// RandomAttackMade: an attack this turn went to one of the monsters
 	// a MustAttackRandom card lists; the duty is met (Q-31).
 	RandomAttackMade bool `json:"random_attack_made,omitempty"`

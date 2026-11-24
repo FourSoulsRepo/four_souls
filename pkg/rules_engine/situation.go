@@ -90,7 +90,8 @@ type SituationSetup struct {
 	MustAttackDeck int     `json:"must_attack_deck,omitempty"`
 	// MustAttackOneOf names the cards the active player must make an
 	// additional attack on one of (Boss Rush!, Friendly Ball, Lust for
-	// Blood!; 19.241). It adds no attack: `attacks` says how many.
+	// Blood!; 19.241): Turn.MustAttackOneOfCards. Each is a card they can
+	// attack now. It adds no attack: `attacks` says how many.
 	MustAttackOneOf []CardRef `json:"must_attack_one_of,omitempty"`
 }
 

@@ -209,7 +209,7 @@ func (s *StackItem) clone() StackItem {
 
 func (t Turn) clone() Turn {
 	t.NextHelpers = slices.Clone(t.NextHelpers)
-	t.MustAttackOneOf = slices.Clone(t.MustAttackOneOf)
+	t.MustAttackOneOfCards = slices.Clone(t.MustAttackOneOfCards)
 	t.NextShare = slices.Clone(t.NextShare)
 	t.LateRooms = slices.Clone(t.LateRooms)
 	return t

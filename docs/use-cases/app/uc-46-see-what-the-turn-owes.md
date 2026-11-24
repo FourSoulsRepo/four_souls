@@ -44,6 +44,7 @@
   * In one slot the top boss covers the other: only it is named.
   * A boss that died is dropped; with none left, the line goes.
   * Friendly Ball and Lust for Blood! name their one target the same way.
+  * The top boss dies first: the boss under it comes up and is named.
 
 ## Postconditions
 

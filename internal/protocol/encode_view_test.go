@@ -93,12 +93,12 @@ func TestAppendPromptMatchesJSON(t *testing.T) {
 
 // TestAppendTurnMatchesJSON: a turn encodes to the bytes encoding/json
 // writes for it, bare and with every optional field set (19.241: the
-// bosses Boss Rush! owes an attack on, and random_attack_made).
+// bosses' cards Boss Rush! owes an attack on, and random_attack_made).
 func TestAppendTurnMatchesJSON(t *testing.T) {
 	full := engine.Turn{
 		Active: 1, Number: 7, Step: engine.StepAction, LootPlays: 1, Attacks: 2, Purchases: 1, AttackRolls: 3,
 		BonusLootUsed: 1, BonusAttacksUsed: 1, BonusPurchasesUsed: 1,
-		MustAttack: 9, MustAttacks: 1, MustAttackDeck: 1, MustAttackOneOf: []engine.ObjectID{11, 12},
+		MustAttack: 9, MustAttacks: 1, MustAttackDeck: 1, MustAttackOneOfCards: []engine.CardRef{"monstro", "widow"},
 		RandomAttackMade: true, DeckAttacks: 1, ShopBought: 1, FreeShopItem: true, EndDeclared: true, DeathEnd: true,
 		NextHelpers: []engine.PlayerID{2}, NextShare: []engine.PlayerID{2},
 		MonsterDied: true, RoomReplaced: true, LateRooms: []engine.ObjectID{13}, Entered: true,

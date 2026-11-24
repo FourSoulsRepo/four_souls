@@ -284,6 +284,29 @@ describe('forced attacks', () => {
     expect(mustAttackTip(owe({ must_attack: 9, must_attack_one_of: [11, 12] }), 0, names)).toBe('You must attack: GAPER or MONSTRO or WIDOW');
   });
 
+  // Newer servers name the bosses' cards (must_attack_one_of_cards):
+  // "on one of them" still holds for a boss that comes up from under a
+  // dead one as a new object (R-ZONE-01; owner, 2026-11-24; 19.241).
+  it('finds the bosses by card, also one that came up uncovered (19.241)', () => {
+    const owe = (monsters: GameView['monsters']): GameView => ({ ...view, monsters, turn: { ...view.turn, must_attack_one_of_cards: ['monstro', 'widow'] } });
+    // Two slots: either boss.
+    const two = owe([{ top: { id: 9, card: 'gaper', charged: true } }, { top: { id: 11, card: 'monstro', charged: true } }, { top: { id: 12, card: 'widow', charged: true } }]);
+    expect(mustTargets(two)).toEqual([11, 12]);
+    expect(mustAttackTip(two, 0, names)).toBe('You must attack: MONSTRO or WIDOW');
+    // One slot: Widow covers Monstro (R-ZONE-10), so only Widow.
+    const one = owe([{ top: { id: 9, card: 'gaper', charged: true } }, { top: { id: 12, card: 'widow', charged: true }, covered: [{ id: 11, card: 'monstro', charged: true }] }]);
+    expect(mustTargets(one)).toEqual([12]);
+    // A Bomb kills Widow; Monstro comes up as object 13: still owed.
+    const up = owe([{ top: { id: 9, card: 'gaper', charged: true } }, { top: { id: 13, card: 'monstro', charged: true } }]);
+    expect(mustTargets(up)).toEqual([13]);
+    expect(mustAttackTip(up, 0, names)).toBe('You must attack: MONSTRO');
+    // Both gone from the table: the duty ends.
+    expect(forcedAttack(owe([{ top: { id: 9, card: 'gaper', charged: true } }]))).toBeNull();
+    // Lust for Blood! names a character's card: "an additional attack
+    // against them".
+    expect(mustTargets({ ...view, turn: { ...view.turn, must_attack_one_of_cards: [view.players[1].character.card] } })).toEqual([2]);
+  });
+
   it('shows the line to the active player only; others see their turn', () => {
     expect(banner(must({ must_attacks: 1 }), 1)?.hint).toBe('Playing their turn');
   });

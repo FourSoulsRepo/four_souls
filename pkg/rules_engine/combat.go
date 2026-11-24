@@ -548,8 +548,8 @@ func (g *Game) startAttack(target ObjectID) {
 	if g.Turn.MustAttack == target {
 		g.Turn.MustAttack = 0 // the forced attack is made (Monster Manual, Krampus)
 	}
-	if contains(g.Turn.MustAttackOneOf, target) {
-		g.Turn.MustAttackOneOf = nil // made on one of them (Boss Rush!, 19.241)
+	if slices.Contains(g.Turn.MustAttackOneOfCards, g.Object(target).Card) {
+		g.Turn.MustAttackOneOfCards = nil // made on one of them (Boss Rush!, 19.241)
 	}
 	if contains(g.randomAttackTargets(), target) {
 		g.Turn.RandomAttackMade = true // Q-31: an attack went to one of them
