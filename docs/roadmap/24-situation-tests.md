@@ -1318,7 +1318,7 @@ Ideas: TS-13, LR-04, R-03.
 11. ADR 034: no drift; it does not say what the counts read.
 12. No rules bug found.
 
-### [ ] 24.29 A stacked attack roll spends an attack as the game does
+### [x] 24.29 A stacked attack roll spends an attack as the game does
 
 1. Why (owner, 2026-11-24, after 24.28)
    1. `setup.stack` with an `attack_roll` starts an attack.
@@ -1338,3 +1338,30 @@ Ideas: TS-13, LR-04, R-03.
    1. Go: the bonus attack spent; the error with none left.
    2. Wiki `Situation-payload.md`: the stacked roll's attack.
    3. ADR 034: drift edited in place, if any.
+5. Done (2026-11-25)
+   1. `stackedAttackRoll` spends the attack by `spendAttack`, as a declaration.
+   2. The turn's own attack first, then a bonus one.
+   3. No attack left (`attacksLeft` 0): a setup error naming R-TURN-07.
+   4. The rule stays in `spendAttack` and `attacksLeft`; the setup only calls them.
+   5. `setUpDeclared` calls the same two; no copy of the rule.
+   6. No engine game code changed; no version bump.
+6. Deck-attack part of `spendAttack`
+   1. It runs only while `Turn.DeckAttacks` > 0.
+   2. A setup has no deck attack field; `DeckAttacks` is always 0 there.
+   3. So the stacked roll is never a monster deck attack.
+   4. If a deck-attack field comes, a slot monster roll needs a rule then.
+7. Order with the attack duties (19.235)
+   1. `setUpDuties` runs after the stack, as before.
+   2. `spendAttack` finds `MustAttacks` 0 then, so takes none off.
+   3. The duty fields stay what is left after the roll, as for `declared`.
+   4. The R-ATK-22 check on the rolled `must_attack` card is unchanged.
+8. Files: none changed.
+   1. 14 files have a stacked `attack_roll`; all keep `attacks` 1 by default.
+   2. None sets `setup.attacks`; none has a bonus attack card.
+   3. Bonus cards searched: Champion Belt, Bum-Bo, Might For The Meek, Berserk, Skeleton Key.
+   4. Go card tests with a stacked roll (? Card): pass unchanged.
+9. Tests: `TestStackedAttackRollSpendsABonusAttack`, `TestStackedAttackRollNeedsAnAttack`.
+   1. Test card `belt`, like Champion Belt; `attacks` 0 after the roll.
+10. Wiki `Situation-payload.md`: stacked items, window errors, attack duties.
+11. ADR 034: no drift.
+12. No rules bug found.

@@ -180,7 +180,10 @@ func (g *Game) stackedTrigger(p PlayerID, st SituationStack) (StackItem, error) 
 
 // stackedAttackRoll: the active player attacks the monster card; the
 // attack is declared and its target chosen, which used one attack. It
-// needs the action phase (R-ATK-01).
+// needs the action phase (R-ATK-01) and an attack left (R-TURN-07). The
+// attack is spent as a declaration spends it (spendAttack): a regular
+// one first, then a bonus one (24.29). A setup has no deck attacks, so
+// it is never one on the monster deck; duties are set after the stack.
 func (g *Game) stackedAttackRoll(p PlayerID, st SituationStack) (StackItem, error) {
 	if p != g.Turn.Active {
 		return StackItem{}, fmt.Errorf("owner %d is not the active player; only they attack here", st.Owner)
@@ -199,11 +202,11 @@ func (g *Game) stackedAttackRoll(p PlayerID, st SituationStack) (StackItem, erro
 		return StackItem{}, fmt.Errorf("%q is not a monster in play", st.Card)
 	case g.Attack.Started && g.Attack.Target != target:
 		return StackItem{}, errors.New("every attack roll must attack the same monster")
+	case !g.Attack.Started && g.attacksLeft() < 1:
+		return StackItem{}, errors.New("an attack roll needs an attack left (R-TURN-07), and attacks is 0")
 	case !g.Attack.Started:
+		g.spendAttack()
 		g.Attack = AttackState{On: true, Started: true, Target: target}
-		if g.Turn.Attacks > 0 {
-			g.Turn.Attacks--
-		}
 	}
 	it := g.attackRollItem(p)
 	it.Roll = st.DiceRoll
