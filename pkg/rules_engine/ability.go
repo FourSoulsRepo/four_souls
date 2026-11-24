@@ -112,7 +112,7 @@ type Need struct {
 // OnlyIf is a condition the card states for using the ability: "This
 // can't be activated during an attack." (Red Key). say is why not, for
 // the player: "Not during an attack". While ok is false, activating it
-// is refused by R-ABIL-08.
+// is refused by R-ABIL-08, and ? Card does not copy it (19.243).
 func OnlyIf(say Key, ok func(g *Game, p PlayerID, self ObjectID) bool) Need {
 	return Need{rule: "R-ABIL-08", say: say, ok: ok}
 }

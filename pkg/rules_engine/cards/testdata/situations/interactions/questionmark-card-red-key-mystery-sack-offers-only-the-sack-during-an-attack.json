@@ -1,0 +1,16 @@
+{
+  "title": "Isaac has declared an attack; Cain has Red Key and a Mystery Sack. Isaac plays ? Card: is only the Sack's ↷ ability offered to copy?",
+  "source": ["card questionmark_card", "card red_key", "card mystery_sack", "R-ATK-02", "R-ABIL-08", "R-MECH-11"],
+  "sets": ["b2", "fsp2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["questionmark_card"]}, {"character": "cain", "items": ["red_key", "mystery_sack"]}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "declared": "attack"
+  },
+  "action": {"player": 0, "kind": "play", "card": "questionmark_card"},
+  "expect": {
+    "allowed": true,
+    "prompt": {"player": 0, "options": ["mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢.", "ask.cancel"]}
+  }
+}

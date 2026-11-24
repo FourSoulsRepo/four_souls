@@ -1,0 +1,17 @@
+{
+  "title": "Isaac has declared an attack and Cain's Red Key is the only ↷ item in play: may Isaac play ? Card to copy it?",
+  "source": ["card questionmark_card", "card red_key", "R-ATK-02", "R-ABIL-08", "R-MECH-11"],
+  "sets": ["b2", "fsp2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["questionmark_card"]}, {"character": "cain", "items": ["red_key"]}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "declared": "attack"
+  },
+  "action": {"player": 0, "kind": "play", "card": "questionmark_card"},
+  "expect": {
+    "allowed": false,
+    "rule": "R-ABIL-08",
+    "after": [{"player": 0, "hand_cards": ["questionmark_card"]}, {"player": 1, "deactivated": []}]
+  }
+}

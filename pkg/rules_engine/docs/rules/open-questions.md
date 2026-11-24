@@ -781,6 +781,10 @@ On 2026-10-09 the owner parked every open decision for later.
 7. A copied ability needs a valid target too (owner, 2026-11-23, 19.238).
    1. ? Card offers only the ↷ abilities with one; with none it is refused.
    2. So it matches Placebo, whose copy is checked as it is used.
+8. A copy keeps the limits its card states (owner, 2026-11-25, 19.243).
+   1. E.g. Red Key, "can't be activated during an attack": no copy then.
+   2. Refused by R-ABIL-08 when only such limits hold every copy back.
+   3. "This" in a copied limit is the ? Card (R-MECH-11).
 
 ### Q-56 ? Card copies Friendly Ball's catch
 

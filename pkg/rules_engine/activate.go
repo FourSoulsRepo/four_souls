@@ -1,5 +1,7 @@
 package rulesengine
 
+import "errors"
+
 // Activation is an ability (or loot card) being put on the stack while its
 // targets are chosen (R-ABIL-04).
 type Activation struct {
@@ -515,17 +517,58 @@ func (g *Game) choosablePlayers(ids []PlayerID) []PlayerID {
 }
 
 // copyableTapAbilities lists the ↷ abilities p may copy with the loot
-// card self ("? Card"): those in play with a valid target, as Placebo's
-// copies are checked in activatable (R-ABIL-40, Q-55, 19.238). The copy
-// pays no cost, so only its targets count.
+// card self ("? Card"): those in play it could use now, as Placebo's
+// copies are checked in activatable (Q-55, 19.238, 19.243).
 func (g *Game) copyableTapAbilities(p PlayerID, self ObjectID) []AbilityRef {
 	var out []AbilityRef
 	for _, r := range g.tapAbilitiesInPlay(self) {
-		if g.targetsAvailable(g.ability(r), p, self) == nil {
+		if g.copyRefusal(r, p, self) == nil {
 			out = append(out, r)
 		}
 	}
 	return out
+}
+
+// copyRefusal returns why p may not copy the ↷ ability r with the loot
+// card self, or nil. The copy keeps the limits its card states (R-ABIL-08,
+// owner 19.243) and needs a valid target (R-ABIL-40, 19.238), checked as
+// activatable checks them. It pays no cost, so costs don't count. "This"
+// in a copied limit is self (R-MECH-11).
+func (g *Game) copyRefusal(r AbilityRef, p PlayerID, self ObjectID) error {
+	a := g.ability(r)
+	if err := g.unmet(a, "R-ABIL-08", p, self); err != nil {
+		return err
+	}
+	return g.targetsAvailable(a, p, self)
+}
+
+// nothingToCopy returns why p may not play the loot card self ("? Card")
+// for want of a ↷ ability to copy, or nil. When every one is held back by
+// a limit its card states, that limit says why (R-ABIL-08, 19.243);
+// otherwise none has a valid target (R-ABIL-40, 19.238).
+func (g *Game) nothingToCopy(p PlayerID, self ObjectID) error {
+	refs := g.tapAbilitiesInPlay(self)
+	if len(refs) == 0 {
+		return deny("R-ABIL-40", refuseNothingToCopy.Msg(), "no item in play has a ↷ ability to copy")
+	}
+	var limit error
+	onlyLimits := true
+	for _, r := range refs {
+		err := g.copyRefusal(r, p, self)
+		if err == nil {
+			return nil
+		}
+		var re *RuleError
+		if !errors.As(err, &re) || re.Rule != "R-ABIL-08" {
+			onlyLimits = false
+		} else if limit == nil {
+			limit = err
+		}
+	}
+	if onlyLimits {
+		return limit
+	}
+	return deny("R-ABIL-40", refuseNoTarget.Msg(), "no ↷ ability in play has a valid target to copy")
 }
 
 // tapAbilitiesInPlay lists every ↷ ability of the items in play, shop

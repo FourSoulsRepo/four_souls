@@ -7323,6 +7323,59 @@ Totals by system (234 items):
    3. One shared check with `activatable`; no second copy of the rule (5.24).
    4. Check every copy path, all sets: Placebo, ? Card, others (as 19.238).
    5. A file: ? Card during an attack offers no Red Key copy.
+5. Done (2026-11-25)
+   1. New `copyRefusal(r, p, self)`: why ? Card may not copy ability r.
+   2. It asks `unmet(…, "R-ABIL-08", …)`, then `targetsAvailable`.
+   3. The same two checks `activatable` makes; no second copy of the rule.
+   4. Costs aside: the copy pays none (R-MECH-11).
+   5. `self` is the ? Card: "this" in a copied limit is the ? Card (R-MECH-11).
+   6. So Friendly Ball's first copy still passes; Q-56 unchanged.
+   7. `copyableTapAbilities` (the copy prompt) filters through it.
+   8. New `nothingToCopy`: `lootPlayable`'s ? Card check, moved and widened.
+   9. Rules engine 0.5.12; CHANGELOG Unreleased.
+6. Rule cited when nothing is left to copy
+   1. No ↷ item in play: R-ABIL-40, "nothing to copy" (19.236, unchanged).
+   2. Every copy held back by a stated limit: R-ABIL-08, the card's own key.
+   3. E.g. Red Key alone, during an attack: "Not during an attack".
+   4. Otherwise (some lack a target): R-ABIL-40, "No valid target now".
+   5. Why R-ABIL-08: the copy is refused by what the card states (owner).
+   6. That is R-ABIL-08's "unless stated", as for Red Key itself.
+   7. R-ABIL-40 would say "no valid target"; Red Key has no target, so false.
+   8. Mixed: a copy lacks a target, so R-ABIL-40, as 19.238.
+7. Checked (5.24): every copy path, all sets.
+   1. fsp2 ? Card (`CopiesTapOnPlay`): changed.
+   2. b2 Placebo (`CopiesTapAbilities`): `activatable` checks `Needs`; unchanged.
+   3. Placebo with Red Key during an attack: refused by R-ABIL-08 already.
+   4. b2 Blank Card: copies the loot just played, same moment, same check.
+   5. So a Blank Card copy of ? Card copies an allowed ability; unchanged.
+   6. b2 Modeling Clay, b2 Diplopia, r Birthright, r Undefined: become a copy.
+   7. The copy's abilities are used through `activatable`; unchanged.
+   8. r Glitch (`GainAbilities`): gained abilities use `activatable`; unchanged.
+   9. Only Red Key and Friendly Ball use `Needs`, both r.
+   10. g2, challenge: no other card copies an ability.
+8. Bots and client: no change needed.
+   1. `Allowed` (`actions.go`) and the play check call `lootPlayable`.
+   2. Bots pick from `Allowed`; the client gets it in each update.
+   3. `Blocked` shows the refusal's say: "Not during an attack".
+   4. Bot `ChooseCopyAbility` weighs only the offered options.
+9. Tests (cross-set, `cards/testdata/situations/interactions/`)
+   1. `questionmark-card-red-key-refused-during-an-attack.json`: R-ABIL-08.
+   2. `questionmark-card-red-key-mystery-sack-offers-only-the-sack-during-an-attack.json`.
+   3. `questionmark-card-red-key-offered-outside-an-attack.json`.
+   4. Sources: both cards, R-ATK-02, R-ABIL-08, R-MECH-11.
+   5. The first two failed with the limit check off.
+   6. The third is the working case; it can't fail with the check off.
+   7. It guards against a check that refuses Red Key's copy always.
+   8. `questionmark-card-friendly-ball-offers-only-the-catch.json` still passes.
+10. Docs
+   1. Q-55 item 8: a copy keeps the limits its card states.
+   2. Wiki `Effect-blocks.md`, `Adding-a-card.md`: `OnlyIf` for ? Card too.
+11. Gates (2026-11-25)
+   1. `make lint test` and `make site` passed; site: engine 0.5.12.
+   2. `make e2e`: 663 passed, 1 failed; evidence in `.cache/e2e-evidence/19.243/`.
+   3. rooms.spec.ts:72 (webkit, seed 2367047448): Samson's Blessing not seen in 5 s.
+   4. A room test; no ? Card or Red Key; unrelated.
+   5. It passed alone on the first rerun, the same seed; no new item.
 
 ### [ ] 19.244 A card under an item is not shown
 

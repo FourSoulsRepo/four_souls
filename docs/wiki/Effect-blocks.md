@@ -79,7 +79,7 @@ A condition for using an ability that is no payment is no cost: it goes in the a
 
 | Block | Example |
 |---|---|
-| `OnlyIf(say, ok)` | A limit the card states: "This can't be activated during an attack." (Red Key), "if there are no cards under this" (Friendly Ball); refused by R-ABIL-08 |
+| `OnlyIf(say, ok)` | A limit the card states: "This can't be activated during an attack." (Red Key), "if there are no cards under this" (Friendly Ball); refused by R-ABIL-08, for ? Card's copy too (19.243) |
 | `ActsOn(ok)` | A thing it acts on that no target spec names: "a monster from under this" (Friendly Ball); with none, no valid target (R-ABIL-40), for ? Card's copy too |
 
 ## Targets

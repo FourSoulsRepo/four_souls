@@ -1,0 +1,15 @@
+{
+  "title": "No attack is in progress and Cain has Red Key. Isaac plays ? Card: is Red Key's ↷ ability offered to copy?",
+  "source": ["card questionmark_card", "card red_key", "R-ABIL-08", "R-MECH-11"],
+  "sets": ["b2", "fsp2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["questionmark_card"]}, {"character": "cain", "items": ["red_key"]}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "questionmark_card"},
+  "expect": {
+    "allowed": true,
+    "prompt": {"player": 0, "options": ["red_key: ↷: Look at the top 3 cards of the room or monster deck. You may put one of those in a slot and the rest back. This can't be activated during an attack.", "ask.cancel"]}
+  }
+}
