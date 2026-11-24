@@ -301,6 +301,17 @@
   * Above 4 icons: the first 4, then a "+K" chip.
   * Hover the chip: the character zooms, as from the card.
   * Monsters keep the old rule: icons for this turn's effects only.
+* **3l. Every effect in the character's zoom (18.32, ADR 037):** a list beside the card.
+  * Title: "Effects on you"; another player's: "Effects on Ann".
+  * "This turn" first, then "While in play".
+  * Each line: what it does, then its card: "−5¢ to shop prices — Steamy Sale!".
+  * A hidden source: "a hidden card".
+  * Own-area cards are in it too, though they have no icon.
+  * Shields are in it: "Prevents the next 1 damage — Soul Heart".
+  * HP, ATK, rolls and damage taken only in their sums under the card.
+  * Above 8 lines: the first 8, then "2 more effects".
+  * Hover the "+K" chip or the card: the zoom shows the list.
+  * On touch, a long press shows it too.
 
 ## Postconditions
 

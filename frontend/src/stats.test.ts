@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import protocol from './protocol.ts?raw';
 import type { StatSource } from './protocol';
 import en from './locales/en.json';
-import { damageTaken, effect, effectIcons, hitsText, oddsLine, rewardsLine, rollChanges, shownIcons, statLines, sumOf, trend } from './stats';
+import { damageTaken, effect, effectIcons, effectList, hitsText, oddsLine, rewardsLine, rollChanges, shownEffects, shownIcons, statLines, sumOf, trend } from './stats';
 
 const names = new Map([
   ['polyphemus', 'Polyphemus'],
@@ -13,6 +13,11 @@ const names = new Map([
   ['curse', 'Curse of the Blind'],
   ['trick_treat_normhardultra', 'Trick'],
   ['daddy_haunt', 'Daddy Haunt'],
+  ['steamy_sale', 'Steamy Sale!'],
+  ['curse_of_the_soulless', 'Curse of the Soulless'],
+  ['tax_for_the_mighty', 'Tax for the Mighty'],
+  ['get_out_of_jail_card', 'Get Out of Jail Card'],
+  ['soul_heart', 'Soul Heart'],
 ]);
 const name = (card: string | undefined) => (card ? (names.get(card) ?? card) : 'a hidden card');
 
@@ -218,6 +223,66 @@ describe('shownIcons: four, then a "+K" chip (ADR 037 item 3.6)', () => {
   it('shows the first four and counts the rest', () => {
     expect(shownIcons([1, 2, 3, 4, 5])).toEqual({ shown: [1, 2, 3, 4], more: 1 });
     expect(shownIcons([1, 2, 3, 4, 5, 6, 7])).toEqual({ shown: [1, 2, 3, 4], more: 3 });
+  });
+});
+
+// The zoom's list of every effect on a player (18.32, ADR 037 item 4).
+describe('effectList (18.32)', () => {
+  // Group A, the own area. Steamy Sale!: "Shop items you purchase cost
+  // 5¢ less." Curse of the Soulless: "You can't gain souls."
+  const sale: StatSource = { stat: 'shop_price', source: 20, card: 'steamy_sale', amount: -5, lasts: 'in_play' };
+  const soulless: StatSource = { stat: 'no_souls', source: 21, card: 'curse_of_the_soulless', amount: 1, lasts: 'in_play' };
+  // Group B, a room. Tax for the Mighty: "... must pay each other player
+  // 2¢ to attack."
+  const tax: StatSource = { stat: 'attack_tax', source: 41, card: 'tax_for_the_mighty', amount: 2, lasts: 'in_play' };
+  // Group C, played and gone. Get Out of Jail Card: "... other players
+  // can't play loot cards or activate items" till end of turn; Soul
+  // Heart: "Prevent the next 1 damage they would take this turn."
+  const jail: StatSource = { stat: 'lock_turn', source: 7, card: 'get_out_of_jail_card', amount: 1, lasts: 'turn' };
+  const heart: StatSource = { stat: 'shield', source: 46, card: 'soul_heart', amount: 1, lasts: 'turn' };
+  it("lists this turn's effects, then the lasting ones, groups A, B and C (items 4.1, 4.2)", () => {
+    expect(effectList([sale, jail, tax, soulless, heart], name)).toEqual({
+      turn: ["Others can't play loot cards or activate items — Get Out of Jail Card", 'Prevents the next 1 damage — Soul Heart'],
+      lasting: ['−5¢ to shop prices — Steamy Sale!', 'Pays 2¢ to each other player to attack — Tax for the Mighty', "Can't gain souls — Curse of the Soulless"],
+    });
+  });
+  it('says what it does, then the card; a hidden one is "a hidden card" (items 4.3, 1.6)', () => {
+    const hidden: StatSource = { stat: 'purchases', amount: 1, lasts: 'turn' };
+    expect(effectList([hidden], name).turn).toEqual(['+1 purchase — a hidden card']);
+  });
+  it('repeats no sum line: HP, ATK, rolls, attacked DC, damage taken (item 4.4)', () => {
+    const taken: StatSource = { stat: 'damage_taken', source: 30, card: 'daddy_haunt', amount: 1, lasts: 'in_play' };
+    const attacked: StatSource = { stat: 'attacked_dc', source: 31, card: 'curse', amount: -1, lasts: 'in_play' };
+    const roll: StatSource = { stat: 'roll', source: 32, card: 'meat', amount: 1, lasts: 'turn' };
+    const hp: StatSource = { ...poly, stat: 'hp' };
+    expect(effectList([poly, strength, hp, meat, worm, roll, attacked, taken], name)).toEqual({ turn: [], lasting: [] });
+    expect(effectList(undefined, name)).toEqual({ turn: [], lasting: [] });
+  });
+  it('lists shields, two of one card apart; one source adds up', () => {
+    const poop = { stat: 'shield', source: 8, card: 'the_poop', lasts: 'turn' } as StatSource; // the whole next damage
+    expect(effectList([poop, poop, heart], name).turn).toEqual([
+      'Prevents the next damage — the_poop',
+      'Prevents the next damage — the_poop',
+      'Prevents the next 1 damage — Soul Heart',
+    ]);
+    expect(effectList([sale, sale], name).lasting).toEqual(['−10¢ to shop prices — Steamy Sale!']);
+  });
+  it('says "on your turn" for a lasting turn-only effect', () => {
+    // Trinity Shield: "Other players can't play loot cards or activate
+    // items on your turn."
+    const trinity: StatSource = { stat: 'lock_others', source: 48, card: 'trinity_shield', amount: 1, lasts: 'in_play' };
+    expect(effectList([trinity], name).lasting).toEqual(["Others can't play loot cards or activate items on your turn — trinity_shield"]);
+  });
+});
+
+describe('shownEffects: eight lines, then a count (18.32)', () => {
+  const lines = (n: number, tag: string) => Array.from({ length: n }, (_, i) => `${tag}${String(i)}`);
+  it('shows up to eight lines and no count', () => {
+    expect(shownEffects({ turn: lines(3, 't'), lasting: lines(5, 'l') })).toEqual({ turn: lines(3, 't'), lasting: lines(5, 'l'), more: 0 });
+  });
+  it("keeps this turn's lines first and counts the rest", () => {
+    expect(shownEffects({ turn: lines(3, 't'), lasting: lines(7, 'l') })).toEqual({ turn: lines(3, 't'), lasting: lines(5, 'l'), more: 2 });
+    expect(shownEffects({ turn: lines(10, 't'), lasting: lines(1, 'l') })).toEqual({ turn: lines(8, 't'), lasting: [], more: 3 });
   });
 });
 

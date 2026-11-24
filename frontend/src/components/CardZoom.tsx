@@ -1,9 +1,10 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { language, t } from '../i18n';
-import { useApp, type Zoom } from '../store';
+import { useApp, type Zoom, type ZoomEffects } from '../store';
 import { feel } from '../feel';
 import { keyword, placeZoom, type Place } from '../zoom';
 import { outcomeGrid, type Outcome } from '../history';
+import { shownEffects } from '../stats';
 import { artistsOf, translatorsOf } from '../cards';
 import { counterColor } from '../counters';
 import type { CounterView } from '../protocol';
@@ -22,7 +23,8 @@ import './Card.css';
 // card's keywords stand beside it (H-13). A card the player can't use
 // now says why under it (15.29, F-17, C-06). A history headline's zoom
 // shows what it did beside the card, after an arrow (15.90). A changed
-// stat's sum goes under the card (15.92). Under it, its artists (CD-14,
+// stat's sum goes under the card (15.92); a character's effects stand
+// beside it (18.32). Under it, its artists (CD-14,
 // 20.24) and, for a translated card, its translators (CD-06, 16.5), in
 // outlined game letters like the reference's credit (ADR 027 "Credits"
 // 13). A two-sided card shows its other side beside it, smaller
@@ -150,18 +152,57 @@ export function CardZoom() {
           </figure>
         )}
         {zoom.outcome && zoom.outcome.length > 0 && <Outcomes list={zoom.outcome} swords={zoom.swords ?? false} />}
-        {footnotes && footnotes.length > 0 && (
-          <aside className="card-zoom-tips" role="note" aria-label={t('zoom.keywords')}>
-            {footnotes.map((f) => (
-              <p key={f.title} className="card-zoom-tip">
-                <b>{keyword(f.title)}</b>
-                <CardText text={f.text} />
-              </p>
-            ))}
-          </aside>
+        {(zoom.effects !== undefined || (footnotes?.length ?? 0) > 0) && (
+          <div className="card-zoom-notes">
+            {zoom.effects && <Effects list={zoom.effects} />}
+            {footnotes && footnotes.length > 0 && (
+              <aside className="card-zoom-tips" role="note" aria-label={t('zoom.keywords')}>
+                {footnotes.map((f) => (
+                  <p key={f.title} className="card-zoom-tip">
+                    <b>{keyword(f.title)}</b>
+                    <CardText text={f.text} />
+                  </p>
+                ))}
+              </aside>
+            )}
+          </div>
         )}
       </div>
     </div>
+  );
+}
+
+// Effects is a zoomed character's list of every effect on its player
+// (ADR 037 item 4, 18.32): beside the card, above its keyword notes, so
+// the zoom keeps the card's height. This turn's effects, then the ones
+// that last while in play; above MAX_EFFECT_LINES a last line counts the
+// rest (shownEffects).
+function Effects({ list }: { list: ZoomEffects }) {
+  const { turn, lasting, more } = shownEffects(list);
+  const group = (title: string, lines: string[]) =>
+    lines.length > 0 && (
+      <li className="card-zoom-effects-group">
+        <b>{title}</b>
+        <ul aria-label={title}>
+          {lines.map((line, i) => (
+            // Two sources may say the same; a list's order is stable.
+            // eslint-disable-next-line @eslint-react/no-array-index-key
+            <li key={i}>{line}</li>
+          ))}
+        </ul>
+      </li>
+    );
+  return (
+    <section className="card-zoom-effects">
+      <h3>
+        <BotText text={list.title} />
+      </h3>
+      <ul aria-label={list.title}>
+        {group(t('zoom.effects_turn'), turn)}
+        {group(t('zoom.effects_lasting'), lasting)}
+        {more > 0 && <li className="card-zoom-effects-more">{t('zoom.effects_more', { n: more })}</li>}
+      </ul>
+    </section>
   );
 }
 

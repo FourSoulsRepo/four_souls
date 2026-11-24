@@ -4688,6 +4688,10 @@
     "text": "{amount}¢ to shop prices",
     "note": "Tooltip of an effect icon on a character, one line each (ADR 037). amount: '−5' or '+1'."
   },
+  "stats.effect_from": {
+    "text": "{effect} — {card}",
+    "note": "Zoomed character, one line of its effect list (ADR 037 item 4): what it does, then the source card. effect: '−5¢ to shop prices'; card: 'Steamy Sale!' or 'a hidden card'."
+  },
   "stats.hidden_card": {
     "text": "a hidden card",
     "note": "A stat source or roll change whose card the viewer can't see."
@@ -5160,6 +5164,29 @@
   "zoom.counters": {
     "text": "Counters",
     "note": "Zoomed card: screen-reader name of the counter list under it, one line a kind."
+  },
+  "zoom.effects_lasting": {
+    "text": "While in play",
+    "note": "Zoomed character's effect list: heading of the effects that last while their card is in play."
+  },
+  "zoom.effects_more": {
+    "text": {
+      "one": "{n} more effect",
+      "other": "{n} more effects"
+    },
+    "note": "Zoomed character's effect list: last line when the list is cut. n: the effects not shown."
+  },
+  "zoom.effects_on": {
+    "text": "Effects on {player}",
+    "note": "Zoomed character of another player: title of the list of every effect on them (ADR 037 item 4). player: their name."
+  },
+  "zoom.effects_turn": {
+    "text": "This turn",
+    "note": "Zoomed character's effect list: heading of the effects that end with the turn."
+  },
+  "zoom.effects_you": {
+    "text": "Effects on you",
+    "note": "Zoomed own character: title of the list of every effect on the player (ADR 037 item 4)."
   },
   "zoom.keywords": {
     "text": "Keywords",

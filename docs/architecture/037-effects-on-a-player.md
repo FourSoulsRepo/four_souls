@@ -103,6 +103,10 @@ Use option 1.
    2. "This turn" first, then "while in play".
    3. Each line: what it does, then the source card's name.
    4. No repeats of a sum line: HP, ATK, rolls, damage taken (owner, 2026-11-24).
+   5. The list stands beside the card, above its keyword notes (18.32).
+      1. Under the sums it left a 720 px window.
+   6. Above 8 lines: the first 8, then a count of the rest (18.32).
+   7. A hidden source is "a hidden card" (18.32).
 5. Words are keys in `en.json`, one per stat (ADR 021).
 6. Every player sees every player's effects: they are public.
 

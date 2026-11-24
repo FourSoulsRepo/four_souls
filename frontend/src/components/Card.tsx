@@ -9,8 +9,8 @@ import { scaleFor } from '../playback';
 import { fighters, mustTargets } from '../prompt';
 import { counterColor, ghostPath } from '../counters';
 import type { CounterView, MonsterStats, StatSource } from '../protocol';
-import { damageTaken, effectIcons, rewardsLine, rewardsText, shownIcons, statLines, sumOf, trend, type EffectIcon, type Name, type Trend } from '../stats';
-import { useApp, viewScale } from '../store';
+import { damageTaken, effectIcons, effectList, rewardsLine, rewardsText, shownIcons, statLines, sumOf, trend, type EffectIcon, type Name, type Trend } from '../stats';
+import { useApp, viewScale, type ZoomEffects } from '../store';
 import { arrowShows } from '../aim';
 import { boxOf, restWatch, type RestWatch } from '../zoom';
 import { Count } from './Count';
@@ -65,8 +65,9 @@ interface Props {
   // stats shows live health and attack as big numbers (H-15); the print
   // and the sources say why they changed (15.92, V-41). own are the
   // objects in the player's area: their lasting effects get no icon
-  // (ADR 037 item 3.1).
-  stats?: { hp: number; atk: number; printed_hp?: number; printed_atk?: number; sources?: StatSource[]; own?: number[] };
+  // (ADR 037 item 3.1). effectsOn titles the zoom's list of every effect
+  // on the player (ADR 037 item 4); without it the zoom has no list.
+  stats?: { hp: number; atk: number; printed_hp?: number; printed_atk?: number; sources?: StatSource[]; own?: number[]; effectsOn?: string };
   // monster shows the stats that differ from the print (C-03).
   monster?: MonsterStats;
   // noZoom: the card does not zoom itself; its row does (15.21).
@@ -133,7 +134,10 @@ export function Card({
   const lines = [...copies.map((c) => t('badge.copy', { card: name(c) })), ...sums, ...(rewards ? [rewards] : []), ...(must ? [t('badge.must_attack')] : [])];
   // The zoom names the player's fear with the card's counters (18.26).
   const zoomCounters = [...counters.filter((c) => c.count > 0), ...(fear > 0 ? [{ name: 'fear', count: fear }] : [])];
-  const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines, zoomCounters);
+  // A character's zoom lists every effect on its player (18.32).
+  const effects = stats?.effectsOn === undefined ? undefined : { title: stats.effectsOn, ...effectList(sources, name) };
+  const zoomEffects = effects && effects.turn.length + effects.lasting.length > 0 ? effects : undefined;
+  const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines, zoomCounters, zoomEffects);
   const preview = useCostPreview(cost);
   const cardElRef = useRef<HTMLDivElement>(null);
   // Leaving an icon for the card zooms the card again.
@@ -316,7 +320,15 @@ let warmUntil = 0;
 // While the own arrow aims, no card zooms as the arrow passes: one
 // zooms once the arrow rests still on it for feel.zoom.rest, and the
 // arrow's next move closes it (20.23, ADR 027 "Target arrow").
-export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = false, why?: string, stats: string[] = [], counters: CounterView[] = []) {
+export function useZoom(
+  cardRef: string | undefined,
+  zoomable: boolean,
+  rise = false,
+  why?: string,
+  stats: string[] = [],
+  counters: CounterView[] = [],
+  effects?: ZoomEffects,
+) {
   const setZoom = useApp((s) => s.setZoom);
   const pressRef = useRef(0);
   // waitRef is the pending timer of a table card's zoom.
@@ -387,6 +399,7 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
       ...(why ? { why } : {}),
       ...(stats.length > 0 ? { stats } : {}),
       ...(counters.length > 0 ? { counters } : {}),
+      ...(effects ? { effects } : {}),
     });
   };
   // rest restarts the wait for the arrow to rest on the card.
@@ -438,7 +451,15 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
         const at = boxOf(e.currentTarget);
         downRef.current = { x: e.clientX, y: e.clientY };
         pressRef.current = window.setTimeout(() => {
-          setZoom({ ref: cardRef, touch: true, at, ...(why ? { why } : {}), ...(stats.length > 0 ? { stats } : {}), ...(counters.length > 0 ? { counters } : {}) });
+          setZoom({
+            ref: cardRef,
+            touch: true,
+            at,
+            ...(why ? { why } : {}),
+            ...(stats.length > 0 ? { stats } : {}),
+            ...(counters.length > 0 ? { counters } : {}),
+            ...(effects ? { effects } : {}),
+          });
         }, LONG_PRESS_MS);
       }
     },
@@ -476,6 +497,7 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
           ...(why ? { why } : {}),
           ...(stats.length > 0 ? { stats } : {}),
           ...(counters.length > 0 ? { counters } : {}),
+          ...(effects ? { effects } : {}),
         });
       }
     },

@@ -70,6 +70,7 @@ import {
 export type { Screen } from './lobby';
 import type { Block, CounterView, Explained } from './protocol';
 import { setUiScale } from './uiScale';
+import type { EffectList } from './stats';
 
 // Zoom is the card shown large: on hover, or after a long press on touch
 // (B-06). side is where it shows, away from the pointer.
@@ -97,6 +98,15 @@ export interface Zoom {
   stats?: string[];
   // counters: the card's counters by kind, named below it, bottom right (18.15).
   counters?: CounterView[];
+  // effects: every effect on a character's player, beside the card
+  // (ADR 037 item 4, 18.32).
+  effects?: ZoomEffects;
+}
+
+// ZoomEffects is a zoomed character's effect list and its title:
+// "Effects on you", or another player's name.
+export interface ZoomEffects extends EffectList {
+  title: string;
 }
 
 export interface ZoomCaption {

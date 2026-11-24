@@ -119,7 +119,7 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
           counters={character.counters}
           fear={fearOf(player.counters)}
           copies={copiesOf(character)}
-          stats={statsOf(player)}
+          stats={statsOf(player, t('zoom.effects_on', { player: name }))}
           objectId={character.id}
           player={player.id}
           {...ui.character(player.id, character.id)}
@@ -241,7 +241,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools, watched, de
           counters={character.counters}
           fear={fearOf(player.counters)}
           copies={copiesOf(character)}
-          stats={statsOf(player)}
+          stats={statsOf(player, watched ? t('zoom.effects_on', { player: name }) : t('zoom.effects_you'))}
           objectId={character.id}
           player={player.id}
           {...ui.character(player.id, character.id)}
@@ -400,10 +400,11 @@ function NextAttack({ line }: { line: string }) {
 
 // statsOf is a character's live stats, its print and their sources
 // (15.92, V-41). own are the character and the cards in the player's
-// area: their lasting effects get no icon (ADR 037 item 3.1).
-function statsOf(player: PlayerView) {
+// area: their lasting effects get no icon (ADR 037 item 3.1). effectsOn
+// titles the zoom's list of every effect on the player (18.32).
+function statsOf(player: PlayerView, effectsOn: string) {
   const own = [player.character.id, ...(player.in_play ?? []).map((c) => c.id)];
-  return { hp: player.hp, atk: player.atk, printed_hp: player.printed_hp, printed_atk: player.printed_atk, sources: player.sources, own };
+  return { hp: player.hp, atk: player.atk, printed_hp: player.printed_hp, printed_atk: player.printed_atk, sources: player.sources, own, effectsOn };
 }
 
 // PlayCard is a character or item in play; owner's dice look draws the

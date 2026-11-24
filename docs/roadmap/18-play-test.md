@@ -1117,7 +1117,7 @@ Ideas: B-04, B-05, B-08.
        3. Run 3: 644 passed, 22 skipped.
        4. Evidence: `.cache/e2e-evidence/18.31-run1/`, `18.31-run2/`.
 
-### [ ] 18.32 Client: "Effects on you" in the zoom
+### [x] 18.32 Client: "Effects on you" in the zoom
 
 1. Goal: the zoomed character lists every effect on its player (ADR 037 item 4).
 2. Tasks:
@@ -1134,3 +1134,34 @@ Ideas: B-04, B-05, B-08.
    2. e2e: the "+K" chip opens this list.
    3. Screenshots; UC-12; wiki `Client.md`.
    4. Gates: `make lint`, `make frontend e2e`.
+4. Result (2026-11-24)
+   1. `effectList` and `shownEffects` in `stats.ts`; `Effects` in `CardZoom.tsx`.
+   2. Layout: beside the card, above the keyword notes (`card-zoom-notes`).
+      1. Not under the sums: the zoom already filled a 720 px window.
+      2. ADR 037 items 4.5–4.7 (drift).
+   3. Title: "Effects on you"; another player's (or a watched one): "Effects on Kai".
+      1. `statsOf` in `PlayerArea.tsx` passes it as `effectsOn`.
+   4. Order: "This turn", then "While in play"; each in the server's order.
+   5. Line: "−5¢ to shop prices — Steamy Sale!" (`stats.effect_from`).
+      1. A hidden source: "a hidden card".
+   6. Left out: HP, ATK, DC, rolls, attack rolls, attacked DC, damage taken.
+   7. Shields in it, one line each; one source's parts add up (`merged`).
+   8. Limit: 8 lines, this turn first, then "K more effects".
+      1. Eight two-row lines stand no taller than the card at 720 px.
+   9. Words: `stats.effect_from`, `zoom.effects_you`, `zoom.effects_on`.
+      1. Also `zoom.effects_turn`, `zoom.effects_lasting`, `zoom.effects_more`.
+   10. No new animation; it comes and goes with the zoom.
+   11. 5.26: every zoom of a character.
+       1. Own area, opponents, a watched player: all through `statsOf`.
+       2. Hover, right click and long press: all three set `Zoom.effects`.
+       3. Monsters and other cards pass no `effectsOn`: no list.
+   12. Tests: Vitest `effectList`, `shownEffects` (order, groups, repeats, shields, hidden).
+       1. e2e `effect-icons.spec.ts`: the chip's zoom lists this turn's effects.
+       2. New: Steamy Sale! in the own area, no icon, listed for both players.
+   13. Docs: UC-12 3l; wiki `Client.md`.
+   14. Screenshots: `.cache/screenshots/18.32/before/` and `after/`.
+       1. Few: `effects-own-zoom`, `effects-opponent-zoom`; many: `effects-chip-zoom`.
+       2. Full list cut at 8: `effects-chip-zoom-full` (temporary test change).
+       3. Without images: `*-noimages.png`.
+   15. Gates: `make lint`, `make test`, `make frontend` (781 Vitest) pass.
+       1. `make e2e`: 646 passed, 22 skipped, first run.

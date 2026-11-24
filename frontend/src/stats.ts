@@ -153,6 +153,53 @@ export function effectIcons(sources: StatSource[] | undefined, own?: ReadonlySet
   });
 }
 
+// sumStats have a sum line beside the zoomed card (statLines): the
+// effect list leaves them out, so nothing shows twice (ADR 037 item 4.4).
+const sumStats = new Set<StatSource['stat']>(['hp', 'atk', 'dc', 'roll', 'attack_roll', 'attacked_dc', 'damage_taken']);
+
+// EffectList is the zoomed character's list of every effect on its
+// player (ADR 037 item 4): this turn's lines, then the lasting ones.
+export interface EffectList {
+  turn: string[];
+  lasting: string[];
+}
+
+// effectList lists every effect on a player, groups A, B and C alike
+// (ADR 037 item 4): "−5¢ to shop prices — Steamy Sale!", what it does,
+// then its card; a hidden card is named so. This turn's effects come
+// first, then the ones that last while their card is in play; each in
+// the server's order. One source's parts of one stat add up (merged);
+// shields stay apart. Stats with a sum line and stats without words are
+// left out.
+export function effectList(sources: StatSource[] | undefined, name: Name): EffectList {
+  const list: EffectList = { turn: [], lasting: [] };
+  for (const s of merged(sources ?? [])) {
+    const text = sumStats.has(s.stat) ? '' : effect(s);
+    if (text === '') continue;
+    const when = whenText(s);
+    const line = t('stats.effect_from', { effect: `${text}${when ? ` (${when})` : ''}`, card: name(s.card) });
+    (s.lasts === 'in_play' ? list.lasting : list.turn).push(line);
+  }
+  return list;
+}
+
+// MAX_EFFECT_LINES is how many lines the zoom's effect list shows; a last
+// line counts the rest (18.32). Eight lines of two rows each, their
+// titles and the count stand no taller than the zoomed card in a 720 px
+// high window.
+export const MAX_EFFECT_LINES = 8;
+
+// shownEffects cuts the list to MAX_EFFECT_LINES, this turn's lines
+// first, and says how many more there are. Nine lines are eight and
+// "1 more": the count takes the ninth one's place, as the "+K" chip does.
+export function shownEffects(list: EffectList): EffectList & { more: number } {
+  const all = list.turn.length + list.lasting.length;
+  if (all <= MAX_EFFECT_LINES) return { ...list, more: 0 };
+  const turn = list.turn.slice(0, MAX_EFFECT_LINES);
+  const lasting = list.lasting.slice(0, MAX_EFFECT_LINES - turn.length);
+  return { turn, lasting, more: all - turn.length - lasting.length };
+}
+
 // MAX_ICONS is how many icons a card shows; the rest are a "+K" chip
 // (ADR 037 item 3.6).
 export const MAX_ICONS = 4;

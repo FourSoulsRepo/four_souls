@@ -5,7 +5,7 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { repeatNames, startGame } from './game';
-import { cardName, tr } from './locale';
+import { cardName, tr, trRe } from './locale';
 import { editSave, saveAndContinue, saveEditContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
@@ -210,9 +210,67 @@ test('above 4 icons a "+K" chip opens the character\'s zoom (18.31)', async ({ b
     await expect(card.getByRole('img', { name: chipName, exact: true })).toHaveText('+2');
   }
   // The chip zooms the character itself, as hovering the card does
-  // (ADR 037 items 3.7, 3.9); 18.32 adds the list of every effect.
+  // (ADR 037 items 3.7, 3.9), with the list of every effect (18.32).
   await characterOf(active, character.id).getByRole('img', { name: chipName, exact: true }).hover();
   const zoom = active.getByTestId('card-zoom');
   await expect(zoom.getByRole('img', { name: cardName(character.card), exact: true })).toBeVisible();
   await shot(active, 'effects-chip-zoom');
+  const list = zoom.getByRole('list', { name: tr('zoom.effects_you') });
+  // This turn's effects, in the server's order; the source card's name
+  // after what it does; a boost with no card is from "a hidden card"
+  // (ADR 037 items 4.1–4.3, 1.6).
+  const thisTurn = list.getByRole('list', { name: tr('zoom.effects_turn') }).getByRole('listitem');
+  await expect(thisTurn).toHaveText([
+    tr('stats.effect_from', { effect: tr('stats.effect.loot_plays', { amount: '+1', n: 1 }), card: cardName(seen.characters.find((c) => c.id !== character.id)?.card ?? '') }),
+    tr('stats.effect_from', { effect: tr('stats.effect.purchases', { amount: '+1', n: 1 }), card: tr('stats.hidden_card') }),
+    trRe('stats.effect_from', { effect: tr('stats.effect.shield', { n: 1 }) }),
+  ]);
+  // No repeats (ADR 037 item 4.4): ATK, rolls and damage taken stay in
+  // their sum lines only.
+  await expect(list).not.toContainText(tr('stats.effect.atk', { amount: '+1' }));
+  await expect(list).not.toContainText(tr('stats.effect.roll', { amount: '+1' }));
+  await expect(list).not.toContainText(tr('stats.effect.damage_taken', { amount: '+1' }));
+});
+
+test('the zoom lists a lasting effect of the own area, which has no icon (18.32)', async ({ browser }) => {
+  const names = repeatNames(['Kim', 'Kai']);
+  const pages = await startGame(browser, names, { url: `${appURL()}&anim=off` });
+  await activePage(pages, click);
+  // Steamy Sale!: "Shop items you purchase cost 5¢ less." It becomes the
+  // active player's starting item: a card in their own area (group A).
+  await saveEditContinue(pages, names.join(', '), (game) => {
+    edit(game, ({ state }) => {
+      const item = state.players[state.turn.active]?.in_play[0];
+      const obj = item === undefined ? undefined : state.objects[item];
+      if (!obj) {
+        throw new Error('the active player has no item');
+      }
+      for (const other of state.objects) {
+        if (other.card === 'steamy_sale') {
+          other.card = obj.card; // one of a kind
+        }
+      }
+      obj.card = 'steamy_sale';
+    });
+  });
+  const active = await activePage(pages, click);
+  const seen = await seenOf(active);
+  const seat = activeSeat(pages, active);
+  const character = seen.characters[seat] ?? { id: -1, card: '' };
+  const line = tr('stats.effect_from', { effect: tr('stats.effect.shop_price', { amount: '−5' }), card: cardName('steamy_sale') });
+  for (const [i, page] of pages.entries()) {
+    const card = characterOf(page, character.id);
+    // The card lies beside the character: no icon (ADR 037 item 3.1).
+    await expect(card.locator('.card-source')).toHaveCount(0);
+    await page.mouse.move(1, 1);
+    await card.hover();
+    const zoom = page.getByTestId('card-zoom');
+    await expect(zoom).toBeVisible();
+    await shot(page, i === seat ? 'effects-own-zoom' : 'effects-opponent-zoom');
+    // Own and opponents' characters alike (ADR 037 item 4): the title
+    // says whose effects they are.
+    const title = i === seat ? tr('zoom.effects_you') : tr('zoom.effects_on', { player: names[seat] ?? '' });
+    const lasting = zoom.getByRole('list', { name: title }).getByRole('list', { name: tr('zoom.effects_lasting') });
+    await expect(lasting.getByRole('listitem')).toHaveText([line]);
+  }
 });

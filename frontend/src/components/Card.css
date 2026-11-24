@@ -288,6 +288,59 @@
   background: rgb(10 16 24 / 80%);
 }
 
+/* Beside the card: a character's effects (18.32), then the keyword
+   tips. */
+.card-zoom-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 12.5rem;
+}
+
+/* Every effect on a character's player (ADR 037 item 4): this turn's,
+   then the lasting ones, each with its source card. */
+.card-zoom-effects {
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  color: #fff;
+  background: rgb(10 16 24 / 90%);
+}
+
+.card-zoom-effects h3 {
+  margin: 0 0 0.375rem;
+  font-size: 0.9375rem;
+  color: #ffd27a;
+}
+
+.card-zoom-effects ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card-zoom-effects-group + .card-zoom-effects-group {
+  margin-top: 0.25rem;
+}
+
+.card-zoom-effects-group b {
+  display: block;
+  margin-bottom: 0.125rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #b9c4d0;
+}
+
+.card-zoom-effects-more {
+  font-style: italic;
+  color: #b9c4d0;
+}
+
 .card-zoom-tips {
   display: flex;
   flex-direction: column;
