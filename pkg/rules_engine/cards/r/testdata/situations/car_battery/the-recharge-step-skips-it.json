@@ -1,0 +1,13 @@
+{
+  "title": "Isaac's Car Battery and Sack Of Pennies are spent as his turn starts: does his recharge step recharge the Sack but not the Car Battery?",
+  "source": ["card car_battery", "R-TURN-02"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "cain"}, {"character": "isaac", "items": ["car_battery", "sack_of_pennies"], "deactivated": ["car_battery", "sack_of_pennies"]}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1, "after": [{"player": 1, "deactivated": ["car_battery"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

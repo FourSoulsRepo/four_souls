@@ -1,0 +1,16 @@
+{
+  "title": "Isaac's Cursed Soul has 5 counters as his turn starts: does he take 1 damage and gain it as a soul, which he then keeps at his turn's end?",
+  "source": ["card cursed_soul", "R-CARD-18", "R-CARD-38", "R-TURN-03"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "cain"}, {"character": "isaac", "items": ["cursed_soul"], "counters": [{"card": "cursed_soul", "count": 5}]}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 1, "damage": 1, "souls": 1, "soul_cards": ["cursed_soul"], "items": []}]}},
+    {"player": 1, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 0, "after": [{"player": 1, "souls": 1, "soul_cards": ["cursed_soul"]}, {"player": 0, "souls": 0, "items": []}]}}
+  ],
+  "expect": {"allowed": true}
+}

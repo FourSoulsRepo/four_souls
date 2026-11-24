@@ -1,0 +1,23 @@
+{
+  "title": "Isaac uses Auction Gavel on the shop's Spoon Bender and nobody bids: does the Spoon Bender stay in the shop, with no ¢ paid?",
+  "source": ["card auction_gavel", "R-CARD-34", "R-SHOP-02"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["auction_gavel"], "cents": 10}, {"character": "cain", "cents": 5}, {"character": "samson", "cents": 5}],
+    "active": 0,
+    "shop": ["spoon_bender"]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "auction_gavel", "choices": ["spoon_bender", "card.auction_gavel.pass", "card.auction_gavel.pass"],
+     "expect": {"allowed": true,
+       "events": [{"kind": "gave_cents", "none": true}],
+       "after": [
+         {"player": 0, "cents": 10, "items": ["auction_gavel"], "deactivated": ["auction_gavel"]},
+         {"player": 1, "cents": 5, "items": []},
+         {"player": 2, "cents": 5, "items": []}
+       ]}},
+    {"player": 0, "kind": "purchase",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["spoon_bender", "ask.deck.treasure"]}}}
+  ],
+  "expect": {"allowed": true}
+}

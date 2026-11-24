@@ -1,0 +1,22 @@
+{
+  "title": "Isaac's Car Battery recharges The D6 and Cain's Jawbone; Battery Pack then recharges Isaac's items: is the Car Battery left spent until he pays 7¢?",
+  "source": ["card car_battery", "card battery_pack", "R-ABIL-11"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["car_battery", "the_d6", "sack_of_pennies", "battery_pack"], "deactivated": ["the_d6", "sack_of_pennies"], "cents": 7,
+       "counters": [{"card": "battery_pack", "count": 2}]},
+      {"character": "cain", "items": ["jawbone"], "deactivated": ["jawbone"]}
+    ],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "car_battery", "choices": ["the_d6", "jawbone", "ask.done"],
+     "expect": {"allowed": true, "after": [{"player": 0, "deactivated": ["car_battery", "sack_of_pennies"]}, {"player": 1, "deactivated": []}]}},
+    {"player": 0, "kind": "activate", "card": "battery_pack", "ability": 1, "choices": ["player 1 (isaac)"],
+     "expect": {"allowed": true, "after": [{"player": 0, "deactivated": ["car_battery"]}]}},
+    {"player": 0, "kind": "activate", "card": "car_battery", "ability": 1,
+     "expect": {"allowed": true, "after": [{"player": 0, "deactivated": [], "cents": 0}]}}
+  ],
+  "expect": {"allowed": true}
+}

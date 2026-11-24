@@ -1,0 +1,20 @@
+{
+  "title": "Isaac uses Auction Gavel on the shop's Spoon Bender: Cain bids 1¢, Samson tops it with 3¢, Cain passes; does Samson pay Isaac 3¢ and steal the item?",
+  "source": ["card auction_gavel", "R-CARD-34", "R-MECH-37", "R-MECH-38"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["auction_gavel"]}, {"character": "cain", "cents": 5}, {"character": "samson", "cents": 5}],
+    "active": 0,
+    "shop": ["spoon_bender"],
+    "decks": {"treasure": ["book_of_sin"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "auction_gavel",
+    "choices": ["spoon_bender", "card.auction_gavel.bid 1", "card.auction_gavel.bid 3", "card.auction_gavel.pass"]},
+  "expect": {"allowed": true,
+    "events": [{"kind": "gave_cents", "player": 2}, {"kind": "gave_cents", "player": 1, "none": true}],
+    "after": [
+      {"player": 0, "cents": 3, "items": ["auction_gavel"], "deactivated": ["auction_gavel"]},
+      {"player": 1, "cents": 5, "items": []},
+      {"player": 2, "cents": 2, "items": ["spoon_bender"]}
+    ]}
+}

@@ -1,0 +1,16 @@
+{
+  "title": "Isaac uses Car Battery with a spent D6, a charged Jawbone and a spent Breakfast: is only The D6 offered?",
+  "source": ["card car_battery", "R-MECH-22", "R-ABIL-10"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["car_battery", "the_d6", "jawbone", "breakfast"], "deactivated": ["the_d6", "breakfast"]}, {"character": "cain"}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "car_battery",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["the_d6", "ask.done"]}}},
+    {"kind": "choose", "choices": ["the_d6"],
+     "expect": {"allowed": true, "after": [{"player": 0, "deactivated": ["car_battery", "breakfast"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

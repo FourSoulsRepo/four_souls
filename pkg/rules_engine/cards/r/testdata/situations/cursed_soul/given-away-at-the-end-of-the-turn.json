@@ -1,0 +1,17 @@
+{
+  "title": "Isaac ends his turn with Cursed Soul: does he give it to Cain, who then takes 1 damage and puts a counter on it as his turn starts?",
+  "source": ["card cursed_soul", "R-MECH-37", "R-TURN-03", "R-TURN-10"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["cursed_soul"]}, {"character": "cain"}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "active": 1, "after": [
+       {"player": 0, "items": []},
+       {"player": 1, "items": ["cursed_soul"], "damage": 1, "counters": [{"card": "cursed_soul", "count": 1}], "souls": 0}
+     ]}}
+  ],
+  "expect": {"allowed": true}
+}

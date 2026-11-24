@@ -1,0 +1,18 @@
+{
+  "title": "Isaac removes 2 counters from Battery Pack and chooses himself: are both his spent items recharged, and Cain's spent Jawbone not?",
+  "source": ["card battery_pack", "R-ABIL-07", "R-ABIL-11"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["battery_pack", "the_d6", "spoon_bender"], "deactivated": ["the_d6", "spoon_bender"],
+       "counters": [{"card": "battery_pack", "count": 2}]},
+      {"character": "cain", "items": ["jawbone"], "deactivated": ["jawbone"]}
+    ],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "battery_pack", "ability": 1, "choices": ["player 1 (isaac)"]},
+  "expect": {"allowed": true, "after": [
+    {"player": 0, "deactivated": [], "counters": [{"card": "battery_pack", "count": 0}]},
+    {"player": 1, "deactivated": ["jawbone"]}
+  ]}
+}
