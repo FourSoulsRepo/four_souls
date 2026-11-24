@@ -1369,9 +1369,9 @@ Ideas: B-04, B-05, B-08.
    12. Docs: ADR 037 items 1.12, 1.13, 8.2; wiki `Rules-engine.md`.
    13. Gates: `make lint`, `make test`, `make frontend` (784 Vitest) pass.
        1. `make e2e` run 1: 652 passed, 22 skipped.
-   14. Risk: an old record's full-state check (every 100th step) may differ.
-       1. Only while a skip, Compost, Blank Card, The Sun or Mutant Spider is on.
-       2. The new source fields are set then; the old record lacks them.
+   14. Records: no effect on playing or watching (ADR 031 plays views).
+       1. Only `engine.Replay` (tests) checks old checksums; none differ today.
+       2. A record kept from before could differ at a 100th-step state check.
 
 ### [x] 18.37 Client: icons for the new hidden effects; Red Candle's die
 
@@ -1430,3 +1430,27 @@ Ideas: B-04, B-05, B-08.
           1. The 19.237 flake, seed 114790418.
           2. Evidence: `.cache/e2e-evidence/18.37-run1/`.
        2. Run 2: 660 passed, 22 skipped.
+
+### [ ] 18.38 Sibling Rivalry: the chosen player shows it
+
+1. Goal: the player Sibling Rivalry chose shows it till the attack ends.
+2. Owner (2026-11-24): yes, as a hidden effect (ADR 037 item 3.17).
+   1. Card: "the chosen player must make an attack roll after each attack roll".
+   2. "If that monster dies this attack, the chosen player also gains the rewards."
+   3. Once the card is tapped, nothing on the table says who was chosen.
+3. Tasks:
+   1. Engine: key `next_attack_helper` on the chosen player's sources.
+      1. Source: Sibling Rivalry; lasts `turn`.
+      2. From `Turn.NextHelpers`; gone once that attack ends.
+      3. Source card kept where the engine lacks it; `omitempty`.
+   2. Client: an icon with the card's art on the chosen player.
+      1. Text, e.g. "Rolls with Ann's next attack; shares its rewards".
+      2. No number (ADR 037 item 3.12).
+   3. The 5.24 search: only Sibling Rivalry calls `HelpNextAttack` today.
+      1. Check every set's texts for "the chosen player … attack roll".
+   4. Words in `en.json`; `make i18n`.
+4. Done when:
+   1. Go test: the key is on the chosen player only, gone after the attack.
+   2. Vitest for the text; e2e: the icon shows on the chosen player.
+   3. Screenshots, also without images; UC-12; ADR 037 appended.
+   4. Gates as 18.34.

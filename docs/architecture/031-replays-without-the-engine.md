@@ -83,6 +83,15 @@ Use option 1.
        3. Any moment; the step on screen is drawn again at once.
        4. Hands still follow item 7 only: all or none.
        5. History and banners still name every player; no "you".
+5. Records of every age keep playing (owner, 2026-11-24).
+   1. One player plays every format 2 record; no player per version.
+   2. A record shows the rules of its own time, even rules since fixed.
+   3. No converters from old records to new ones.
+   4. New features may add to the format; old records still play.
+   5. So view and event fields are only added, with `omitempty`.
+   6. A field is never renamed or removed while records may hold it.
+   7. The client draws a step with a missing field as before that field.
+   8. Records stay lean: nothing in a step the player does not need.
 
 ## Consequences
 
@@ -97,7 +106,7 @@ Use option 1.
 1. Records grow about three times.
 2. A protocol bump that renames or removes a view or event field.
    1. Older records may then show parts of the table wrong.
-   2. Accepted: no migrations (owner, 2026-11-16).
+   2. No migrations (owner, 2026-11-16); item 5 forbids such a bump.
 3. The server builds one more view per step.
 
 ### Neutral
