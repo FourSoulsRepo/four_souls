@@ -7197,3 +7197,5 @@ Totals by system (230 items):
       1. `make e2e` run 1: 663 passed, 1 failed: `playback.spec.ts:1975` (19.237 flake).
       2. Evidence: `.cache/e2e-evidence/19.241b-run1/`.
       3. Run 2: 664 passed, 22 skipped.
+15. Owner notes (2026-11-25)
+   1. Owner marks 19.241 solved.

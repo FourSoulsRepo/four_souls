@@ -1486,3 +1486,5 @@ Ideas: B-04, B-05, B-08.
       1. `effects-sibling-rivalry`; after also `-zoom`; `*-noimages.png`.
    7. Gates: `make lint`, `make test`, `make frontend` (792 Vitest) pass.
       1. `make e2e` run 1: 662 passed, 22 skipped.
+6. Owner notes (2026-11-25)
+   1. Owner marks 18.38 solved.
