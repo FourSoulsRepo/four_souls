@@ -4959,6 +4959,10 @@
     },
     "note": "Game table: tooltip of a player's soul crystals. souls: souls gained; n: souls needed to win."
   },
+  "table.under": {
+    "text": "Under {card}",
+    "note": "Game table: screen-reader name of the cards peeking out from under a card in play, e.g. Friendly Ball's monster. card: the card on top."
+  },
   "table.your_curses": {
     "text": "Your curses",
     "note": "Game table: screen-reader name of the viewer's curses."
@@ -5272,5 +5276,9 @@
   "zoom.translators": {
     "text": "Translation: {names}",
     "note": "Under a zoomed card, when its name is translated. names: the translators, joined by commas."
+  },
+  "zoom.under": {
+    "text": "Under it",
+    "note": "Under the small card beside a zoomed card: a card that lies under the zoomed one, e.g. Friendly Ball's monster."
   }
 }

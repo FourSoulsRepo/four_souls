@@ -21,6 +21,7 @@ func sampleCards() []engine.CardView {
 		{ID: 7, Card: "dice_bag", Dice: []int{1, 6}, Flipped: true, Copy: "a_dime", MoreCopies: []engine.CardRef{"pooter", "leaper"}},
 		{ID: 8, Card: "", Role: engine.RoleMonster, Charged: false},
 		{ID: 9, Card: "héllo\u2028", Abilities: []string{"tab\there"}},
+		{ID: 10, Card: "friendly_ball", Role: engine.RoleItem, Under: []engine.CardRef{"fly"}},
 	}
 }
 

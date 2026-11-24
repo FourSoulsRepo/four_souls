@@ -28,7 +28,7 @@ import './Card.css';
 // 20.24) and, for a translated card, its translators (CD-06, 16.5), in
 // outlined game letters like the reference's credit (ADR 027 "Credits"
 // 13). A two-sided card shows its other side beside it, smaller
-// (ADR 023).
+// (ADR 023); so does a card with cards under it, each of them (19.244).
 export function CardZoom() {
   const zoom = useApp((s) => s.zoom);
   const setZoom = useApp((s) => s.setZoom);
@@ -154,6 +154,14 @@ export function CardZoom() {
             <figcaption>{t('zoom.other_side')}</figcaption>
           </figure>
         )}
+        {zoom.under?.map((c, i) => (
+          // The cards under a card keep their order.
+          // eslint-disable-next-line @eslint-react/no-array-index-key
+          <figure key={i} className="card-zoom-side card-zoom-under">
+            <Card cardRef={c} size="hand" noZoom />
+            <figcaption>{t('zoom.under')}</figcaption>
+          </figure>
+        ))}
         {zoom.outcome && zoom.outcome.length > 0 && <Outcomes list={zoom.outcome} swords={zoom.swords ?? false} />}
         {(zoom.effects !== undefined || (footnotes?.length ?? 0) > 0) && (
           <div className="card-zoom-notes">

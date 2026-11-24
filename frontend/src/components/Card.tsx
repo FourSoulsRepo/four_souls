@@ -28,6 +28,8 @@ const FLIP_MS = 500;
 const NO_COUNTERS: CounterView[] = [];
 // NO_COPIES is a card that copies nothing; shared for the same reason.
 const NO_COPIES: string[] = [];
+// NO_UNDER is a card with no cards under it; shared for the same reason.
+const NO_UNDER: string[] = [];
 
 export type CardSize = 'hand' | 'table' | 'small' | 'zoom' | 'choice';
 
@@ -57,6 +59,9 @@ interface Props {
   // in the order gained: one copy mark each shows its art and zooms it;
   // the card's zoom names them (19.106, 19.111, 19.157).
   copies?: string[];
+  // under are the cards under this card, e.g. Friendly Ball's monster:
+  // its zoom shows them beside it (19.244).
+  under?: string[];
   // dice are the die numbers the card keeps, drawn in owner's dice look
   // (15.67).
   dice?: number[];
@@ -99,6 +104,7 @@ export function Card({
   counters = NO_COUNTERS,
   fear = 0,
   copies = NO_COPIES,
+  under = NO_UNDER,
   dice,
   owner = -1,
   objectId,
@@ -141,7 +147,7 @@ export function Card({
   // 18.34).
   const effects = stats?.effectsOn === undefined ? undefined : { title: stats.effectsOn, ...effectList(sources, name, active) };
   const zoomEffects = effects && effects.turn.length + effects.later.length > 0 ? effects : undefined;
-  const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines, zoomCounters, zoomEffects);
+  const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines, zoomCounters, zoomEffects, under);
   const preview = useCostPreview(cost);
   const cardElRef = useRef<HTMLDivElement>(null);
   // Leaving an icon for the card zooms the card again.
@@ -332,6 +338,7 @@ export function useZoom(
   stats: string[] = [],
   counters: CounterView[] = [],
   effects?: ZoomEffects,
+  under: string[] = [],
 ) {
   const setZoom = useApp((s) => s.setZoom);
   const pressRef = useRef(0);
@@ -404,6 +411,7 @@ export function useZoom(
       ...(stats.length > 0 ? { stats } : {}),
       ...(counters.length > 0 ? { counters } : {}),
       ...(effects ? { effects } : {}),
+      ...(under.length > 0 ? { under } : {}),
     });
   };
   // rest restarts the wait for the arrow to rest on the card.
@@ -463,6 +471,7 @@ export function useZoom(
             ...(stats.length > 0 ? { stats } : {}),
             ...(counters.length > 0 ? { counters } : {}),
             ...(effects ? { effects } : {}),
+            ...(under.length > 0 ? { under } : {}),
           });
         }, LONG_PRESS_MS);
       }
@@ -502,6 +511,7 @@ export function useZoom(
           ...(stats.length > 0 ? { stats } : {}),
           ...(counters.length > 0 ? { counters } : {}),
           ...(effects ? { effects } : {}),
+          ...(under.length > 0 ? { under } : {}),
         });
       }
     },

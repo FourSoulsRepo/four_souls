@@ -54,6 +54,9 @@ type CardView struct {
 	// MoreCopies are the cards it gained abilities from after Copy, in
 	// the order gained: Trick on Hard rolls twice (Q-46, 19.157).
 	MoreCopies []CardRef `json:"more_copies,omitempty"`
+	// Under are the cards put under this card, face up for everyone, as
+	// on a real table: Friendly Ball's monster (R-ZONE-13, 19.244).
+	Under []CardRef `json:"under,omitempty"`
 }
 
 // MonsterStats are a monster's stats now and as printed, so a client can
@@ -616,6 +619,9 @@ func (g *Game) cardView(id ObjectID) CardView {
 		for _, gn := range o.MoreGained {
 			cv.MoreCopies = append(cv.MoreCopies, gn.Card)
 		}
+	}
+	for _, u := range o.Under {
+		cv.Under = append(cv.Under, g.Object(u).Card)
 	}
 	if d := g.def(id); d.Dice != nil {
 		cv.Dice = d.Dice(g, id)

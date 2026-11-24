@@ -54,6 +54,9 @@ func appendCard(b []byte, c engine.CardView) []byte {
 	if len(c.MoreCopies) > 0 {
 		b = appendMarshaled(b, `,"more_copies":`, c.MoreCopies)
 	}
+	if len(c.Under) > 0 {
+		b = appendMarshaled(b, `,"under":`, c.Under)
+	}
 	return append(b, '}')
 }
 

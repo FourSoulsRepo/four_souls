@@ -405,24 +405,47 @@ function statsOf(player: PlayerView, effectsOn: string) {
   return { hp: player.hp, atk: player.atk, printed_hp: player.printed_hp, printed_atk: player.printed_atk, sources: player.sources, effectsOn };
 }
 
+// NO_UNDER is a card with no cards under it; a shared value, so it is
+// not new each render.
+const NO_UNDER: string[] = [];
+
 // PlayCard is a character or item in play; owner's dice look draws the
-// numbers it keeps (15.67).
+// numbers it keeps (15.67). The cards under it peek out from under it,
+// face up, as on a real table; hovering one zooms it, and the card's
+// own zoom shows them beside it (19.244). The holder stays when none
+// are under it, so a card caught or let go never pops the item in again.
 function PlayCard({ card, owner, size, ui }: { card: CardView; owner: number; size: CardSize; ui: Interact }) {
   const spent = useSpent();
+  const under = card.under ?? NO_UNDER;
+  const name = useApp((s) => s.cards.get(card.card)?.name ?? card.card);
   return (
-    <Card
-      cardRef={card.card}
-      size={size}
-      damage={card.damage}
-      spent={spent(card)}
-      counters={card.counters}
-      copies={copiesOf(card)}
-      dice={card.dice}
-      owner={owner}
-      monster={card.stats}
-      objectId={card.id}
-      {...ui.object(card.id)}
-    />
+    <div className={`card-holder size-${size}${under.length > 0 ? ' has-under' : ''}`} style={{ '--under-n': under.length } as CSSProperties}>
+      {under.length > 0 && (
+        <div className="card-under" role="group" aria-label={t('table.under', { card: name })}>
+          {under.map((c, i) => (
+            // The cards under a card keep their order: the first lies lowest.
+            // eslint-disable-next-line @eslint-react/no-array-index-key
+            <div key={i} className="card-under-peek" style={{ '--under-place': under.length - i } as CSSProperties}>
+              <Card cardRef={c} size={size} />
+            </div>
+          ))}
+        </div>
+      )}
+      <Card
+        cardRef={card.card}
+        size={size}
+        damage={card.damage}
+        spent={spent(card)}
+        counters={card.counters}
+        copies={copiesOf(card)}
+        under={under}
+        dice={card.dice}
+        owner={owner}
+        monster={card.stats}
+        objectId={card.id}
+        {...ui.object(card.id)}
+      />
+    </div>
   );
 }
 

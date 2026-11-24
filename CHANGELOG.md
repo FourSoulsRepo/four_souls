@@ -11,6 +11,7 @@ Rules engine versions are in each release's notes.
 - Boss Rush!'s extra attack goes only at one of the two bosses it revealed; in one slot only the top boss. Friendly Ball's and Lust for Blood!'s extra attack likewise only at their monster or player. If the top boss of one slot dies first, the boss under it is still one of them. Once none of them can be attacked, the extra attack is no longer owed. The attack button and the red frames name them: "You must attack: Monstro or Widow".
 - Red Key during an attack and Friendly Ball's first ability with a card under it now say the card forbids it (R-ABIL-08), not an unpaid cost. Friendly Ball's second ability with nothing under it has no valid target, and ? Card no longer offers to copy it.
 - ? Card's copy keeps the limits its card states: it no longer copies Red Key during an attack; if that is all it could copy, it can't be played.
+- The monster under Friendly Ball now peeks out from under the ball, for every player; hovering it shows the monster, and the ball's zoom shows it beside the ball.
 - Rules engine 0.5.12.
 
 ## 0.6.4 - 2026-11-20

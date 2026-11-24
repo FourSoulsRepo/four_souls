@@ -506,6 +506,39 @@
   overflow-x: auto;
 }
 
+/* A card in play and the cards under it (19.244). They peek out on its
+   right, face up and a little turned, as on a real table; the holder
+   keeps their room, so the row never clips them. They come first, so
+   the card itself lies on top of them with no z-index. */
+.card-holder {
+  --peek: 2rem;
+  position: relative;
+  display: flex;
+  flex: none;
+}
+
+.card-holder.size-small {
+  --peek: 1.5rem;
+}
+
+.card-holder.has-under {
+  padding-right: calc(var(--peek) * var(--under-n));
+}
+
+.card-under {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.card-under-peek {
+  position: absolute;
+  top: 0;
+  left: calc(var(--peek) * var(--under-place));
+  rotate: 4deg;
+  pointer-events: auto;
+}
+
 /* Opponents (15.18): a small name with coins outside the
    board (F-07, H-21), the character with live stats, the items, and
    the hand as fanned backs with a count (F-08, H-17). */

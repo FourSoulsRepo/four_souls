@@ -349,6 +349,9 @@ export interface CardView {
   // more_copies: the cards it gained abilities from after copy, in the
   // order gained (Trick on Hard, 19.157).
   more_copies?: string[];
+  // under: the cards put under this card, face up for everyone, e.g.
+  // Friendly Ball's monster; older servers send none (19.244).
+  under?: string[];
 }
 
 

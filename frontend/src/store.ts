@@ -101,6 +101,8 @@ export interface Zoom {
   // effects: every effect on a character's player, beside the card
   // (ADR 037 item 4, 18.32).
   effects?: ZoomEffects;
+  // under: the cards under the zoomed card, beside it (19.244).
+  under?: string[];
 }
 
 // ZoomEffects is a zoomed character's effect list and its title:

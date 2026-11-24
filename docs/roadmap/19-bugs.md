@@ -7398,4 +7398,41 @@ Totals by system (234 items):
    4. Layers (ADR 015) and animations (ADR 012) by their rules.
    5. e2e test; before and after screenshots in `.cache/screenshots/19.244/`.
    6. A use case for the new visible behavior.
-
+6. Done (2026-11-25)
+   1. Engine: `CardView.Under` (`under`), refs of the cards under it.
+   2. Public: every player and spectator; tested for both players.
+   3. Server: `encode_card.go` sends it; a sample card sets it.
+   4. TS: `CardView.under` in `protocol.ts`.
+   5. No rule change, so no engine version bump (as 19.106, 19.157).
+   6. Client: `PlayCard` (`PlayerArea.tsx`) wraps a card in a `card-holder`.
+   7. The holder is always there: a catch never remounts the item.
+   8. Each card under it peeks out on its right, turned 4°.
+   9. `--peek` 2rem (table), 1.5rem (small); padding keeps the room.
+   10. Hover on the peek zooms that card (its own `Card` zoom).
+   11. Item zoom: `Zoom.under`; `CardZoom` shows each beside it, "Under it".
+   12. Long press and right click carry `under` too (`useZoom`).
+   13. Layers: no z-index; the peek comes first, the item lies on top.
+   14. So no new layer, no `Layers.md` row, no `layers.spec.ts` pair.
+   15. Animations: none added; the release keeps the slot's `card-pop`.
+   16. Text cards: the peek shows the right part of the drawn face.
+7. Checked (5.26)
+   1. `PlayerArea` `PlayCard`: own and others' items and curses; changed.
+   2. Characters (`OwnArea`, `OpponentArea`): nothing goes under them.
+   3. `Board.tsx` slots: only Friendly Ball calls `PutUnder`; no holder there.
+   4. Playback and records use `GameScreen` and `PlayerArea`; covered.
+   5. `HistoryStrip`, `StackPanel`, `ChoiceDialog`, `ChoiceBack`: refs only.
+   6. `Effects`, `Pile`, `Tuck`, `HandCard`: no card in play.
+   7. Website (`frontend/src/site`): draws no table.
+8. Tests
+   1. `TestViewShowsTheCardsUnderAnItem` (engine view): both players, spectator.
+   2. `TestSampleCardsSetEveryField` covers `Under` in the encoder.
+   3. e2e `under.spec.ts`: catch Fly, peek for both, both zooms, release.
+   4. No Vitest: no new logic outside components; `viewFields.test.ts` sees the read.
+9. Docs: UC-49; `docs/wiki/Client.md`; CHANGELOG.
+10. Screenshots (not tracked)
+   1. Before: `.cache/screenshots/19.244/before/` (from 19.242).
+   2. After: `.cache/screenshots/19.244/after/screen-under-*.png`.
+11. Gates (2026-11-25)
+   1. `make lint test` and `make site` passed; site: engine 0.5.12.
+   2. `make frontend`: 794 Vitest passed; `make e2e`: 666 passed.
+   3. `wails build -m -tags embed` (no `cardimages`) built.
