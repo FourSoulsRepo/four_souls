@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226, 19.233, 19.236, 19.237, 19.238, 19.241 | 32 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226, 19.233, 19.236, 19.237, 19.238, 19.241, 19.242 | 33 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193, 19.232 | 19 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45, 19.224                                   | 3     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
@@ -61,11 +61,11 @@ This step never closes; new reports are appended.
 | Z  | Situation runner: a check checks nothing | Go tests   | 19.234                                                 | 1     |
 | AA | Situation setup: a start-of-turn duty lost | Engine   | 19.235                                                 | 1     |
 
-Totals by system (230 items):
+Totals by system (232 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U, W, AA | 54 |
+| Engine    | A, B, T, U, W, AA | 56 |
 | Card data | C       | 3     |
 | Client    | D–G, O, P, S, V, Y | 56 |
 | Server    | H, N    | 5     |
@@ -7199,3 +7199,34 @@ Totals by system (230 items):
       3. Run 2: 664 passed, 22 skipped.
 15. Owner notes (2026-11-25)
    1. Owner marks 19.241 solved.
+
+### [ ] 19.242 A card's own condition is refused by R-ABIL-07, a cost rule
+
+1. Goal: such a refusal cites the rule that says it.
+2. Report (24.23 bulk move, 2026-11-25)
+   1. Red Key: "This can't be activated during an attack."
+   2. Used during a declared attack: refused by R-ABIL-07.
+   3. R-ABIL-07: text before a colon is a cost.
+   4. The sentence is no cost; it is not before a colon.
+   5. R-ABIL-08: abilities are usable with priority, "unless stated".
+   6. So R-ABIL-08 and the card text say why, not R-ABIL-07.
+   7. Friendly Ball: both ↷ abilities are refused by R-ABIL-07 too.
+   8. First: "under this if there are no cards under this".
+   9. Second: "put a monster from under this", with none under it.
+3. Cause (the card code)
+   1. `engine.If` makes a condition a cost (`condCost`, `ability.go`).
+   2. `activatable` denies an unpaid cost with R-ABIL-07 (`activate.go`).
+   3. Only `red_key.go` and `friendly_ball.go` use `engine.If`.
+4. Tasks:
+   1. Each such refusal cites the rule that fits.
+   2. Red Key: R-ABIL-08 ("unless stated").
+   3. Friendly Ball's second ability: R-ABIL-40, if "a monster from under this" is its target (R-ABIL-05).
+   4. Check every `engine.If` and `condCost` use, all sets (5.24).
+   5. The files then check the rule; today they check `allowed` only.
+   6. `cards/r/testdata/situations/red_key/not-during-an-attack.json`.
+   7. `cards/r/testdata/situations/friendly_ball/catches-and-releases-a-monster.json`.
+5. Owner question
+   1. Friendly Ball's first ability with a card under it.
+   2. "If there are no cards under this" reads as part of the effect.
+   3. By the text it may be used: it taps and does nothing.
+   4. The engine refuses it; the file keeps that until the owner decides.
