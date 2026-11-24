@@ -34,6 +34,11 @@
 7. Shields are no stat parts (owner question, 2026-11-24).
    1. `Game.Shields`: "prevent the next damage" till end of turn.
    2. Soul Heart, Holy Chest, The Poop: their card is gone once played.
+8. Owner review of 18.29–18.32 (2026-11-24): show only what the table hides.
+   1. A card on the table already shows its effect: no icon, no list line.
+   2. E.g. Curse of Tiny Hands lies by the player; no "max hand size 2" icon.
+   3. A room's number change shows in the badge and its zoom sum line.
+   4. Hidden: a gone card's effect, a shield, a used item's this-turn effect.
 
 ## Considered options
 
@@ -70,7 +75,7 @@ Use option 1.
       1. Rewards doubled: A Lucky Penny!, Blessing of the Sack.
       2. A roll of 2 or 3 becomes 1: Eternal D6.
       3. Two dice, the left player picks: Cursed Lil Haunt.
-      4. The owner decides later where they show.
+      4. Hidden ones show as item 3.18; cards on the table show nothing more.
    10. The DC to attack a player sends only the effect that counts (18.30).
        1. The newest wins (R-MECH-06), so no sum.
    11. A flag stat's amount is 1, even when the engine stores more.
@@ -79,9 +84,9 @@ Use option 1.
    1. HP and ATK, as now.
    2. New: damage taken, red, "+N", only while above 0.
    3. No other stat gets a badge without a new decision.
-3. Level 2, icons: one per source card, in groups B and C.
-   1. Lasting group A effects have no icon: the card lies next to the character.
-   2. This changes the owner's rule of 2026-10-22 (V-41.4) for B.
+3. Level 2, icons: one per source card, hidden effects only (owner, 2026-11-24).
+   1. A lasting effect has no icon: its card lies on the table.
+   2. The owner's rule of 2026-10-22 (V-41.4) holds again.
    3. Each icon's hover lists its effects, one line each.
    4. One source's lines of one stat add up: "+3", not three "+1".
    5. An icon whose lines are all one number stat shows that sum.
@@ -89,8 +94,8 @@ Use option 1.
    7. The chip opens the character's zoom (level 3).
    8. A this-turn effect keeps its icon, its card's place aside (owner, 2026-11-24).
    9. The chip opens the zoom on hover, as an icon does.
-   10. Own area: the character and the player's `in_play` cards (18.31).
-       1. Items, souls and curses; the client reads it from the view.
+   10. Where a lasting effect's card lies no longer matters (owner, 2026-11-24).
+       1. 18.31 read the own area from `in_play`; item 3.1 replaces that.
    11. Monsters keep icons for this turn's effects only (18.31).
    12. The number shows only for a change of a number (18.31).
        1. None for flags, caps, the DC to be attacked, shields.
@@ -98,8 +103,23 @@ Use option 1.
    13. A lasting "on your turn" effect says so (18.31).
        1. The server sends it on other turns too.
    14. Three icons per column; a second column to their left (18.31).
+   15. All of a player's shields share one icon (owner, 2026-11-24).
+       1. Each shield blocks one damage instance, oldest first (R-MECH-46).
+       2. So the number is how many shields, not a sum of damage.
+       3. Its hover lists each, in the order they will block.
+   16. The "+K" chip is a pill, "⋯ K", with no card art (owner, 2026-11-24).
+       1. So it never looks like an icon's "+N".
+   17. Hidden effects that are not stats get icons too (owner, 2026-11-24).
+       1. Skips their next turn: Famine, Haunted!, Overflow!.
+       2. Takes an extra turn: XIX. The Sun.
+       3. The next loot is copied: Blank Card.
+       4. Lingering on the player: Black Heart.
+   18. Game-wide hidden effects: an icon on the user's character (owner, 2026-11-24).
+       1. The user: the controller of the card or ability that made it.
+       2. Its line says it is for every player.
+       3. A Lucky Penny!, Eternal D6, Compost, Lemon Mishap, Plan C.
 4. Level 3, the zoomed character: "Effects on you".
-   1. Every effect, groups A, B and C.
+   1. The same effects as the icons: hidden ones only (owner, 2026-11-24).
    2. "This turn" first, then "while in play".
    3. Each line: what it does, then the source card's name.
    4. No repeats of a sum line: HP, ATK, rolls, damage taken (owner, 2026-11-24).
@@ -109,13 +129,20 @@ Use option 1.
    7. A hidden source is "a hidden card" (18.32).
 5. Words are keys in `en.json`, one per stat (ADR 021).
 6. Every player sees every player's effects: they are public.
+7. "Must attack" shows on the attack button (owner, 2026-11-24).
+   1. The button turns red while an attack is owed.
+   2. Its tooltip names the target: a monster, or the monster deck.
+   3. The red border on a monster stays.
+8. Red Candle shows its chosen number as a die on its card (owner, 2026-11-24).
+   1. Till end of turn; not on any character.
+9. A free shop item already shows as price 0 (Credit Card); no icon.
 
 ## Consequences
 
 ### Positive
 
 1. The damage-taken total is on the character card.
-2. A room's condition shows on the players it hits.
+2. A room's number change shows in the badge sum on the players it hits.
 3. A till-end-of-turn effect stays seen after its card is gone.
 4. A new stat needs one key and one text; no new screen code.
 

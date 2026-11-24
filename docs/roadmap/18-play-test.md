@@ -1171,3 +1171,111 @@ Ideas: B-04, B-05, B-08.
        1. `make e2e`: 646 passed, 22 skipped, first run.
 5. Owner notes (2026-11-24)
    1. Owner marks 18.32 solved.
+
+### [x] 18.33 ADR 037: show only what the table hides
+
+1. Goal: ADR 037 follows the owner's review of 18.29–18.32.
+2. Owner review (2026-11-24)
+   1. A card on the table already shows its effect; don't repeat it.
+      1. E.g. Curse of Tiny Hands: no "max hand size 2" on the character.
+      2. A room's ATK change shows in the badge and the zoom sum line.
+   2. Show only hidden effects, e.g. a played Soul Heart.
+   3. All shields in one icon.
+   4. "Must attack": the attack button red, its tooltip names the target.
+   5. Red Candle: a die on its card.
+   6. Other game-wide effects: on the character card.
+   7. The "+K" chip gets its own shape.
+   8. Credit Card: price 0 already shows; nothing more.
+3. Result (2026-11-24, main conversation)
+   1. ADR 037: Context 8; Decision 1.9.4, 3, 3.1–3.2, 3.10, 3.15–3.18, 4.1, 7–9.
+   2. Consequences Positive 2 fixed.
+   3. 18.34–18.37 plan the work; one owner review after 18.37.
+
+### [ ] 18.34 Client: icons only for hidden effects
+
+1. Goal: no icon or list line for an effect whose card lies on the table (ADR 037 items 3, 4.1).
+2. Tasks:
+   1. `effectIcons`: a lasting (`in_play`) source never gets an icon.
+      1. Own area, rooms, monsters, others' items alike (item 3.1).
+      2. The `own` set from 18.31 goes away if nothing else needs it.
+   2. This-turn and next-roll effects and shields keep icons.
+   3. The zoom's "Effects on you" holds the same effects (item 4.1).
+      1. Its "While in play" part goes away if nothing is left in it.
+   4. The badges and their zoom sum lines stay as they are.
+   5. One icon for all of a player's shields (item 3.15).
+      1. Its number: how many shields.
+      2. Hover: each shield, in the order they block (oldest first).
+      3. Whole-damage and cap shields read as such.
+   6. The "+K" chip: a pill "⋯ K", no card art (item 3.16).
+   7. 5.26: monsters' icons, the zoom, e2e helpers that count icons.
+3. Done when:
+   1. Vitest: a lasting room or own-area effect gives no icon and no line.
+   2. Vitest: three shields give one icon "3", three lines in order.
+   3. e2e `effect-icons.spec.ts` follows the new rule.
+      1. The room test now checks no icon; the badge sum names the room.
+      2. Steamy Sale: no icon, no line.
+   4. Screenshots before and after; also without images.
+   5. UC-12, wiki `Client.md`; gates `make lint`, `make test`, `make frontend`, `make e2e`.
+
+### [ ] 18.35 Client: "must attack" on the attack button
+
+1. Goal: a player who owes an attack sees it on their attack button (ADR 037 item 7).
+2. Where it is today:
+   1. `TurnActions.tsx`: attack and buy icon buttons by the own name.
+   2. `mustTargets(view)` in `prompt.ts`: the monsters to attack; red border.
+   3. Cards: Monster Manual, Ambush!, Envy, Conquest (b2); Lust for Blood (r).
+      1. Also Portal (b2), Gaper and I Am Error (g2) (18.30 task 5 list).
+3. Tasks:
+   1. The attack button turns red while an attack is owed.
+   2. Its tooltip names the target: a monster's name, a player, or "the monster deck".
+   3. Check the view says enough for each card; if not, the engine adds it.
+   4. The monster's red border stays.
+   5. Words in `en.json`; `make i18n`.
+4. Done when:
+   1. Vitest for the tooltip text per target kind.
+   2. e2e: a forced attack (saved game) shows the red button and its tooltip.
+   3. Screenshots; UC for attacks if its text changes; wiki `Client.md`.
+   4. Gates as 18.34.
+
+### [ ] 18.36 Engine: hidden effects that are not stats
+
+1. Goal: the view sends the hidden effects of ADR 037 items 3.17, 3.18 and 8.
+2. Tasks:
+   1. On a player, as `Sources` entries with a source card:
+      1. `skip_turn`: Famine, Haunted!, Overflow! (`Player.SkipTurns`); amount: turns.
+      2. `extra_turn`: XIX. The Sun (`Game.ExtraTurn`).
+      3. `copy_next_loot`: Blank Card (`Player.CopyNextLoot`).
+      4. `lingering`: Black Heart's "when that player dies" (`Game.Lingering`).
+   2. Game-wide, on the user's character (item 3.18):
+      1. `double_rewards`: A Lucky Penny! (a boost), not Blessing of the Sack (a room).
+      2. `roll_to_one`: Eternal D6 once used.
+      3. `compost`: Compost (`Game.Compost`).
+      4. `lingering`: Lemon Mishap, Plan C.
+      5. The user: the controller of the card or ability that made it.
+   3. Cursed Lil Haunt and Blessing of the Sack lie on the table: nothing sent.
+   4. Red Candle: its chosen number in the view of that item (item 8).
+   5. Where state has no source, add one (as 18.30 did for Lust for Blood).
+   6. Saves stay readable: new fields `omitempty` (ADR 019).
+3. Done when:
+   1. One Go view test per effect with real cards; texts named (5.25).
+   2. Fuzz green; old records replay.
+   3. ADR 037 matches the code; wiki `Rules-engine.md`.
+   4. Gates as 18.34.
+
+### [ ] 18.37 Client: icons for the new hidden effects; Red Candle's die
+
+1. Goal: 18.36's effects show as icons; Red Candle shows its die (ADR 037 items 3.17, 3.18, 8).
+2. Tasks:
+   1. A `stats.effect.<key>` text for each new key.
+      1. A game-wide one says it is for every player.
+      2. E.g. "Rewards are doubled for every player this turn".
+   2. They follow 18.34's rules: icons, the zoom list, the chip.
+   3. Red Candle: a `Die` with the chosen number on its card, till end of turn.
+      1. As kept dice show on a card (`DieBadges`); the chooser's dice look.
+      2. Without images: the plain die.
+   4. Words in `en.json`; `make i18n`.
+3. Done when:
+   1. Vitest for the texts.
+   2. e2e: Blank Card used shows its icon; Red Candle shows its die (saved games).
+   3. Screenshots; also without images; UC-12; wiki `Client.md`.
+   4. Gates as 18.34.

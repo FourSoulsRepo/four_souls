@@ -57,6 +57,7 @@ It became step 23 at the merge with main, whose steps 21 and 22 came first (2026
 Situation tests were step 23; they became step 24 at the merge with bots (owner, 2026-11-18).
 Step 25 added (owner, 2026-11-18): Linux is slow; `--diagnose` first, self-repair after.
 Step 18 items 18.28–18.32 run on the step 25 branch (owner, 2026-11-19).
+Items 18.30–18.37 run on the step 23 branch (owner, 2026-11-24).
 
 ---
 
@@ -322,6 +323,7 @@ Step 18 items 18.28–18.32 run on the step 25 branch (owner, 2026-11-19).
 12. Host screen: a line before Detailed, options in groups (GS-10, 18.25).
 13. Dice value choices show dice, not buttons (V-57, 18.27).
 14. Every effect on a player shows on the table (V-58, ADR 037, 18.28–18.32).
+15. Only hidden effects show; must attack on the button (ADR 037, 18.33–18.37).
 
 ## 19. Bugs
 
