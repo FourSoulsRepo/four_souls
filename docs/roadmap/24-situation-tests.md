@@ -1241,6 +1241,9 @@ Ideas: TS-13, LR-04, R-03.
 15. No rules bug found.
 16. Helper removed, no use left: `table2`.
 17. `cardgen -report` unchanged.
+18. Owner (2026-11-24): TestIBSCancelsDeckAttack stays Go.
+   1. No setup field for an attack on a monster revealed from the deck.
+   2. Add one only when more tests need it.
 
 ### [ ] 24.23 Bulk: r other treasures
 
@@ -1314,3 +1317,24 @@ Ideas: TS-13, LR-04, R-03.
 10. Wiki `Situation-payload.md`: the two checks and the setup meaning.
 11. ADR 034: no drift; it does not say what the counts read.
 12. No rules bug found.
+
+### [ ] 24.29 A stacked attack roll spends an attack as the game does
+
+1. Why (owner, 2026-11-24, after 24.28)
+   1. `setup.stack` with an `attack_roll` starts an attack.
+   2. `stackedAttackRoll` (`situation_stack.go`) takes it from `Turn.Attacks` only.
+   3. With `attacks` 0 and a bonus card, the bonus attack stays unused.
+   4. The game would spend it: `spendAttack` (`combat.go`).
+   5. With no attack left at all, the setup is still accepted.
+2. Change
+   1. The stacked roll spends its attack by `spendAttack`, as the game.
+   2. No attack left: a setup error citing R-TURN-07, as `declared` does.
+   3. Look at `spendAttack`'s deck-attack part: say if it fits a slot monster.
+   4. One shared place; no second copy of the rule (CLAUDE.md 5.24).
+3. Files
+   1. Any file the error now refuses: fix its setup from the card text.
+   2. A file with a bonus card and a stacked roll checks `attacks` after it.
+4. Tests and docs
+   1. Go: the bonus attack spent; the error with none left.
+   2. Wiki `Situation-payload.md`: the stacked roll's attack.
+   3. ADR 034: drift edited in place, if any.
