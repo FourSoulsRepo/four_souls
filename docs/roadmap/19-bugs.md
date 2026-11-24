@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226, 19.233, 19.236, 19.237, 19.238 | 31 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226, 19.233, 19.236, 19.237, 19.238, 19.241 | 32 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193, 19.232 | 19 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45, 19.224                                   | 3     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
@@ -7060,3 +7060,26 @@ Totals by system (230 items):
    2. Search every e2e spec for literal card names in shown text (5.26).
    3. Fix them all in the same change.
    4. `make screenshots LOCALE=ru` and `make e2e` pass.
+
+### [ ] 19.241 Boss Rush!: the extra attack may go at any target
+
+1. Goal: Boss Rush!'s extra attack goes only at the bosses it revealed.
+2. Report (owner, 2026-11-24, from 18.35)
+   1. Card: "must make an additional attack on one of them this turn".
+   2. The engine lets the player attack any monster, the deck, or a player.
+   3. The attack button's tooltip (18.35) says "You must attack", no target.
+3. Cause (the card code)
+   1. `revealTwoBosses` in `cards/fsp2/common.go` calls `ForceAttacks(1, false)`.
+   2. That owes an attack on any target; it names no monster.
+4. Placement stays as it is (owner question, 2026-11-24)
+   1. "One or more monster slots": both bosses may share one slot.
+   2. In one slot the top boss covers the other (R-ZONE-10).
+   3. Then only the top boss can be attacked; the extra attack is on it.
+   4. In two slots the player picks either boss.
+5. Tasks:
+   1. The owed attack names both bosses, as Monster Manual names one.
+   2. A boss that left play or lies covered is no target.
+   3. No boss left to attack: the owed attack ends.
+   4. Tooltip and red frame name the bosses (18.35, `mustAttackLine`).
+   5. Search every set for "an additional attack on" a named group (5.24).
+   6. Situation tests: one slot, two slots, a boss killed first.
