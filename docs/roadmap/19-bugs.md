@@ -33,8 +33,8 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226, 19.233, 19.236, 19.237, 19.238, 19.241, 19.242 | 33 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193, 19.232 | 19 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226, 19.233, 19.236, 19.237, 19.238, 19.241, 19.242, 19.243 | 34 |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193, 19.232, 19.244 | 20 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45, 19.224                                   | 3     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141, 19.191 | 16 |
@@ -61,11 +61,11 @@ This step never closes; new reports are appended.
 | Z  | Situation runner: a check checks nothing | Go tests   | 19.234                                                 | 1     |
 | AA | Situation setup: a start-of-turn duty lost | Engine   | 19.235                                                 | 1     |
 
-Totals by system (232 items):
+Totals by system (234 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U, W, AA | 56 |
+| Engine    | A, B, T, U, W, AA | 58 |
 | Card data | C       | 3     |
 | Client    | D–G, O, P, S, V, Y | 56 |
 | Server    | H, N    | 5     |
@@ -7304,3 +7304,45 @@ Totals by system (232 items):
    4. playback.spec.ts:1975 (chromium, seed 114790418): the 19.237 flake.
    5. Neither has Red Key, Friendly Ball or ? Card; unrelated.
    6. Both passed alone on the first rerun, the same seed too; no new item.
+
+### [ ] 19.243 ? Card copies Red Key during an attack
+
+1. Goal: a copied ability keeps the limits its card states.
+2. Report (owner, 2026-11-25, after 19.242)
+   1. Red Key: "This can't be activated during an attack."
+   2. ? Card copies a ↷ ability; it is played, not activated.
+   3. So its copy of Red Key works during an attack.
+   4. Owner: the copy keeps the limit; it is refused during an attack.
+3. Cause
+   1. 19.242 put stated limits in `Ability.Needs` (`OnlyIf`, R-ABIL-08).
+   2. `activatable` checks them; a played copy never reaches it.
+   3. `copyableTapAbilities` checks only targets (`targetsAvailable`).
+4. Tasks:
+   1. ? Card offers no copy whose stated limit is unmet.
+   2. With none left, ? Card is refused (R-ABIL-08 or R-ABIL-40, say which).
+   3. One shared check with `activatable`; no second copy of the rule (5.24).
+   4. Check every copy path, all sets: Placebo, ? Card, others (as 19.238).
+   5. A file: ? Card during an attack offers no Red Key copy.
+
+### [ ] 19.244 A card under an item is not shown
+
+1. Goal: players see the card under an item, as on a real table.
+2. Report (owner, 2026-11-25, 19.242)
+   1. Friendly Ball puts a monster under it.
+   2. Nothing on the table shows it; its zoom shows only the ball.
+   3. So no one knows what is under it, or what the second ↷ releases.
+   4. Before: `.cache/screenshots/19.242/before/` (not tracked).
+3. Cause
+   1. `Object.Under` lives only in the engine state.
+   2. The view (`CardView`, `view.go`) never sends it.
+4. Owner design (2026-11-25)
+   1. The card under the item peeks out from under it.
+   2. A hover on it, or on the item, shows its full card.
+5. Tasks:
+   1. View: the cards under an item, public to all players.
+   2. Client: the peeking card on every item that has cards under it.
+   3. Every place that draws items: table, playback, history (5.26).
+   4. Layers (ADR 015) and animations (ADR 012) by their rules.
+   5. e2e test; before and after screenshots in `.cache/screenshots/19.244/`.
+   6. A use case for the new visible behavior.
+

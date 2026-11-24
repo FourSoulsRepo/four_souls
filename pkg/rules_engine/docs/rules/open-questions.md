@@ -782,6 +782,21 @@ On 2026-10-09 the owner parked every open decision for later.
    1. ? Card offers only the ↷ abilities with one; with none it is refused.
    2. So it matches Placebo, whose copy is checked as it is used.
 
+### Q-56 ? Card copies Friendly Ball's catch
+
+1. Question: where does the monster go when ? Card copies Friendly Ball's first ↷?
+   1. "Put a monster … under this": in a copy, "this" is the ? Card (R-MECH-11).
+   2. The ? Card then goes to the loot discard.
+   3. The monster stays outside the game, under nothing.
+2. Sources: no ruling found (2026-11-25).
+3. Options:
+   1. (a) Refuse the copy: a loot card can't hold a monster.
+   2. (b) Allow it: the monster leaves the game.
+   3. (c) The monster goes under Friendly Ball itself.
+4. Status: **Open** (owner, 2026-11-25).
+   1. Investigate later, or ask other players how they play it.
+   2. The engine now: (b), the monster is lost (19.242).
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
@@ -967,3 +982,4 @@ Every row of "Card rulings from Discord (S-DIS)" is Community too.
 | Q-55 | Lil Battery, The D6, Lord of the Pit, any targeted card | No valid target, or no attack to cancel: it can't be played or used | House |
 | Q-53 | Trick/Treat | Attack-start rolls after the target's triggers | House |
 | Q-54 | Trick/Treat | Every monster death counts; one removal per rewards gained | House |
+| Q-56 | ? Card, Friendly Ball | The copied catch puts the monster under ? Card; it is lost | House (open) |
