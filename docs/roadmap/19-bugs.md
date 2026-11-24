@@ -7230,3 +7230,11 @@ Totals by system (232 items):
    2. "If there are no cards under this" reads as part of the effect.
    3. By the text it may be used: it taps and does nothing.
    4. The engine refuses it; the file keeps that until the owner decides.
+6. Owner answers (2026-11-25)
+   1. Red Key: follow the card; it can't be used during an attack (R-ABIL-08).
+   2. Friendly Ball's second: no monster under it, no valid target (R-ABIL-40).
+   3. Friendly Ball's first: usable only with no card under it.
+   4. With a card under it, it is refused, not tapped for nothing.
+   5. Owner also asked how a card under Friendly Ball shows on screen.
+   6. It doesn't: the client view has no cards under an item.
+   7. Screenshots: `.cache/screenshots/19.242/before/` (not tracked).
