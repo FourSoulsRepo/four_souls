@@ -1,0 +1,21 @@
+{
+  "title": "Isaac's Member Card puts The Battery on top, then the Spoon Bender into discard, and The Battery fills its slot: can he buy the Sack Of Pennies for 6¢?",
+  "source": ["card member_card", "R-SHOP-03", "R-SHOP-06", "R-CARD-34"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["member_card"], "cents": 6}, {"character": "cain"}],
+    "active": 0,
+    "shop": ["spoon_bender", "sack_of_pennies"],
+    "decks": {"treasure": ["moms_bra", "boomerang", "the_battery"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "member_card", "choices": ["the_battery", "boomerang", "moms_bra", "spoon_bender"],
+     "expect": {"allowed": true, "discards": {"treasure": ["spoon_bender"]}, "decks": {"treasure": ["boomerang", "moms_bra"]},
+       "after": [{"player": 0, "deactivated": ["member_card"]}]}},
+    {"player": 0, "kind": "purchase",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["the_battery", "sack_of_pennies", "ask.deck.treasure"]}}},
+    {"kind": "choose", "choices": ["sack_of_pennies"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 0, "items": ["member_card", "sack_of_pennies"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

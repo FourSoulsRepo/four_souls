@@ -1,0 +1,17 @@
+{
+  "title": "Isaac uses X-Ray Vision on Cain and puts the treasure deck's Spoon Bender into discard: is X-Ray Vision recharged as his turn ends?",
+  "source": ["card x_ray_vision", "R-TURN-10"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["x_ray_vision"]}, {"character": "cain", "hand": ["bomb"]}],
+    "active": 0,
+    "decks": {"treasure": ["spoon_bender", "book_of_sin"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "x_ray_vision", "choices": ["player 2 (cain)", "ask.deck.treasure", "ask.put_into_discard spoon_bender"],
+     "expect": {"allowed": true, "events": [{"kind": "looked_at", "player": 0}], "discards": {"treasure": ["spoon_bender"]}, "decks": {"treasure": ["book_of_sin"]},
+       "after": [{"player": 0, "deactivated": ["x_ray_vision"]}, {"player": 1, "hand_cards": ["bomb"]}]}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "deactivated": []}]}}
+  ],
+  "expect": {"allowed": true}
+}

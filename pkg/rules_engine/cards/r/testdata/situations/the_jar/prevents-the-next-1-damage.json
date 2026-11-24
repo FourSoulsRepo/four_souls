@@ -1,0 +1,18 @@
+{
+  "title": "Isaac pays 4¢ for The Jar on Cain, then plays Bomb! on him: is the 1 damage prevented?",
+  "source": ["card the_jar", "card bomb", "R-MECH-46"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_jar"], "hand": ["bomb"], "cents": 4}, {"character": "cain"}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "the_jar", "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 0, "deactivated": []}]}},
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "discards": {"loot": ["bomb"]},
+       "events": [{"kind": "prevented", "player": 1}, {"kind": "damaged", "player": 1, "none": true}],
+       "after": [{"player": 1, "damage": 0}]}}
+  ],
+  "expect": {"allowed": true}
+}
