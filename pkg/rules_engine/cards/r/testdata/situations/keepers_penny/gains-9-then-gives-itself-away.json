@@ -1,0 +1,21 @@
+{
+  "title": "Isaac buys Keeper's Penny with 10¢ and gains 9¢; its ↷ then gives him 1¢ for 1 counter and goes to Cain: does Cain gain no ¢ from it?",
+  "source": ["card keepers_penny", "R-SHOP-03", "R-MECH-35", "R-MECH-37", "R-MECH-12"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "cents": 10}, {"character": "cain"}],
+    "active": 0,
+    "shop": ["keepers_penny"],
+    "decks": {"treasure": ["book_of_sin"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "purchase", "choices": ["keepers_penny"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 9, "items": ["keepers_penny"]}]}},
+    {"player": 0, "kind": "activate", "card": "keepers_penny", "ability": 1, "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "after": [
+       {"player": 0, "cents": 10, "items": []},
+       {"player": 1, "cents": 0, "items": ["keepers_penny"], "counters": [{"card": "keepers_penny", "count": 1}]}
+     ]}}
+  ],
+  "expect": {"allowed": true}
+}

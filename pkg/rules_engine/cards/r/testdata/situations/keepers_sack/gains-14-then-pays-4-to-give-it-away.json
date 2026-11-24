@@ -1,0 +1,18 @@
+{
+  "title": "Isaac buys Keeper's Sack with 10¢ and gains 14¢, then pays 4¢ to give it to Cain: does Cain gain no ¢ from it?",
+  "source": ["card keepers_sack", "R-SHOP-03", "R-MECH-35", "R-MECH-37"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "cents": 10}, {"character": "cain"}],
+    "active": 0,
+    "shop": ["keepers_sack"],
+    "decks": {"treasure": ["book_of_sin"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "purchase", "choices": ["keepers_sack"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 14, "items": ["keepers_sack"]}]}},
+    {"player": 0, "kind": "activate", "card": "keepers_sack", "ability": 1, "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 10, "items": []}, {"player": 1, "cents": 0, "items": ["keepers_sack"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

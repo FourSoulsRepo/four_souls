@@ -1,0 +1,16 @@
+{
+  "title": "Isaac uses Friendly Sack on Dice Shard, A Nickel! and Bomb!: he keeps A Nickel!; does Samson get the other two?",
+  "source": ["card friendly_sack", "R-MECH-37"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["friendly_sack"]}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "decks": {"loot": ["dice_shard", "a_nickel", "bomb"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "friendly_sack", "choices": ["a_nickel", "player 3 (samson)"]},
+  "expect": {"allowed": true, "events": [{"kind": "looked_at", "player": 0}], "after": [
+    {"player": 0, "hand_cards": ["a_nickel"], "deactivated": ["friendly_sack"]},
+    {"player": 1, "hand": 0},
+    {"player": 2, "hand_cards": ["dice_shard", "bomb"]}
+  ]}
+}

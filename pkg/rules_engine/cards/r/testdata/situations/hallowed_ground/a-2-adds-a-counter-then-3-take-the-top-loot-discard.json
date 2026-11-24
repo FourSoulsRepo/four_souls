@@ -1,0 +1,23 @@
+{
+  "title": "Isaac's Hallowed Ground has 2 counters; he misses the Pooter on a 2, kills it, then plays A Penny!: does removing 3 counters put A Penny! back in his hand?",
+  "source": ["card hallowed_ground", "card pooter", "card a_penny", "R-ATK-13", "R-ABIL-07"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["hallowed_ground"], "hand": ["a_penny"], "counters": [{"card": "hallowed_ground", "count": 2}]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["pooter"],
+    "decks": {"monster": ["clotty"], "loot": ["bomb"]},
+    "rolls": [2, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["pooter"],
+     "expect": {"allowed": true, "resolved_rolls": [2, 6, 6], "monsters": [{"card": "pooter", "dead": true}],
+       "after": [{"player": 0, "damage": 1, "hand_cards": ["a_penny", "bomb"], "counters": [{"card": "hallowed_ground", "count": 3}]}]}},
+    {"player": 0, "kind": "play", "card": "a_penny",
+     "expect": {"allowed": true, "discards": {"loot": ["a_penny"]}, "after": [{"player": 0, "cents": 1, "hand_cards": ["bomb"]}]}},
+    {"player": 0, "kind": "activate", "card": "hallowed_ground", "ability": 1,
+     "expect": {"allowed": true, "discards": {"loot": []},
+       "after": [{"player": 0, "hand_cards": ["bomb", "a_penny"], "counters": [{"card": "hallowed_ground", "count": 0}], "deactivated": []}]}}
+  ],
+  "expect": {"allowed": true}
+}

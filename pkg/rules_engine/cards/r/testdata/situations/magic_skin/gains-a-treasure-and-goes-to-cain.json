@@ -1,0 +1,22 @@
+{
+  "title": "Isaac uses Magic Skin and gives it to Cain with 1 counter; as Cain's turn starts he rolls a 2: is nothing destroyed, as 2 is not less than 1?",
+  "source": ["card magic_skin", "R-MECH-12", "R-MECH-37", "R-TURN-03"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["magic_skin"]}, {"character": "cain", "items": ["spoon_bender"]}],
+    "active": 0,
+    "decks": {"treasure": ["book_of_sin"]},
+    "rolls": [2]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "magic_skin", "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "after": [
+       {"player": 0, "items": ["book_of_sin"]},
+       {"player": 1, "items": ["spoon_bender", "magic_skin"], "counters": [{"card": "magic_skin", "count": 1}]}
+     ]}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "resolved_rolls": [2], "discards": {"treasure": []},
+       "after": [{"player": 1, "items": ["spoon_bender", "magic_skin"]}]}}
+  ],
+  "expect": {"allowed": true}
+}
