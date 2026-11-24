@@ -49,6 +49,8 @@ const unread: Record<string, string> = {
   'Turn.entered': "the engine's own step state",
   // A bot seat's memory reads it on the server (ADR 033, Decision 19.11).
   'DeckPlace.depth': 'the look shows the card; only a bot remembers where it lies',
+  // Words for game-wide effects come next (ADR 037 item 3.18).
+  'StatSource.everyone': '18.37 says "for every player" by it',
 };
 
 // viewFields lists every field reachable from Update in protocol.ts, as

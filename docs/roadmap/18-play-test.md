@@ -1301,7 +1301,7 @@ Ideas: B-04, B-05, B-08.
    8. Gates: `make lint`, `make test`, `make frontend` (784 Vitest) pass.
       1. `make e2e` run 1: 652 passed, 22 skipped.
 
-### [ ] 18.36 Engine: hidden effects that are not stats
+### [x] 18.36 Engine: hidden effects that are not stats
 
 1. Goal: the view sends the hidden effects of ADR 037 items 3.17, 3.18 and 8.
 2. Tasks:
@@ -1325,6 +1325,53 @@ Ideas: B-04, B-05, B-08.
    2. Fuzz green; old records replay.
    3. ADR 037 matches the code; wiki `Rules-engine.md`.
    4. Gates as 18.34.
+4. Result (2026-11-24)
+   1. `hiddenViews` in `view.go`, after the shields in `playerSources`.
+   2. On a player:
+      1. `skip_turn`: Famine, Haunted!, Overflow!; amount: turns; `next_turn`.
+      2. `extra_turn`: XIX. The Sun; on the active player; `turn`.
+      3. `copy_next_loot`: Blank Card; `turn`.
+      4. `lingering`: Black Heart (the chosen player), The Mirror (its payer); `turn`.
+   3. Game-wide, `everyone: true`, on the player who made it:
+      1. `double_rewards`: A Lucky Penny!; `roll_to_one`: Eternal D6; `turn`.
+      2. `compost`: Compost; `next_loot` (till a player loots).
+      3. `lingering`: Lemon Mishap, Plan C; `turn`.
+      4. `many_dice`: Mutant Spider (5.24); amount 4; `next_roll`.
+      5. The user: the source's controller (`madeBy`); a gone card keeps it.
+   4. New `lasts`: `next_turn`, `next_loot` (ADR 037 item 1.13).
+   5. Sources the engine lacked, all `omitempty`:
+      1. `Player.SkipSources` (`Game.SkipNextTurn`), `Player.CopySource`.
+      2. `Game.ExtraTurnSource`, `Game.CompostSource`, `ManyDice.Source`.
+      3. An older state's skip shows with no card.
+   6. `Ability.ShownOn` says whom a lingering ability shows on.
+      1. `ShownOnController`, `ShownForEveryone`; Black Heart its own.
+      2. `TestEveryLingeringIsShown`: Red Candle, Poker Chip are not.
+   7. Red Candle: already sent as its card's `dice` (15.67); nothing new.
+   8. Client: `protocol.ts` keys, `lasts` values, `everyone`.
+      1. `viewFields.test.ts`: `everyone` unread till 18.37.
+      2. No words yet: the client draws no icon for the new keys.
+      3. `stats.test.ts`: the "words for every stat" check skips them till 18.37.
+   9. Cards checked (5.24), card_db texts of every set:
+      1. Covered: the cards in items 2 and 3.
+      2. On the table, nothing sent: Blessing of the Sack, Cursed Lil Haunt.
+      3. Already stats: Two of Clubs, Holy Card, Holy Mantle.
+         1. Also Parabite, Polycephalus, Round Worm (next attack roll).
+      4. On their card: Lemegeton (a counter), Red Candle (`dice`).
+      5. On a monster: Dinga's doubled rewards; it gives them at once.
+      6. Room end-of-turn texts on the table: Dice Rooms, Greed Looms, Red Vise.
+         1. Also Spider Webs, Bum-Bo Is Loose!, Holy Portal, Challenge Room.
+      7. Poker Chip: its lingering goes on the stack at once.
+      8. Open: Sibling Rivalry's chosen player (`Turn.NextHelpers`) is not sent.
+         1. A "next attack" effect, not one of this step's kinds.
+   10. Helpers checked: `Linger`, `PushLingering`, `SkipNextTurn`, `sunEffect`.
+       1. Also `RerollWithDice` and the two-dice push: bound to a roll at once.
+   11. Tests: `cards/hidden_effects_view_test.go`, one per effect, texts named.
+   12. Docs: ADR 037 items 1.12, 1.13, 8.2; wiki `Rules-engine.md`.
+   13. Gates: `make lint`, `make test`, `make frontend` (784 Vitest) pass.
+       1. `make e2e` run 1: 652 passed, 22 skipped.
+   14. Risk: an old record's full-state check (every 100th step) may differ.
+       1. Only while a skip, Compost, Blank Card, The Sun or Mutant Spider is on.
+       2. The new source fields are set then; the old record lacks them.
 
 ### [ ] 18.37 Client: icons for the new hidden effects; Red Candle's die
 

@@ -269,7 +269,7 @@ func (g *Game) perform(a Action) {
 			n *= 2 // Two of Clubs; twice still only doubles (R-ABIL-36)
 		}
 		if g.Compost {
-			g.Compost = false
+			g.Compost, g.CompostSource = false, 0
 			g.lootFromDiscard(a.Player, n)
 			return
 		}

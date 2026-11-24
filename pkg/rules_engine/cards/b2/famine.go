@@ -20,7 +20,7 @@ var famine = engine.CardDef{
 			Text:    "When this dies, the active player skips their next turn.",
 			Trigger: engine.WhenThisDies(),
 			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
-				c.G.Players[c.Controller].SkipTurns++
+				c.G.SkipNextTurn(c.Controller, c.Source)
 			})},
 		},
 	},

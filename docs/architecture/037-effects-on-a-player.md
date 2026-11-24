@@ -80,6 +80,26 @@ Use option 1.
        1. The newest wins (R-MECH-06), so no sum.
    11. A flag stat's amount is 1, even when the engine stores more.
        1. E.g. the death-penalty item's receiver (Lust for Blood).
+   12. Hidden effects that are not stats go in `Sources` too (18.36).
+       1. Keys: `skip_turn`, `extra_turn`, `copy_next_loot`, `lingering`.
+       2. Game-wide keys: `double_rewards`, `roll_to_one`, `compost`, `many_dice`.
+       3. `many_dice`: Mutant Spider's next roll of 4 dice (5.24); amount: dice.
+       4. A game-wide one has `everyone: true`.
+       5. It goes to the player who made it: its source's controller.
+       6. A card that left play keeps its last controller.
+       7. With no known source: the active player.
+       8. A lingering ability says whom it shows on: `Ability.ShownOn`.
+       9. Black Heart: the chosen player; The Mirror: its payer.
+       10. Lemon Mishap, Plan C: for everyone; Red Candle: on no player.
+       11. `skip_turn` amount: turns; one source per run of one card.
+       12. The engine keeps each skip's source (`Player.SkipSources`).
+       13. Also `CopySource`, `ExtraTurnSource`, `CompostSource`, `ManyDice.Source`.
+       14. All `omitempty`; an older state's skip shows with no card.
+   13. New `lasts` values (18.36).
+       1. `next_turn`: till the player's next turn, which they skip.
+       2. `next_loot`: till a player next loots; may outlast the turn (Compost).
+       3. `turn` for the rest: extra turn, copied loot, lingering, boosts.
+       4. `next_roll` for Mutant Spider: till the next roll.
 2. Level 1, badges: numbers that change a fight.
    1. HP and ATK, as now.
    2. New: damage taken, red, "+N", only while above 0.
@@ -148,6 +168,7 @@ Use option 1.
    5. Red, lit or dim; only on the owing player's own turn.
 8. Red Candle shows its chosen number as a die on its card (owner, 2026-11-24).
    1. Till end of turn; not on any character.
+   2. The card view already sends it as `dice` (15.67, 18.36).
 9. A free shop item already shows as price 0 (Credit Card); no icon.
 
 ## Consequences

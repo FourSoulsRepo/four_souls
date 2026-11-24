@@ -83,9 +83,9 @@ type RewardView struct {
 
 // StatSourceView is one source of a stat change, so a client can show
 // why a stat changed (V-41). Stat is a statKeys value ("hp", "atk",
-// "damage_taken", "no_souls", ...) or a shield key; Lasts is "in_play",
-// "turn" or "next_roll". Card is the source's card, "" when it is
-// hidden. A flag stat has Amount 1 (ADR 037).
+// "damage_taken", "no_souls", ...), a shield key or a hidden effect key
+// (hiddenViews); Lasts is a lastsKeys value. Card is the source's card,
+// "" when it is hidden. A flag stat has Amount 1 (ADR 037).
 type StatSourceView struct {
 	Stat   string   `json:"stat,omitempty"`
 	Source ObjectID `json:"source,omitempty"`
@@ -93,6 +93,9 @@ type StatSourceView struct {
 	Amount int      `json:"amount,omitempty"`
 	Lasts  string   `json:"lasts,omitempty"`
 	When   Msg      `json:"when,omitzero"`
+	// Everyone: a game-wide effect, sent on the player who made it; it
+	// is for every player (ADR 037 item 3.18).
+	Everyone bool `json:"everyone,omitempty"`
 }
 
 // PlayerView is what a viewer sees of one player.
@@ -865,10 +868,10 @@ const (
 
 // notPlayerStats are the stats playerSources does not read by the
 // stat loop: the monster stats, engine bookkeeping (StatUsed), effects
-// on one object (StatEternal, ADR 037 item 1.7), game-wide effects with
-// no player (rewards doubled, a roll of 2 or 3 becomes 1, two dice),
-// and the stats it reads its own way (HP, ATK, the next attack roll,
-// the DC when attacked).
+// on one object (StatEternal, ADR 037 item 1.7), game-wide effects
+// (rewards doubled and a roll of 2 or 3 becomes 1 go out by
+// hiddenViews; two dice lies on the table), and the stats it reads its
+// own way (HP, ATK, the next attack roll, the DC when attacked).
 var notPlayerStats = map[Stat]bool{
 	StatMonsterHP: true, StatMonsterDC: true, StatMonsterATK: true, StatUsed: true, StatEternal: true,
 	StatDoubleRewards: true, StatRollToOne: true, StatTwoDiceLeftChooses: true,
@@ -885,7 +888,10 @@ var flagStats = map[Stat]bool{
 // numStats is the number of stats.
 var numStats = Stat(len(statNames))
 
-var lastsKeys = [...]string{LastsInPlay: "in_play", LastsTurn: "turn", LastsNextRoll: "next_roll"}
+var lastsKeys = [...]string{
+	LastsInPlay: "in_play", LastsTurn: "turn", LastsNextRoll: "next_roll",
+	LastsNextTurn: "next_turn", LastsNextLoot: "next_loot",
+}
 
 // playerSources lists every effect on a player now (ADR 037 item 1):
 // each player stat's parts, the DC others attack them at, the next
@@ -907,7 +913,8 @@ func (g *Game) playerSources(p PlayerID) []StatSourceView {
 	if pt, ok := g.playerAttackDCPart(p); ok {
 		parts = append(parts, pt)
 	}
-	return append(g.sourceViews(append(parts, g.nextAttackRollParts(p)...)), g.shieldViews(p)...)
+	out := append(g.sourceViews(append(parts, g.nextAttackRollParts(p)...)), g.shieldViews(p)...)
+	return append(out, g.hiddenViews(p)...)
 }
 
 // shieldViews are the shields on player p, one per shield; they last
@@ -1014,4 +1021,84 @@ func sumParts(parts []Part) int {
 		n += pt.Amount
 	}
 	return n
+}
+
+// Hidden effect keys: effects that are no stat parts and whose card does
+// not show them (ADR 037 items 3.17, 3.18).
+const (
+	skipTurnKey      = "skip_turn"      // skips their next Amount turns
+	extraTurnKey     = "extra_turn"     // takes another turn after this one
+	copyNextLootKey  = "copy_next_loot" // the next loot they play this turn is copied
+	lingeringKey     = "lingering"      // a lingering ability (Linger)
+	doubleRewardsKey = "double_rewards" // game-wide: rewards are doubled
+	rollToOneKey     = "roll_to_one"    // game-wide: a roll of 2 or 3 becomes 1
+	compostKey       = "compost"        // game-wide: the next loot comes from the discard
+	manyDiceKey      = "many_dice"      // game-wide: the next roll is Amount dice
+)
+
+// gameWideBoosts are the boosts for every player that hiddenViews sends;
+// a static one lies on the table (Blessing of the Sack, Cursed Lil Haunt).
+var gameWideBoosts = map[Stat]string{StatDoubleRewards: doubleRewardsKey, StatRollToOne: rollToOneKey}
+
+// hiddenViews are the hidden effects on player p that are no stat parts
+// (ADR 037 items 3.17, 3.18). A game-wide one goes to the player who
+// made it, the controller of its card or ability, with Everyone set.
+func (g *Game) hiddenViews(p PlayerID) []StatSourceView {
+	var out []StatSourceView
+	add := func(key string, source ObjectID, amount int, lasts Lasting, every bool) {
+		sv := StatSourceView{Stat: key, Amount: amount, Lasts: lastsKeys[lasts], Everyone: every}
+		if card := g.publicCard(source); card != "" {
+			sv.Source, sv.Card = source, card
+		}
+		out = append(out, sv)
+	}
+	pl := g.Players[p]
+	// Skips oldest first; one view per run of one source. A state from
+	// before 18.36 has fewer sources: its first skips have none.
+	srcs := slices.Concat(make([]ObjectID, max(pl.SkipTurns-len(pl.SkipSources), 0)), pl.SkipSources)
+	for i := 0; i < pl.SkipTurns; {
+		n := 1
+		for i+n < pl.SkipTurns && srcs[i+n] == srcs[i] {
+			n++
+		}
+		add(skipTurnKey, srcs[i], n, LastsNextTurn, false)
+		i += n
+	}
+	if g.ExtraTurn && g.Turn.Active == p {
+		add(extraTurnKey, g.ExtraTurnSource, 1, LastsTurn, false)
+	}
+	if pl.CopyNextLoot {
+		add(copyNextLootKey, pl.CopySource, 1, LastsTurn, false)
+	}
+	for _, l := range g.Lingering {
+		if on := g.ability(l.Ability).ShownOn; on != nil {
+			if q, every := on(g, l); q == p {
+				add(lingeringKey, l.Source, 1, LastsTurn, every)
+			}
+		}
+	}
+	for _, b := range g.Boosts {
+		if key := gameWideBoosts[b.Stat]; key != "" && b.Object == 0 && b.Player == NoPlayer && g.madeBy(b.Source) == p {
+			add(key, b.Source, 1, LastsTurn, true)
+		}
+	}
+	if g.Compost && g.madeBy(g.CompostSource) == p {
+		add(compostKey, g.CompostSource, 1, LastsNextLoot, true)
+	}
+	for _, md := range g.ManyDice {
+		if md.StackID == 0 && md.Chooser == p { // not yet bound to a roll
+			add(manyDiceKey, md.Source, md.Dice, LastsNextRoll, true)
+		}
+	}
+	return out
+}
+
+// madeBy is the player who made a game-wide effect: the controller of
+// its source, which a card that left play keeps; the active player when
+// the source is unknown (ADR 037 item 3.18).
+func (g *Game) madeBy(source ObjectID) PlayerID {
+	if source <= 0 || int(source) >= len(g.Objects) || g.Object(source).Controller == NoPlayer {
+		return g.Turn.Active
+	}
+	return g.Object(source).Controller
 }

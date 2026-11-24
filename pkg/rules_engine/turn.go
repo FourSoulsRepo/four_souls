@@ -276,7 +276,7 @@ func (g *Game) startNextTurn() {
 	next := g.next(g.Turn.Active)
 	regular := !g.ExtraTurn
 	if g.ExtraTurn {
-		next, g.ExtraTurn = g.Turn.Active, false
+		next, g.ExtraTurn, g.ExtraTurnSource = g.Turn.Active, false, 0
 		g.emit(Event{Kind: EvExtraTurn, Player: next})
 	}
 	// In a challenge the timer ticks before the starting player's next
@@ -289,6 +289,9 @@ func (g *Game) startNextTurn() {
 			break
 		}
 		g.Players[next].SkipTurns--
+		if pl := &g.Players[next]; len(pl.SkipSources) > pl.SkipTurns {
+			pl.SkipSources = pl.SkipSources[1:] // the oldest skip is used
+		}
 		g.emit(Event{Kind: EvTurnSkipped, Player: next})
 		if regular {
 			g.turnTaken(next) // a skipped turn counts as taken (R-TURN-16)
@@ -416,7 +419,7 @@ func (g *Game) healAll() {
 			}
 			o.endGains(GainEndOfTurn)
 		}
-		g.Players[pl.ID].CopyNextLoot = false
+		g.Players[pl.ID].CopyNextLoot, g.Players[pl.ID].CopySource = false, 0
 	}
 	for _, id := range g.MonstersInPlay() {
 		g.Object(id).endGains(GainEndOfTurn) // a monster's gained abilities (Q-47)
@@ -540,4 +543,13 @@ func (g *Game) askRoomStep(p PlayerID) {
 		return
 	}
 	g.ask(Choice{Purpose: ChooseRoom, Player: p, Rule: "R-TURN-12", Objects: rooms, Question: promptDiscardRoom.Msg()}, append(labels, AskKeep.Msg()))
+}
+
+// SkipNextTurn makes player p skip one more of their next turns: "skips
+// their next turn" (Famine, Haunted!, Overflow!). source is the object
+// whose ability did it, for the view (ADR 037 item 3.17).
+func (g *Game) SkipNextTurn(p PlayerID, source ObjectID) {
+	pl := &g.Players[p]
+	pl.SkipTurns++
+	pl.SkipSources = append(pl.SkipSources, source)
 }

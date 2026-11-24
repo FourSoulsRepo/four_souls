@@ -22,11 +22,22 @@ var blackHeart = engine.CardDef{
 		}), engine.Linger(0)},
 	}},
 	Lingering: []engine.Ability{{
-		Kind: engine.Triggered,
-		Text: "When that player dies, deal 2 damage to each player other than that player and you.",
+		Kind:    engine.Triggered,
+		Text:    "When that player dies, deal 2 damage to each player other than that player and you.",
+		ShownOn: blackHeartOn,
 		Trigger: engine.Trigger{On: engine.EvDied, Match: func(g *engine.Game, self engine.ObjectID, e engine.Event) bool {
 			return e.Player != engine.NoPlayer && cardkit.UsedOn(g, self, int(e.Player)+1)
 		}},
 		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) { eachOtherThan(c, c.EventPlayer, 2) })},
 	}},
+}
+
+// blackHeartOn is the chosen player, marked when the card resolved.
+func blackHeartOn(g *engine.Game, l engine.Lingering) (engine.PlayerID, bool) {
+	for _, pl := range g.Players {
+		if cardkit.UsedOn(g, l.Source, int(pl.ID)+1) {
+			return pl.ID, false
+		}
+	}
+	return engine.NoPlayer, false
 }

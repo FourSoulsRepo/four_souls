@@ -229,8 +229,15 @@ type Player struct {
 	// CopyNextLoot: the next non-trinket loot p plays this turn is
 	// copied (Blank Card).
 	CopyNextLoot bool `json:"copy_next_loot,omitempty"`
+	// CopySource is the object that made CopyNextLoot, for the view
+	// (ADR 037 item 3.17); 0 when unknown.
+	CopySource ObjectID `json:"copy_source,omitempty"`
 	// SkipTurns: the player skips this many of their next turns (Famine).
 	SkipTurns int `json:"skip_turns,omitempty"`
+	// SkipSources are the objects that made the last skips, oldest
+	// first, for the view (ADR 037 item 3.17). States from before 18.36
+	// may have fewer than SkipTurns: the first skips then have none.
+	SkipSources []ObjectID `json:"skip_sources,omitempty"`
 	// Activations and LootPlayed count this turn's activated abilities
 	// and loot cards played (Shadow of Famine).
 	Activations int `json:"activations,omitempty"`
@@ -317,8 +324,12 @@ type Game struct {
 	// prevents the next damage its target would take (R-MECH-46).
 	// Compost: the next loot comes from the top of the loot discard.
 	Compost bool `json:"compost,omitempty"`
+	// CompostSource is the object that made Compost (ADR 037 item 3.18).
+	CompostSource ObjectID `json:"compost_source,omitempty"`
 	// ExtraTurn: the active player takes another turn after this one.
 	ExtraTurn bool `json:"extra_turn,omitempty"`
+	// ExtraTurnSource is the object that made ExtraTurn (ADR 037 item 3.17).
+	ExtraTurnSource ObjectID `json:"extra_turn_source,omitempty"`
 
 	Boosts  []Boost  `json:"boosts,omitempty"`
 	Shields []Shield `json:"shields,omitempty"`
@@ -453,6 +464,9 @@ type ManyDice struct {
 	// Values and StackID are set once the roll is made.
 	Values  []int `json:"values,omitempty"`
 	StackID int   `json:"stack_id,omitempty"`
+	// Source is the object that asked for the dice before the roll
+	// (Mutant Spider), for the view (ADR 037 item 3.18); 0 if none.
+	Source ObjectID `json:"source,omitempty"`
 }
 
 // soulKeepsAbilities: a treasure that became a soul keeps its abilities

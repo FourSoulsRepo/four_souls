@@ -15,7 +15,7 @@ var overflow = engine.CardDef{
 		Text:    "Each player rolls- 1-2: They skip their next turn.",
 		Trigger: engine.WhenThisEntersPlay(),
 		Effects: []engine.Effect{engine.EachPlayer(engine.Roll(engine.RollTable{}.Results(1, 2, engine.EffectFunc(func(c *engine.Ctx) {
-			c.G.Players[c.Controller].SkipTurns++
+			c.G.SkipNextTurn(c.Controller, c.Source)
 		}))))},
 	}},
 }

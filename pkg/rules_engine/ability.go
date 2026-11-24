@@ -31,7 +31,19 @@ type Ability struct {
 	// Attack: the attack in progress it acts on, if any ("Cancel an
 	// attack."); with none it can't be played or used (R-ABIL-40).
 	Attack AttackNeed
+	// ShownOn, on a lingering ability, says which player's view shows
+	// it while it lasts (ADR 037 items 3.17, 3.18); every is true for a
+	// game-wide one. nil: no player's (Red Candle's die is on its card).
+	ShownOn func(g *Game, l Lingering) (p PlayerID, every bool)
 }
+
+// ShownOnController shows a lingering ability on its controller: "they
+// gain +1 treasure" (The Mirror).
+func ShownOnController(_ *Game, l Lingering) (PlayerID, bool) { return l.Controller, false }
+
+// ShownForEveryone shows a game-wide lingering ability on its controller,
+// for every player: "each time a player rolls …" (Lemon Mishap).
+func ShownForEveryone(_ *Game, l Lingering) (PlayerID, bool) { return l.Controller, true }
 
 // AttackNeed says which attack in progress an ability acts on, when the
 // attack is its target ("Cancel an attack.", R-ABIL-05). With no such
@@ -743,7 +755,7 @@ func (sunEffect) apply(c *Ctx) {
 	g.Decks[LootDeck] = append([]ObjectID{nid}, g.Decks[LootDeck]...)
 	g.emit(Event{Kind: EvMovedToDeck, Player: c.Controller, Object: nid, Card: g.Object(nid).Card, Text: DeckText(LootDeck, DeckTextBottom)})
 	if c.Controller == g.Turn.Active {
-		g.ExtraTurn = true
+		g.ExtraTurn, g.ExtraTurnSource = true, c.Source
 	}
 }
 

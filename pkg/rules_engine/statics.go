@@ -72,6 +72,8 @@ const (
 	LastsInPlay   Lasting = iota // a static ability: while its card is in play
 	LastsTurn                    // a boost: till end of turn (R-TURN-13)
 	LastsNextRoll                // a boost: till the next attack roll uses it (R-ATK-19)
+	LastsNextTurn                // till the player's next turn, which they skip (ADR 037 item 3.17)
+	LastsNextLoot                // till a player next loots, maybe after this turn (Compost)
 )
 
 // Part is one source of a stat change: a static ability in play or a

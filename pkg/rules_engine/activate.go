@@ -181,7 +181,7 @@ func (g *Game) finishActivation() {
 		g.push(g.activationItem(a, nid))
 		if pl := &g.Players[a.Player]; pl.CopyNextLoot && !g.def(nid).Trinket {
 			// A copy of the loot goes on the stack above it (Blank Card).
-			pl.CopyNextLoot = false
+			pl.CopyNextLoot, pl.CopySource = false, 0
 			g.push(StackItem{
 				Kind: StackAbility, Controller: a.Player, Source: nid, Card: card, Ability: a.Ability,
 				Mode: a.Mode, Targets: a.Chosen, Label: eventCopyOf.Msg(CardArg("card", card)),

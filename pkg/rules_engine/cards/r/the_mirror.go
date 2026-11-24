@@ -31,6 +31,7 @@ var theMirror = engine.CardDef{
 	Lingering: []engine.Ability{{
 		Kind:    engine.Triggered,
 		Text:    "Each time a monster dies this turn, gain +1 treasure.",
+		ShownOn: engine.ShownOnController,
 		Trigger: engine.WhenAMonsterDies(),
 		Effects: []engine.Effect{engine.GainTreasure(1)},
 	}},

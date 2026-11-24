@@ -109,6 +109,7 @@ func clonePlayers(ps []Player) []Player {
 		c.Hand = slices.Clone(p.Hand)
 		c.InPlay = slices.Clone(p.InPlay)
 		c.Counters = slices.Clone(p.Counters)
+		c.SkipSources = slices.Clone(p.SkipSources)
 		return c
 	})
 }

@@ -377,14 +377,19 @@ export interface RewardView {
 // a player (ADR 037, 18.30). card is "" or absent when the source is
 // hidden; older servers send no sources. A flag stat (a lock, no souls)
 // has amount 1. A "shield" without amount prevents the whole next
-// damage; "shield_cap" caps it at amount.
+// damage; "shield_cap" caps it at amount. The keys from "skip_turn" on
+// are hidden effects that are no stats (ADR 037 items 3.17, 3.18, 18.36).
 export interface StatSource {
-  stat: "hp" | "atk" | "dc" | "roll" | "attack_roll" | "attacked_dc" | "damage_taken" | "shop_price" | "loot_plays" | "attacks" | "purchases" | "loot_step" | "lock_others" | "loot_double" | "death_ward" | "recharge_limit" | "hand_cap" | "lock_turn" | "no_char_recharge" | "reveal_hand" | "choose_attack" | "no_forced_loss" | "paid_discount" | "no_souls" | "penalty_item_to" | "player_attack_dc" | "one_ability" | "one_loot" | "attack_tax" | "shield" | "shield_cap";
+  stat: "hp" | "atk" | "dc" | "roll" | "attack_roll" | "attacked_dc" | "damage_taken" | "shop_price" | "loot_plays" | "attacks" | "purchases" | "loot_step" | "lock_others" | "loot_double" | "death_ward" | "recharge_limit" | "hand_cap" | "lock_turn" | "no_char_recharge" | "reveal_hand" | "choose_attack" | "no_forced_loss" | "paid_discount" | "no_souls" | "penalty_item_to" | "player_attack_dc" | "one_ability" | "one_loot" | "attack_tax" | "shield" | "shield_cap" | "skip_turn" | "extra_turn" | "copy_next_loot" | "lingering" | "double_rewards" | "roll_to_one" | "compost" | "many_dice";
   source?: number;
   card?: string;
   amount?: number; // absent on a shield of the whole next damage
-  lasts: "in_play" | "turn" | "next_roll";
+  // next_turn: till the player's next turn, which they skip; next_loot:
+  // till a player next loots, maybe past this turn (18.36).
+  lasts: "in_play" | "turn" | "next_roll" | "next_turn" | "next_loot";
   when?: Msg; // a condition, e.g. "first attack roll"
+  // everyone: a game-wide effect, sent on the player who made it (18.36).
+  everyone?: boolean;
 }
 
 export interface SlotView {
