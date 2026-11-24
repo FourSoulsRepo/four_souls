@@ -1044,6 +1044,8 @@ Ideas: B-04, B-05, B-08.
    13. Gates: `make lint`, `make test`, `make frontend` (764 Vitest) pass.
        1. `make e2e`: 638 passed, 22 skipped, first run.
        2. `make fuzz-sets FUZZTIME=60s` passes.
+5. Owner notes (2026-11-24)
+   1. Owner marks 18.30 solved.
 
 ### [x] 18.31 Client: effect icons for every effect
 
@@ -1116,6 +1118,8 @@ Ideas: B-04, B-05, B-08.
           1. It waited for an empty stack, true before the play; fixed (5.16.10).
        3. Run 3: 644 passed, 22 skipped.
        4. Evidence: `.cache/e2e-evidence/18.31-run1/`, `18.31-run2/`.
+5. Owner notes (2026-11-24)
+   1. Owner marks 18.31 solved.
 
 ### [x] 18.32 Client: "Effects on you" in the zoom
 
@@ -1165,3 +1169,5 @@ Ideas: B-04, B-05, B-08.
        3. Without images: `*-noimages.png`.
    15. Gates: `make lint`, `make test`, `make frontend` (781 Vitest) pass.
        1. `make e2e`: 646 passed, 22 skipped, first run.
+5. Owner notes (2026-11-24)
+   1. Owner marks 18.32 solved.
