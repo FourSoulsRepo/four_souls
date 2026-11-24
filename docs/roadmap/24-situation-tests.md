@@ -1245,9 +1245,88 @@ Ideas: TS-13, LR-04, R-03.
    1. No setup field for an attack on a monster revealed from the deck.
    2. Add one only when more tests need it.
 
-### [ ] 24.23 Bulk: r other treasures
+### [x] 24.23 Bulk: r other treasures
 
 1. Goal: Active, Paid, Soul Treasure (about 35 tests).
+2. Counts (2026-11-25): 35 tests in 24 `_test.go` files of the family.
+   1. 15 Active, 6 Paid, 3 Soul Treasure cards; each has a Go test.
+3. Moved: 33 tests, as 37 files; 22 `_test.go` files are gone.
+   1. TestAuctionGavel, TestAuctionGavelNoBids, TestBirthright (2 files).
+   2. TestBatteryPack: 2 files, one per case (owner answer 11).
+   3. TestBookOfTheDead, TestCarBattery, TestCarBatteryRechargeStep.
+   4. TestCarBatteryOffersOnlyRechargeableItems, TestCursedSoul, TestCursedSoulIsGivenAway.
+   5. TestEternalD6, TestExperimentalTreatmentSoul, TestExperimentalTreatmentDie.
+   6. TestFriendlyBall, TestFriendlySack, TestHallowedGround, TestHandMeDowns.
+   7. TestJarOfFlies: 3 files, one per case; TestJarOfFliesThreeCounters, TestJarOfFliesCounts.
+   8. TestKeepersPenny, TestKeepersSack; TestKeepersSackEndOfTurn: 2 files, one per table.
+   9. TestMagicSkin, TestMagicSkinDestroys, TestMarbles, TestMemberCard.
+   10. TestRedKey, TestRedKeyNotDuringAnAttack, TestSacrificialDagger, TestTheJar.
+   11. TestUltraFleshKid: 2 files, 11 and 12 counters; TestUndefined.
+   12. Birthright's copy and Undefined's: a prop card in the card's own folder.
+4. Split: 1, a file; the rest stays Go.
+   1. TestXRayVision: the discard and the end-of-turn recharge are a file.
+   2. The `looked_at` event's `Card` stays Go: TestXRayVisionShowsTheHand (24.6).
+5. Stayed Go whole: 1. TestExperimentalTreatmentCancelled: needs a format change.
+   1. Butter Bean cancels the ability; its cost destroyed the card.
+   2. A stacked `activate` needs its card in play; the destroyed one is not.
+   3. A step can't respond mid-stack (owner answer 7).
+6. Needed a format change: 1 whole test (5); the split keeps an event field.
+7. Engine state set or read in Go, said by a game action in the file:
+   1. `CardOf`, `Eternal` (Birthright): the copy of Keeper's Bargain cuts 3¢ more.
+   2. Then the death penalty offers only the copy and spares Keeper's Bargain.
+   3. `CardOf` (Undefined): it copies Breakfast; 3 HP through Cain's turn, 2 after.
+   4. `G.Recharge` (Car Battery): Battery Pack recharges Isaac's items, not it.
+   5. `MillTop` (Book Of The Dead): Isaac kills the Pooter first.
+   6. `MillTop` (Hallowed Ground): Isaac plays A Penny! into the loot discard.
+   7. `DiscardRoom` (Red Key): Isaac kills the Fly; the room step discards Spider Webs.
+   8. `.Charged` (Friendly Ball): his next turn recharges it.
+   9. `.Charged`, added counters (Eternal D6, Jar Of Flies, Dagger, Ultra Flesh Kid!): `setup.counters`.
+   10. `MustAttackOneOfCards` (Friendly Ball): end refused by R-ATK-03; the attack offers only the Leech.
+   11. A direct `G.Apply` attack (Red Key): `declared: attack`.
+8. Drafts: 19 of 38 files kept the dumped setup and steps.
+   1. The `setup` helper's 6 Clotty and 6 Book Of Sin: only named tops kept.
+   2. Setups changed to prove the card text: see item 7.
+   3. Member Card: the draft did not build; see item 10.
+   4. Prompt checks split a step: Car Battery, Birthright (2), Member Card, Friendly Ball.
+   5. Steps added: Auction Gavel's purchase, Battery Pack's end of turn.
+9. Checks added from the card text (owner answer 8):
+   1. Used ↷ items: `deactivated`; $ abilities: not; roll cards: `resolved_rolls`.
+   2. Auction Gavel: Isaac 3¢, Cain pays nothing; with no bid the purchase offers the item.
+   3. Battery Pack: a counter at his turn's end; Cain's spent Jawbone not recharged.
+   4. Book Of The Dead: the monster discard empty; Clotty in slot 1.
+   5. Car Battery: the recharge step recharges his Sack; the spent Breakfast stays.
+   6. Cursed Soul: given to Cain, who takes 1 damage and a counter (R-MECH-12).
+   7. Eternal D6: the 3 resolves as 1; the Fly dies on the 6.
+   8. Experimental Treatment: the soul from the discard; on 1, the penalty's Spoon Bender.
+   9. Friendly Ball: the Leech dies; the Fly under it comes back (R-ZONE-11).
+   10. Friendly Sack: Samson's two cards; Hand Me Downs: only Cain loots.
+   11. Jar Of Flies on 3: the Fly dies, 1¢, and the Jar counts that death.
+   12. Keeper's Penny: the counter stays on it at Cain's (R-MECH-12).
+   13. Magic Skin: the counter goes with it; both destroyed cards in the discard.
+   14. Member Card: the deck order; The Battery fills the shop slot.
+   15. Red Key: Spider Webs deactivates Isaac's character; Blessing Of Greed gives Cain 3¢.
+   16. The Jar: `prevented`, no `damaged`; Bomb! in the loot discard.
+   17. X-Ray Vision: the deck's next card; Cain keeps his Bomb!.
+10. Go tests that did not check what they claimed: 2.
+   1. TestKeepersSackEndOfTurn: "damage 0, healed at its end" holds without any damage.
+   2. Isaac (2 HP) takes 2 and dies; the file checks `damaged`, `died`, the Sack kept.
+   3. TestMemberCard put `mom_s_bra` on the deck: no such card; nothing was put.
+   4. Its order answers named a card not there; it checked no order.
+   5. The file uses `moms_bra` and checks the deck order.
+11. Refusals: rules from the rules text.
+   1. Battery Pack, Jar Of Flies without counters: R-ABIL-07 fits.
+   2. Friendly Ball's end of turn with the Leech owed: R-ATK-03 fits.
+   3. Red Key during an attack, Friendly Ball's two ↷: R-ABIL-07 does not fit (19.242).
+   4. Their files check `allowed: false` only.
+12. Bugs logged: 19.242; not fixed here.
+   1. Owner question in it: may Friendly Ball's first ↷ be used with a card under it?
+13. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 668 changes.
+   2. 25 passed: each dropped a whole check entry, not a value.
+   3. 10 passed: each said another true thing.
+   4. E.g. a player index to another player with the same values.
+14. Helpers: none removed; each is still used.
+15. `cardgen -report` unchanged.
 
 ### [ ] 24.24 Bulk: r monsters, bosses, events, souls
 
