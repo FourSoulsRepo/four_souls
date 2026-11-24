@@ -214,11 +214,13 @@ export function fighters(view: GameView): number[] {
 // Forced is an attack the active player still owes this turn (19.180 –
 // 19.182): on a monster (Monster Manual, Friendly Ball), on the monster
 // deck (Ambush, I Am Error), or on anything (Envy); left is how many
-// attacks they owe, deck ones too.
+// attacks they owe, deck ones too. random: an attack on a random minion
+// (Pilfering Krampus, Q-31, 18.35).
 export interface Forced {
   target: number;
   deck: boolean;
   left: number;
+  random: boolean;
 }
 
 // forcedAttack is what the turn owes, or null. A named monster counts
@@ -233,7 +235,8 @@ export function forcedAttack(view: GameView): Forced | null {
   const target = m !== 0 && onTable(view, m) ? m : 0;
   const deck = (turn.must_attack_deck ?? 0) > 0;
   const left = turn.must_attacks ?? 0;
-  return target !== 0 || deck || left > 0 ? { target, deck, left } : null;
+  const random = view.random_attack ?? false;
+  return target !== 0 || deck || left > 0 || random ? { target, deck, left, random } : null;
 }
 
 // onTable: an object is a monster in a slot or a player's character,
@@ -257,9 +260,17 @@ export function mustAttackLine(view: GameView, n: Names): string | undefined {
   if (!f || view.attack) {
     return undefined;
   }
-  const target = f.deck ? t('banner.monster_deck') : f.target !== 0 ? attackTarget(view, f.target, n).text : '';
+  const target = f.deck ? t('banner.monster_deck') : f.target !== 0 ? attackTarget(view, f.target, n).text : f.random ? t('banner.random_minion') : '';
   if (!target) {
     return t('banner.must_attack_any', { n: f.left });
   }
   return f.left > 0 ? t('banner.must_attack_left', { target, n: f.left }) : t('banner.must_attack', { target });
+}
+
+// mustAttackTip is the attack button's line while the viewer owes an
+// attack (18.35, ADR 037 item 7): the banner's line, so it names the
+// same target: a monster, a player, the monster deck, or a random
+// minion. The button turns red while there is one; only on own turn.
+export function mustAttackTip(view: GameView, you: number, n: Names): string | undefined {
+  return view.turn.active === you ? mustAttackLine(view, n) : undefined;
 }

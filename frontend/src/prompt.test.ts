@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { IntentKind, PromptKind, Purpose, type Actions, type ChoiceOption } from './actions';
 import type { GameView, Intent, StackItem } from './protocol';
-import { activity, askedSeat, fighters, forcedAttack, mustAttackLine, mustTargets, myMove, picking, promptBanner, stackPrompt, tablePick } from './prompt';
+import { activity, askedSeat, fighters, forcedAttack, mustAttackLine, mustAttackTip, mustTargets, myMove, picking, promptBanner, stackPrompt, tablePick } from './prompt';
 import { StackKind } from './stack';
 
 const view: GameView = {
@@ -221,7 +221,7 @@ describe('forced attacks', () => {
 
   it('marks the monster the player must attack and names it in the banner (19.180, 19.181)', () => {
     const v = must({ must_attack: 9, must_attacks: 2 });
-    expect(forcedAttack(v)).toEqual({ target: 9, deck: false, left: 2 });
+    expect(forcedAttack(v)).toEqual({ target: 9, deck: false, left: 2, random: false });
     expect(mustTargets(v)).toEqual([9]);
     expect(mustAttackLine(v, names)).toBe('You must attack: GAPER (2 left)');
     expect(banner(v, 0)?.hint).toBe('You must attack: GAPER (2 left)');
@@ -254,5 +254,33 @@ describe('forced attacks', () => {
 
   it('shows the line to the active player only; others see their turn', () => {
     expect(banner(must({ must_attacks: 1 }), 1)?.hint).toBe('Playing their turn');
+  });
+
+  // The attack button's tooltip (18.35, ADR 037 item 7): it names what
+  // the card makes the player attack, on their own turn only.
+  it('names the target on the attack button, by target kind (18.35)', () => {
+    const tip = (v: GameView, you = 0) => mustAttackTip(v, you, names);
+    // Monster Manual: "Choose a monster. The active player must attack
+    // that monster this turn if able."
+    expect(tip(must({ must_attack: 9 }))).toBe('You must attack: GAPER');
+    // Lust for Blood!: "Choose a player. You must make an additional
+    // attack against them."
+    expect(tip(must({ must_attack: 2, must_attacks: 1 }))).toBe('You must attack: Bo (1 left)');
+    // Ambush!: "The active player must attack the monster deck 2 times
+    // this turn."
+    expect(tip(must({ must_attacks: 2, must_attack_deck: 2 }))).toBe('You must attack: the monster deck (2 left)');
+    // Envy: "the active player must make an additional attack": any target.
+    expect(tip(must({ must_attacks: 1 }))).toBe('You must attack (1 left)');
+    // Pilfering Krampus: "players must attack a random minion once each
+    // turn if able".
+    const krampus = { ...view, random_attack: true };
+    expect(forcedAttack(krampus)).toEqual({ target: 0, deck: false, left: 0, random: true });
+    expect(mustTargets(krampus)).toEqual([]);
+    expect(tip(krampus)).toBe('You must attack: a random minion');
+    // Another player's turn: their duty, not the viewer's.
+    expect(tip(must({ must_attack: 9 }), 1)).toBeUndefined();
+    // Nothing owed, or the owed attack is being made: no red button.
+    expect(tip(view)).toBeUndefined();
+    expect(tip({ ...must({ must_attack: 9 }), attack: { target: 9 } })).toBeUndefined();
   });
 });

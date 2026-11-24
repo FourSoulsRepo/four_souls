@@ -142,6 +142,10 @@ Use option 1.
    1. The button turns red while an attack is owed.
    2. Its tooltip names the target: a monster, or the monster deck.
    3. The red border on a monster stays.
+   4. The tooltip repeats the banner's line, from one source (`mustAttackLine`).
+      1. Targets also: a player (Lust for Blood), any target (Envy).
+      2. A random minion (Pilfering Krampus): the view's `random_attack`.
+   5. Red, lit or dim; only on the owing player's own turn.
 8. Red Candle shows its chosen number as a die on its card (owner, 2026-11-24).
    1. Till end of turn; not on any character.
 9. A free shop item already shows as price 0 (Credit Card); no icon.

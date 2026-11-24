@@ -973,6 +973,45 @@
   box-shadow: inset 0 0.125rem 0.3125rem rgb(0 0 0 / 45%);
 }
 
+/* An attack is owed (18.35, ADR 037 item 7): the attack icon is red,
+   lit or dim, pressed too; its tooltip names the target. The same red
+   as the dashed frame on the monster it must attack. */
+.turn-action.must {
+  color: rgb(255 255 255 / 70%);
+  background: linear-gradient(#8a3a33, #5a1f1b);
+}
+
+.turn-action.must .turn-action-image {
+  filter: grayscale(1) brightness(2.2);
+}
+
+.turn-action.must.lit {
+  color: #fff;
+  background:
+    radial-gradient(ellipse at 32% 25%, rgb(255 255 255 / 45%), transparent 50%),
+    linear-gradient(#f0675c, #c62828);
+  box-shadow:
+    0 0.1875rem 0 var(--ink),
+    0 0 0.625rem rgb(229 57 53 / 65%);
+}
+
+.turn-action.must.lit:hover {
+  box-shadow:
+    0 0.25rem 0 var(--ink),
+    0 0 1rem rgb(229 57 53 / 90%);
+}
+
+.turn-action.must.lit .turn-action-image {
+  filter: drop-shadow(0 1px 0 rgb(0 0 0 / 45%));
+}
+
+.turn-action.must.lit:active,
+.turn-action.must.down {
+  color: #fff;
+  background: linear-gradient(#d84a40, #a01f1f);
+  box-shadow: inset 0 0.125rem 0.3125rem rgb(0 0 0 / 45%);
+}
+
 /* End turn (15.20): one big button at the board's right edge (H-04),
    drawn like the game's cut-out art: the game's hand-drawn letters,
    a thick ink outline, a lumpy tilted shape, and a hard drop shadow.

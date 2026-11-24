@@ -1,6 +1,6 @@
 # UC-46: See what the turn owes
 
-**Module:** `frontend/src/prompt.ts`, `frontend/src/components/PlayerArea.tsx`, `frontend/src/components/Board.tsx`
+**Module:** `frontend/src/prompt.ts`, `frontend/src/components/PlayerArea.tsx`, `frontend/src/components/Board.tsx`, `frontend/src/components/TurnActions.tsx`
 **Status:** Implemented
 **Actors:** Player, spectator
 **Goal:** Everyone sees which attacks a card forces, and who joins the next one
@@ -32,6 +32,13 @@
   * "Next attack: Helped by Bo · Rewards shared with Bo".
   * Every player sees it until the attack starts.
   * Then the attack's stack row names them (UC-14 2s).
+* **3d. Ann's attack button (18.35, ADR 037 item 7):** it turns red.
+  * Its tooltip adds the banner's line: "Attack (A) · You must attack: Gaper".
+  * The same for a player, the monster deck, or any target.
+  * Red while the attack is owed, lit or dim; not during the fight.
+  * Only on Ann's own button; the others' stay as they are.
+* **3e. Pilfering Krampus owes a random minion (18.35, UC-42):** no frame.
+  * The banner and the tooltip: "You must attack: a random minion".
 
 ## Postconditions
 

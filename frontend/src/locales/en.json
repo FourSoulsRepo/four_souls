@@ -632,6 +632,10 @@
     "text": "Click a glowing card",
     "note": "Prompt banner, small line under Choose what to attack, Choose what to buy, or Choose a slot for the monster: the player picks on the table."
   },
+  "banner.random_minion": {
+    "text": "a random minion",
+    "note": "Prompt banner and the attack button's tooltip: the target in You must attack: {target}, when a card makes the player attack a random minion (Pilfering Krampus). Lower case."
+  },
   "banner.respond": {
     "text": "Respond, or pass",
     "note": "Prompt banner: something is on the stack and the player may answer it."

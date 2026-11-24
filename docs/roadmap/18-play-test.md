@@ -1253,7 +1253,7 @@ Ideas: B-04, B-05, B-08.
           2. Evidence: `.cache/e2e-evidence/18.34-run2/`.
        3. Run 3: 648 passed, 22 skipped.
 
-### [ ] 18.35 Client: "must attack" on the attack button
+### [x] 18.35 Client: "must attack" on the attack button
 
 1. Goal: a player who owes an attack sees it on their attack button (ADR 037 item 7).
 2. Where it is today:
@@ -1272,6 +1272,34 @@ Ideas: B-04, B-05, B-08.
    2. e2e: a forced attack (saved game) shows the red button and its tooltip.
    3. Screenshots; UC for attacks if its text changes; wiki `Client.md`.
    4. Gates as 18.34.
+5. Result (2026-11-24)
+   1. `TurnActions`: prop `must`; the attack icon gets class `must`, red.
+      1. Red lit or dim, pressed too; the monster's dashed frame stays.
+      2. Tooltip: "Attack (A) · You must attack: Fatty".
+   2. One source: `mustAttackTip` in `prompt.ts` is `mustAttackLine` on own turn.
+      1. `forcedAttack` gains `random`; `mustTargets` unchanged.
+      2. None while the attack is open, nor on others' turns.
+   3. Engine: view field `random_attack` (Pilfering Krampus, Q-31).
+      1. From `randomAttackDue` of the active player; `omitempty`.
+      2. Go test in `pilfering_krampus_norm_test.go`.
+      3. New key `banner.random_minion`: "a random minion".
+   4. Cards checked (5.24, 5.26); card_db and engine searched:
+      1. A monster: Monster Manual (b2); Krampus (fsp2); The Harbingers, Friendly Ball (r).
+      2. A player: Lust for Blood! (r), via its character.
+      3. The monster deck: Ambush! (b2); Gaper, I Am Error! (g2); Blind Rage (r).
+      4. Any target, the count: Portal, Envy, Conquest (b2); Boss Rush! (fsp2).
+         1. Also Curse of Blood Lust (fsp2); Blood Lust, Gutted Fatty, Challenge Room (r).
+      5. A random minion: Pilfering Krampus (Normal); the view lacked it, now sent.
+      6. Boss Rush! "on one of them" is not enforced by the engine; left as is.
+      7. Pilfering Krampus (comp) is a TODO card; nothing to show.
+   5. Tests: Vitest `mustAttackTip` per target kind (prompt.test.ts).
+      1. e2e `must-attack.spec.ts`: Monster Manual on Fatty; Ambush! from the deck.
+   6. Docs: UC-46 3d, 3e; wiki `Client.md`, `Rules-engine.md`; ADR 037 items 7.4, 7.5.
+   7. Screenshots: `.cache/screenshots/18.35/before/` and `after/`.
+      1. `must-attack-monster`, `-deck`; new `-manual`, `-ambush`, `-none`; `*-noimages.png`.
+      2. Close-ups: `crop-must-attack-monster*`.
+   8. Gates: `make lint`, `make test`, `make frontend` (784 Vitest) pass.
+      1. `make e2e` run 1: 652 passed, 22 skipped.
 
 ### [ ] 18.36 Engine: hidden effects that are not stats
 

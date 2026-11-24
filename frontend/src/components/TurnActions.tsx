@@ -22,6 +22,9 @@ interface Props {
   // left is how many buys and attacks are left this turn; only on the
   // viewer's own turn (15.24).
   left?: { buy: number; attack: number };
+  // must: the attack the player owes, as the banner says it; the attack
+  // icon is red while there is one (18.35, ADR 037 item 7).
+  must?: string | undefined;
 }
 
 interface Tool {
@@ -36,6 +39,8 @@ interface Tool {
   choosing: boolean;
   choosingLabel: string;
   left?: number;
+  // must: an owed attack; the icon turns red and its tooltip says it.
+  must?: string | undefined;
 }
 
 // TurnActions are buy and attack as icon buttons by own name (15.19,
@@ -43,8 +48,9 @@ interface Tool {
 // shows at once, before the server answers (V-15). While the player
 // picks what to buy or attack, that icon stays pressed (F-13). On own
 // turn a badge on each icon counts what is left (15.24). A click on a
-// dim icon says why it can't be used (15.29, F-18).
-export function TurnActions({ allowed, disabled, step, waiting, you, left }: Props) {
+// dim icon says why it can't be used (15.29, F-18). While an attack is
+// owed, the attack icon is red and its tooltip names the target (18.35).
+export function TurnActions({ allowed, disabled, step, waiting, you, left, must }: Props) {
   const act = useApp((s) => s.act);
   const showWhy = useApp((s) => s.showWhy);
   const [pressed, setPressed] = useState<{ kind: number; step: number } | null>(null);
@@ -71,6 +77,7 @@ export function TurnActions({ allowed, disabled, step, waiting, you, left }: Pro
       choosing: picking === Purpose.attackTarget,
       choosingLabel: t('turn.choosing_attack'),
       left: left?.attack,
+      must,
     },
   ];
   const press = (tool: Tool) => {
@@ -101,11 +108,11 @@ export function TurnActions({ allowed, disabled, step, waiting, you, left }: Pro
           <button
             key={tool.kind}
             type="button"
-            className={`turn-action${lit ? ' lit' : ''}${down ? ' down' : ''}`}
+            className={`turn-action${lit ? ' lit' : ''}${down ? ' down' : ''}${tool.must ? ' must' : ''}`}
             aria-label={tool.choosing ? tool.choosingLabel : tool.label}
             aria-pressed={down}
             aria-disabled={why ? true : undefined}
-            title={`${tool.choosing ? tool.choosingLabel : tool.label} (${tool.key.toUpperCase()})${why ? ` · ${why}` : ''}`}
+            title={`${tool.choosing ? tool.choosingLabel : tool.label} (${tool.key.toUpperCase()})${tool.must ? ` · ${tool.must}` : ''}${why ? ` · ${why}` : ''}`}
             disabled={!lit && !why}
             onClick={(e) => {
               if (why) {

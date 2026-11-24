@@ -88,6 +88,11 @@ func TestKrampusForcedAttack(t *testing.T) {
 	if !errors.As(err, &re) || re.Msg().Key.String() != "refuse.must_attack" {
 		t.Fatalf("end turn with a minion: %v", err)
 	}
+	// The view says the random attack is owed, for every seat (18.35):
+	// "players must attack a random minion once each turn if able".
+	if !tb.G.View(engine.Viewer{Kind: engine.ViewSpectator}).RandomAttack {
+		t.Error("view: the random attack is not owed")
+	}
 	boost(tb, 0, 4)
 	tb.G.ForceRolls(6)
 	ev := tb.Do(engine.Intent{Player: 0, Kind: engine.IntentAttack})
@@ -96,6 +101,9 @@ func TestKrampusForcedAttack(t *testing.T) {
 	}
 	if _, err := tb.G.Apply(engine.Intent{Player: 0, Kind: engine.IntentEndTurn}); err != nil {
 		t.Errorf("the duty is met: %v", err)
+	}
+	if tb.G.View(engine.Viewer{Kind: engine.ViewSpectator}).RandomAttack {
+		t.Error("view: the random attack is still owed after it was made")
 	}
 	check(t, tb.G)
 }

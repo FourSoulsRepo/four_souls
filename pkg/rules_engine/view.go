@@ -187,6 +187,11 @@ type GameView struct {
 	// active player does (15.30, V-21).
 	Attack *AttackView `json:"attack,omitempty"`
 	Buying bool        `json:"buying,omitempty"`
+	// RandomAttack: the active player owes an attack on a random
+	// monster a card names (Pilfering Krampus, Q-31, R-KRAMPUS-13); the
+	// turn can't end before it. Public, as the turn's other duties
+	// (18.35, ADR 037 item 7).
+	RandomAttack bool `json:"random_attack,omitempty"`
 	// FirstRoll is the first-player roll before turn 1: who still rolls
 	// and this round's dice so far. It is public (GS-06, 15.43).
 	FirstRoll *FirstRoll `json:"first_roll,omitempty"`
@@ -361,6 +366,9 @@ func (g *Game) ViewBase() ViewBase {
 		}
 	}
 	out.Buying = g.Purchase.On
+	if a := g.Turn.Active; !g.Over && a >= 0 && int(a) < len(g.Players) {
+		out.RandomAttack = g.randomAttackDue(a)
+	}
 	if fr := g.FirstRoll; fr != nil {
 		out.FirstRoll = &FirstRoll{Round: fr.Round, Players: slices.Clone(fr.Players), Rolls: slices.Clone(fr.Rolls)}
 	}

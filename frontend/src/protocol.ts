@@ -567,6 +567,9 @@ export interface GameView {
   // declared purchase (15.30). Older servers send neither.
   attack?: AttackView;
   buying?: boolean;
+  // random_attack: the active player owes an attack on a random
+  // monster (Pilfering Krampus, Q-31); older servers send none (18.35).
+  random_attack?: boolean;
   // first_roll is the first-player roll before turn 1: who still rolls,
   // in seat order, and this round's dice so far (GS-06, 15.43).
   first_roll?: FirstRoll;
