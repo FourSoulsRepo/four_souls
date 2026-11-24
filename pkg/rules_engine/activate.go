@@ -48,6 +48,9 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 		return refuse("R-ABIL-08", "%s has no such activated ability", o.Card)
 	}
 	a := g.ability(refs[i])
+	if err := g.unmet(a, "R-ABIL-08", p, src); err != nil {
+		return err
+	}
 	for _, c := range a.Costs {
 		if !c.canPay(g, p, src) {
 			return deny("R-ABIL-07", costSay(c), "cannot pay the cost (%s)", c.label())
@@ -58,10 +61,14 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 
 // targetsAvailable checks every target spec has something to choose (R-ABIL-40); an
 // ability with modes needs one mode whose targets are there. An attack
-// the ability acts on counts as a target (Ability.Attack, Q-55).
+// the ability acts on counts as a target (Ability.Attack, Q-55), and so
+// does a thing it acts on (ActsOn, 19.242).
 func (g *Game) targetsAvailable(a Ability, p PlayerID, src ObjectID) error {
 	if !g.AttackFor(a.Attack, p) {
 		return deny("R-ABIL-40", refuseNoTarget.Msg(), "no attack to act on")
+	}
+	if err := g.unmet(a, "R-ABIL-40", p, src); err != nil {
+		return err
 	}
 	if len(a.Modes) > 0 {
 		if len(g.availableModes(a, p, src)) == 0 {

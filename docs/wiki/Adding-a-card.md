@@ -129,6 +129,8 @@ A card that takes from a player no target names sets `Takes` on that ability: it
 
 A card whose effect acts on the attack in progress sets `Attack` on that ability, or on that "choose one-" mode: `NeedsAnAttack` ("Cancel an attack.", Lord of the Pit), `NeedsYourAttack` (The Bible), `NeedsAttackOnMonster` (Emergency Contact), `NeedsYourAttackOnMonster` (IBS). The attack counts as its target: with no such attack the card can't be played or used, and a mode is not offered (R-ABIL-40, Q-55, 19.237). An attack is in progress from its declaration till it ends; it is on a monster once its target is one. The effect checks the same on resolution with `c.G.AttackFor(need, c.Controller)`. A triggered ability needs no `Attack`: it is never played.
 
+A condition for using an ability that is not before its colon is no cost (R-ABIL-07); it goes in `Needs`. A limit the card states ("This can't be activated during an attack.", Red Key) is `OnlyIf(say, ok)`, refused by R-ABIL-08. A thing it acts on that no target spec names ("a monster from under this", Friendly Ball) is `ActsOn(ok)`: with none it has no valid target (R-ABIL-40), and ? Card does not offer it (19.242).
+
 Rules follow our rules text in `pkg/rules_engine/docs/rules/`; each rule has an ID such as `R-DEATH-14`. When the card text and a rule seem to disagree, add the case to `open-questions.md` instead of guessing.
 
 ## 3. Test it
@@ -223,4 +225,5 @@ After the set's cards are in: `make bot-values`, then `make bots`, as for one ca
 * `make lint` passes (see [Linters](Linters)).
 * A card that takes from a player no target names sets `Takes`.
 * A card that cancels an attack sets `Attack`.
+* A card's own condition is in `Needs`, never in `Costs`.
 * Its questions and options are keys with lines in `en.json`; `server-keys.json` is rewritten.

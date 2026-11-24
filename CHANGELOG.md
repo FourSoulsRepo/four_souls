@@ -9,7 +9,8 @@ Rules engine versions are in each release's notes.
 - Lord of the Pit, The Bible's "Cancel your attack.", IBS's "Cancel your attack on a monster." and Emergency Contact need an attack to cancel; with none they are not offered.
 - ? Card offers only the ↷ abilities it could use now: it no longer copies Lord of the Pit with no attack to cancel, nor an ability with no valid target; with none it can't be played.
 - Boss Rush!'s extra attack goes only at one of the two bosses it revealed; in one slot only the top boss. Friendly Ball's and Lust for Blood!'s extra attack likewise only at their monster or player. If the top boss of one slot dies first, the boss under it is still one of them. Once none of them can be attacked, the extra attack is no longer owed. The attack button and the red frames name them: "You must attack: Monstro or Widow".
-- Rules engine 0.5.10.
+- Red Key during an attack and Friendly Ball's first ability with a card under it now say the card forbids it (R-ABIL-08), not an unpaid cost. Friendly Ball's second ability with nothing under it has no valid target, and ? Card no longer offers to copy it.
+- Rules engine 0.5.11.
 
 ## 0.6.4 - 2026-11-20
 

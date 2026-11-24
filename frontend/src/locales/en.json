@@ -812,10 +812,6 @@
     "text": "Swap which of your items?",
     "note": "Card question while Finger! resolves."
   },
-  "card.friendly_ball.needs_card": {
-    "text": "Needs a card under this",
-    "note": "Why Friendly Ball's second ability can't be used: no card is under it."
-  },
   "card.friendly_ball.needs_none": {
     "text": "Needs no cards under this",
     "note": "Why Friendly Ball's first ability can't be used: a card is under it already."

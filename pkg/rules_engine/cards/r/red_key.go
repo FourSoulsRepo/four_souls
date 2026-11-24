@@ -21,9 +21,12 @@ var redKey = engine.CardDef{
 	Copies: 1,
 	Tap:    true,
 	Abilities: []engine.Ability{{
-		Kind: engine.Activated,
-		Text: "↷: Look at the top 3 cards of the room or monster deck. You may put one of those in a slot and the rest back. This can't be activated during an attack.",
-		Costs: []engine.Cost{engine.Tap(), engine.If(redKeyNotInAttack, func(g *engine.Game, _ engine.PlayerID, _ engine.ObjectID) bool {
+		Kind:  engine.Activated,
+		Text:  "↷: Look at the top 3 cards of the room or monster deck. You may put one of those in a slot and the rest back. This can't be activated during an attack.",
+		Costs: []engine.Cost{engine.Tap()},
+		// "This can't be activated during an attack.": a limit the card
+		// states, no cost (R-ABIL-08, 19.242).
+		Needs: []engine.Need{engine.OnlyIf(redKeyNotInAttack, func(g *engine.Game, _ engine.PlayerID, _ engine.ObjectID) bool {
 			return !g.Attack.On
 		})},
 		Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {

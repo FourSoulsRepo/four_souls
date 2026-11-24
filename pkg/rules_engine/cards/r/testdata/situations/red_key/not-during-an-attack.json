@@ -9,5 +9,5 @@
     "declared": "attack"
   },
   "action": {"player": 0, "kind": "activate", "card": "red_key"},
-  "expect": {"allowed": false}
+  "expect": {"allowed": false, "rule": "R-ABIL-08"}
 }

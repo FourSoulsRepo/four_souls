@@ -6,10 +6,7 @@ import (
 )
 
 // The card's own lines; their words are in en.json (ADR 021).
-var (
-	friendlyBallNeedsCard = engine.NewKey("card.friendly_ball.needs_card")
-	friendlyBallNeedsNone = engine.NewKey("card.friendly_ball.needs_none")
-)
+var friendlyBallNeedsNone = engine.NewKey("card.friendly_ball.needs_none")
 
 // Friendly Ball (Active Treasure Card)
 //
@@ -22,11 +19,14 @@ var friendlyBall = engine.CardDef{
 	Tap:    true,
 	Abilities: []engine.Ability{
 		{
-			Kind: engine.Activated,
-			Text: "↷: Put a monster not being attacked under this if there are no cards under this.",
-			Costs: []engine.Cost{engine.If(friendlyBallNeedsNone, func(g *engine.Game, _ engine.PlayerID, self engine.ObjectID) bool {
+			Kind:  engine.Activated,
+			Text:  "↷: Put a monster not being attacked under this if there are no cards under this.",
+			Costs: []engine.Cost{engine.Tap()},
+			// "if there are no cards under this": usable only then, a
+			// limit the card states (R-ABIL-08; owner, 19.242).
+			Needs: []engine.Need{engine.OnlyIf(friendlyBallNeedsNone, func(g *engine.Game, _ engine.PlayerID, self engine.ObjectID) bool {
 				return len(g.Object(self).Under) == 0
-			}), engine.Tap()},
+			})},
 			Targets: []engine.TargetSpec{engine.ChooseWhere(engine.TargetMonster, notAttacked)},
 			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
 				if len(c.G.Object(c.Source).Under) == 0 {
@@ -35,11 +35,14 @@ var friendlyBall = engine.CardDef{
 			})},
 		},
 		{
-			Kind: engine.Activated,
-			Text: "↷: Put a monster from under this in a monster slot not being attacked. The active player must make an additional attack on it this turn.",
-			Costs: []engine.Cost{engine.If(friendlyBallNeedsCard, func(g *engine.Game, _ engine.PlayerID, self engine.ObjectID) bool {
+			Kind:  engine.Activated,
+			Text:  "↷: Put a monster from under this in a monster slot not being attacked. The active player must make an additional attack on it this turn.",
+			Costs: []engine.Cost{engine.Tap()},
+			// "a monster from under this" is its target (R-ABIL-05); with
+			// none it has no valid target (R-ABIL-40; owner, 19.242).
+			Needs: []engine.Need{engine.ActsOn(func(g *engine.Game, _ engine.PlayerID, self engine.ObjectID) bool {
 				return len(g.Object(self).Under) > 0
-			}), engine.Tap()},
+			})},
 			Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
 				under := c.G.Object(c.Source).Under
 				if len(under) == 0 || a[0] < 0 {

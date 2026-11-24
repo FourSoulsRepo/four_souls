@@ -7238,3 +7238,69 @@ Totals by system (232 items):
    5. Owner also asked how a card under Friendly Ball shows on screen.
    6. It doesn't: the client view has no cards under an item.
    7. Screenshots: `.cache/screenshots/19.242/before/` (not tracked).
+7. Done (2026-11-25)
+   1. `engine.If` and `condCost` are gone; nothing else used them.
+   2. New `Ability.Needs`: conditions that are no cost (R-ABIL-07).
+   3. One type, `Need`, with two constructors.
+   4. `OnlyIf(say, ok)`: a limit the card states; refused by R-ABIL-08.
+   5. `activatable` checks it before the costs; the card's key says why.
+   6. `ActsOn(ok)`: a thing it acts on that no `TargetSpec` names.
+   7. `targetsAvailable` checks it: R-ABIL-40, "No valid target now".
+   8. So ? Card's copy is checked too (`copyableTapAbilities`, 19.238).
+   9. Red Key: `OnlyIf`, "Not during an attack"; R-ABIL-08.
+   10. Friendly Ball's first: `OnlyIf`, "Needs no cards under this"; R-ABIL-08.
+   11. Friendly Ball's second: `ActsOn` a card under it; R-ABIL-40.
+   12. Key `card.friendly_ball.needs_card` removed; `refuse.no_target` instead.
+   13. Rules engine 0.5.11; CHANGELOG Unreleased.
+8. Why R-ABIL-08 for Friendly Ball's first
+   1. R-ABIL-08: usable with priority and the cost, "unless stated".
+   2. "If there are no cards under this" is such a statement (owner answer 3).
+   3. No rule fits better: R-ABIL-07 is a cost; R-ABIL-40 is targets.
+   4. Its target, a monster not being attacked, is a `TargetSpec` already.
+   5. Same rule as Red Key: one mechanism, `OnlyIf`.
+9. Why a need, not a target spec, for the second
+   1. "A monster from under this" is its target (R-ABIL-05).
+   2. A `TargetSpec` would ask for it and light it while dragging (aims).
+   3. A card under an item is not shown in the client (owner keeps that open).
+   4. So `ActsOn` counts it as a target without a prompt, as `Attack` does.
+   5. No rule change: R-ABIL-40 already covers "an ability with targets".
+   6. Q-55: no change.
+10. Checked (5.24): every `engine.If`, `condCost` and R-ABIL-07 denial.
+   1. r Red Key: changed, `OnlyIf`.
+   2. r Friendly Ball, both abilities: changed, `OnlyIf` and `ActsOn`.
+   3. No other card in b2, g2, fsp2, r or challenge used `engine.If`.
+   4. `activatable`: the only R-ABIL-07 denial, the costs loop; now real costs only.
+   5. Costs left: `Tap`, `PayCents`, `PayHPCost`, `DestroySelf`, `RemoveCounters`.
+   6. Also `DiscardChosen`, `GiveChosen`, `DestroyChosen`: all paid before a colon.
+   7. `costSay` in `blocked.go`: the `condCost` case removed.
+   8. `finishActivation`, `hasTap`: read `Costs` only; unchanged.
+   9. `cards_test.go` `TestTapMatchesAbilities`: `Costs` only; unchanged.
+   10. b2 Placebo: copies go through `activatable`, so `Needs` apply; unchanged.
+   11. fsp2 ? Card: `copyableTapAbilities` asks `targetsAvailable`; `ActsOn` applies.
+   12. A copy is played, not activated, so `OnlyIf` is not checked; as before.
+11. Bots and client: no change needed.
+   1. `Allowed` tries each intent through `check`, so `activatable`.
+   2. Bots pick from `Allowed`; the client gets `Allowed` in each update.
+   3. `Blocked` shows the refusal's `say`: the card's key, or "No valid target now".
+   4. Keys follow ADR 021; `server-keys.json` rewritten.
+12. Tests: each failed with the needs check off.
+   1. `red_key/not-during-an-attack.json`: R-ABIL-08.
+   2. Sources: card text, R-ATK-02, R-ABIL-08.
+   3. `friendly_ball/catches-and-releases-a-monster.json` checks the rules.
+   4. Step 1, second with nothing under it: R-ABIL-40.
+   5. Step 5, first with the Leech under it: R-ABIL-08.
+   6. Sources added: R-ABIL-05, R-ABIL-08, R-ABIL-40.
+   7. These steps already covered both refusals; no extra Friendly Ball file.
+   8. A setup can't put a card under an item, so steps are the way.
+   9. New `interactions/questionmark-card-friendly-ball-offers-only-the-catch.json`.
+   10. ? Card offers only Friendly Ball's first; nothing is under ? Card.
+   11. Sources: both cards, R-ABIL-05, R-ABIL-40, Q-55.
+13. Docs: wiki `Effect-blocks.md`, `Adding-a-card.md`: `Needs`.
+   1. Rules text: no change.
+14. Gates (2026-11-25)
+   1. `make lint test` and `make site` passed; site: engine 0.5.11.
+   2. `make e2e`: 662 passed, 2 failed; evidence in `.cache/e2e-evidence/19.242/`.
+   3. growth.spec.ts:59 (chromium): a timeout in the long-game check; no card in it.
+   4. playback.spec.ts:1975 (chromium, seed 114790418): the 19.237 flake.
+   5. Neither has Red Key, Friendly Ball or ? Card; unrelated.
+   6. Both passed alone on the first rerun, the same seed too; no new item.
