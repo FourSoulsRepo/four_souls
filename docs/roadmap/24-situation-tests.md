@@ -1739,7 +1739,7 @@ Ideas: TS-13, LR-04, R-03.
 10. Wiki `Situation-payload.md`: both fields, a "Leftover rolls and picks" part, the runner.
 11. ADR 034: no drift.
 
-### [ ] 24.33 Setup: an attack roll from a deck attack
+### [x] 24.33 Setup: an attack roll from a deck attack
 
 1. Why (owner, 2026-11-25: two tests need it)
    1. TestIBSCancelsDeckAttack (24.22 item 18).
@@ -1760,3 +1760,57 @@ Ideas: TS-13, LR-04, R-03.
    1. Go: a deck-attack roll set up; a wrong one refused.
    2. Wiki `Situation-payload.md`: the field, with an example.
    3. ADR 034: drift edited in place, if any.
+5. Done (2026-11-25): `from_deck` and `slot` on a stacked `attack_roll`
+   1. `"from_deck": true, "slot": 1`: `card` was revealed from the monster deck.
+   2. It covers the card in that monster slot, from 1 (R-ATK-08, R-ZONE-10).
+   3. `stackedReveal` (`situation_stack.go`) places it by `coverMonsterSlot`, as `placeRevealed`.
+   4. The attack: on the revealed card, `Attack.Deck` set, as `attackDeck`.
+   5. So it counts as an attack on a monster (Q-24); "declared on" abilities skip it (R-ATK-05).
+   6. It spends an attack by `spendAttack`, as every stacked roll (24.29).
+   7. Nothing triggers as it is placed: entry triggers resolved before the roll (R-ATK-25).
+   8. A later roll of the attack names the card without `from_deck`; it hits the same copy.
+6. Errors, each naming the rule
+   1. `from_deck` without `slot`, `slot` without `from_deck`, either on another kind.
+   2. A slot out of range: "options 1 to N".
+   3. No monster-deck card (R-ATK-08), an event (R-ATK-09), unattackable (R-ATK-10).
+   4. `from_deck` on a later roll (R-ATK-08); no attack left (R-TURN-07).
+7. Deck-attack duties (24.29 item 6)
+   1. No setup field for `Turn.DeckAttacks`; it stays 0.
+   2. So `spendAttack` takes a regular, then a bonus attack, also for a deck attack.
+   3. A deck-only attack ("attack the deck an additional time") is one more in `attacks`.
+   4. `must_attack_deck` is what is left after the roll, as `must_attacks` (24.29 item 7).
+   5. No new field: no file needs one; the duty meaning stays as 19.235.
+8. Live games unchanged
+   1. Only the setup builds it; no game code changed; no version bump.
+   2. `make site` run, as the payload format got a field (rule 6): 2.31 MB gzip.
+   3. No `make e2e`: no client or live code changed.
+9. Files moved
+   1. `ibs/cancels-an-attack-on-a-monster-revealed-from-the-deck.json`.
+   2. `emergency_contact/cancels-an-attack-on-a-monster-revealed-from-the-deck.json`.
+   3. Deleted: `TestIBSCancelsDeckAttack`, `TestEmergencyContactDeckAttack`, and their files.
+   4. Helper removed, no use left: `top` (cards/r).
+10. Checks added from the card text (owner answer 8)
+   1. Both: `attack_ended`, no roll resolved, `attacks` 0 (R-TURN-07).
+   2. IBS: the Pooter stays in slot 1; Bomb! in the loot discard; no ¢; IBS not deactivated.
+   3. Emergency Contact: the Leech back on top of slot 1 (R-ZONE-11), not a refill.
+   4. The named monster deck top (Dip) is still on top; Pooter at the bottom.
+11. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 55 changes.
+   2. Only changes that drop a check entry or say another true thing passed (8).
+   3. E.g. `after` player 0 to 1: Cain also has damage 0.
+12. Tests (`situation_deck_attack_test.go`)
+   1. `TestStackedDeckAttackRollMatchesADeckAttack`: same state as a real deck attack.
+   2. It compares slots (covered card), the attack, attacks left, the stacked roll.
+   3. `TestStackedDeckAttackSecondRoll`: a later roll hits the revealed copy.
+   4. `TestStackedDeckAttackRollErrors`: each error above, by its text.
+   5. `TestStackedDeckAttackRollJSON`: a payload kills the revealed card; the gaper uncovers.
+13. Dump: a todo, not the field.
+   1. The dump writes steps, never `setup.stack`, so it can't write the roll.
+   2. A response during a deck attack now adds a todo line to copy.
+   3. It names the roll: `{"kind": "attack_roll", …, "from_deck": true, "slot": 1}`.
+   4. Test: `TestDumpNotesADeckAttackRoll`.
+14. Wiki `Situation-payload.md`: "A deck attack's roll", with an example; the dump line.
+   1. The stacked items table and the covered-card note under attack duties.
+15. ADR 034: no drift.
+16. No rules bug found.
+17. `cardgen -report` unchanged.

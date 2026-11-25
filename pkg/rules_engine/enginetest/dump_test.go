@@ -219,3 +219,32 @@ func TestDumpRecordsRandomPicks(t *testing.T) {
 		t.Errorf("setup.random %q, todo %q; want none and a todo", d.Setup.Random, d.Todo)
 	}
 }
+
+// A response to an attack roll of a deck attack stays a todo, which
+// names the stacked attack roll with from_deck and its slot (24.33).
+func TestDumpNotesADeckAttackRoll(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv(DumpEnv, dir)
+	t.Run("deck", func(t *testing.T) {
+		tb := NewSetup(t, engine.SituationSetup{
+			Players:  []engine.SituationPlayer{Seat("isaac", "book_of_sin"), Seat("cain")},
+			Monsters: []engine.CardRef{"leech", "fly"},
+		}, b2.Set)
+		tb.G.PutOnDeck(engine.MonsterDeck, "pooter")
+		tb.G.ForceRolls(1, 5)
+		if _, err := tb.G.Apply(engine.Intent{Player: 0, Kind: engine.IntentAttack}); err != nil {
+			t.Fatal(err)
+		}
+		tb.Pass(0)
+		tb.Pass(1)
+		tb.Choose("ask.deck.monster")
+		tb.Choose("ask.slot_card 1 leech")
+		tb.ThrowPending() // the attack roll waits on the stack
+		tb.Activate(0, "book_of_sin", 0)
+	})
+	d, _ := readDump(t, dir, "TestDumpNotesADeckAttackRoll/deck")
+	want := `{"kind": "attack_roll", "dice_roll": 1, "card": "pooter", "owner": 0, "from_deck": true, "slot": 1}`
+	if !hasTodo(d, "responds to the stack") || !hasTodo(d, want) {
+		t.Errorf("todo %q; want a response note and %s", d.Todo, want)
+	}
+}

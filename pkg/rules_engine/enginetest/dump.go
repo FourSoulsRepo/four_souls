@@ -137,6 +137,25 @@ func (r *recorder) add(s DumpStep) {
 	r.steps = append(r.steps, s)
 	if len(r.steps) > 1 && len(r.tb.G.Stack) > 0 && (s.Kind == "activate" || s.Kind == "play") {
 		r.note("step %d (%s %s) responds to the stack; steps can't (owner answer 7): start from setup.stack instead", len(r.steps), s.Kind, s.Card)
+		r.deckAttackRoll()
+	}
+}
+
+// deckAttackRoll notes the stacked attack roll a response answers
+// during a deck attack, as setup.stack says it (24.33). The dump writes
+// steps, not setup.stack, so it stays a todo line to copy.
+func (r *recorder) deckAttackRoll() {
+	g := r.tb.G
+	if !g.Attack.Deck || !g.Attack.Started {
+		return
+	}
+	for _, it := range g.Stack {
+		if it.Kind != engine.StackRoll || !it.Attack || it.Roll == 0 {
+			continue
+		}
+		o := g.Object(it.Target.Object)
+		r.note(`step %d answers an attack roll of a deck attack; in setup.stack it is {"kind": "attack_roll", "dice_roll": %d, "card": %q, "owner": %d, "from_deck": true, "slot": %d} (24.33), `+
+			"with the steps and rolls before it left out", len(r.steps), it.Roll, o.Card, it.Controller, o.Zone.Index+1)
 	}
 }
 

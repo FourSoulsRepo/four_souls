@@ -322,8 +322,8 @@ func (g *Game) setUpDuties(s SituationSetup) error {
 		g.Turn.MustAttack = id
 	}
 	// must_attack_one_of names cards, not objects (19.241); a setup
-	// builds no covered card, so each is one the active player can
-	// attack now.
+	// covers a card only under a deck attack's revealed one (24.33),
+	// so each is one the active player can attack now.
 	for _, ref := range s.MustAttackOneOf {
 		if slices.Contains(g.Turn.MustAttackOneOfCards, ref) {
 			return fmt.Errorf("situation: must_attack_one_of: %q is named twice", ref)

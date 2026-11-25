@@ -162,13 +162,13 @@ events: 1 "damaged" for player 1, expected none
 | `play` | a loot card | `card` (a loot card), `choices` |
 | `activate` | an activated ability | `card` (in play, the owner's, or a room in a room slot when the owner is the active player), `ability` (as in `action`), `choices` |
 | `trigger` | a triggered ability | `card` (the owner's, or a monster or room in a slot when the owner is the active player), `ability` |
-| `attack_roll` | an attack roll | `dice_roll` (1–6), `card` (a monster in play: a monster, final boss or minion slot); the owner is the active player |
+| `attack_roll` | an attack roll | `dice_roll` (1–6), `card` (a monster in play: a monster, final boss or minion slot); the owner is the active player. `from_deck` and `slot`: the monster was revealed by an attack on the monster deck (see [A deck attack's roll](#a-deck-attacks-roll)) |
 
 `choices` are the mode and targets chosen when the item went on the stack, in the order the prompts ask them, by the same labels as `action.choices`: `"player 2 (maggy)"`, `"bomb"`, a dice roll below it `"ask.roll_of 2"`, a mode its words. A target can be an item lower on the stack. Answers the item asks for while it resolves (an amount, a yes) go in `action.choices`.
 
 A room's ability works as an item's (24.6): the room's "you" is the active player (R-CARD-36), and only the active player uses its abilities (R-CARD-33), so its owner must be the active player, who activated it; another owner is an error that names the rule.
 
-Each item is as it is just after it went on the stack: its costs are paid and nothing is paid again. The setup shows what the costs left: a stacked loot card is in no hand, a tapped item is in `deactivated`, spent cents are not in `cents`. Nothing triggers as the items go on the stack. A trigger's event is the owner's ("when you …"). An attack roll means the active player attacks that monster: the attack is declared and used, and every attack roll attacks the same monster. The first one spends the attack as a declaration does (`spendAttack`, 24.29): the turn's own attack first, then a bonus one (Champion Belt, Might For The Meek). So with `"attacks": 0` and Champion Belt the roll uses the Belt's attack and `expect.attacks` reads 0; with no attack left at all it is an error naming R-TURN-07. A setup has no deck-only attacks, so the roll is never a monster deck attack, and the attack duties are what is left after it (see [Attack duties](#attack-duties)).
+Each item is as it is just after it went on the stack: its costs are paid and nothing is paid again. The setup shows what the costs left: a stacked loot card is in no hand, a tapped item is in `deactivated`, spent cents are not in `cents`. Nothing triggers as the items go on the stack. A trigger's event is the owner's ("when you …"). An attack roll means the active player attacks that monster: the attack is declared and used, and every attack roll attacks the same monster. The first one spends the attack as a declaration does (`spendAttack`, 24.29): the turn's own attack first, then a bonus one (Champion Belt, Might For The Meek). So with `"attacks": 0` and Champion Belt the roll uses the Belt's attack and `expect.attacks` reads 0; with no attack left at all it is an error naming R-TURN-07. The attack duties are what is left after it (see [Attack duties](#attack-duties)). A roll of an attack on the monster deck says `from_deck` (see below).
 
 The items are built with the engine's own stack items for a played loot, an activation, a trigger and an attack roll, so they resolve as in a game. Priority goes to the top item's owner (or the seat in `setup.priority`); `{"kind": "pass"}` by them lets the whole stack resolve, top first, and `expect.after` checks the end.
 
@@ -194,6 +194,36 @@ The items are built with the engine's own stack items for a played loot, an acti
 ```
 
 Lucky Foot resolves first and makes the roll a 4, then Bomb! deals 1 damage to Maggy, then the roll resolves as 4. An unknown field, kind, card, owner or target is an error that names the item and lists the options. A loot card that copies an ability as it is played (? Card) can't start on the stack.
+
+### A deck attack's roll
+
+An `attack_roll` with `"from_deck": true` is the roll of an attack on the monster deck (24.33). Its `card` was revealed from the deck and put on monster slot `slot` (from 1), covering the card there, as the attacker chose (R-ATK-08, R-ZONE-10). The setup builds what the game builds once the revealed card is placed and the first roll waits:
+
+* The revealed card is a new card on top of the slot; the slot's `monsters` card is covered under it. When the revealed card leaves (killed, put on the deck bottom), the covered card comes back on top (R-ZONE-11).
+* The attack is on the revealed card, which counts as an attack on a monster (R-ATK-05, Q-24): "cancel an attack on a monster" (Emergency Contact, IBS) works on it. An ability that looks for an attack *declared* on a monster does not (R-ATK-05): the attack was declared on the deck.
+* It spends one attack as any stacked attack roll (`spendAttack`, 24.29). A setup has no field for deck-only attacks ("attack the monster deck an additional time", `Turn.DeckAttacks`): such an attack is one more in `attacks`, and the roll spends it like a regular one.
+* `must_attack_deck` is what is left after this attack, as `must_attacks` is: write 0 (or leave it out) when the duty was for this one attack.
+* Nothing triggers as it is placed: what its entry triggered ("when an attack is declared on this", R-ATK-06; Angelic Intervention) has resolved before the first roll (R-ATK-25).
+* A later roll of the same attack names the revealed card without `from_deck` and `slot`; it attacks the same copy, even with another copy in a slot.
+
+```json
+"setup": {
+  "players": [{"character": "the_soiled", "items": ["ibs"], "hand": ["bomb"]}, {"character": "cain"}],
+  "active": 0,
+  "monsters": ["leech", "fly"],
+  "stack": [{"kind": "attack_roll", "dice_roll": 1, "card": "pooter", "owner": 0, "from_deck": true, "slot": 1}]
+}
+```
+
+The Soiled attacked the deck; the Pooter covers the Leech in slot 1, and her roll of 1 waits (`cards/r/testdata/situations/ibs/cancels-an-attack-on-a-monster-revealed-from-the-deck.json`).
+
+Each of these is an error that names the item and the rule:
+
+* `from_deck` without `slot`, or `slot` without `from_deck`; either on a kind other than `attack_roll`.
+* A `slot` that is no monster slot: the error lists 1 to the slot count.
+* A `card` that is no card of the monster deck (R-ATK-08); an event, which ends the attack when revealed (R-ATK-09); a card that can't be attacked, which cancels it (R-ATK-10).
+* `from_deck` on a later roll of the attack: a deck attack reveals one card (R-ATK-08).
+* No attack left (R-TURN-07), as for any attack roll.
 
 ## Priority
 
@@ -313,7 +343,7 @@ A card in a slot does not set its duty; write the duty in the setup if it is in 
 Isaac can't end his turn (refused by R-ATK-03), and his attack's only target is Krampus (`cards/fsp2/testdata/situations/krampus/isaac-must-attack-it-this-turn.json`).
 
 * `must_attack` names a card by ref, the first with that ref the active player may attack now, in the engine's order: monster, final boss and minion slots, attackable items, attackable rooms, then the other players' characters (only while an effect lets the active player attack players, R-ATK-20). Any other ref is an error that lists those options. Lust for Blood's own DC for its target is no setup field, so a player is a target only with a card in play that makes players attackable.
-* `must_attack_one_of` names cards, not objects (19.241): each ref is a card the active player may attack now, found the same way. Any other ref, or a ref named twice, is an error. In a game a covered card named this way counts once it comes up (R-ZONE-01, owner 2026-11-24), but a setup builds no covered card, so a dump leaves one out, as it does one gone to a discard, a deck or souls (`cards/fsp2/testdata/situations/boss_rush/the-duty-as-a-setup-field.json`, `the-covered-boss-still-counts.json`).
+* `must_attack_one_of` names cards, not objects (19.241): each ref is a card the active player may attack now, found the same way. Any other ref, or a ref named twice, is an error. In a game a covered card named this way counts once it comes up (R-ZONE-01, owner 2026-11-24), but a setup covers a card only under a deck attack's revealed card (`from_deck`), which can't be attacked now, so a dump leaves one out, as it does one gone to a discard, a deck or souls (`cards/fsp2/testdata/situations/boss_rush/the-duty-as-a-setup-field.json`, `the-covered-boss-still-counts.json`).
 * The values are the turn as the situation starts: with `declared: attack` or an `attack_roll` stack item the attack has already counted, so `must_attacks` is what is left after it. An `attack_roll` stack item on the `must_attack` card is an error naming R-ATK-22: that attack already met the duty.
 * `phase` `start` and `loot` may carry them: the start-of-turn triggers that set such duties are done (R-TURN-03), and they hold into the action phase. In `phase: end` they are an error naming R-ATK-03: the turn's end is declared, which R-ATK-03 refuses while an attack is owed.
 * A negative `must_attacks` or `must_attack_deck` is an error.
@@ -503,6 +533,7 @@ It never writes `expect`: an expected value comes from the rules, never from a r
 * State set by hand that no setup field says (`Players[1].SkipTurns`, a boost, a pushed stack item), found by rebuilding the table from the dumped setup and comparing it with the test's table before its first step.
 * State changed between two steps outside a helper (`tb.G.Players[0].Cents = 3`, a `PutOnDeck` mid-test, `tb.G.Run()`).
 * A choice made by a direct `G.Apply` (its label is unknown: `#<index>`), a response in the middle of a stack (owner answer 7: start from `setup.stack`), a helper that does not settle (`Start`, `Pass`), and a `Refused` step whose `expect` needs `allowed: false`.
+* A response to an attack roll of a deck attack also names that roll as a `setup.stack` item with `from_deck` and `slot` (24.33), to copy. The dump writes steps, not `setup.stack`, so the steps and rolls before it are left out by hand.
 
 `todo` is no situation field, so the runner rejects the file until it is gone. To turn a draft into a test file:
 

@@ -65,12 +65,6 @@ func handHas(g *engine.Game, p int, card engine.CardRef) bool {
 	return false
 }
 
-// top returns the card on top of monster slot i.
-func top(tb *enginetest.Table, i int) engine.CardRef {
-	id, _ := tb.G.Monsters[i].TopOf()
-	return tb.G.Object(id).Card
-}
-
 // settleAny settles, answering every question with its first option.
 func settleAny(tb *enginetest.Table) {
 	tb.T.Helper()
