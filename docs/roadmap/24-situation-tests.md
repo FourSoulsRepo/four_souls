@@ -1595,6 +1595,51 @@ Ideas: TS-13, LR-04, R-03.
 ### [ ] 24.27 Bulk: challenge
 
 1. Goal: Challenge and Challenge Boss (about 50 tests).
+2. Counts (2026-11-25): 51 tests in 12 `_test.go` files of `cards/challenge`.
+   1. Krampus: 31 (rule card and presents 16, boss 12, game starts 3).
+   2. Trick or Treat: 20 (rule card 10, boss 8, game starts 2).
+   3. The package has no `situations_test.go`; no file existed to embed.
+3. Moved: 0. Split: 0.
+   1. No runner added: `go:embed` needs a first file.
+4. Stayed Go, a real game start (ADR 034 1.6, 1.7): 5.
+   1. TestKrampusSetup, TestTrickSetup: `NewGame`, presents, views.
+   2. TestRegularKrampusStays: the regular Krampus in a dealt deck.
+   3. TestKrampusWholeGames, TestTrickWholeGames: random games, replay, save.
+5. Needed a format change: 46, every other test.
+   1. Each builds a table, then calls `StartChallenge` (`krampus`, `trick`).
+   2. A setup can't start a challenge, as 24.3 found.
+   3. The dump says it: "hand-set before step 1, … Challenge".
+   4. `setup.bosses` alone is a final boss in a regular game.
+   5. No game reaches that table: no rule card, presents or timer.
+   6. So no file with `bosses` only; that would be a workaround.
+6. The change these tests need (owner to decide; not done here):
+   1. `setup.challenge`: an ID and a difficulty: `{"id": "krampus", "difficulty": "normal"}`.
+   2. It runs `StartChallenge` on the built table: boss, rule card, presents, timer.
+   3. It needs 2 players (R-COOP-01); `bosses` then must not name the boss.
+   4. Presents come from the treasure deck top, so `setup.decks` names them.
+   5. All 46 need this field.
+7. Further fields some of the 46 need, besides `setup.challenge`:
+   1. Present counters as a check: 16 (forgo, the presents roll, What's in the Box?).
+   2. Present state in setup (counters, destroyed, Happy Holidays done): 8.
+   3. Player counters (fear, R-TRICK-08), setup and check: 8.
+   4. 24.3 rejected `AddPlayerCounters` and `AddPresentCounters` as challenge only.
+   5. The rule card's side (Treat up) in setup: 3.
+   6. Trick counters on the boss: `setup.counters` already says them.
+   7. A won challenge: `over` and `winners` say it; a lost one's reason is an event field.
+8. Go-only parts that would stay Go or split even then:
+   1. Views: TestWhatsInTheBox, TestHappyHolidays, TestKrampusForcedAttack.
+   2. Also TestGhostlyTrickeryView whole (ADR 037 sources).
+   3. Save and load mid-question: TestForgoCents.
+   4. Event fields: the loss reason (TestAllPresentsLost), `abilities_gained` text.
+9. Not format changes, to plan with it:
+   1. Test sets `krampus_trial` (Mixed Bag), `trick_trial` (bare mob): Go test cards.
+   2. The challenge runner would have to pass them, or files use real cards.
+   3. `Boosts` (ATK, HP): a real card or more rolls can replace them.
+   4. `DealDamageTo`, `KillPlayer`: a Bomb! or a miss, as 24.19.
+10. Go tests that did not check what they claimed: 0 found.
+11. No rules bug found; no 19.N item.
+12. `cardgen -report` unchanged: challenge 10 of 14 tested.
+13. Stays open: waits for the owner on item 6.
 
 ### [x] 24.28 Turn checks count every attack and loot play left
 
