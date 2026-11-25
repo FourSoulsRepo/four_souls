@@ -60,8 +60,9 @@ This step never closes; new reports are appended.
 | Y  | A left game: its step state kept         | Client     | 19.227                                                 | 1     |
 | Z  | Situation runner: a check checks nothing | Go tests   | 19.234                                                 | 1     |
 | AA | Situation setup: a start-of-turn duty lost | Engine   | 19.235                                                 | 1     |
+| AB | Go server test: fails often, cause not found | Go tests | 19.245                                               | 1     |
 
-Totals by system (234 items):
+Totals by system (235 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -72,7 +73,7 @@ Totals by system (234 items):
 | e2e       | I, J    | 84    |
 | Release   | K       | 6     |
 | None      | L       | 2     |
-| Go tests  | M, Z    | 2     |
+| Go tests  | M, Z, AB | 3    |
 | Go tools  | Q       | 2     |
 | Vitest    | R       | 1     |
 | Bots      | X       | 15    |
@@ -7507,3 +7508,23 @@ Totals by system (234 items):
    1. Side columns: the items row moves down by the band; keep it.
    2. A row with a card under: scrollbar drag may not work; keep it.
    3. Owner marks 19.244 solved.
+
+### [ ] 19.245 TestLongGameEnds fails about two runs in three
+
+1. Goal: the server's long-game limit test passes every run.
+2. Report (main session, 2026-11-25, gate for Q-27/Q-28)
+   1. `make lint test` failed twice in `internal/server`.
+   2. `TestLongGameEnds`: `limits_test.go:134: no games message`.
+   3. Alone, `-run '^TestLongGameEnds$'`: it fails in about 5.4 s, or passes in 0.4 s.
+   4. On `main`: 4 of 6 runs failed; on 0a1da025: 2 of 3.
+   5. So it is not new on the step branch; no code change caused it.
+   6. Log: `.cache/gate-evidence/q2728-internal-server.log` (not tracked).
+3. Cause: not found yet.
+   1. The test moves a fake clock past 24 hours.
+   2. Each player gets the idle notice, then waits for a games message.
+   3. The games message does not come within the wait.
+4. Tasks:
+   1. Find why the games message is missing or late.
+   2. Fix the server or the test; wait for the exact state (5.16.10).
+   3. Check the other limit tests for the same pattern (5.26).
+
