@@ -6954,7 +6954,7 @@ Totals by system (235 items):
 12. Owner notes (2026-11-23)
    1. Owner marks 19.237 solved.
 
-### [ ] 19.238 ? Card copies an ability with no valid target
+### [x] 19.238 ? Card copies an ability with no valid target
 
 1. Goal: ? Card copies only an ability with a valid target, as Placebo.
 2. Report (owner, 2026-11-23)
@@ -7027,6 +7027,8 @@ Totals by system (235 items):
    1. The cross-set tree `cards/testdata/situations/` is the place for these files.
    2. It holds only `interactions/`; a card's own files stay in its set's tree.
    3. `enginetest.RunInteractionSituations` checks that; the layout test covers it.
+12. Owner notes (2026-11-25)
+   1. Owner marks 19.238 solved.
 
 ### [ ] 19.239 Card zoom credit test fails with Russian card names
 
@@ -7201,7 +7203,7 @@ Totals by system (235 items):
 15. Owner notes (2026-11-25)
    1. Owner marks 19.241 solved.
 
-### [ ] 19.242 A card's own condition is refused by R-ABIL-07, a cost rule
+### [x] 19.242 A card's own condition is refused by R-ABIL-07, a cost rule
 
 1. Goal: such a refusal cites the rule that says it.
 2. Report (24.23 bulk move, 2026-11-25)
@@ -7305,8 +7307,10 @@ Totals by system (235 items):
    4. playback.spec.ts:1975 (chromium, seed 114790418): the 19.237 flake.
    5. Neither has Red Key, Friendly Ball or ? Card; unrelated.
    6. Both passed alone on the first rerun, the same seed too; no new item.
+15. Owner notes (2026-11-25)
+   1. Owner marks 19.242 solved.
 
-### [ ] 19.243 ? Card copies Red Key during an attack
+### [x] 19.243 ? Card copies Red Key during an attack
 
 1. Goal: a copied ability keeps the limits its card states.
 2. Report (owner, 2026-11-25, after 19.242)
@@ -7377,6 +7381,8 @@ Totals by system (235 items):
    3. rooms.spec.ts:72 (webkit, seed 2367047448): Samson's Blessing not seen in 5 s.
    4. A room test; no ? Card or Red Key; unrelated.
    5. It passed alone on the first rerun, the same seed; no new item.
+12. Owner notes (2026-11-25)
+   1. Owner marks 19.243 solved.
 
 ### [x] 19.244 A card under an item is not shown
 
