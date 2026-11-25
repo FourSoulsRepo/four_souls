@@ -1538,3 +1538,29 @@ Ideas: TS-13, LR-04, R-03.
 10. Wiki `Situation-payload.md`: stacked items, window errors, attack duties.
 11. ADR 034: no drift.
 12. No rules bug found.
+
+### [ ] 24.30 Setup: random picks named like dice
+
+1. Why (owner, 2026-11-25, after 24.24)
+   1. "A player chosen at random": at a real table everyone sees who.
+   2. So a file names the pick, as `rolls` names the dice.
+   3. A check for "any player" is not wanted.
+   4. Waiting: TestCursedMulliboom; Hornfel's Go part (24.24).
+2. Change
+   1. Setup field `random`: the next random picks, in order.
+   2. Each pick is named as a `choices` label, e.g. `"player 2 (cain)"`.
+   3. A pick not among the options is an error naming them.
+   4. Picks after the list are random (from `seed`), as dice.
+   5. One shared place: every random pick in the engine reads it (5.24).
+   6. Check every random pick: `Question.Random`, random attacks, others.
+   7. Shuffles and random deck order are no picks; say what you found.
+3. Dump
+   1. The dump tool writes the picks a Go test made into `random`.
+4. Files
+   1. TestCursedMulliboom and Hornfel's Go part become files.
+   2. Their Go tests are deleted when a file says the same or more.
+   3. List other random-pick Go tests a later bulk step can move.
+5. Tests and docs
+   1. Go: a named pick used; a bad pick refused; picks after the list.
+   2. Wiki `Situation-payload.md`: the field, with an example.
+   3. ADR 034: drift edited in place, if any.
