@@ -1,0 +1,22 @@
+{
+  "title": "Lust for Blood! refills the Fly's slot: Isaac chooses Cain and must attack him (DC 4); two 4s kill Cain, who gives Isaac his Spoon Bender",
+  "source": ["card lust_for_blood", "card fly", "R-ATK-03", "R-ATK-20", "R-MECH-06", "R-DEATH-14", "R-SHOP-08"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "items": ["spoon_bender"]}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["lust_for_blood", "clotty"]},
+    "rolls": [6, 4, 4]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly", "player 2 (cain)"],
+     "expect": {"allowed": true, "attacks": 1, "monsters": [{"slot": 1, "card": "clotty"}], "discards": {"monster": ["fly", "lust_for_blood"]}}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": false, "rule": "R-ATK-03"}},
+    {"player": 0, "kind": "attack", "expect": {"allowed": true, "prompt": {"player": 0, "options": ["player 2 (cain)"]}}},
+    {"kind": "choose", "choices": ["player 2 (cain)", "spoon_bender"],
+     "expect": {"allowed": true, "attacks": 0, "after": [{"player": 0, "items": ["spoon_bender"]}, {"player": 1, "dead": true, "items": []}],
+       "events": [{"kind": "died", "player": 1}], "discards": {"treasure": []}}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ATK-03", "resolved_rolls": [6, 4, 4]}
+}

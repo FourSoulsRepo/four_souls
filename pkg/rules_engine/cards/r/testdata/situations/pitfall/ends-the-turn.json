@@ -1,0 +1,23 @@
+{
+  "title": "Pitfall! refills the Fly's slot: Isaac's turn ends, so Cain is the active player",
+  "source": ["card pitfall", "card fly", "R-MECH-52", "R-TURN-14", "R-SHOP-08", "R-CARD-15"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["fly", "fly"],
+    "decks": {"monster": ["pitfall", "clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 1,
+    "resolved_rolls": [6],
+    "after": [{"player": 0, "cents": 1}],
+    "monsters": [{"slot": 1, "card": "clotty"}, {"slot": 2, "card": "fly"}],
+    "discards": {"monster": ["fly", "pitfall"]}
+  }
+}

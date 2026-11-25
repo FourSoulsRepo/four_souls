@@ -1,0 +1,17 @@
+{
+  "title": "Isaac gets Curse of the Hunted: monsters have +1 ATK on his turn, not on Cain's",
+  "source": ["card curse_of_the_hunted", "card fly", "card leech", "R-ABIL-20", "R-ABIL-12"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "curse_of_the_hunted", "choices": ["player 1 (isaac)"],
+     "expect": {"allowed": true, "discards": {"monster": []}, "monsters": [{"slot": 1, "card": "fly", "atk": 2}, {"slot": 2, "card": "leech", "atk": 3}]}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "monsters": [{"slot": 1, "card": "fly", "atk": 1}, {"slot": 2, "card": "leech", "atk": 2}]}}
+  ],
+  "expect": {"allowed": true}
+}

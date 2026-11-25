@@ -1,0 +1,23 @@
+{
+  "title": "Isaac gets Curse of Empathy; then he kills the Fly: he discards his Bomb! and loses 1¢, beside the Fly's 1¢",
+  "source": ["card curse_of_empathy", "card fly", "card clotty", "R-ABIL-20", "R-MECH-25", "R-MECH-42"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["bomb"], "cents": 3}, {"character": "cain"}],
+    "active": 0,
+    "attacks": 2,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "curse_of_empathy", "choices": ["player 1 (isaac)"],
+     "expect": {"allowed": true, "discards": {"monster": []}, "after": [{"player": 0, "cents": 3, "hand_cards": ["bomb"]}],
+       "monsters": [{"slot": 1, "card": "fly"}]}},
+    {"player": 0, "kind": "attack", "choices": ["fly", "bomb"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 3, "hand": 0}, {"player": 1, "cents": 0}],
+       "monsters": [{"card": "fly", "dead": true}, {"slot": 1, "card": "clotty"}],
+       "discards": {"loot": ["bomb"], "monster": ["fly"]}}}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [6]}
+}

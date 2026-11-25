@@ -1,0 +1,25 @@
+{
+  "title": "Cain gives Isaac Curse of the Soulless and kills him with Mega Bomb!; the curse goes to Samson, not to discard, so Samson gains no soul on his turn",
+  "source": ["card curse_of_the_soulless", "card mega_bomb", "card monstro", "R-ABIL-20", "R-ABIL-29", "R-DEATH-08", "R-DEATH-19"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "cain", "hand": ["mega_bomb"]}, {"character": "isaac"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["fly", "monstro"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "curse_of_the_soulless", "choices": ["player 2 (isaac)"],
+     "expect": {"allowed": true, "discards": {"monster": []}}},
+    {"player": 0, "kind": "play", "card": "mega_bomb", "choices": ["player 2 (isaac)", "player 3 (samson)"],
+     "expect": {"allowed": true, "after": [{"player": 1, "dead": true}], "events": [{"kind": "died", "player": 1}],
+       "discards": {"monster": [], "loot": ["mega_bomb"]}}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1}},
+    {"player": 1, "kind": "end_turn", "expect": {"allowed": true, "active": 2}},
+    {"player": 2, "kind": "attack", "choices": ["monstro"],
+     "expect": {"allowed": true, "resolved_rolls": [6, 6, 6, 6], "after": [{"player": 2, "cents": 6, "souls": 0}],
+       "monsters": [{"card": "monstro", "dead": true}], "discards": {"monster": ["monstro"]}}}
+  ],
+  "expect": {"allowed": true}
+}

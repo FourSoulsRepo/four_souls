@@ -1,0 +1,26 @@
+{
+  "title": "Isaac gets Curse of the Soulless; then he kills Monstro: he gains its 6¢ but not its soul, so it goes to discard",
+  "source": ["card curse_of_the_soulless", "card monstro", "R-ABIL-20", "R-DEATH-06", "R-DEATH-08"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "attacks": 2,
+    "monsters": ["fly", "monstro"],
+    "monster_damage": {"monstro": 3},
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "curse_of_the_soulless", "choices": ["player 1 (isaac)"],
+     "expect": {"allowed": true, "discards": {"monster": []}}},
+    {"player": 0, "kind": "attack", "choices": ["monstro"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [{"player": 0, "cents": 6, "souls": 0, "soul_cards": []}],
+    "monsters": [{"card": "monstro", "dead": true}, {"slot": 2, "card": "clotty"}],
+    "discards": {"monster": ["monstro"]}
+  }
+}

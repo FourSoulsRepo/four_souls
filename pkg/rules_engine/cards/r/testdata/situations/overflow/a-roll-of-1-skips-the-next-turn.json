@@ -1,0 +1,19 @@
+{
+  "title": "Overflow! refills the Fly's slot: Isaac rolls 3, Cain rolls 1; Cain skips his next turn, so Isaac plays again",
+  "source": ["card overflow", "card fly", "R-MECH-27", "R-TURN-16", "R-SHOP-08", "R-CARD-15"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["overflow", "clotty"]},
+    "rolls": [6, 3, 1]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "monsters": [{"slot": 1, "card": "clotty"}], "discards": {"monster": ["fly", "overflow"]}}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 0}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1}}
+  ],
+  "expect": {"allowed": true}
+}

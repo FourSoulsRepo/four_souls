@@ -126,14 +126,6 @@ func hurt(tb *enginetest.Table, i, n int) {
 	tb.G.Object(id).Damage = tb.G.Def(id).HP - n
 }
 
-// giveCurse puts a curse card in play under player p.
-func giveCurse(tb *enginetest.Table, p int, curse engine.CardRef) {
-	tb.T.Helper()
-	tb.G.PutOnDeck(engine.MonsterDeck, curse)
-	top := tb.G.DeckTop(engine.MonsterDeck, 1)[0]
-	tb.G.GiveCurseFromDeck(top, engine.PlayerID(p))
-}
-
 // testCharacter checks a character's ↷ (one more loot play) and that a
 // real game gives its player the starting item.
 func testCharacter(t *testing.T, character, item engine.CardRef, choices ...string) {

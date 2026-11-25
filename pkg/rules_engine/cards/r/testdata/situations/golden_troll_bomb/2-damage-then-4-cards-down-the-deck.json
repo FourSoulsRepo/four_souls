@@ -1,0 +1,24 @@
+{
+  "title": "Golden Troll Bomb! refills the Fly's slot: Isaac chooses Cain, who takes 2 damage and dies; it goes into the monster deck 4 cards from the top",
+  "source": ["card golden_troll_bomb", "card fly", "R-SHOP-08", "R-CARD-15", "R-DEATH-09"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["fly", "fly"],
+    "decks": {"monster": ["golden_troll_bomb", "clotty", "dip", "pooter", "spider"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly", "player 2 (cain)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [{"player": 0, "damage": 0, "cents": 1}, {"player": 1, "damage": 2, "dead": true}, {"player": 2, "damage": 0}],
+    "events": [{"kind": "died", "player": 1}],
+    "monsters": [{"slot": 1, "card": "clotty"}],
+    "decks": {"monster": ["dip", "pooter", "spider", "golden_troll_bomb"]},
+    "discards": {"monster": ["fly"]}
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "title": "Isaac with 2 souls gets Curse of the Hollow; at the end of his turn he discards 2 loot cards and loses 2¢",
+  "source": ["card curse_of_the_hollow", "R-ABIL-20", "R-TURN-10", "R-MECH-25", "R-MECH-42"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["bomb", "a_nickel"], "cents": 5, "souls": ["monstro", "gurdy"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "curse_of_the_hollow", "choices": ["player 1 (isaac)"],
+     "expect": {"allowed": true, "discards": {"monster": []}, "after": [{"player": 0, "cents": 5, "hand": 2}]}},
+    {"player": 0, "kind": "end_turn", "choices": ["bomb", "a_nickel"],
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "cents": 3, "hand": 0, "souls": 2}],
+       "discards": {"loot": ["bomb", "a_nickel"]}}}
+  ],
+  "expect": {"allowed": true}
+}
