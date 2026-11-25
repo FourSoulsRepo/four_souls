@@ -801,6 +801,24 @@ On 2026-10-09 the owner parked every open decision for later.
    1. Investigate later, or ask other players how they play it.
    2. The engine now: (b), the monster is lost (19.242).
 
+### Q-57 The order of "each player rolls"
+
+1. Question: in what order do the rolls resolve when each player rolls?
+   1. E.g. Overflow!, The Beast!: one roll each.
+   2. It matters when a roll triggers something (Cursed Horf on a 2).
+2. Sources (2026-11-25)
+   1. R-MECH-27: "each player" acts in turn order from the active player.
+   2. R-DICE-02: a roll goes on the stack; the stack resolves top first.
+   3. R-MECH-28: "each player takes damage" goes on in reverse, to resolve in turn order.
+   4. That is said for damage and death only, not for rolls.
+   5. No ruling found in the rulebooks or a web search.
+3. Options:
+   1. (a) Rolls go on in turn order, so the last player's resolves first.
+   2. (b) As R-MECH-28: they resolve in turn order, active player first.
+4. Status: **Open** (owner, 2026-11-25): investigate, or ask other players.
+   1. The engine now: (a); Cain's roll resolves before Isaac's (24.24).
+   2. Files for these cards check the outcome, not `resolved_rolls`.
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
@@ -987,3 +1005,4 @@ Every row of "Card rulings from Discord (S-DIS)" is Community too.
 | Q-53 | Trick/Treat | Attack-start rolls after the target's triggers | House |
 | Q-54 | Trick/Treat | Every monster death counts; one removal per rewards gained | House |
 | Q-56 | ? Card, Friendly Ball | The copied catch puts the monster under ? Card; it is lost | House (open) |
+| Q-57 | Overflow!, The Beast!, any "each player rolls" | Rolls go on in turn order; the last player's resolves first | House (open) |
