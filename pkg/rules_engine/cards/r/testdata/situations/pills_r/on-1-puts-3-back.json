@@ -1,0 +1,14 @@
+{
+  "title": "Isaac plays Pills! and rolls a 1: he loots 3, then puts Bomb!, A Nickel! and Dice Shard on top of the loot deck in that order; is the last one picked on top?",
+  "source": ["card pills_r", "R-CARD-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["pills_r", "bomb", "a_nickel", "dice_shard"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"loot": ["a_penny", "two_cents", "three_cents", "four_cents"]},
+    "rolls": [1]
+  },
+  "action": {"player": 0, "kind": "play", "card": "pills_r", "choices": ["bomb", "a_nickel", "dice_shard"]},
+  "expect": {"allowed": true, "resolved_rolls": [1], "decks": {"loot": ["dice_shard", "a_nickel", "bomb", "four_cents"]}, "after": [{"player": 0, "hand": 3, "hand_cards": ["a_penny", "two_cents", "three_cents"]}]}
+}

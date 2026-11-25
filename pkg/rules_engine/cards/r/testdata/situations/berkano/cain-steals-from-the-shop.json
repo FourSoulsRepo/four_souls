@@ -1,0 +1,12 @@
+{
+  "title": "Isaac plays Berkano on Cain's Mom's Purse: is it destroyed, and does Cain steal the shop's Spoon Bender?",
+  "source": ["card berkano", "R-CARD-34", "R-ZONE-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["berkano"]}, {"character": "cain", "items": ["moms_purse"]}],
+    "active": 0,
+    "shop": ["spoon_bender"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "berkano", "choices": ["moms_purse", "spoon_bender"]},
+  "expect": {"allowed": true, "discards": {"loot": ["berkano"], "treasure": ["moms_purse"]}, "after": [{"player": 0, "items": []}, {"player": 1, "items": ["spoon_bender"]}]}
+}

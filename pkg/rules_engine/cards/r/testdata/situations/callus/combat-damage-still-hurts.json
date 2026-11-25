@@ -1,0 +1,13 @@
+{
+  "title": "Isaac has Callus and misses the Fly with a 1: does its combat damage still hurt him, before a 6 kills it?",
+  "source": ["card callus", "card fly", "R-ATK-12", "R-ATK-13", "R-CARD-13"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["callus"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "rolls": [1, 6]
+  },
+  "action": {"player": 0, "kind": "attack", "choices": ["fly"]},
+  "expect": {"allowed": true, "resolved_rolls": [1, 6], "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "damage": 1, "hp": 1, "cents": 1}]}
+}

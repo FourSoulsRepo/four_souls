@@ -1,0 +1,14 @@
+{
+  "title": "Cain has Rib Of Greed, 3¢ and A Nickel!; Isaac's Mega Bomb! kills him: does the death penalty destroy his Spoon Bender but take no ¢ and no loot card?",
+  "source": ["card rib_of_greed", "card mega_bomb", "card cain", "R-DEATH-14"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["mega_bomb"]},
+      {"character": "cain", "items": ["rib_of_greed", "spoon_bender"], "hand": ["a_nickel"], "cents": 3}
+    ],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "mega_bomb", "choices": ["player 2 (cain)", "spoon_bender"]},
+  "expect": {"allowed": true, "discards": {"loot": ["mega_bomb"], "treasure": ["spoon_bender"]}, "after": [{"player": 1, "dead": true, "cents": 3, "hand_cards": ["a_nickel"], "items": ["rib_of_greed"], "deactivated": ["character"]}]}
+}

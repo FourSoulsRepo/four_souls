@@ -1,0 +1,16 @@
+{
+  "title": "Isaac plays Golden Trinket and puts its gold counter on his Jawbone: can he use the Jawbone's ↷ from the Trinket to steal 3¢ from Cain?",
+  "source": ["card golden_trinket", "card jawbone", "R-ABIL-19", "R-ABIL-38", "R-MECH-38", "R-ABIL-10"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["jawbone"], "hand": ["golden_trinket"]}, {"character": "cain", "cents": 5}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "golden_trinket", "choices": ["jawbone"],
+     "expect": {"allowed": true, "after": [{"player": 0, "items": ["jawbone", "golden_trinket"], "counters": [{"card": "jawbone", "name": "gold", "count": 1}]}]}},
+    {"player": 0, "kind": "activate", "card": "golden_trinket", "ability": 1, "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 3, "deactivated": ["golden_trinket"]}, {"player": 1, "cents": 2}]}}
+  ],
+  "expect": {"allowed": true}
+}

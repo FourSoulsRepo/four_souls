@@ -1,0 +1,13 @@
+{
+  "title": "Isaac plays Key and puts the monster deck's top card, the Pooter, on the Leech's slot: does it cover the Leech?",
+  "source": ["card key", "R-ZONE-10"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["key"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["pooter", "dip"]}
+  },
+  "action": {"player": 0, "kind": "play", "card": "key", "choices": ["Put the top card of the monster deck in a monster slot not being attacked.", "ask.slot_card 2 leech"]},
+  "expect": {"allowed": true, "attacks": 1, "monsters": [{"slot": 1, "card": "fly"}, {"slot": 2, "card": "pooter"}], "decks": {"monster": ["dip"]}}
+}

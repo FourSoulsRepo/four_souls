@@ -1,0 +1,13 @@
+{
+  "title": "Isaac plays Pills! (roll 3 times) and rolls 1, 3 and 5: does he have +1 ATK, +1 HP and 1 damage?",
+  "source": ["card pills_2_r", "card isaac"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["pills_2_r"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [1, 3, 5]
+  },
+  "action": {"player": 0, "kind": "play", "card": "pills_2_r"},
+  "expect": {"allowed": true, "discards": {"loot": ["pills_2_r"]}, "after": [{"player": 0, "atk": 2, "damage": 1, "hp": 2, "dead": false}]}
+}

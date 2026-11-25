@@ -1,0 +1,12 @@
+{
+  "title": "Isaac has Lucky Toe and plays A Sack (loot 3) in his action phase: does he loot 4?",
+  "source": ["card lucky_toe", "card a_sack", "R-CARD-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["lucky_toe"], "hand": ["a_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "decks": {"loot": ["a_penny", "two_cents", "three_cents", "a_nickel", "bomb"]}
+  },
+  "action": {"player": 0, "kind": "play", "card": "a_sack"},
+  "expect": {"allowed": true, "decks": {"loot": ["bomb"]}, "discards": {"loot": ["a_sack"]}, "after": [{"player": 0, "hand": 4, "hand_cards": ["a_penny", "two_cents", "three_cents", "a_nickel"]}]}
+}

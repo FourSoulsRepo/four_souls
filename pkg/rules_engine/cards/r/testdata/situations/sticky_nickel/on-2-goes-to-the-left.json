@@ -1,0 +1,13 @@
+{
+  "title": "Isaac plays Sticky Nickel and rolls a 2: does Cain, the player to his left, get it in hand instead of the discard?",
+  "source": ["card sticky_nickel", "R-TURN-01"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["sticky_nickel"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [2]
+  },
+  "action": {"player": 0, "kind": "play", "card": "sticky_nickel"},
+  "expect": {"allowed": true, "resolved_rolls": [2], "discards": {"loot": []}, "after": [{"player": 0, "cents": 0, "hand": 0}, {"player": 1, "hand_cards": ["sticky_nickel"]}]}
+}

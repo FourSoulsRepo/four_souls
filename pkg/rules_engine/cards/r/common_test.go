@@ -30,16 +30,6 @@ func setup(t *testing.T, s engine.SituationSetup) *enginetest.Table {
 	return tb
 }
 
-// lootTable: player 0 (Isaac) holds the cards, player 1 is Cain; a fly
-// (DC 2) and a leech (DC 4) are in the monster slots.
-func lootTable(t *testing.T, hand ...engine.CardRef) *enginetest.Table {
-	t.Helper()
-	return setup(t, engine.SituationSetup{
-		Players:  []engine.SituationPlayer{{Character: "isaac", Hand: hand}, seat("cain")},
-		Monsters: []engine.CardRef{"fly", "leech"},
-	})
-}
-
 // inDiscard reports whether the deck's discard holds the card.
 func inDiscard(g *engine.Game, d engine.DeckKind, card engine.CardRef) bool {
 	for _, id := range g.Discards[d] {
@@ -154,32 +144,17 @@ func soulOf(tb *enginetest.Table, p int, card engine.CardRef) engine.ObjectID {
 // roomTable: Isaac (active) and Cain, a fly and a leech, and the room.
 func roomTable(t *testing.T, room engine.CardRef) *enginetest.Table {
 	t.Helper()
-	return lootRoomTable(t, room)
+	return setup(t, engine.SituationSetup{
+		Players:  []engine.SituationPlayer{seat("isaac"), seat("cain")},
+		Monsters: []engine.CardRef{"fly", "leech"},
+		Rooms:    []engine.CardRef{room},
+	})
 }
 
 // room returns the room on top of room slot 0.
 func room(tb *enginetest.Table) engine.ObjectID {
 	id, _ := tb.G.Rooms[0].TopOf()
 	return id
-}
-
-// useRoom activates ability i of the room for player p.
-func useRoom(tb *enginetest.Table, p, i int, choices ...string) {
-	tb.T.Helper()
-	tb.Do(engine.Intent{Player: engine.PlayerID(p), Kind: engine.IntentActivate, Objects: []engine.ObjectID{room(tb)}, Choice: i}, choices...)
-}
-
-// lootRoomTable is roomTable with Isaac's hand; no room if room is "".
-func lootRoomTable(t *testing.T, room engine.CardRef, hand ...engine.CardRef) *enginetest.Table {
-	t.Helper()
-	s := engine.SituationSetup{
-		Players:  []engine.SituationPlayer{{Character: "isaac", Hand: hand}, seat("cain")},
-		Monsters: []engine.CardRef{"fly", "leech"},
-	}
-	if room != "" {
-		s.Rooms = []engine.CardRef{room}
-	}
-	return setup(t, s)
 }
 
 // sackFirst puts the roll result on the stack first, so the other card's

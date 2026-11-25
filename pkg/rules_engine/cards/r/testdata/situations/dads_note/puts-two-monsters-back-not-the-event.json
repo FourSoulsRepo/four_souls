@@ -1,0 +1,22 @@
+{
+  "title": "The Pooter, the Dip and the Chest event are in the monster discard; Isaac plays Dad's Note: is the Chest not offered, and do the Pooter and then the Dip go on the Fly's slot?",
+  "source": ["card dads_note", "card pooter", "card dip", "card chest", "R-ATK-08", "R-ATK-09", "R-ZONE-10", "R-ZONE-11", "R-CARD-15"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["dads_note"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "attacks": 3,
+    "rolls": [6, 6, 6, 1]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "pooter"},
+    {"player": 0, "kind": "reveal", "card": "dip"},
+    {"player": 0, "kind": "reveal", "card": "chest",
+     "expect": {"allowed": true, "discards": {"monster": ["pooter", "dip", "chest"]}, "monsters": [{"slot": 1, "card": "fly"}, {"slot": 2, "card": "leech"}]}},
+    {"player": 0, "kind": "play", "card": "dads_note",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["pooter", "dip", "ask.done"]}}},
+    {"kind": "choose", "choices": ["pooter", "ask.slot_card 1 fly", "dip", "ask.slot_card 1 fly", "ask.done"]}
+  ],
+  "expect": {"allowed": true, "discards": {"monster": ["chest"], "loot": ["dads_note"]}, "monsters": [{"slot": 1, "card": "dip"}, {"slot": 2, "card": "leech"}]}
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Isaac plays Sticky Nickel and rolls a 4: does he gain 5¢?",
+  "source": ["card sticky_nickel", "R-CARD-07"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["sticky_nickel"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rolls": [4]
+  },
+  "action": {"player": 0, "kind": "play", "card": "sticky_nickel"},
+  "expect": {"allowed": true, "resolved_rolls": [4], "discards": {"loot": ["sticky_nickel"]}, "after": [{"player": 0, "cents": 5}, {"player": 1, "hand": 0}]}
+}

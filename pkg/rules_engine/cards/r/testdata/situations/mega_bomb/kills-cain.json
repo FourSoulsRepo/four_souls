@@ -1,0 +1,12 @@
+{
+  "title": "Isaac plays Mega Bomb! on Cain (2 HP): does Cain take 2 damage and die?",
+  "source": ["card mega_bomb", "card cain", "R-DEATH-02"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["mega_bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "mega_bomb", "choices": ["player 2 (cain)"]},
+  "expect": {"allowed": true, "discards": {"loot": ["mega_bomb"]}, "after": [{"player": 0, "damage": 0}, {"player": 1, "damage": 2, "dead": true}], "events": [{"kind": "died", "player": 1}]}
+}

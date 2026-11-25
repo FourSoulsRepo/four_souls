@@ -1,0 +1,19 @@
+{
+  "title": "Isaac plays A Lucky Penny!, then kills the Fly: does he gain 1¢, then the Fly's 1¢ doubled?",
+  "source": ["card a_lucky_penny", "card fly", "R-ATK-12", "R-CARD-13", "R-DEATH-09"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["a_lucky_penny", "a_lucky_penny"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "a_lucky_penny",
+     "expect": {"allowed": true, "loot_plays": 0, "discards": {"loot": ["a_lucky_penny"]}, "after": [{"player": 0, "cents": 1, "hand_cards": ["a_lucky_penny"]}]}},
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}, {"slot": 1, "card": "clotty"}], "after": [{"player": 0, "cents": 3}]}}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [6]}
+}

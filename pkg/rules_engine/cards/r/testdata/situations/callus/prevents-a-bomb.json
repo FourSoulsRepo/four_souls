@@ -1,0 +1,11 @@
+{
+  "title": "Cain plays Bomb! on Isaac, who has Callus: is the non-combat damage prevented?",
+  "source": ["card callus", "card bomb", "R-ABIL-30", "R-MECH-46"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "cain", "hand": ["bomb"]}, {"character": "isaac", "items": ["callus"]}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "bomb", "choices": ["player 2 (isaac)"]},
+  "expect": {"allowed": true, "discards": {"loot": ["bomb"]}, "after": [{"player": 1, "damage": 0, "hp": 2}], "events": [{"kind": "damaged", "player": 1, "none": true}]}
+}

@@ -1,0 +1,17 @@
+{
+  "title": "Isaac plays Magic Marker on Shell Game and makes its \"5: Gain 5¢\" a 4; he pays 3¢ and rolls a 4: does he gain 5¢?",
+  "source": ["card magic_marker", "card shell_game", "R-ABIL-39", "Q-14", "R-ABIL-07"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["magic_marker"], "cents": 3}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["shell_game"],
+    "rolls": [4]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "magic_marker", "choices": ["shell_game", "ask.number.roll 5", "ask.minus_one"]},
+    {"player": 0, "kind": "activate", "card": "shell_game"}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [4], "discards": {"loot": ["magic_marker"], "room": []}, "after": [{"player": 0, "cents": 5}]}
+}

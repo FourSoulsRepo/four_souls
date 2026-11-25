@@ -1,0 +1,13 @@
+{
+  "title": "Isaac has Rib Of Greed and rolls a 3 for Pills!: he loots 3, then puts Bomb! on top of the loot deck; is that allowed, as it is no discard?",
+  "source": ["card rib_of_greed", "card pills_r", "R-CARD-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["rib_of_greed"], "hand": ["pills_r", "bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "decks": {"loot": ["a_penny", "two_cents", "three_cents", "four_cents"]},
+    "rolls": [3]
+  },
+  "action": {"player": 0, "kind": "play", "card": "pills_r", "choices": ["bomb"]},
+  "expect": {"allowed": true, "resolved_rolls": [3], "decks": {"loot": ["bomb", "four_cents"]}, "discards": {"loot": ["pills_r"]}, "after": [{"player": 0, "hand": 3, "hand_cards": ["a_penny", "two_cents", "three_cents"]}]}
+}

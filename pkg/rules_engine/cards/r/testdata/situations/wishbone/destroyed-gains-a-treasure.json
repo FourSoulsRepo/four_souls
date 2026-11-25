@@ -1,0 +1,13 @@
+{
+  "title": "Isaac plays Berkano on Cain's Wishbone: Cain steals the shop's Spoon Bender; does the Wishbone also give him a treasure?",
+  "source": ["card wishbone", "card berkano", "R-CARD-37", "R-ABIL-19", "R-ZONE-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["berkano"]}, {"character": "cain", "items": ["wishbone"]}],
+    "active": 0,
+    "shop": ["spoon_bender"],
+    "decks": {"treasure": ["book_of_sin", "book_of_sin"]}
+  },
+  "action": {"player": 0, "kind": "play", "card": "berkano", "choices": ["wishbone", "spoon_bender"]},
+  "expect": {"allowed": true, "discards": {"loot": ["berkano", "wishbone"]}, "after": [{"player": 1, "items": ["spoon_bender", "book_of_sin"]}]}
+}

@@ -1,0 +1,20 @@
+{
+  "title": "Isaac plays two A Lucky Penny!, then kills the Fly: are its rewards doubled once, not twice?",
+  "source": ["card a_lucky_penny", "card fly", "R-ABIL-36", "Q-09", "R-ATK-12", "R-CARD-13"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["a_lucky_penny", "a_lucky_penny"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "loot_plays": 2,
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "a_lucky_penny"},
+    {"player": 0, "kind": "play", "card": "a_lucky_penny",
+     "expect": {"allowed": true, "loot_plays": 0, "discards": {"loot": ["a_lucky_penny", "a_lucky_penny"]}, "after": [{"player": 0, "cents": 2, "hand": 0}]}},
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "cents": 4}]}}
+  ],
+  "expect": {"allowed": true}
+}
