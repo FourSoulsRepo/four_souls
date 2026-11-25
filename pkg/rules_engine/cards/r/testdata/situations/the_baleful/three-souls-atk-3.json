@@ -1,0 +1,13 @@
+{
+  "title": "The Baleful controls 3 souls: is its ATK 3 (+2 instead of +1), so one hit kills the Fat Bat (3 HP)?",
+  "source": ["card the_baleful", "card fat_bat", "card monstro", "card gurdy", "card larry_jr", "R-ATK-12", "R-ATK-14", "R-CARD-18"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "the_baleful", "souls": ["monstro", "gurdy", "larry_jr"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fat_bat", "fly"],
+    "rolls": [6]
+  },
+  "steps": [{"player": 0, "kind": "attack", "choices": ["fat_bat"]}],
+  "expect": {"allowed": true, "resolved_rolls": [6], "monsters": [{"card": "fat_bat", "dead": true}], "after": [{"player": 0, "atk": 3, "souls": 3}]}
+}

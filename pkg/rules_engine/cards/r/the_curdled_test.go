@@ -2,4 +2,4 @@ package r
 
 import "testing"
 
-func TestTheCurdledCharacter(t *testing.T) { testCharacter(t, "the_curdled", "sumptorium") }
+func TestTheCurdledStartingItem(t *testing.T) { testStartingItem(t, "the_curdled", "sumptorium") }

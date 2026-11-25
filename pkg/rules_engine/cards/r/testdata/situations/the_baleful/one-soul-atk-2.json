@@ -1,0 +1,13 @@
+{
+  "title": "The Baleful controls 1 soul (Monstro): is its ATK 2, so two hits kill the Fat Bat (3 HP)?",
+  "source": ["card the_baleful", "card fat_bat", "card monstro", "R-ATK-12", "R-ATK-11", "R-CARD-18"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "the_baleful", "souls": ["monstro"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fat_bat", "fly"],
+    "rolls": [6, 6]
+  },
+  "steps": [{"player": 0, "kind": "attack", "choices": ["fat_bat"]}],
+  "expect": {"allowed": true, "resolved_rolls": [6, 6], "monsters": [{"card": "fat_bat", "dead": true}], "after": [{"player": 0, "atk": 2, "souls": 1}]}
+}

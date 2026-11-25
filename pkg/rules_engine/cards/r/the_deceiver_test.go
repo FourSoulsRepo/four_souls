@@ -2,4 +2,6 @@ package r
 
 import "testing"
 
-func TestTheDeceiverCharacter(t *testing.T) { testCharacter(t, "the_deceiver", "ceremonial_blade") }
+func TestTheDeceiverStartingItem(t *testing.T) {
+	testStartingItem(t, "the_deceiver", "ceremonial_blade")
+}

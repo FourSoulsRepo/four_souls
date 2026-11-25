@@ -1,0 +1,13 @@
+{
+  "title": "The Baleful controls no souls: is its ATK 1, so three hits are needed to kill the Fat Bat (3 HP)?",
+  "source": ["card the_baleful", "card fat_bat", "R-ATK-12", "R-ATK-11"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "the_baleful"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fat_bat", "fly"],
+    "rolls": [6, 6, 6]
+  },
+  "steps": [{"player": 0, "kind": "attack", "choices": ["fat_bat"]}],
+  "expect": {"allowed": true, "resolved_rolls": [6, 6, 6], "monsters": [{"card": "fat_bat", "dead": true}], "after": [{"player": 0, "atk": 1, "souls": 0}]}
+}

@@ -2,4 +2,4 @@ package r
 
 import "testing"
 
-func TestTheBrokenCharacter(t *testing.T) { testCharacter(t, "the_broken", "spindown_dice") }
+func TestTheBrokenStartingItem(t *testing.T) { testStartingItem(t, "the_broken", "spindown_dice") }

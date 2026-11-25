@@ -2,4 +2,4 @@ package r
 
 import "testing"
 
-func TestTheSavageCharacter(t *testing.T) { testCharacter(t, "the_savage", "berserk") }
+func TestTheSavageStartingItem(t *testing.T) { testStartingItem(t, "the_savage", "berserk") }

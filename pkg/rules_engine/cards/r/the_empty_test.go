@@ -2,4 +2,4 @@ package r
 
 import "testing"
 
-func TestTheEmptyCharacter(t *testing.T) { testCharacter(t, "the_empty", "abyss") }
+func TestTheEmptyStartingItem(t *testing.T) { testStartingItem(t, "the_empty", "abyss") }

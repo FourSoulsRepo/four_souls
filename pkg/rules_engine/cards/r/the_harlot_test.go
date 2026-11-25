@@ -2,4 +2,4 @@ package r
 
 import "testing"
 
-func TestTheHarlotCharacter(t *testing.T) { testCharacter(t, "the_harlot", "gello") }
+func TestTheHarlotStartingItem(t *testing.T) { testStartingItem(t, "the_harlot", "gello") }

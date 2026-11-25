@@ -104,15 +104,10 @@ func hurt(tb *enginetest.Table, i, n int) {
 	tb.G.Object(id).Damage = tb.G.Def(id).HP - n
 }
 
-// testCharacter checks a character's ↷ (one more loot play) and that a
-// real game gives its player the starting item.
-func testCharacter(t *testing.T, character, item engine.CardRef, choices ...string) {
+// testStartingItem checks that a real game gives the character's player
+// its starting item (R-SETUP-07). Its ↷ is a situation file each.
+func testStartingItem(t *testing.T, character, item engine.CardRef) {
 	t.Helper()
-	tb := setup(t, engine.SituationSetup{Players: []engine.SituationPlayer{seat(character), seat("cain"), seat("isaac")}})
-	tb.Activate(0, character, 0, choices...)
-	if got := tb.G.Turn.LootPlays; got != 2 {
-		t.Errorf("loot plays = %d, want 2", got)
-	}
 	g, _, err := engine.NewGame(engine.Setup{Seed: 7, Players: 3, Sets: sets, Characters: []engine.CardRef{character, "cain", "isaac"}})
 	if err != nil {
 		t.Fatal(err)
@@ -128,17 +123,6 @@ func testCharacter(t *testing.T, character, item engine.CardRef, choices ...stri
 		}
 	}
 	t.Errorf("%s has no %s", character, item)
-}
-
-// soulOf makes a new soul of card for player p and returns it; the
-// caller adds it to the player's play area.
-func soulOf(tb *enginetest.Table, p int, card engine.CardRef) engine.ObjectID {
-	tb.G.PutOnDeck(engine.MonsterDeck, card)
-	id := tb.G.DeckTop(engine.MonsterDeck, 1)[0]
-	tb.G.Decks[engine.MonsterDeck] = tb.G.Decks[engine.MonsterDeck][:len(tb.G.Decks[engine.MonsterDeck])-1]
-	o := tb.G.Object(id)
-	o.Zone, o.Role, o.Controller = engine.Zone{Kind: engine.ZoneInPlay}, engine.RoleSoul, engine.PlayerID(p)
-	return id
 }
 
 // roomTable: Isaac (active) and Cain, a fly and a leech, and the room.

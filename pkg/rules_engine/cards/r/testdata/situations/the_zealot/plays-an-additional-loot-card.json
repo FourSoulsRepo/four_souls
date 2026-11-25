@@ -1,0 +1,19 @@
+{
+  "title": "The Zealot (2 HP, 1 ATK) uses its ↷ on its own turn: may its player play two A Penny!, and is a second ↷ refused?",
+  "source": ["card the_zealot", "card a_penny", "R-MECH-01", "R-TURN-05", "R-ABIL-07", "R-ABIL-10", "R-CARD-08"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "the_zealot", "hand": ["a_penny", "a_penny"]}, {"character": "cain"}, {"character": "isaac"}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "the_zealot",
+     "expect": {"allowed": true, "loot_plays": 2, "after": [{"player": 0, "hp": 2, "atk": 1, "deactivated": ["character"]}]}},
+    {"player": 0, "kind": "play", "card": "a_penny"},
+    {"player": 0, "kind": "play", "card": "a_penny",
+     "expect": {"allowed": true, "loot_plays": 0, "after": [{"player": 0, "cents": 2, "hand": 0}]}},
+    {"player": 0, "kind": "activate", "card": "the_zealot",
+     "expect": {"allowed": false, "rule": "R-ABIL-07"}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-07"}
+}
