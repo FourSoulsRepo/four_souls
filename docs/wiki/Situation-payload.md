@@ -25,7 +25,7 @@ A situation is a small JSON document: a table position, one action or several [s
 * `sets` — card sets the situation needs, by code (`b2`) or name (`Base Game V2`).
 * `seed` — optional; fixes shuffles and dice.
 * `setup.players[]` — `character`, `items`, `hand`, `cents`, `souls`, `damage`, `dead`, and `deactivated` (cards, or `"character"`, that start deactivated).
-* `setup.players[].counters` — counters on the player's cards: `[{"card": "tech_x", "count": 3}]`; `card` is an item or soul ref, or `"character"`; `name` names the counters (`{"card": "bum_friend", "name": "gold", "count": 1}`), none for plain counters. See [Counters](#counters).
+* `setup.players[].counters` — counters on the player's cards: `[{"card": "tech_x", "count": 3}]`; `card` is an item or soul ref, `"character"`, or `"player"` for counters on the player (24.34); `name` names the counters (`{"card": "bum_friend", "name": "gold", "count": 1}`), none for plain counters. See [Counters](#counters).
 * `setup.players[].eternal` — items or souls that are eternal, as a starting item (R-ABIL-18): `["the_bone"]`.
 * `setup.players[].extra_loot_plays` — loot plays from abilities that work on any turn, as Cain's ↷ gives on another player's turn: `1`.
 * `setup.active` — the active player; the turn is in the open action phase with one loot play, attack and purchase left (`loot_plays`, `attacks` and `purchases` override them; bonus ones, as Champion Belt's, come on top), unless `setup.phase` or `setup.declared` names another window.
@@ -33,7 +33,7 @@ A situation is a small JSON document: a table position, one action or several [s
 * `setup.rooms` — the room in each room slot (R-SETUP-12); the active player uses its abilities (R-CARD-33, R-CARD-36).
 * `setup.monster_damage` — damage on a card in a monster, final boss, minion or room slot, by its ref: `{"gemini": 2}`. It must leave the card at least 1 HP.
 * `setup.bonus_souls` — the active bonus souls, by ref (R-SETUP-06): `["soul_of_greed"]`. They start with no owner; `setup.counters` and `expect.counters` name them after the slot cards.
-* `setup.counters` — counters on a card no player controls: a card in a slot or an active bonus soul, in the same form as a player's: `[{"card": "soul_of_wrath", "count": 5}]`.
+* `setup.counters` — counters on a card no player controls: a card in a slot or an active bonus soul, in the same form as a player's: `[{"card": "soul_of_wrath", "count": 5}]`. On a challenge's final boss it sets the counters left (see [Game type](#game-type)).
 * `setup.decks` — cards put on top of decks, by deck name (`treasure`, `loot`, `monster`, `room`), top first: `{"monster": ["chest_2"], "loot": ["bomb", "a_penny"]}`. Each card must belong to that deck. The rest of the deck is every card of the sets, shuffled with `seed`.
 * `setup.rolls` — the next dice results, in order, each 1–6: `[6, 1]`. Any die rolled after them is random (from `seed`). In a test file every listed roll must be used: a roll left over at the end is an error (24.32); see [Leftover rolls and picks](#leftover-rolls-and-picks).
 * `setup.random` — the next random picks, in order, each named by its option label as in `choices`: `["player 2 (cain)"]`. Any pick after them is random (from `seed`). In a test file every listed pick must be used, as `rolls` (24.32). See [Random picks](#random-picks).
@@ -137,7 +137,7 @@ razor_blade/hits-cain.json, end: setup.random: 1 left unused: ["player 2 (cain)"
 
 ## Counters
 
-A counter entry is `{"card": …, "name": …, "count": …}`; `count` is 1 or more and `name` is optional. A ref names the first such card: in seat order for a player's cards, then in slot order (monster, final boss, minion, room slots) and the bonus souls for `setup.counters`. An unknown field, a card the player has not in play, or a card in no slot is an error that lists the options.
+A counter entry is `{"card": …, "name": …, "count": …}`; `count` is 1 or more and `name` is optional. The one exception in setup is a challenge's final boss, where `count` is the counters left and 0 leaves none; in a check, `count` 0 expects none. A ref names the first such card: in seat order for a player's cards, then in slot order (monster, final boss, minion, room slots) and the bonus souls for `setup.counters`. An unknown field, a card the player has not in play, or a card in no slot is an error that lists the options.
 
 In `setup.players[].counters` and `after[].counters`, `"card": "player"` puts the counters on the player, not a card (R-MECH-13): Trick or Treat's fear, `{"card": "player", "name": "fear", "count": 2}` (R-TRICK-08). They stay when the character changes or dies.
 
@@ -178,7 +178,7 @@ In `setup.players[].counters` and `after[].counters`, `"card": "player"` puts th
 * `attacks` and `loot_plays` (24.28) count what the active player can still do, as the engine does (`attacksLeft`, `lootPlaysFor`). `attacks` is the turn's attacks left plus the unused bonus attacks from cards in effect (Champion Belt, Might For The Meek, Skeleton Key). `loot_plays` is the turn's loot plays left, plus the unused bonus loot plays (Polydactyly, Belly Button), plus the active player's `extra_loot_plays`. So Champion Belt checks `"attacks": 1` after the first attack and `0` after the second. The setup fields keep their meaning: `setup.attacks` and `setup.loot_plays` are the turn's own counts, and the bonus ones come on top; with Champion Belt, `"attacks": 0` in setup still leaves one attack, so `expect.attacks` reads 1.
 * `prompt` (24.6) checks the question open once the step settled, a choose or order question. `player` is the seat asked; `options` names every option by its label, as `choices` do, in any order. A target or mode question ends with `ask.cancel`: the player may back out before paying (R-ABIL-04). A field left out is not checked, so `"prompt": {}` only says a question is open. A prompt check also stops the step at that question; see [When a step settles](#when-a-step-settles).
 * `resolved` (24.6) names stack items in the order they resolved (`stack_resolved` events, as `enginetest.ResolvedAt` reads them). It is an ordered subsequence: each name must resolve after the one before it, and other items may resolve between them, so a check of two cards ignores the damage a Bomb! puts on the stack. A loot card, an activated or a triggered ability is named by its card ref; any other item by its kind: `dice_roll`, `attack_roll`, `damage`, `death`, `death_penalty`, `death_step`. `[]` expects nothing resolved. Any other name is an error that lists the kinds.
-* `events` (24.6) checks event kinds, by the engine's names (`damaged`, `looked_at`, `turn_ended_early`, …; `stack_resolved` and the rest). Each entry needs `kind`; `player` (a seat) narrows it to that player's events, and without it any player's count. `none: true` expects no such event; without it, at least one. An unknown kind is an error that lists every kind.
+* `events` (24.6) checks event kinds, by the engine's names (`damaged`, `looked_at`, `turn_ended_early`, …; `stack_resolved` and the rest). Each entry needs `kind`; `player` (a seat) narrows it to that player's events; without it every event of that kind counts, a monster's too, so `{"kind": "died"}` passes on a Fly's death. To check a player, name the player. `none: true` expects no such event; without it, at least one. An unknown kind is an error that lists every kind.
 * A step's `resolved` and `events` read that step's events; the top-level `expect` reads every step's (the answer's `events`).
 * `deck_bottoms` (24.11) checks the bottom of a deck, by deck name as `decks`: as many cards as the list names, from the bottom up, compared in any order. Several cards put on the bottom go there in random order (Q-22), so no rule says their order; one card at the bottom is simply that card. The rest of the deck is the shuffled set cards, so the list names only cards an effect put there. `decks` still compares the top, top first.
 * `resolved_rolls` (24.11) lists the value every dice roll resolved as, in order: the final result after every change (Lucky Foot, I. The Magician, Book of Belial, continuous roll bonuses) and the 1 to 6 bounds (R-DICE-01, R-DICE-06), as its `roll_resolved` event says. The list holds every roll, attack rolls too, so its length counts them; `[]` expects none. The die thrown is `setup.rolls`; this is what that die became. A step's list reads that step's rolls; the top-level one every step's.
@@ -396,7 +396,7 @@ Isaac can't end his turn (refused by R-ATK-03), and his attack's only target is 
 * The values are the turn as the situation starts: with `declared: attack` or an `attack_roll` stack item the attack has already counted, so `must_attacks` is what is left after it. An `attack_roll` stack item on the `must_attack` card is an error naming R-ATK-22: that attack already met the duty.
 * `phase` `start` and `loot` may carry them: the start-of-turn triggers that set such duties are done (R-TURN-03), and they hold into the action phase. In `phase: end` they are an error naming R-ATK-03: the turn's end is declared, which R-ATK-03 refuses while an attack is owed.
 * A negative `must_attacks` or `must_attack_deck` is an error.
-* No field for Pilfering Krampus's random minion attack (R-KRAMPUS-13, Q-31): it is a "while a minion is in play" effect, not a duty a trigger sets, and the engine keeps only whether it was made this turn (`Turn.RandomAttackMade`); a challenge test that needs that stays Go (24.3).
+* No field for Pilfering Krampus's random minion attack (R-KRAMPUS-13, Q-31): it is a "while a minion is in play" effect, not a duty a trigger sets, and the engine keeps only whether it was made this turn (`Turn.RandomAttackMade`). A file says it with a game action: the random attack made first, its target named in `setup.random` (24.27, 24.30).
 
 ## Steps
 
@@ -508,11 +508,13 @@ A non-empty list; each item names one basis for the expected values:
 |------|---------|-------------------|
 | `card <ref>` | `card razor_blade` | the card is in the package's sets; its own text is the basis |
 | `R-<TOPIC>-<NN>` | `R-ABIL-07` | the rule is defined in `pkg/rules_engine/docs/rules/` |
-| `Q-<NN>` | `Q-07` | the question is a heading of `open-questions.md` |
+| `Q-<NN>` | `Q-07` | the question is a heading of `open-questions.md`; a resolved one, but see below |
 | `R-07 #<N>` | `R-07 #4` | the row is in the old rulings table of `open-questions.md` |
 | `https://…` | a ruling outside the repo | only the form |
 
 Any other form fails with the list of forms. The `expect` values come from these sources, never from running the code (CLAUDE.md 5.25).
+
+A `Q-<NN>` source is a resolved question. An open one may be cited only by a file whose `title` says it waits for it, e.g. `(waits for Q-27, still open: checks the engine's current answer, (a))`; such a file checks the engine's current answer until the owner decides (ADR 034 9.8, 9.9). The runner checks only that the question exists, not whether it is open, so the title is the author's job. `open-questions.md` names such files under their question.
 
 ### The runner
 
@@ -524,6 +526,18 @@ razor_blade/hits-cain.json, end: player 1 damage is 0, expected 1
 ```
 
 The strict reading covers steps too: `line 9, steps[1]: unknown field "choises"; did you mean "choices"?`.
+
+To run one set's files, one card's, or one file, from `pkg/rules_engine`:
+
+```sh
+go test ./cards/r -run TestSituations                  # every file of the r set
+go test ./cards/r -run 'TestSituations/^ibs$/' -v      # one card's files
+go test ./cards/r -run 'TestSituations/^ibs$/^cancels-an-attack-on-a-monster-revealed-from-the-deck$' -v  # one file
+go test ./cards -run TestSituations                    # the cross-set interactions
+go test . -run TestSituations                          # the engine's rule topics
+```
+
+Each part of `-run` between slashes is a regular expression for one level of the name, so anchor a card's ref (`^bomb$` leaves out `gold_bomb`).
 
 The rule and question IDs come from `pkg/rules_engine/docs` (package `docs`), which embeds the rules text; only tests import it, so the website's wasm stays the same size.
 
@@ -590,7 +604,7 @@ It never writes `expect`: an expected value comes from the rules, never from a r
 1. Check each `todo` line; a test with state no field says stays Go (ADR 034).
 2. Write `title` as the question, and fill `source`.
 3. Write `expect` from the Go test's checks and their source comments or card text; more checks from the card text are fine, never fewer (owner answer 8).
-4. Remove `todo` and save it as `cards/<set>/testdata/situations/<card>/<case>.json`.
+4. Remove `todo` and save it in its folder (see [Layout](#layout)): `cards/<set>/testdata/situations/<card>/<case>.json` for one card.
 5. Run the set's `go test`, and delete the Go test it replaces in the same change (owner answer 1).
 
 `cards/b2/testdata/situations/dinga/doubles-rewards-on-a-6.json` is the draft above, finished: `TestDinga` is gone.

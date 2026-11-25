@@ -135,23 +135,122 @@ Rules follow our rules text in `pkg/rules_engine/docs/rules/`; each rule has an 
 
 ## 3. Test it
 
-Every card gets its own test file next to it, `<card>_test.go`. The `enginetest` package builds a table, plays, and answers prompts by their labels: a card's ref (`"fly"`), a player (`"player 2 (cain)"`), a number, or an option's key and values (`"ask.yes"`, `"card.cheese_grater.put_back"`, `"ask.keep_on_top bomb"`):
+A card's tests start as situation files: small JSON files that build a table, play, and say what must be true afterwards (ADR 034). The format is on [Situation payload](Situation-payload). A test the format can't say is Go. One card may have both: files for its simple cases, a `<card>_test.go` for the rest.
+
+### Simple or complicated
+
+A test is **simple**, so a file, when the format states its setup, its steps and its checks, and no engine state is set by hand outside `setup`. Most card tests are: play the card or use it, attack, end the turn, answer the questions; then check cents, damage, HP, items, hands, decks and discards, monsters, counters, the open question, the resolve order, events and dice values. A table of fixed cases ("Roll-: 1-2 …, 3-4 …, 5-6 …") is one file per case, not one test with a loop.
+
+A test is **complicated**, so Go, when it needs:
+
+* a loop that computes values;
+* a check against a value read earlier in the test: `TestRulingDamageToDeadPlayer` compares the damage with the damage before the play;
+* views, hidden cards, records, replay, save and load, or undo;
+* helpers and engine APIs that are no game action (`cardkit.DieFaces`, `CheckInvariants`);
+* random runs: whole games, fuzz, sims; or a real game start (a starting item, the first player).
+
+A setup field or check the format lacks is added to the format first, with its line on [Situation payload](Situation-payload). A test stays Go only when that field would serve no other test, as an event's `Amount` or a question's text key.
+
+### Where the file goes
+
+Paths are relative to `pkg/rules_engine/`:
+
+| The test is about | File |
+|---|---|
+| one card | `cards/<set>/testdata/situations/<card>/<case>.json` |
+| several cards of one set together | `cards/<set>/testdata/situations/interactions/<cards>.json` |
+| cards of several sets | `cards/testdata/situations/interactions/<cards>.json` |
+| an engine rule, with the test sets only | `testdata/situations/<topic>/<case>.json` |
+
+`<card>` is the card's ref (`bomb`). `<case>` says what is checked, in kebab case (`kills-the-fly.json`); an interaction is named after its cards (`lucky-foot-bomb.json`). A card the test only needs as a prop (the Fly a Bomb! kills) makes no interaction: the file goes in the tested card's folder. A folder holds only `.json` files, with no deeper levels, and the runner fails a file outside this layout. The status report counts a card as tested by its own folder or its `<card>_test.go`; an `interactions/` file does not count.
+
+A set's first file also needs the set's runner, `situations_test.go` (`cards/b2/situations_test.go` is the model; see [Situation payload](Situation-payload), "The runner"). Base Game, Gold Box, Four Souls+, Requiem and the challenges have one.
+
+### `source` and the expected values
+
+Every test file has `source`: a non-empty list of what its `expect` values come from.
+
+* `card <ref>`: the card's own text.
+* `R-<TOPIC>-<NN>`: a rule in `pkg/rules_engine/docs/rules/`.
+* `Q-<NN>`: a resolved question in `open-questions.md`; `R-07 #<N>`: an old ruling re-checked there; an `https://` link: a ruling outside the repo.
+* An open question only in a file whose `title` says it waits for it: "(waits for Q-27, still open: checks the engine's current answer, (a))" (ADR 034 9.8). Such a file checks what the engine does today, until the owner answers.
+
+The runner checks each form, and that the card, rule or question exists.
+
+The expected values come from these sources, never from running the code (CLAUDE.md 5.25): write `expect` from the card text and the rules before the first run. If the run disagrees, the code is the bug: log it in `docs/roadmap/19-bugs.md` (CLAUDE.md 5.17), don't change the file to match.
+
+Each file must fail with one expected value changed. Change a value (Cain's damage 1 to 2), run the file, see it fail, put it back. A check that passes either way checks nothing; the move of the old Go tests found several such checks.
+
+### A worked example
+
+Bomb! from step 2 says "Deal 1 damage to a monster or player." Its first file, `cards/b2/testdata/situations/bomb/kills-the-fly.json`:
+
+```json
+{
+  "title": "Isaac plays Bomb! on the Fly (1 HP): does it die, and does Isaac get its 1¢?",
+  "source": ["card bomb", "card fly", "R-CARD-07", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "bomb", "choices": ["fly"]},
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "fly", "dead": true}, {"card": "leech", "slot": 2, "damage": 0}],
+    "after": [{"player": 0, "cents": 1}],
+    "discards": {"loot": ["bomb"]}
+  }
+}
+```
+
+Each value has its source: the card deals 1 damage, so the Fly (1 HP, `card fly`) dies and the Leech is untouched; the active player gets the Fly's 1¢ (R-CARD-13); the played loot card goes to the loot discard (R-CARD-07). Choices answer the prompts by label: a card's ref (`"fly"`), a player (`"player 2 (cain)"`), a number, or an option's key and values (`"ask.yes"`, `"ask.keep_on_top bomb"`).
+
+Run the card's files, one file, or the whole set's:
+
+```sh
+cd pkg/rules_engine
+go test ./cards/b2 -run 'TestSituations/^bomb$/' -v
+go test ./cards/b2 -run 'TestSituations/^bomb$/^kills-the-fly$' -v
+go test ./cards/b2 -run TestSituations
+```
+
+Each part of `-run` between the slashes is a regular expression for one level of the subtest name, so `^bomb$` keeps out `gold_bomb` and `mega_troll_bomb`.
+
+A mismatch names the file, the step and the value: `bomb/kills-the-fly.json, step 1 (play bomb): player 0 cents is 1, expected 2`. The card needs no Go test.
+
+### Start from the dump
+
+For a long setup it can be quicker to build the table with the `enginetest` helpers below and let the dump write the draft. Write a short Go test that only sets up and plays, run it with `SITUATION_DUMP`, and finish the draft as [Situation payload](Situation-payload) says ("Dump a Go test"): a `title` as a question, `source`, `expect` from the card text, `todo` removed. Then delete the Go sketch. The dump never writes `expect`.
+
+```sh
+cd pkg/rules_engine
+SITUATION_DUMP=.cache/situations go test ./cards/b2 -run 'TestBombSketch$' -count=1
+```
+
+It writes `.cache/situations/b2/TestBombSketch.json`, from the repository root.
+
+### Go tests
+
+A complicated test goes in `<card>_test.go` next to the card. The `enginetest` package builds a table, plays, and answers prompts by the same labels as the files. Each check names its source in a comment (CLAUDE.md 5.25):
 
 ```go
 package b2
 
-import (
-	"testing"
+import "testing"
 
-	engine "github.com/FourSoulsRepo/rules_engine"
-)
-
-func TestBomb(t *testing.T) {
-	tb := lootTable(t, "bomb") // Isaac holds the bomb; Cain sits next to him
-	fly, _ := tb.G.Monsters[0].TopOf()
-	tb.Play(0, "bomb", "fly")
-	if tb.G.Object(fly).Zone.Kind == engine.ZoneInPlay {
-		t.Error("the fly survived 1 damage")
+// R-07 #4, narrowed by Q-07: a dead player takes untargeted damage, but
+// nothing is marked (R-MECH-16).
+func TestRulingDamageToDeadPlayer(t *testing.T) {
+	tb := lootTable(t, "xiii_death", "xvi_the_tower")
+	tb.G.Players[0].ExtraLootPlays = 1
+	tb.Play(0, "xiii_death", "player 2 (cain)")
+	before := tb.G.Players[1].Damage // a value read mid-test: no file can say it
+	tb.G.ForceRolls(1)               // each player takes 1 damage
+	tb.Play(0, "xvi_the_tower")
+	if d := tb.G.Players[1].Damage; d != before {
+		t.Errorf("damage %d, want %d", d, before)
 	}
 }
 ```
@@ -165,7 +264,7 @@ Useful tools, all in `enginetest` and `cards/b2/common_test.go`:
 * Every roll waits for its roller's throw; the helpers throw for them. `ThrowPending` throws by hand.
 * `RevealFromDeck(card)`: put a monster deck card into play through an attack, for events.
 
-A simple test (one action, a plain state check) can be a JSON file instead, in `testdata/situations/<card>/` of the set's package: see [Situation payload](Situation-payload) (As tests) and ADR 034.
+### Run everything
 
 Run the tests and update the status report:
 
@@ -209,6 +308,7 @@ A set is a Go package under `pkg/rules_engine/cards/` with one variable, `Set`.
 
 4. Register it in `pkg/rules_engine/cards/cards.go`, in `Sets()`.
 5. Card IDs must be unique across all sets; pick names that no official card uses.
+6. With its first situation file, add `situations_test.go` as in `cards/fsp2/`: it embeds `testdata/situations` and passes the Base Game with the set (`b2.Set, Set`), since they are played together.
 
 A fan set is played together with the Base Game, so it may be small: one card is a set. Cards of a fan set may refer to Base Game cards (a starting item, a card to search for) when the game is played with both sets.
 
@@ -219,7 +319,8 @@ After the set's cards are in: `make bot-values`, then `make bots`, as for one ca
 ## Checklist
 
 * The file has no `TODO(card):` line.
-* `<card>_test.go` exists and passes.
+* Its situation files pass; a complicated test is in `<card>_test.go` and passes.
+* Each file names its `source` and fails with one expected value changed.
 * The status report is regenerated.
 * A loot card or item has its bot value: `make bot-values`, then `make bots`; `values.json` is committed with it.
 * `make lint` passes (see [Linters](Linters)).

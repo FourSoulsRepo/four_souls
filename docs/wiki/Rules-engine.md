@@ -107,7 +107,7 @@ The generator lives in the app module because the engine never imports `card_db`
 
 * Not started: the card file still has the `TODO(card):` line.
 * Implemented: the line is gone.
-* Tested: the card also has `<card>_test.go` next to it.
+* Tested: the card also has `<card>_test.go` next to it, or situation files in its set's `testdata/situations/<card>/` (ADR 034); an `interactions/` file does not count.
 
 A test fails when the committed report is out of date, so run the command after finishing a card.
 
@@ -152,7 +152,7 @@ The first challenge (14.22; rules R-KRAMPUS-01 to 15, open cases Q-30 to Q-41) l
   * Happy Holidays! triggers on `gained_soul` while `SoulsInPlay` reaches 5, 6 or 7 and it has not happened; it flips the presents first, then asks the active player who gains each, ¢, loot, treasure, soul; a gone present is skipped (R-KRAMPUS-10, Q-40).
   * The goal: when the difficulty's Pilfering Krampus dies, `WinChallenge` (R-KRAMPUS-01).
 * View: `ChallengeView.Presents` shows kind and counters face down; `destroyed`, `flipped`, the card once face up, and the player who gained it.
-* Tests: `cards/challenge/*_test.go`, one file per card plus `krampus_test.go` (setup, whole seeded games won and lost, replay and load). `FuzzChallengeSets` flags 1 to 3 and `TestSimulations` play Krampus too (wiki [Fuzzing](Fuzzing)).
+* Tests: situation files in `cards/challenge/testdata/situations/<card>/` (`setup.game`, 24.27, 24.34); Go for what they can't say: `krampus_test.go` (setup, whole seeded games won and lost, replay and load) and the views. `FuzzChallengeSets` flags 1 to 3 and `TestSimulations` play Krampus too (wiki [Fuzzing](Fuzzing)).
 
 ### Trick or Treat blocks
 
@@ -182,7 +182,7 @@ The second challenge (14.32; rules R-TRICK-01 to 17, open cases Q-43 to Q-54) li
   * Treat: You Don't Scare Me (`rewards_gained` of the active player whose dead card has `Rewards`; the same fear question; Q-54) and Hallows' Eve Bounty (one roll at every difficulty: `AddReward` 3¢, loot 1 or 1 treasure).
 * Events: `GainRevealedMonster` now emits `abilities_gained` (Text: the gained card). History lines: fear gained and lost, trick counters off, damage taken up, rewards changed, abilities gained; a flip has its line already.
 * There is no loss of its own: only the timer (R-TRICK-01).
-* Tests: `cards/challenge/*_test.go`, one file per card plus `trick_or_treat_test.go` (setup, whole games), one test per rule and open case, with real cards (Boom Fly gained, Dinga and Blessing of the Sack on 1¢, Daddy Haunt, Chaos Card and Bomb! on the guarded boss), and seeded whole games won and lost. `FuzzChallengeSets` flag bit 3 and `TestSimulations` play it at every difficulty.
+* Tests: situation files in `cards/challenge/testdata/situations/<card>/` and `cards/challenge/*_test.go` plus `trick_or_treat_test.go` (setup, whole games), one test per rule and open case, with real cards (Boom Fly gained, Dinga and Blessing of the Sack on 1¢, Daddy Haunt, Chaos Card and Bomb! on the guarded boss), and seeded whole games won and lost. `FuzzChallengeSets` flag bit 3 and `TestSimulations` play it at every difficulty.
 
 ## The run loop must always settle
 

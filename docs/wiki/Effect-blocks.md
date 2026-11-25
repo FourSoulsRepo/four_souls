@@ -226,7 +226,7 @@ When it asks for that order, the engine plays each order on a copy of the game f
 
 ## Testing a card
 
-Each card gets `<card>_test.go` next to it; the [status report](Rules-engine) counts a card as tested when that file exists. The `enginetest` package builds a table and plays it:
+A card's simple tests are situation files in its set's `testdata/situations/<card>/` ([Situation payload](Situation-payload), ADR 034); a test the format can't say is Go, in `<card>_test.go` next to the card. The [status report](Rules-engine) counts a card as tested when either exists; [Adding a card](Adding-a-card) says which test is which. In Go, the `enginetest` package builds a table and plays it:
 
 ```go
 tb := enginetest.New(t, b2.Set, enginetest.Seat("isaac", "the_d6"), enginetest.Seat("cain"))

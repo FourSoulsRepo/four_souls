@@ -145,6 +145,8 @@ Use option 1.
    7. A payload outside a tree is read as before.
    8. An unknown field's error names its line, path and nearest field.
    9. A mismatch names its step, or the end for the top `expect`.
+   10. `enginetest.RunInteractionSituations` runs the cross-set tree with every set (24.22).
+   11. A test file fails on rolls or picks left unused (24.32).
 13. A new card's simple tests are files from now on.
    1. `Adding-a-card.md` says how (24.9).
 

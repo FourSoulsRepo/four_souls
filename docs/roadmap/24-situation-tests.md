@@ -349,7 +349,7 @@ Ideas: TS-13, LR-04, R-03.
    5. Owner: may a table of fixed cases become a file per case?
    6. The Wheel of Fortune would be 6 files.
 
-### [ ] 24.9 Docs
+### [x] 24.9 Docs
 
 1. Goal: a simple new card test starts as a file.
 2. Tasks:
@@ -358,6 +358,46 @@ Ideas: TS-13, LR-04, R-03.
    3. `CLAUDE.md` Commands: how to run one set's files.
 3. Done when:
    1. A simple new card from the guide needs no Go test.
+4. Done (2026-11-25): `Adding-a-card.md`, step 3 "Test it"
+   1. Files first; Go for what the format can't say (ADR 034 1).
+   2. Simple and complicated, with examples; a table is one file per case.
+   3. A missing field goes into the format first (ADR 034 1.8, 1.9).
+   4. Where the file goes: the four trees, props, the set's runner.
+   5. `source` forms; an open Q only with a "waits" title (ADR 034 9.8).
+   6. Values from the rules (5.25); a mismatch is a bug for step 19.
+   7. Each file fails with one value changed.
+   8. Worked example: Bomb!'s `kills-the-fly.json`, each value's source.
+   9. How to run a card's files, one file, a set.
+   10. Start from the dump: a Go sketch, `SITUATION_DUMP`, then delete it.
+   11. The Go example was `TestBomb`, gone since 24.12.
+   12. Now `TestRulingDamageToDeadPlayer`, the ADR's complicated example.
+   13. Fan set: its runner passes `b2.Set, Set`; the checklist names files.
+5. `Situation-payload.md`: every step 24 field checked against the structs.
+   1. All fields were there; fixed drift and gaps only.
+   2. `events` without `player` counts a monster's too (24.24 item 5).
+   3. Pilfering Krampus's random attack: no longer "stays Go" (24.27, 24.30).
+   4. `source`: an open Q only with a "waits" title; the runner checks only that it exists.
+   5. Counters: `"player"` in a player's list; a challenge boss's count left, 0 allowed.
+   6. The runner: commands for a set, a card, a file, cross-set, rule topics.
+   7. Dump: a file's folder by the layout, not only a card folder.
+6. Same drift, other pages (5.26):
+   1. `Effect-blocks.md`, `Rules-engine.md`: "tested" counts situation files (`cardgen` does).
+   2. `Rules-engine.md`: challenge tests are situation files now (24.27).
+7. A `-run` pattern is a regex per level: `bomb` also matches `gold_bomb`.
+   1. The docs anchor it: `'TestSituations/^bomb$/'`.
+8. `CLAUDE.md` Commands 4.29: run one set, card, file; the dump.
+9. ADR 034: 12.10 the cross-set runner, 12.11 leftovers (24.32).
+10. Done when, checked for real in a scratch copy of `pkg/rules_engine`:
+   1. A new b2 loot card `scratch_bomb`: 1 damage, gain 1¢.
+   2. One file from the guide: `scratch_bomb/hits-cain-and-gains-1-cent.json`.
+   3. It passed; with Cain's damage 2 it failed, naming the value.
+   4. A bad source (`R-FOO-99`) failed, naming it.
+   5. `go test ./cards/ ./cards/b2` passed; no Go test.
+   6. `cardgen` counts it tested by its folder (`report.go`).
+   7. A hand-added card needs its deck group too; `cardgen` writes it.
+   8. The dump of a two-line Go sketch gave the setup and step; no `expect`.
+   9. Nothing of it is committed.
+11. No wiki page added; `Home.md`, `_Sidebar.md` unchanged.
 
 ### [x] 24.10 Priority windows
 
