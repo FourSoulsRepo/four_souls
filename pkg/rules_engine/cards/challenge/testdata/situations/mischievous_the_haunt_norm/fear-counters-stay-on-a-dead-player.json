@@ -1,0 +1,17 @@
+{
+  "title": "Trick or Treat, Normal: Cain has 3 fear counters and Isaac kills him with Chaos Card; does Cain keep them?",
+  "source": ["card mischievous_the_haunt_norm", "card chaos_card", "R-TRICK-08", "R-MECH-13", "Q-45"],
+  "sets": ["b2", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "normal"},
+    "players": [{"character": "isaac", "items": ["chaos_card"]}, {"character": "cain", "counters": [{"card": "player", "name": "fear", "count": 3}]}],
+    "active": 0,
+    "monsters": ["leech", "fly"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "chaos_card", "choices": ["Kill a player or monster.", "player 2 (cain)"]},
+  "expect": {
+    "allowed": true,
+    "events": [{"kind": "died", "player": 1}],
+    "after": [{"player": 1, "dead": true, "counters": [{"card": "player", "name": "fear", "count": 3}]}, {"player": 0, "counters": [{"card": "player", "name": "fear", "count": 0}]}]
+  }
+}

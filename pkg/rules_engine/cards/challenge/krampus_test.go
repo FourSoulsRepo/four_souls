@@ -54,17 +54,6 @@ func player(tb *enginetest.Table, p engine.PlayerID) string {
 	return tb.G.Plain(engine.PlayerOption(p))
 }
 
-// attackOptions declares an attack and returns its target options.
-func attackOptions(tb *enginetest.Table) []string {
-	tb.T.Helper()
-	if _, err := tb.G.Apply(engine.Intent{Player: tb.G.Turn.Active, Kind: engine.IntentAttack}); err != nil {
-		tb.T.Fatal(err)
-	}
-	tb.Pass(int(tb.G.Turn.Active))
-	tb.Pass(int(tb.G.PlayerAfter(tb.G.Turn.Active)))
-	return tb.Options()
-}
-
 func boost(tb *enginetest.Table, p engine.PlayerID, atk int) {
 	tb.G.Boosts = append(tb.G.Boosts, engine.Boost{Stat: engine.StatPlayerATK, Player: p, Amount: atk})
 }
@@ -76,15 +65,6 @@ func souls(n int) []engine.CardRef {
 		out[i] = "fly"
 	}
 	return out
-}
-
-func boss(tb *enginetest.Table) engine.ObjectID {
-	tb.T.Helper()
-	id, ok := tb.G.Bosses[0].TopOf()
-	if !ok {
-		tb.T.Fatal("no Pilfering Krampus")
-	}
-	return id
 }
 
 // setCounters sets the present of kind to n counters (n > 0).

@@ -1,0 +1,23 @@
+{
+  "title": "Trick or Treat, Normal: Mischievous The Haunt has no trick counters; Isaac hits it with Bomb!, then kills it outright with Chaos Card; does it die?",
+  "source": ["card mischievous_the_haunt_norm", "card bomb", "card chaos_card", "card trick_treat_normhardultra", "R-TRICK-01", "R-TRICK-06", "R-CHAL-05", "R-CHAL-15", "R-ABIL-15", "R-COOP-10"],
+  "sets": ["b2", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "normal"},
+    "players": [{"character": "isaac", "items": ["chaos_card"], "hand": ["bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "counters": [{"card": "mischievous_the_haunt_norm", "name": "trick", "count": 0}]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["mischievous_the_haunt_norm"], "expect": {"allowed": true, "monsters": [{"card": "mischievous_the_haunt_norm", "damage": 1, "hp": 3}]}},
+    {"player": 0, "kind": "activate", "card": "chaos_card", "choices": ["Kill a player or monster.", "mischievous_the_haunt_norm", "trick_treat_normhardultra: Each time you kill a monster, remove a trick counter from the final boss.", "mischievous_the_haunt_norm: Each time a monster dies, the active player rolls- 4-6: Remove a fear counter from a player."]}
+  ],
+  "expect": {
+    "allowed": true,
+    "over": true,
+    "winners": [0, 1],
+    "resolved_rolls": [],
+    "events": [{"kind": "challenge_won"}, {"kind": "challenge_lost", "none": true}]
+  }
+}

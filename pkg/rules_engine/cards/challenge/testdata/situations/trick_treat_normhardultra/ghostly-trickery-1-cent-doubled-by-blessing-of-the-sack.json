@@ -1,0 +1,23 @@
+{
+  "title": "Trick or Treat, Normal, Blessing Of The Sack in the room slot: Isaac rolls 5 for Ghostly Trickery and kills the Leech (loot 1); what does he gain?",
+  "source": ["card trick_treat_normhardultra", "card blessing_of_the_sack", "card leech", "R-TRICK-13", "Q-48"],
+  "sets": ["b2", "r", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "normal"},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "rooms": ["blessing_of_the_sack"],
+    "decks": {"monster": ["bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob"]},
+    "rolls": [5, 6, 1]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["leech", "mischievous_the_haunt_norm: Each time a monster dies, the active player rolls- 4-6: Remove a fear counter from a player."]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [5, 6, 1],
+    "monsters": [{"card": "leech", "dead": true}],
+    "after": [{"player": 0, "cents": 2, "hand": 0}]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "title": "Trick or Treat, Hard: Isaac attacks the Fly with Trick up; how many times does he roll for Ghostly Trickery, and before which roll?",
+  "source": ["card trick_treat_normhardultra", "R-TRICK-13", "R-ATK-25", "Q-46", "Q-48", "Q-53"],
+  "sets": ["b2", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "hard"},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"monster": ["bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob"]},
+    "rolls": [5, 5, 6, 1]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly", "mischievous_the_haunt_hard: Each time a monster dies, the active player rolls- 4-6: Remove a fear counter from a player."]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [5, 5, 6, 1],
+    "resolved": ["trick_treat_normhardultra", "attack_roll"],
+    "events": [{"kind": "dice_rolled", "player": 1, "none": true}],
+    "monsters": [{"card": "fly", "dead": true}],
+    "after": [{"player": 0, "cents": 1, "hand": 0}]
+  }
+}

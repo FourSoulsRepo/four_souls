@@ -1,0 +1,23 @@
+{
+  "title": "Trick or Treat, Normal: Isaac has 1 fear counter and Cain 2; Isaac kills the Fly and the death roll is a 4, then kills the Leech and it is a 3; whom may he pick, and what is removed?",
+  "source": ["card mischievous_the_haunt_norm", "card trick_treat_normhardultra", "R-TRICK-10", "R-TRICK-12", "R-TRICK-13", "Q-51"],
+  "sets": ["b2", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "normal"},
+    "players": [{"character": "isaac", "counters": [{"card": "player", "name": "fear", "count": 1}]}, {"character": "cain", "counters": [{"card": "player", "name": "fear", "count": 2}]}],
+    "active": 0,
+    "attacks": 2,
+    "monsters": ["leech", "fly"],
+    "decks": {"monster": ["bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob"]},
+    "rolls": [6, 6, 4, 6, 6, 3]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly", "mischievous_the_haunt_norm: Each time a monster dies, the active player rolls- 4-6: Remove a fear counter from a player."], "expect": {"allowed": true, "prompt": {"player": 0, "options": ["player 1 (isaac)", "player 2 (cain)"]}}},
+    {"kind": "choose", "choices": ["player 2 (cain)"], "expect": {"allowed": true, "after": [{"player": 0, "counters": [{"card": "player", "name": "fear", "count": 1}]}, {"player": 1, "counters": [{"card": "player", "name": "fear", "count": 1}]}], "counters": [{"card": "mischievous_the_haunt_norm", "name": "trick", "count": 11}]}},
+    {"player": 0, "kind": "attack", "choices": ["leech", "mischievous_the_haunt_norm: Each time a monster dies, the active player rolls- 4-6: Remove a fear counter from a player."], "expect": {"allowed": true, "monsters": [{"card": "leech", "dead": true}], "after": [{"player": 0, "cents": 2, "hand": 0, "counters": [{"card": "player", "name": "fear", "count": 1}]}, {"player": 1, "counters": [{"card": "player", "name": "fear", "count": 1}]}], "counters": [{"card": "mischievous_the_haunt_norm", "name": "trick", "count": 10}]}}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 4, 6, 6, 3]
+  }
+}

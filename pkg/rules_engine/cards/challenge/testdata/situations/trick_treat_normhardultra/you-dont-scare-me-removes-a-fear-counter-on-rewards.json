@@ -1,0 +1,23 @@
+{
+  "title": "Trick or Treat, Normal: Treat is up and Cain has 2 fear counters; Isaac's Bomb! kills a monster with no rewards, then he kills the Fly; when is a fear counter removed, and from whom may he pick?",
+  "source": ["card treat_normhardultra", "card mischievous_the_haunt_norm", "card bomb", "card fly", "R-TRICK-10", "R-TRICK-11", "R-TRICK-14", "R-TRICK-15", "Q-51", "Q-54"],
+  "sets": ["b2", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "normal", "rule_card": "treat_normhardultra"},
+    "players": [{"character": "isaac", "hand": ["bomb"]}, {"character": "cain", "counters": [{"card": "player", "name": "fear", "count": 2}]}],
+    "active": 0,
+    "monsters": ["fly", "bare_mob"],
+    "decks": {"monster": ["bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob"]},
+    "rolls": [1, 1, 6, 1]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["bare_mob"], "expect": {"allowed": true, "monsters": [{"card": "bare_mob", "slot": 2}], "after": [{"player": 1, "counters": [{"card": "player", "name": "fear", "count": 2}]}], "discards": {"monster": ["bare_mob"]}}},
+    {"player": 0, "kind": "attack", "choices": ["fly"], "expect": {"allowed": true, "prompt": {"player": 0, "options": ["player 2 (cain)"]}}},
+    {"kind": "choose", "choices": ["player 2 (cain)"], "expect": {"allowed": true, "after": [{"player": 0, "cents": 4, "counters": [{"card": "player", "name": "fear", "count": 0}]}, {"player": 1, "counters": [{"card": "player", "name": "fear", "count": 1}]}]}}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 1, 6, 1],
+    "counters": [{"card": "mischievous_the_haunt_norm", "name": "trick", "count": 12}]
+  }
+}

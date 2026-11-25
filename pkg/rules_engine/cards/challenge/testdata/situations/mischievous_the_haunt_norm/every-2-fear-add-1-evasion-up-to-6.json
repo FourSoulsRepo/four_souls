@@ -1,0 +1,17 @@
+{
+  "title": "Trick or Treat, Normal: on Isaac's turn Isaac has 5 fear counters; what evasion do the monsters and Mischievous The Haunt have?",
+  "source": ["card mischievous_the_haunt_norm", "card leech", "card fly", "R-TRICK-09", "R-ATK-18", "Q-52"],
+  "sets": ["b2", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "normal"},
+    "players": [{"character": "isaac", "counters": [{"card": "player", "name": "fear", "count": 5}]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "expect": {"allowed": true, "prompt": {"player": 0}, "monsters": [{"card": "fly", "evasion": 4}, {"card": "leech", "evasion": 6}, {"card": "mischievous_the_haunt_norm", "evasion": 6}]}}
+  ],
+  "expect": {
+    "allowed": true
+  }
+}

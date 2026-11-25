@@ -1,0 +1,24 @@
+{
+  "title": "Trick or Treat, Normal: Mischievous The Haunt has no trick counters left and Isaac kills the Fly with Trick up; how many trick counters does it have?",
+  "source": ["card mischievous_the_haunt_norm", "card trick_treat_normhardultra", "R-TRICK-06", "R-TRICK-12", "Q-54"],
+  "sets": ["b2", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "normal"},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"monster": ["bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob"]},
+    "counters": [{"card": "mischievous_the_haunt_norm", "name": "trick", "count": 0}],
+    "rolls": [6, 6, 1]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly", "mischievous_the_haunt_norm: Each time a monster dies, the active player rolls- 4-6: Remove a fear counter from a player."]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 1],
+    "resolved": ["trick_treat_normhardultra"],
+    "monsters": [{"card": "fly", "dead": true}],
+    "counters": [{"card": "mischievous_the_haunt_norm", "name": "trick", "count": 0}]
+  }
+}
