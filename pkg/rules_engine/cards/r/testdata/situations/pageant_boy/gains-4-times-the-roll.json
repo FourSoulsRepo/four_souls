@@ -1,0 +1,17 @@
+{
+  "title": "Isaac destroys Pageant Boy and rolls a 5: does he gain 20¢?",
+  "source": ["card pageant_boy", "R-ABIL-07", "R-ZONE-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["pageant_boy"]}, {"character": "cain"}],
+    "active": 0,
+    "rolls": [5]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "pageant_boy"},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [5],
+    "discards": {"treasure": ["pageant_boy"]},
+    "after": [{"player": 0, "cents": 20, "items": []}, {"player": 1, "cents": 0}]
+  }
+}

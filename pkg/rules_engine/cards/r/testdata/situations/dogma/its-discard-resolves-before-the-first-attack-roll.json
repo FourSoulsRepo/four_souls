@@ -1,0 +1,24 @@
+{
+  "title": "Dogma at 1 HP: Isaac declares his attack on it; is the Fly in discard before the first attack roll is thrown?",
+  "source": ["card dogma", "card the_harbingers", "R-ATK-25", "R-ATK-02", "Q-29"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["dogma", "fly"],
+    "monster_damage": {"dogma": 3},
+    "decks": {"monster": ["clotty", "clotty"], "treasure": ["book_of_sin", "book_of_sin"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["dogma"],
+     "expect": {"allowed": true, "resolved": ["dogma"], "resolved_rolls": [], "monsters": [{"card": "fly", "dead": true}, {"slot": 1, "card": "dogma"}], "discards": {"monster": ["fly"]}}},
+    {"kind": "throw", "choices": ["ask.slot 1"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "resolved": ["dogma", "attack_roll"],
+    "monsters": [{"card": "dogma", "dead": true}, {"slot": 3, "card": "the_harbingers"}]
+  }
+}

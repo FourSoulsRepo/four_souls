@@ -30,20 +30,8 @@ func setup(t *testing.T, s engine.SituationSetup) *enginetest.Table {
 	return tb
 }
 
-// inDiscard reports whether the deck's discard holds the card.
-func inDiscard(g *engine.Game, d engine.DeckKind, card engine.CardRef) bool {
-	for _, id := range g.Discards[d] {
-		if g.Object(id).Card == card {
-			return true
-		}
-	}
-	return false
-}
-
-const (
-	me  = "player 1 (isaac)"
-	foe = "player 2 (cain)"
-)
+// foe is Cain's player label.
+const foe = "player 2 (cain)"
 
 // hasItem reports whether player p controls an item with this card.
 func hasItem(g *engine.Game, p int, card engine.CardRef) bool {
@@ -53,49 +41,6 @@ func hasItem(g *engine.Game, p int, card engine.CardRef) bool {
 		}
 	}
 	return false
-}
-
-// handHas reports whether player p holds a loot card with this card.
-func handHas(g *engine.Game, p int, card engine.CardRef) bool {
-	for _, id := range g.Players[p].Hand {
-		if g.Object(id).Card == card {
-			return true
-		}
-	}
-	return false
-}
-
-// settleAny settles, answering every question with its first option.
-func settleAny(tb *enginetest.Table) {
-	tb.T.Helper()
-	for range 200 {
-		tb.ThrowPending()
-		w := tb.G.Prompt()
-		switch {
-		case w.Kind == engine.PromptChoose:
-			tb.Choose(tb.Options()[0])
-			continue
-		case w.Kind == engine.PromptDiscard:
-			if _, err := tb.G.Apply(engine.Intent{Player: w.Player, Kind: engine.IntentDiscard, Objects: tb.G.Players[w.Player].Hand[:w.Count]}); err != nil {
-				tb.T.Fatal(err)
-			}
-			continue
-		case len(tb.G.Stack) == 0 && w.Kind == engine.PromptPriority && !tb.G.Attack.On:
-			return
-		case w.Kind == engine.PromptPriority:
-			tb.Pass(int(w.Player))
-			continue
-		}
-		return
-	}
-	tb.T.Fatal("settleAny: the stack never emptied")
-}
-
-// hurt leaves the monster in slot i with n HP.
-
-func hurt(tb *enginetest.Table, i, n int) {
-	id := tb.G.Monsters[i].Cards[len(tb.G.Monsters[i].Cards)-1]
-	tb.G.Object(id).Damage = tb.G.Def(id).HP - n
 }
 
 // testStartingItem checks that a real game gives the character's player
@@ -128,13 +73,3 @@ func roomTable(t *testing.T, room engine.CardRef) *enginetest.Table {
 		Rooms:    []engine.CardRef{room},
 	})
 }
-
-// room returns the room on top of room slot 0.
-func room(tb *enginetest.Table) engine.ObjectID {
-	id, _ := tb.G.Rooms[0].TopOf()
-	return id
-}
-
-// sackFirst puts the roll result on the stack first, so the other card's
-// "each time a player rolls" trigger resolves first (R-ABIL-15, 19.233).
-const sackFirst = "mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢."

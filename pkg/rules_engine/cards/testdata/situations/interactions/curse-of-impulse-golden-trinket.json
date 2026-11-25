@@ -1,0 +1,17 @@
+{
+  "title": "Gold on Mystery Sack, and Isaac gets Curse of Impulse: at the end of his turn, is Golden Trinket, which has the Sack's ↷, deactivated too?",
+  "source": ["card curse_of_impulse", "card golden_trinket", "card mystery_sack", "R-ABIL-38", "R-MECH-54", "R-ABIL-20"],
+  "sets": ["b2", "r", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["mystery_sack"], "hand": ["golden_trinket"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fatty", "monstro"]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "golden_trinket", "choices": ["mystery_sack"]},
+    {"player": 0, "kind": "reveal", "card": "curse_of_impulse", "choices": ["player 1 (isaac)"],
+     "expect": {"allowed": true, "after": [{"player": 0, "deactivated": []}]}},
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "items": ["mystery_sack", "golden_trinket"], "deactivated": ["mystery_sack", "golden_trinket", "character"]}]}
+}

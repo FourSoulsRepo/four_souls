@@ -1,0 +1,27 @@
+{
+  "title": "Gold on Bum-Bo!, no level counters on Golden Trinket or Bum-Bo!: does Isaac get any of Bum-Bo!'s level abilities?",
+  "source": ["card golden_trinket", "card bum_bo", "card pooter", "R-ABIL-38", "R-CARD-30"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["golden_trinket", "bum_bo"],
+       "counters": [{"card": "bum_bo", "name": "gold", "count": 1}]},
+      {"character": "cain", "cents": 5}
+    ],
+    "active": 0,
+    "monsters": ["pooter", "fly"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [3, 3]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0}, "after": [{"player": 0, "atk": 1}]}},
+    {"kind": "choose", "choices": ["pooter"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [3, 3],
+    "monsters": [{"card": "pooter", "dead": true}, {"slot": 1, "card": "clotty"}],
+    "after": [{"player": 0, "atk": 1, "damage": 0}]
+  }
+}

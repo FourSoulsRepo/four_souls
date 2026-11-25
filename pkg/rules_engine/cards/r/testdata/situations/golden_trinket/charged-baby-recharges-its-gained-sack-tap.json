@@ -1,0 +1,22 @@
+{
+  "title": "Gold on Mystery Sack: Isaac uses the Sack's ↷ from Golden Trinket and rolls a 2; does Charged Baby offer the spent Trinket to recharge?",
+  "source": ["card golden_trinket", "card mystery_sack", "card charged_baby", "R-ABIL-38", "R-ABIL-16", "R-MECH-54", "R-ABIL-15"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["charged_baby", "mystery_sack"], "hand": ["golden_trinket"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "decks": {"loot": ["a_penny"]},
+    "rolls": [2]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "golden_trinket", "choices": ["mystery_sack"],
+     "expect": {"allowed": true, "after": [{"player": 0, "items": ["charged_baby", "mystery_sack", "golden_trinket"], "deactivated": []}]}},
+    {"player": 0, "kind": "activate", "card": "golden_trinket", "ability": 1, "choices": ["mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢."],
+     "expect": {"allowed": true, "after": [{"player": 0, "deactivated": ["golden_trinket"]}], "prompt": {"player": 0, "options": ["golden_trinket", "ask.none"]}}},
+    {"kind": "choose", "choices": ["golden_trinket"]}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [2], "after": [{"player": 0, "deactivated": [], "hand_cards": ["a_penny"], "cents": 0}]}
+}

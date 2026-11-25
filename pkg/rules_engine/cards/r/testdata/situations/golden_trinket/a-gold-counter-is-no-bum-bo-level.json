@@ -1,0 +1,18 @@
+{
+  "title": "Isaac plays Golden Trinket and puts its gold counter on Bum-Bo!: is that counter a level of Bum-Bo!?",
+  "source": ["card golden_trinket", "card bum_bo", "R-MECH-12", "R-ABIL-19", "R-ABIL-38", "R-CARD-30"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["bum_bo"], "hand": ["golden_trinket"]},
+      {"character": "cain", "cents": 5}
+    ],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "golden_trinket", "choices": ["bum_bo"]},
+  "expect": {
+    "allowed": true,
+    "after": [{"player": 0, "atk": 1, "hand": 0, "items": ["bum_bo", "golden_trinket"],
+      "counters": [{"card": "bum_bo", "name": "gold", "count": 1}, {"card": "bum_bo", "count": 0}, {"card": "golden_trinket", "count": 0}]}]
+  }
+}

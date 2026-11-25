@@ -1,0 +1,25 @@
+{
+  "title": "Gold on Mystery Sack: Isaac's own Bomb! kills him; does the death penalty deactivate Golden Trinket, which has the Sack's ↷?",
+  "source": ["card golden_trinket", "card mystery_sack", "card bomb", "card breakfast", "R-ABIL-38", "R-DEATH-14", "R-MECH-54"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["mystery_sack", "breakfast"], "hand": ["golden_trinket", "bomb"], "damage": 2},
+      {"character": "cain", "cents": 5}
+    ],
+    "active": 0,
+    "loot_plays": 2
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "golden_trinket", "choices": ["mystery_sack"],
+     "expect": {"allowed": true, "after": [{"player": 0, "deactivated": [], "counters": [{"card": "mystery_sack", "name": "gold", "count": 1}]}]}},
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["player 1 (isaac)", "breakfast"],
+     "expect": {"allowed": true, "events": [{"kind": "died", "player": 0}]}}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 1,
+    "discards": {"treasure": ["breakfast"], "loot": ["bomb"]},
+    "after": [{"player": 0, "items": ["mystery_sack", "golden_trinket"], "deactivated": ["mystery_sack", "golden_trinket", "character"]}]
+  }
+}

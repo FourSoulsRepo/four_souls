@@ -1,0 +1,15 @@
+{
+  "title": "Isaac, with 1 damage and his character spent, uses The Clicker and picks Samson: does The D6 leave, Blood Lust come, the damage stay, and the new character come in charged?",
+  "source": ["card the_clicker", "card samson", "card the_d6", "R-MECH-19", "Q-18", "R-ABIL-18", "R-ZONE-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_d6", "the_clicker"], "damage": 1, "deactivated": ["character"]}, {"character": "cain"}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "the_clicker", "choices": ["samson"]},
+  "expect": {
+    "allowed": true,
+    "discards": {"treasure": ["the_clicker"]},
+    "after": [{"player": 0, "items": ["blood_lust"], "damage": 1, "hp": 1, "deactivated": []}]
+  }
+}

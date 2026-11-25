@@ -1,0 +1,24 @@
+{
+  "title": "Isaac killed the Fly; as his turn ends Dice Room!!! puts itself into discard and Spider Webs comes in: may he still use the room step on Spider Webs, so Blessing Of Greed comes in?",
+  "source": ["card dice_room_3", "card spider_webs", "card blessing_of_greed", "card fly", "R-TURN-12", "R-TURN-17", "R-TURN-18", "R-TURN-03"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["dice_room_3"],
+    "decks": {"monster": ["clotty"], "room": ["spider_webs", "blessing_of_greed"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"]},
+    {"player": 0, "kind": "end_turn", "choices": ["spider_webs"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 1,
+    "monsters": [{"card": "blessing_of_greed"}, {"card": "dice_room_3", "dead": true}, {"card": "spider_webs", "dead": true}, {"slot": 1, "card": "clotty"}],
+    "discards": {"room": ["dice_room_3", "spider_webs"], "monster": ["fly"]},
+    "after": [{"player": 0, "cents": 1, "deactivated": []}, {"player": 1, "cents": 3}]
+  }
+}

@@ -340,6 +340,7 @@ On 2026-10-09 the owner parked every open decision for later.
    1. (a) Only triggers, ↷ abilities and statics are gained; the engine does this now.
    2. (b) Replacements are gained too; the levels go on the trinket.
 4. Status: **Owner** (2026-10-29): the owner has not decided. Test: `TestGainCentsReplacementGained`, skipped.
+   1. The engine's (a): `cards/r` file `golden_trinket/a-dime-levels-bum-bo-not-it.json`.
 5. Basis: **House**: no ruling found.
 
 ### Q-28 Two gained ↷ abilities on one item
@@ -352,7 +353,8 @@ On 2026-10-09 the owner parked every open decision for later.
 3. Options:
    1. (a) One ↷ per turn for the item; the engine does this now.
    2. (b) Each gained ability has its own tap.
-4. Status: **Owner** (2026-10-29): the owner has not decided. Test: `TestGoldOnBumFriendAndTechX`.
+4. Status: **Owner** (2026-10-29): the owner has not decided.
+   1. Test: `cards/r` file `golden_trinket/bum-friend-and-tech-x-share-its-one-tap.json`.
 5. Basis: **House**: no ruling found.
 
 ### Q-29 The first attack roll and a target's trigger
@@ -367,7 +369,9 @@ On 2026-10-09 the owner parked every open decision for later.
 3. Options:
    1. (a) The trigger resolves first; then the first roll; the engine does this now.
    2. (b) The die is thrown at once, under the trigger (before 19.151).
-4. Status: **Owner** (2026-11-10): (a). Tests: the b2 file `pride/resolves-before-the-first-roll-is-thrown.json` and three in `cards/r`.
+4. Status: **Owner** (2026-11-10): (a). Tests: the b2 file `pride/resolves-before-the-first-roll-is-thrown.json`.
+   1. In `cards/r`: `rag_mega/` and `dogma/` `its-discard-resolves-before-the-first-attack-roll.json`.
+   2. Also `angelic_intervention/cancels-an-attack-on-the-deck.json`.
 5. Basis: **Community**: S-RED and an S-YUG purchase ruling; no official one.
 
 ### Q-30 "Souls controlled by all players" in a challenge

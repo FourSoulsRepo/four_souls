@@ -1,0 +1,26 @@
+{
+  "title": "Room step: Isaac killed the Fly, so as his turn ends he puts Blessing Of Greed into discard; Dice Room!!!!! comes in and its \"enters play\" ability discards the monsters in his end phase: does Cain still gain 3¢?",
+  "source": ["card blessing_of_greed", "card dice_room_5", "card fly", "R-TURN-12", "R-TURN-17", "R-TURN-18", "R-SHOP-06", "R-DEATH-09"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["blessing_of_greed"],
+    "decks": {"monster": ["clotty", "dip", "pooter"], "room": ["dice_room_5"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}, {"slot": 1, "card": "clotty"}], "after": [{"player": 0, "cents": 1}]}},
+    {"player": 0, "kind": "end_turn", "choices": ["blessing_of_greed"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 1,
+    "resolved": ["dice_room_5"],
+    "monsters": [{"card": "dice_room_5"}, {"card": "blessing_of_greed", "dead": true}, {"card": "dip"}, {"card": "pooter"}],
+    "discards": {"room": ["blessing_of_greed"], "monster": ["fly", "clotty", "leech"]},
+    "after": [{"player": 0, "cents": 1}, {"player": 1, "cents": 0}]
+  }
+}

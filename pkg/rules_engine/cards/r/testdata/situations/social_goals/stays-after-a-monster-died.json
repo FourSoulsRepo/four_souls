@@ -1,0 +1,29 @@
+{
+  "title": "Social Goals with no goal done: Isaac kills the Fly with a 6 and ends his turn; is he asked to put the room into discard?",
+  "source": ["card social_goals", "card fly", "R-TURN-12"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["social_goals"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}, {"slot": 1, "card": "clotty"}]}},
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 1,
+    "monsters": [{"card": "social_goals"}],
+    "discards": {"room": []},
+    "counters": [
+      {"card": "social_goals", "name": "2. Kill 3 monsters.", "count": 1},
+      {"card": "social_goals", "name": "5. Roll a 6 three times.", "count": 1},
+      {"card": "social_goals", "name": "goals", "count": 0}
+    ]
+  }
+}

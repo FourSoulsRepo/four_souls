@@ -1,0 +1,26 @@
+{
+  "title": "Golden Trinket with gold counters on Bum Friend and Tech X: Isaac uses Bum Friend's ↷ from the Trinket; may he then use Tech X's ↷ from it the same turn?",
+  "source": ["card golden_trinket", "card bum_friend", "card tech_x", "R-ABIL-38", "R-ABIL-10", "R-ABIL-07", "R-ABIL-08", "Q-28"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["golden_trinket", "bum_friend", "tech_x"],
+       "counters": [{"card": "bum_friend", "name": "gold", "count": 1}, {"card": "tech_x", "name": "gold", "count": 1}]},
+      {"character": "cain", "cents": 5}
+    ],
+    "active": 0,
+    "decks": {"loot": ["three_cents"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "golden_trinket", "ability": 1, "choices": ["three_cents"],
+     "expect": {"allowed": true, "decks": {"loot": ["three_cents"]},
+       "after": [{"player": 0, "hand": 0, "deactivated": ["golden_trinket"], "counters": [{"card": "golden_trinket", "count": 0}]}]}},
+    {"player": 0, "kind": "activate", "card": "golden_trinket", "ability": 2,
+     "expect": {"allowed": false, "rule": "R-ABIL-07", "after": [{"player": 0, "counters": [{"card": "golden_trinket", "count": 0}]}]}},
+    {"player": 0, "kind": "activate", "card": "golden_trinket", "ability": 3,
+     "expect": {"allowed": false, "rule": "R-ABIL-07"}},
+    {"player": 0, "kind": "activate", "card": "golden_trinket", "ability": 4,
+     "expect": {"allowed": false, "rule": "R-ABIL-08"}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-07", "after": [{"player": 0, "deactivated": ["golden_trinket"]}, {"player": 1, "cents": 5, "dead": false}]}
+}

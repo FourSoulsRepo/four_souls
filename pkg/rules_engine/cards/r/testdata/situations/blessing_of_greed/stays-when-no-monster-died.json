@@ -1,0 +1,21 @@
+{
+  "title": "Room step: no monster died on Isaac's turn; is he asked to put Blessing Of Greed into discard, or does it stay and give Cain 3¢?",
+  "source": ["card blessing_of_greed", "R-TURN-12", "R-TURN-03"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["blessing_of_greed"]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 1,
+    "monsters": [{"card": "blessing_of_greed"}, {"slot": 1, "card": "fly"}, {"slot": 2, "card": "leech"}],
+    "discards": {"room": []},
+    "after": [{"player": 1, "cents": 3}]
+  }
+}

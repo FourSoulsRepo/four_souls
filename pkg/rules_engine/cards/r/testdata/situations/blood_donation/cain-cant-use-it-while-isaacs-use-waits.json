@@ -1,0 +1,19 @@
+{
+  "title": "Isaac used Blood Donation and passed with it on the stack: Cain holds priority; may he use the room too?",
+  "source": ["card blood_donation", "R-CARD-33", "R-CARD-36", "R-PRIO-03"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "damage": 1}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["blood_donation"],
+    "stack": [{"kind": "activate", "card": "blood_donation", "owner": 0}],
+    "priority": 1
+  },
+  "steps": [
+    {"player": 1, "kind": "activate", "card": "blood_donation",
+     "expect": {"allowed": false, "rule": "R-CARD-33", "after": [{"player": 1, "cents": 0, "damage": 0}]}},
+    {"player": 1, "kind": "pass"}
+  ],
+  "expect": {"allowed": false, "rule": "R-CARD-33", "resolved": ["blood_donation"], "after": [{"player": 0, "cents": 3, "damage": 1}, {"player": 1, "cents": 0, "damage": 0}]}
+}

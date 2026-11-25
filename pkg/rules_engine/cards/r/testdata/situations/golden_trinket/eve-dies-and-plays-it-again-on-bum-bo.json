@@ -1,0 +1,34 @@
+{
+  "title": "Eve's line: gold on Tech X; Eve dies and the penalty destroys Golden Trinket; on her next turn Hallowed Ground brings it back to her hand and she puts the new gold on Bum-Bo!: where are the gold counters?",
+  "source": ["card golden_trinket", "card tech_x", "card bum_bo", "card hallowed_ground", "card bomb", "R-MECH-12", "R-DEATH-14", "R-DEATH-16", "R-ZONE-06", "R-ABIL-19", "R-CARD-30"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "eve", "items": ["tech_x", "bum_bo", "hallowed_ground"], "hand": ["golden_trinket", "bomb"], "damage": 1,
+       "counters": [{"card": "hallowed_ground", "count": 3}]},
+      {"character": "isaac", "cents": 5}
+    ],
+    "active": 0,
+    "loot_plays": 2
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "golden_trinket", "choices": ["tech_x"],
+     "expect": {"allowed": true, "after": [{"player": 0, "counters": [{"card": "tech_x", "name": "gold", "count": 1}]}]}},
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["player 1 (eve)", "golden_trinket"],
+     "expect": {"allowed": true, "events": [{"kind": "died", "player": 0}], "active": 1,
+       "discards": {"loot": ["bomb", "golden_trinket"]},
+       "after": [{"player": 0, "items": ["tech_x", "bum_bo", "hallowed_ground"], "counters": [{"card": "tech_x", "name": "gold", "count": 1}]}]}},
+    {"player": 1, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 0, "after": [{"player": 0, "dead": false}]}},
+    {"player": 0, "kind": "activate", "card": "hallowed_ground", "ability": 1,
+     "expect": {"allowed": true, "discards": {"loot": ["bomb"]}, "after": [{"player": 0, "counters": [{"card": "hallowed_ground", "count": 0}]}]}},
+    {"player": 0, "kind": "play", "card": "golden_trinket", "choices": ["bum_bo"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "after": [{"player": 0, "items": ["tech_x", "bum_bo", "hallowed_ground", "golden_trinket"],
+      "counters": [
+        {"card": "bum_bo", "name": "gold", "count": 1}, {"card": "bum_bo", "count": 0},
+        {"card": "tech_x", "name": "gold", "count": 1}, {"card": "golden_trinket", "count": 0}]}]
+  }
+}
