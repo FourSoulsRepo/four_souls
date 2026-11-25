@@ -1,0 +1,27 @@
+{
+  "title": "Charmed Clotty at 1 HP: Isaac kills it and loots 1, then Cain, the player he chooses, loots 1",
+  "source": ["card charmed_clotty", "card clotty", "R-DEATH-06", "R-DEATH-07", "R-DEATH-09", "R-CARD-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["charmed_clotty", "fly"],
+    "monster_damage": {"charmed_clotty": 1},
+    "decks": {"monster": ["clotty"], "loot": ["a_penny", "a_dime"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["charmed_clotty", "player 2 (cain)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [
+      {"player": 0, "hand_cards": ["a_penny"]},
+      {"player": 1, "hand_cards": ["a_dime"]},
+      {"player": 2, "hand": 0}
+    ],
+    "monsters": [{"card": "charmed_clotty", "dead": true}, {"slot": 1, "card": "clotty"}],
+    "discards": {"monster": ["charmed_clotty"]}
+  }
+}

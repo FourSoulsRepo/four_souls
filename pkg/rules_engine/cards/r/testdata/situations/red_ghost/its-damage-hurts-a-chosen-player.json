@@ -1,0 +1,21 @@
+{
+  "title": "Red Ghost: Isaac's Bomb! deals it 1 damage; he chooses another player, Samson, who takes 1 damage",
+  "source": ["card red_ghost", "card bomb", "R-CARD-10"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["bomb"]}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["red_ghost"]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["red_ghost"],
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["player 2 (cain)", "player 3 (samson)"]}}},
+    {"kind": "choose", "choices": ["player 3 (samson)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "after": [{"player": 0, "damage": 0}, {"player": 1, "damage": 0}, {"player": 2, "damage": 1}],
+    "monsters": [{"slot": 1, "card": "red_ghost", "damage": 1}],
+    "discards": {"loot": ["bomb"]}
+  }
+}

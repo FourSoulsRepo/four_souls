@@ -1,0 +1,27 @@
+{
+  "title": "Charmed Bony at 1 HP: Isaac's roll of 6 deals 1 damage to Samson and kills it; Isaac gains 5¢, then Cain, the player he chooses, gains 5¢",
+  "source": ["card charmed_bony", "card clotty", "R-DEATH-06", "R-DEATH-07", "R-DEATH-09", "R-CARD-13"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["charmed_bony", "fly"],
+    "monster_damage": {"charmed_bony": 1},
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["charmed_bony", "player 3 (samson)", "player 2 (cain)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [
+      {"player": 0, "cents": 5, "damage": 0},
+      {"player": 1, "cents": 5, "damage": 0},
+      {"player": 2, "cents": 0, "damage": 1}
+    ],
+    "monsters": [{"card": "charmed_bony", "dead": true}, {"slot": 1, "card": "clotty"}, {"slot": 2, "card": "fly"}],
+    "discards": {"monster": ["charmed_bony"]}
+  }
+}

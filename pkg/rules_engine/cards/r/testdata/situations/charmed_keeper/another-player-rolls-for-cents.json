@@ -1,0 +1,23 @@
+{
+  "title": "Charmed Keeper at 1 HP: Isaac kills it, his reward roll of 2 gives 2¢; Cain, the player he chooses, rolls 4 and gains 4¢",
+  "source": ["card charmed_keeper", "card clotty", "R-DEATH-06", "R-DEATH-07", "R-DEATH-09", "R-ABIL-24"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["charmed_keeper", "fly"],
+    "monster_damage": {"charmed_keeper": 1},
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6, 2, 4]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["charmed_keeper", "player 2 (cain)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 2, 4],
+    "after": [{"player": 0, "cents": 2}, {"player": 1, "cents": 4}, {"player": 2, "cents": 0}],
+    "monsters": [{"card": "charmed_keeper", "dead": true}, {"slot": 1, "card": "clotty"}],
+    "discards": {"monster": ["charmed_keeper"]}
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "title": "Charmed Monstro at 1 HP: Isaac kills it and gains 2 treasures; its soul goes to Samson, the player he chooses",
+  "source": ["card charmed_monstro", "card clotty", "R-DEATH-06", "R-DEATH-08", "R-DEATH-09", "R-CARD-02", "R-ABIL-29"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["charmed_monstro", "fly"],
+    "monster_damage": {"charmed_monstro": 3},
+    "decks": {"monster": ["clotty"], "treasure": ["book_of_sin", "the_d6"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["charmed_monstro", "player 3 (samson)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [
+      {"player": 0, "souls": 0, "items": ["book_of_sin", "the_d6"]},
+      {"player": 1, "souls": 0, "items": []},
+      {"player": 2, "souls": 1, "soul_cards": ["charmed_monstro"], "items": []}
+    ],
+    "monsters": [{"card": "charmed_monstro", "dead": true}, {"slot": 1, "card": "clotty"}],
+    "discards": {"monster": []}
+  }
+}

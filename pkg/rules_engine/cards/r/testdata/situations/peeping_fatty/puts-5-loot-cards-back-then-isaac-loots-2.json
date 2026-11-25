@@ -1,0 +1,23 @@
+{
+  "title": "Peeping Fatty at 1 HP: Isaac kills it, puts the loot deck's top 5 back with Bomb! and A Sack on top, then loots those 2",
+  "source": ["card peeping_fatty", "card clotty", "R-DEATH-05", "R-DEATH-06", "R-DEATH-09", "R-CARD-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["peeping_fatty", "fly"],
+    "monster_damage": {"peeping_fatty": 2},
+    "decks": {"monster": ["clotty"], "loot": ["a_sack", "butter_bean", "dice_shard", "a_nickel", "bomb"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["peeping_fatty", "bomb", "a_sack", "a_nickel", "dice_shard", "butter_bean"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [{"player": 0, "hand_cards": ["bomb", "a_sack"]}],
+    "decks": {"loot": ["a_nickel", "dice_shard", "butter_bean"]},
+    "monsters": [{"card": "peeping_fatty", "dead": true}, {"slot": 1, "card": "clotty"}]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "title": "Holy Psy Horf in a slot: Isaac ends his turn; does he loot 1, and Cain only his loot step's card?",
+  "source": ["card holy_psy_horf", "R-TURN-04", "R-TURN-10", "R-CARD-10"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["holy_psy_horf", "fly"],
+    "decks": {"loot": ["a_penny", "a_dime"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 1,
+    "after": [{"player": 0, "hand_cards": ["a_penny"]}, {"player": 1, "hand_cards": ["a_dime"]}, {"player": 2, "hand": 0}]
+  }
+}

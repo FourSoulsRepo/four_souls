@@ -137,19 +137,6 @@ func hurt(tb *enginetest.Table, i, n int) {
 	tb.G.Object(id).Damage = tb.G.Def(id).HP - n
 }
 
-// charmedGift kills the charmed monster (1 HP left) and gives its gift
-
-// to Cain, with extra answers before that.
-
-func charmedGift(t *testing.T, card engine.CardRef, extra ...string) *enginetest.Table {
-	t.Helper()
-	tb := fight(t, card)
-	hurt(tb, 0, 1)
-	tb.G.ForceRolls(6)
-	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentAttack}, append(append([]string{string(card)}, extra...), foe)...)
-	return tb
-}
-
 // giveCurse puts a curse card in play under player p.
 func giveCurse(tb *enginetest.Table, p int, curse engine.CardRef) {
 	tb.T.Helper()

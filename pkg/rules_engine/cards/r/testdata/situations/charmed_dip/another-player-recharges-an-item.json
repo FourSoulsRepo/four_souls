@@ -1,0 +1,22 @@
+{
+  "title": "Charmed Dip: Isaac kills it and gains 2¢, then Cain, the player he chooses, recharges his Jawbone",
+  "source": ["card charmed_dip", "card clotty", "R-DEATH-06", "R-DEATH-07", "R-DEATH-09", "R-MECH-22"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "items": ["jawbone"], "deactivated": ["jawbone"]}],
+    "active": 0,
+    "monsters": ["charmed_dip"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["charmed_dip", "player 2 (cain)", "jawbone"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [{"player": 0, "cents": 2}, {"player": 1, "cents": 0, "items": ["jawbone"], "deactivated": []}],
+    "monsters": [{"card": "charmed_dip", "dead": true}, {"slot": 1, "card": "clotty"}],
+    "discards": {"monster": ["charmed_dip"]}
+  }
+}

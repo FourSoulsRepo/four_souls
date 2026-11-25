@@ -1,0 +1,23 @@
+{
+  "title": "Holy Greedling at 1 HP dies, Holy Dinga is next on the monster deck: does Dinga heal Isaac on Greedling's reward roll of 6?",
+  "source": ["card holy_greedling", "card holy_dinga", "R-DEATH-05", "R-DEATH-06", "R-DEATH-09", "R-SHOP-07", "R-ABIL-02"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "damage": 1}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["holy_greedling", "fly"],
+    "monster_damage": {"holy_greedling": 1},
+    "decks": {"monster": ["holy_dinga"]},
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["holy_greedling", "ask.yes"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6],
+    "after": [{"player": 0, "damage": 1, "cents": 9}],
+    "monsters": [{"card": "holy_greedling", "dead": true}, {"slot": 1, "card": "holy_dinga"}, {"slot": 2, "card": "fly"}],
+    "discards": {"monster": ["holy_greedling"]}
+  }
+}

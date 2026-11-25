@@ -1,0 +1,25 @@
+{
+  "title": "Mushroom: Isaac misses with a 1 and takes its 1 combat damage, so Cain and Samson take 1 each; three 6s kill it",
+  "source": ["card mushroom", "card clotty", "R-ATK-12", "R-ATK-13", "R-DEATH-06", "R-DEATH-09"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["mushroom", "fly"],
+    "decks": {"monster": ["clotty"], "loot": ["a_penny"]},
+    "rolls": [1, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["mushroom"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 6, 6, 6],
+    "after": [
+      {"player": 0, "damage": 1, "hand_cards": ["a_penny"]},
+      {"player": 1, "damage": 1},
+      {"player": 2, "damage": 1}
+    ],
+    "monsters": [{"card": "mushroom", "dead": true}, {"slot": 1, "card": "clotty"}]
+  }
+}

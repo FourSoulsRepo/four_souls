@@ -1,0 +1,22 @@
+{
+  "title": "Corny: Isaac kills it for 4¢; 2 damage goes to a non-active player at random, and Cain is the only one, so he dies",
+  "source": ["card corny", "card clotty", "R-DEATH-05", "R-DEATH-06", "R-DEATH-09", "R-CARD-13"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["corny", "fly"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["corny"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [{"player": 0, "cents": 4, "damage": 0}, {"player": 1, "damage": 2, "dead": true}],
+    "events": [{"kind": "died", "player": 1}, {"kind": "died", "player": 0, "none": true}],
+    "monsters": [{"card": "corny", "dead": true}, {"slot": 1, "card": "clotty"}]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "title": "Null (3 HP): Isaac rolls five 6s; the 2nd and 4th deal no combat damage, so the 5th kills it",
+  "source": ["card null", "card clotty", "R-ATK-12", "R-ABIL-29", "R-DEATH-06", "R-DEATH-09"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["null", "fly"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6, 6, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["null"]},
+    {"kind": "throw", "expect": {"allowed": true, "monsters": [{"card": "null", "hp": 2}]}},
+    {"kind": "throw", "expect": {"allowed": true, "monsters": [{"card": "null", "hp": 2}]}},
+    {"kind": "throw", "expect": {"allowed": true, "monsters": [{"card": "null", "hp": 1}]}},
+    {"kind": "throw", "expect": {"allowed": true, "monsters": [{"card": "null", "hp": 1}]}},
+    {"kind": "throw"}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 6, 6, 6],
+    "after": [{"player": 0, "cents": 6, "damage": 0}],
+    "monsters": [{"card": "null", "dead": true}, {"slot": 1, "card": "clotty"}]
+  }
+}

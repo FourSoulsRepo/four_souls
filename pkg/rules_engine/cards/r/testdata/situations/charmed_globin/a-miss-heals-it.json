@@ -1,0 +1,26 @@
+{
+  "title": "Charmed Globin at 1 HP: Isaac misses with a 1, so it heals to 2 HP; two 6s kill it, he loots 3 and Cain loots 3",
+  "source": ["card charmed_globin", "card clotty", "R-ATK-12", "R-ATK-13", "R-MECH-40", "R-DEATH-06", "R-DEATH-07", "R-DEATH-09"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["charmed_globin", "fly"],
+    "monster_damage": {"charmed_globin": 3},
+    "decks": {"monster": ["clotty"]},
+    "rolls": [1, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["charmed_globin"]},
+    {"kind": "throw", "expect": {"allowed": true, "monsters": [{"card": "charmed_globin", "hp": 2}], "after": [{"player": 0, "damage": 1}]}},
+    {"kind": "throw", "expect": {"allowed": true, "monsters": [{"card": "charmed_globin", "hp": 1}]}},
+    {"kind": "throw", "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "monsters": [{"card": "charmed_globin", "dead": true}, {"slot": 1, "card": "clotty"}]}}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 6, 6],
+    "after": [{"player": 0, "hand": 3}, {"player": 1, "hand": 3}, {"player": 2, "hand": 0}],
+    "discards": {"monster": ["charmed_globin"]}
+  }
+}

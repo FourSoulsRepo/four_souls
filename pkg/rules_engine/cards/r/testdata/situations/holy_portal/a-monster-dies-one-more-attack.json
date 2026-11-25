@@ -1,0 +1,20 @@
+{
+  "title": "Holy Portal in a slot: Isaac kills the Fly with his one attack; may he attack once more this turn?",
+  "source": ["card holy_portal", "card fly", "card clotty", "R-TURN-07", "R-DEATH-09"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["holy_portal", "fly"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "attacks": 1, "after": [{"player": 0, "cents": 1}],
+       "monsters": [{"card": "fly", "dead": true}, {"slot": 2, "card": "clotty"}]}},
+    {"player": 0, "kind": "attack", "choices": ["clotty"],
+     "expect": {"allowed": true, "attacks": 1, "after": [{"player": 0, "cents": 5}], "monsters": [{"card": "clotty", "dead": true}]}}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [6, 6, 6]}
+}

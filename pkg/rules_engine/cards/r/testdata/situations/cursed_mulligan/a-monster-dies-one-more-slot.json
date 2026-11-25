@@ -1,0 +1,21 @@
+{
+  "title": "Cursed Mulligan in a slot: Isaac kills the Fly; monster slots expand by 1, and both empty slots refill",
+  "source": ["card cursed_mulligan", "card fly", "card clotty", "R-DEATH-05", "R-DEATH-09", "R-MECH-31", "R-SHOP-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["cursed_mulligan", "fly"],
+    "decks": {"monster": ["clotty", "clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [{"player": 0, "cents": 1}],
+    "monsters": [{"card": "fly", "dead": true}, {"slot": 1, "card": "cursed_mulligan"}, {"slot": 2, "card": "clotty"}, {"slot": 3, "card": "clotty"}]
+  }
+}

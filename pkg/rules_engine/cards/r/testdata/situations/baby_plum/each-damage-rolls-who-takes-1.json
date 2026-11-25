@@ -1,0 +1,26 @@
+{
+  "title": "Baby Plum at 3 HP: each hit makes Isaac roll; a 3 hurts Cain on his left, a 5 Samson on his right, a 1 Isaac; the third hit kills it",
+  "source": ["card baby_plum", "card clotty", "R-ATK-12", "R-ABIL-24", "R-DEATH-06", "R-DEATH-08", "R-DEATH-09", "R-TURN-01"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["baby_plum", "fly"],
+    "monster_damage": {"baby_plum": 1},
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6, 3, 6, 5, 6, 1, 1]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["baby_plum"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 3, 6, 5, 6, 1, 1],
+    "after": [
+      {"player": 0, "damage": 1, "cents": 1, "souls": 1, "soul_cards": ["baby_plum"]},
+      {"player": 1, "damage": 1},
+      {"player": 2, "damage": 1}
+    ],
+    "monsters": [{"card": "baby_plum", "dead": true}, {"slot": 1, "card": "clotty"}]
+  }
+}
