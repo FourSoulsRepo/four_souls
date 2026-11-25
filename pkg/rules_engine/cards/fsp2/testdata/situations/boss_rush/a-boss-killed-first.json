@@ -1,0 +1,22 @@
+{
+  "title": "Isaac kills Monstro with Chaos Card before his extra attack: must that attack go at Widow, the boss left?",
+  "source": ["card boss_rush", "card chaos_card", "R-ATK-03", "R-ZONE-11"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["chaos_card"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fatty", "fly"],
+    "decks": {"monster": ["spider", "monstro", "dip", "widow"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "boss_rush", "choices": ["ask.slot 1", "ask.slot 2"],
+     "expect": {"allowed": true, "monsters": [{"slot": 1, "card": "monstro"}, {"slot": 2, "card": "widow"}]}},
+    {"player": 0, "kind": "activate", "card": "chaos_card", "choices": ["Kill a player or monster.", "monstro"],
+     "expect": {"allowed": true, "monsters": [{"card": "monstro", "dead": true}, {"slot": 1, "card": "fatty"}], "attacks": 1}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": false, "rule": "R-ATK-03", "active": 0}},
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["widow"]}}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ATK-03"}
+}

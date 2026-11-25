@@ -1,0 +1,22 @@
+{
+  "title": "Trick or Treat, Hard: Isaac (4 HP) rolls 1 and 2 for Ghostly Trickery, then the Fly hits him once; how much damage does he take?",
+  "source": ["card trick_treat_normhardultra", "card fly", "card breakfast", "card dinner", "R-TRICK-07", "R-TRICK-13", "Q-46"],
+  "sets": ["b2", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "hard"},
+    "players": [{"character": "isaac", "items": ["breakfast", "dinner"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"monster": ["bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob"]},
+    "rolls": [1, 2, 1, 6, 1]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly", "mischievous_the_haunt_hard: Each time a monster dies, the active player rolls- 4-6: Remove a fear counter from a player."]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [2, 1, 1, 6, 1],
+    "monsters": [{"card": "fly", "dead": true}],
+    "after": [{"player": 0, "damage": 3, "hp": 1, "dead": false, "counters": [{"card": "player", "name": "fear", "count": 1}]}]
+  }
+}

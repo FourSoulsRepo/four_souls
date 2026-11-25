@@ -1,0 +1,26 @@
+{
+  "title": "Double Treasure! refills the Fly's slot: Isaac chooses Cain; each of them gains a treasure, Samson none",
+  "source": ["card double_treasure", "card fly", "card clotty", "R-CARD-02", "R-SHOP-08", "R-CARD-15"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["fly", "fly"],
+    "decks": {"monster": ["double_treasure", "clotty"], "treasure": ["book_of_sin", "book_of_sin"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly", "player 2 (cain)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [
+      {"player": 0, "cents": 1, "items": ["book_of_sin"]},
+      {"player": 1, "items": ["book_of_sin"]},
+      {"player": 2, "items": []}
+    ],
+    "monsters": [{"slot": 1, "card": "clotty"}, {"slot": 2, "card": "fly"}],
+    "discards": {"monster": ["fly", "double_treasure"]}
+  }
+}

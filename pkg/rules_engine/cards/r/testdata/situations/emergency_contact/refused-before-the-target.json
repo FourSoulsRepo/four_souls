@@ -1,0 +1,13 @@
+{
+  "title": "Isaac declared an attack and has not picked the target: may he play Emergency Contact, with no attack on a monster yet?",
+  "source": ["card emergency_contact", "R-ATK-02", "R-ATK-04", "R-ABIL-40"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["emergency_contact"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "declared": "attack"
+  },
+  "action": {"player": 0, "kind": "play", "card": "emergency_contact"},
+  "expect": {"allowed": false, "rule": "R-ABIL-40", "loot_plays": 1, "after": [{"player": 0, "hand_cards": ["emergency_contact"]}]}
+}

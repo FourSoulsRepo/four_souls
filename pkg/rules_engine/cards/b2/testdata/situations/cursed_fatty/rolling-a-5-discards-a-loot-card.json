@@ -1,0 +1,18 @@
+{
+  "title": "Cursed Fatty is in a slot; Isaac holds A Dime!! and rolls a 5 for Mystery Sack: must he discard a loot card?",
+  "source": ["R-ABIL-15", "card cursed_fatty", "card mystery_sack", "R-DICE-06", "R-MECH-25"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["mystery_sack"], "hand": ["a_dime"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["cursed_fatty"],
+    "rolls": [5]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢.", "a_dime"]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [5],
+    "discards": {"loot": ["a_dime"]},
+    "after": [{"player": 0, "hand": 0, "cents": 0}]
+  }
+}

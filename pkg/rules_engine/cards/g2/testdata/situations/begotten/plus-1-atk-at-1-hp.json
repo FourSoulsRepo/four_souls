@@ -1,0 +1,20 @@
+{
+  "title": "Isaac bombs Begotten (3 HP, 1 ATK) twice: is its ATK 1 at 3 and 2 HP, and 2 at 1 HP?",
+  "source": ["card begotten", "card bomb", "R-ABIL-04"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["bomb", "bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["begotten", "fly"],
+    "loot_plays": 2
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "bomb",
+     "expect": {"allowed": true, "prompt": {"player": 0}, "monsters": [{"slot": 1, "card": "begotten", "hp": 3, "atk": 1}]}},
+    {"kind": "choose", "choices": ["begotten"],
+     "expect": {"allowed": true, "monsters": [{"slot": 1, "card": "begotten", "hp": 2, "atk": 1}]}},
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["begotten"],
+     "expect": {"allowed": true, "monsters": [{"slot": 1, "card": "begotten", "hp": 1, "atk": 2}]}}
+  ],
+  "expect": {"allowed": true, "discards": {"loot": ["bomb", "bomb"]}}
+}

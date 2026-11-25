@@ -1,0 +1,17 @@
+{
+  "title": "Trick or Treat, Hard: the players hold 13 souls; how many trick counters does Mischievous The Haunt start with, and may Isaac attack it?",
+  "source": ["card mischievous_the_haunt_hard", "R-TRICK-03", "R-TRICK-04", "R-TRICK-06", "R-ATK-02"],
+  "sets": ["b2", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "hard"},
+    "players": [{"character": "isaac", "souls": ["fly", "fly", "fly", "fly", "fly", "fly", "fly", "fly", "fly", "fly", "fly", "fly", "fly"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "expect": {"allowed": true, "prompt": {"player": 0, "options": ["leech", "fly", "ask.deck.monster"]}, "counters": [{"card": "mischievous_the_haunt_hard", "name": "trick", "count": 14}]}}
+  ],
+  "expect": {
+    "allowed": true
+  }
+}

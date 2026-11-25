@@ -1,0 +1,23 @@
+{
+  "title": "Krampus challenge, Normal: two minions are in play; may Isaac end his turn before attacking, and where does his attack go?",
+  "source": ["card pilfering_krampus_norm", "R-KRAMPUS-13", "R-KRAMPUS-14", "R-KRAMPUS-12", "Q-31"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal"},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "minions": ["pooter", "dip"],
+    "rolls": [6, 6],
+    "random": ["dip"]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "expect": {"rule": "R-KRAMPUS-13", "active": 0, "attacks": 1}},
+    {"player": 0, "kind": "attack", "expect": {"allowed": true, "attacks": 0, "events": [{"kind": "random_pick", "player": 0}], "monsters": [{"card": "dip", "dead": true}, {"card": "pooter", "damage": 0}, {"slot": 1, "card": "leech"}, {"slot": 2, "card": "fly"}], "discards": {"monster": ["dip"]}, "after": [{"player": 0, "cents": 0, "souls": 0}]}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1, "presents": [{"kind": "soul", "counters": 2}]}}
+  ],
+  "expect": {
+    "rule": "R-KRAMPUS-13",
+    "resolved_rolls": [6, 6]
+  }
+}

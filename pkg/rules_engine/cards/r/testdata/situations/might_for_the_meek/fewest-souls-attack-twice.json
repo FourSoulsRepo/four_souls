@@ -1,0 +1,25 @@
+{
+  "title": "Might For The Meek: Isaac has no soul and Cain has one; Isaac has 2 ATK and attacks twice, killing the Fly and the Leech",
+  "source": ["card might_for_the_meek", "card fly", "card leech", "R-TURN-07", "R-ATK-12"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain", "souls": ["chub"]}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["might_for_the_meek"],
+    "decks": {"monster": ["clotty", "pooter"], "loot": ["a_penny"]},
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "expect": {"allowed": true, "prompt": {"player": 0}, "after": [{"player": 0, "atk": 2}, {"player": 1, "atk": 1}]}},
+    {"kind": "choose", "choices": ["fly"],
+     "expect": {"allowed": true, "attacks": 1, "resolved_rolls": [6], "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "cents": 1}]}},
+    {"player": 0, "kind": "attack", "choices": ["leech"],
+     "expect": {"allowed": true, "attacks": 0, "resolved_rolls": [6], "monsters": [{"card": "leech", "dead": true}], "after": [{"player": 0, "hand_cards": ["a_penny"]}]}},
+    {"player": 0, "kind": "attack", "expect": {"allowed": false, "rule": "R-TURN-07"}}
+  ],
+  "expect": {"allowed": false, "rule": "R-TURN-07"}
+}

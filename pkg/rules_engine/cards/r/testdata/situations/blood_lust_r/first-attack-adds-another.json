@@ -1,0 +1,23 @@
+{
+  "title": "Blood Lust: Cain's first attack of his turn kills the Fly; he must attack once more and can't end the turn",
+  "source": ["card blood_lust_r", "card fly", "R-ATK-03", "R-TURN-07", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["blood_lust_r"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1}},
+    {"player": 1, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "attacks": 1, "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 1, "cents": 1}]}},
+    {"player": 1, "kind": "end_turn", "expect": {"allowed": false, "rule": "R-ATK-03"}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ATK-03"}
+}

@@ -1,0 +1,22 @@
+{
+  "title": "Mama Gurdy at 1 HP: Isaac kills it, gains its soul, and his reward roll of 4 loots 4",
+  "source": ["card mama_gurdy", "card clotty", "R-ABIL-24", "R-DEATH-06", "R-DEATH-08", "R-DEATH-09"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["mama_gurdy", "fly"],
+    "monster_damage": {"mama_gurdy": 6},
+    "decks": {"monster": ["clotty"], "loot": ["a_penny", "a_dime", "a_nickel", "two_cents"]},
+    "rolls": [6, 4]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["mama_gurdy"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 4],
+    "after": [{"player": 0, "souls": 1, "soul_cards": ["mama_gurdy"], "hand_cards": ["a_penny", "a_dime", "a_nickel", "two_cents"]}],
+    "monsters": [{"card": "mama_gurdy", "dead": true}, {"slot": 1, "card": "clotty"}]
+  }
+}

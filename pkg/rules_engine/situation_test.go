@@ -186,6 +186,41 @@ func TestStackedAttackRoll(t *testing.T) {
 	}
 }
 
+// A stacked attack roll spends its attack as a declaration does
+// (24.29): with the turn's attack used, belt's bonus one ("You may
+// attack an additional time on your turn", like Champion Belt) is the
+// one spent (R-TURN-07), so none is left after it.
+func TestStackedAttackRollSpendsABonusAttack(t *testing.T) {
+	table := func(expect string) string {
+		return `{"sets": ["test", "abilities"],
+			"setup": {"players": [{"character": "hero_a", "items": ["belt"]}, {"character": "hero_b"}],
+				"active": 0, "monsters": ["dummy"], "attacks": 0,
+				"stack": [{"kind": "attack_roll", "dice_roll": 6, "card": "dummy", "owner": 0}]},
+			"steps": [{"player": 0, "kind": "pass", "expect": ` + expect + `}]}`
+	}
+	// One attack in all (belt's), spent by the roll: none left.
+	if got := runExpect(t, table(`{"allowed": true, "attacks": 0}`)); len(got) != 0 {
+		t.Errorf("mismatch %q; want none", got)
+	}
+	got := runExpect(t, table(`{"allowed": true, "attacks": 1}`))
+	if want := "step 1 (pass): attacks is 0, expected 1"; len(got) != 1 || got[0] != want {
+		t.Errorf("mismatch %q; want %q", got, want)
+	}
+}
+
+// With no attack left, not even a bonus one, a stacked attack roll is
+// an error: no attack can be declared (R-TURN-07).
+func TestStackedAttackRollNeedsAnAttack(t *testing.T) {
+	payload := `{"sets": ["test", "abilities"],
+		"setup": {"players": [{"character": "hero_a"}, {"character": "hero_b"}], "active": 0, "monsters": ["dummy"], "attacks": 0,
+			"stack": [{"kind": "attack_roll", "dice_roll": 6, "card": "dummy", "owner": 0}]},
+		"action": {"player": 0, "kind": "pass"}}`
+	_, err := RunSituation([]byte(payload), testSet, abilitySet)
+	if want := "situation: stack item 1: an attack roll needs an attack left (R-TURN-07), and attacks is 0"; err == nil || err.Error() != want {
+		t.Errorf("error %v; want %q", err, want)
+	}
+}
+
 func TestStackedErrors(t *testing.T) {
 	setup := func(stack string) string {
 		return `{"sets":["test","abilities"],"setup":{"players":[{"character":"hero_a","items":["coin_bag","allowance"]},

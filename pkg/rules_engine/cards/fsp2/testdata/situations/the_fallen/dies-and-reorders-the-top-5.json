@@ -1,0 +1,22 @@
+{
+  "title": "Isaac kills The Fallen; it lets him put the top 5 monster cards back Dip first: does the Dip refill its slot?",
+  "source": ["card the_fallen", "card isaac", "R-DEATH-05", "R-DEATH-09", "R-CARD-14"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["the_fallen", "fly"],
+    "decks": {"monster": ["fatty", "leech", "trite", "spider", "dip"], "treasure": ["breakfast"]},
+    "rolls": [6, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["the_fallen", "dip", "spider", "trite", "leech", "fatty"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 6, 6],
+    "monsters": [{"card": "the_fallen", "dead": true}, {"slot": 1, "card": "dip"}],
+    "decks": {"monster": ["spider", "trite", "leech", "fatty"]},
+    "after": [{"player": 0, "soul_cards": ["the_fallen"], "items": ["breakfast"]}]
+  }
+}

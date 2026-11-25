@@ -520,7 +520,9 @@ func mostSouls(g *engine.Game) []engine.PlayerID {
 
 // revealTwoBosses reveals monster cards till 2 bosses (monsters with a soul,
 // S-YUG); they go to monster slots not being attacked, the rest into
-// discard; the active player must attack once more.
+// discard; the active player must make one more attack, on one of them
+// (19.241). In one slot the top boss covers the other (R-ZONE-10), so
+// only the top one can be attacked.
 var revealTwoBosses = engine.EffectFunc(func(c *engine.Ctx) {
 	var bosses []engine.ObjectID
 	for len(bosses) < 2 {
@@ -551,11 +553,12 @@ var revealTwoBosses = engine.EffectFunc(func(c *engine.Ctx) {
 	}
 	c.Do(engine.Ask(func(c *engine.Ctx, a []int) {
 		slots := freeSlots(c.G)
+		var placed []engine.ObjectID
 		for i, id := range bosses {
 			if i < len(a) && a[i] >= 0 && a[i] < len(slots) {
-				c.G.PlaceFromDeck(id, slots[a[i]])
+				placed = append(placed, c.G.PlaceFromDeck(id, slots[a[i]]))
 			}
 		}
-		c.G.ForceAttacks(1, false)
+		c.G.ForceAttackOn(placed...) // "on one of them" (19.241)
 	}, qs...))
 })

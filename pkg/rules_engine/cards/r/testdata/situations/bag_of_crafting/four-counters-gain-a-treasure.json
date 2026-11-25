@@ -1,0 +1,27 @@
+{
+  "title": "The Hoarder discards 4 Bomb! cards to Bag Of Crafting, one counter each, then removes the 4 counters: does she gain a treasure?",
+  "source": ["card bag_of_crafting", "R-ABIL-11", "R-ABIL-07", "R-CARD-02"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "the_hoarder", "items": ["bag_of_crafting"], "hand": ["bomb", "bomb", "bomb", "bomb"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "decks": {"treasure": ["breakfast"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "bag_of_crafting", "choices": ["bomb"],
+     "expect": {"allowed": true, "after": [{"player": 0, "hand": 3, "counters": [{"card": "bag_of_crafting", "count": 1}]}]}},
+    {"player": 0, "kind": "activate", "card": "bag_of_crafting", "choices": ["bomb"]},
+    {"player": 0, "kind": "activate", "card": "bag_of_crafting", "choices": ["bomb"]},
+    {"player": 0, "kind": "activate", "card": "bag_of_crafting", "choices": ["bomb"],
+     "expect": {"allowed": true, "after": [{"player": 0, "hand": 0, "counters": [{"card": "bag_of_crafting", "count": 4}]}]}},
+    {"player": 0, "kind": "activate", "card": "bag_of_crafting", "ability": 1}
+  ],
+  "expect": {
+    "allowed": true,
+    "discards": {"loot": ["bomb", "bomb", "bomb", "bomb"]},
+    "after": [{"player": 0, "hand": 0, "items": ["bag_of_crafting", "breakfast"], "deactivated": [], "counters": [{"card": "bag_of_crafting", "count": 0}]}]
+  }
+}

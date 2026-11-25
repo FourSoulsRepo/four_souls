@@ -1,0 +1,17 @@
+{
+  "title": "Isaac kills Cain with XIII. Death, then plays Bomb!: may he choose dead Cain, or only himself and the monsters?",
+  "source": ["card xiii_death", "card bomb", "R-ABIL-35", "Q-07", "R-ABIL-04"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["xiii_death", "bomb"], "extra_loot_plays": 1}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "xiii_death", "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "after": [{"player": 1, "dead": true}]}},
+    {"player": 0, "kind": "play", "card": "bomb",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["fly", "leech", "player 1 (isaac)", "ask.cancel"]}}}
+  ],
+  "expect": {"allowed": true}
+}

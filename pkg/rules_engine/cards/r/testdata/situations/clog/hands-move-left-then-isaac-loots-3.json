@@ -1,0 +1,25 @@
+{
+  "title": "Clog at 1 HP: Isaac kills it; each player gives their hand to the left, then Isaac loots 3 and gains its soul",
+  "source": ["card clog", "card clotty", "R-DEATH-05", "R-DEATH-06", "R-DEATH-08", "R-DEATH-09", "R-TURN-01"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["bomb"]}, {"character": "cain", "hand": ["a_nickel"]}],
+    "active": 0,
+    "monsters": ["clog"],
+    "monster_damage": {"clog": 4},
+    "decks": {"monster": ["clotty"], "loot": ["a_penny", "a_dime", "two_cents"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["clog"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [
+      {"player": 0, "hand_cards": ["a_nickel", "a_penny", "a_dime", "two_cents"], "souls": 1, "soul_cards": ["clog"]},
+      {"player": 1, "hand_cards": ["bomb"]}
+    ],
+    "monsters": [{"card": "clog", "dead": true}, {"slot": 1, "card": "clotty"}]
+  }
+}

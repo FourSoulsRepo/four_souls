@@ -1,0 +1,18 @@
+{
+  "title": "Isaac has Game Breaking Bug! and rolls a 1 with Mystery Sack: may he reroll the Sack into the treasure deck's top card, and does he still loot 1?",
+  "source": ["card game_breaking_bug", "card mystery_sack", "R-MECH-48", "R-ABIL-03", "R-ABIL-15"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["game_breaking_bug", "mystery_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "decks": {"treasure": ["breakfast"], "loot": ["a_penny"]},
+    "rolls": [1]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢.", "mystery_sack"]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1],
+    "discards": {"treasure": ["mystery_sack"]},
+    "after": [{"player": 0, "items": ["game_breaking_bug", "breakfast"], "hand_cards": ["a_penny"]}]
+  }
+}

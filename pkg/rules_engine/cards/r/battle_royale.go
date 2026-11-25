@@ -27,7 +27,7 @@ var attackedPlayersGivePenaltyItem = engine.Ability{
 	}},
 	Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
 		if p, ok := c.G.AttackedPlayer(); ok {
-			c.G.GivePenaltyItem(p, c.G.Turn.Active)
+			c.G.GivePenaltyItem(p, c.G.Turn.Active, c.Source)
 		}
 	})},
 }

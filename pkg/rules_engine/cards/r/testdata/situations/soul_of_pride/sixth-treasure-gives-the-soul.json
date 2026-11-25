@@ -1,0 +1,24 @@
+{
+  "title": "Soul of Pride with 4 counters: Isaac buys two treasures; the 5th and 6th counters go on it, and with the 6th Isaac, the active player, gains it as a new object with no counters",
+  "source": ["card soul_of_pride", "R-CARD-23", "R-CARD-37", "R-SHOP-03", "R-SHOP-04", "R-CARD-22", "R-ZONE-01"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "cents": 20}, {"character": "cain"}],
+    "active": 0,
+    "purchases": 2,
+    "monsters": ["fly", "leech"],
+    "bonus_souls": ["soul_of_pride"],
+    "counters": [{"card": "soul_of_pride", "count": 4}],
+    "decks": {"treasure": ["book_of_sin", "the_d6"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "purchase", "choices": ["ask.deck.treasure"],
+     "expect": {"allowed": true, "counters": [{"card": "soul_of_pride", "count": 5}],
+       "after": [{"player": 0, "cents": 10, "souls": 0, "items": ["book_of_sin"]}]}},
+    {"player": 0, "kind": "purchase", "choices": ["ask.deck.treasure"],
+     "expect": {"allowed": true,
+       "after": [{"player": 0, "cents": 0, "souls": 1, "soul_cards": ["soul_of_pride"], "items": ["book_of_sin", "the_d6"],
+         "counters": [{"card": "soul_of_pride", "count": 0}]}, {"player": 1, "souls": 0}]}}
+  ],
+  "expect": {"allowed": true}
+}

@@ -2,4 +2,4 @@ package r
 
 import "testing"
 
-func TestTheHoarderCharacter(t *testing.T) { testCharacter(t, "the_hoarder", "bag_of_crafting") }
+func TestTheHoarderStartingItem(t *testing.T) { testStartingItem(t, "the_hoarder", "bag_of_crafting") }

@@ -1,0 +1,19 @@
+{
+  "title": "Planetarium: at the start of Cain's turn he chooses to gain a treasure",
+  "source": ["card planetarium", "R-TURN-03", "R-CARD-02", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["planetarium"],
+    "decks": {"treasure": ["book_of_sin"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "choices": ["ask.yes"]}
+  ],
+  "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "items": []}, {"player": 1, "items": ["book_of_sin"]}]}
+}

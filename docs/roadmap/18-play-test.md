@@ -902,6 +902,12 @@ Ideas: B-04, B-05, B-08.
       1. Damage taken shows on the character, not on the rule card.
       2. Not in the monster's attack line: it changes every damage, bombs too.
       3. Every other effect shows too, by the ADR's three levels.
+5. Owner decisions for 18.30–18.32 (2026-11-24)
+   1. Shields on a player show as effects (ADR 037 item 1.8).
+   2. This-turn effects keep their icons, own cards too (item 3.8).
+   3. The zoom list repeats no sum line (item 4.4).
+   4. 18.30–18.32 run one after another; the owner reviews once, after 18.32.
+   5. Each sub-step still commits; the main agent checks it before the next.
 
 ### [x] 18.29 Damage taken on the character card
 
@@ -972,7 +978,7 @@ Ideas: B-04, B-05, B-08.
    1. Owner marks 18.29 solved.
    2. The merged icon lines (18.31 task 3) stay in.
 
-### [ ] 18.30 Engine: every player effect in the view
+### [x] 18.30 Engine: every player effect in the view
 
 1. Goal: `PlayerView.Sources` holds every effect on a player (ADR 037 item 1).
 2. Tasks:
@@ -988,28 +994,75 @@ Ideas: B-04, B-05, B-08.
       1. Search all sets for "till end of turn" and "you can't" effects.
       2. List each; one that is a player effect becomes a stat part.
       3. Ask the owner before changing any rule code beyond that.
+      4. No owner stop in this run: list such cases in the result only.
    6. Effects on one object (Algiz's eternal) stay out (ADR 037 item 1.7).
    7. View size: sources only while an effect is on.
+   8. Shields on a player: stat `shield` or `shield_cap` (ADR 037 item 1.8).
+      1. One source per shield, from `Game.Shields`; lasts `turn`.
+      2. Lingering, markers, extra turn, compost: listed only (task 5).
 3. Done when:
    1. One Go view test per group A, B, C, with real cards.
       1. B: a "fewest souls" room on one player, not the other.
       2. C: Get Out of Jail after its card is discarded.
    2. Fuzz stays green; old records still replay.
    3. ADR 037 matches the code; wiki package notes updated.
+4. Result (2026-11-24)
+   1. `playerSources` loops over every stat but `notPlayerStats`.
+   2. New keys: `shop_price`, `loot_plays`, `attacks`, `purchases`, `loot_step`.
+      1. Also `lock_others`, `loot_double`, `death_ward`, `recharge_limit`, `hand_cap`.
+      2. Also `lock_turn`, `no_char_recharge`, `reveal_hand`, `choose_attack`.
+      3. Also `no_forced_loss`, `paid_discount`, `no_souls`, `penalty_item_to`.
+      4. Also `player_attack_dc`, `one_ability`, `one_loot`, `attack_tax`.
+      5. Shields: `shield` (no amount: the whole next damage), `shield_cap`.
+   3. Flag stats send amount 1 (`flagStats`).
+   4. `player_attack_dc`: only the newest effect, as `PlayerAttackDC` (R-MECH-06).
+   5. Shop price: one part per source (subject 0).
+   6. `GivePenaltyItem` takes the source: Lust for Blood, Battle Royale.
+   7. Out: `StatUsed`, `StatEternal`, monster stats.
+   8. Out, game-wide, no player: rewards doubled, 2–3 becomes 1, two dice.
+      1. A Lucky Penny!, Blessing of the Sack, Eternal D6, Cursed Lil Haunt.
+      2. Owner question: where they show (ADR 037 item 1.9).
+   9. Client: `protocol.ts` names the keys.
+      1. `tempSources` skips a stat without words; 18.31 adds them.
+   10. Tests: `cards/player_effects_view_test.go`, groups A, B, C, shields.
+       1. `TestEveryPlayerStatHasAKey`; Champion Belt test gets `attacks`.
+       2. Vitest: unknown keys make no icon line.
+   11. Docs: ADR 037 items 1.8.4, 1.9–1.11; wiki `Rules-engine.md`, `Client.md`.
+   12. Task 5, player effects not kept as stats (listed only):
+       1. Lingering: Black Heart (r), Lemon Mishap, Plan C (g2), Red Candle (fsp2), The Mirror (r).
+       2. Markers: Magic Marker (r), on a card's number, not a player.
+       3. Extra turn: XIX. The Sun (b2), `Game.ExtraTurn`.
+       4. Compost (b2): `Game.Compost`, the next loot of any player.
+       5. Next loot copied: Blank Card (b2), `Player.CopyNextLoot`.
+       6. Skip turns: Famine (b2), Haunted!, Overflow! (r); `Player.SkipTurns`.
+       7. Free shop item: Credit Card (g2), `Turn.FreeShopItem`.
+       8. Must attack: Monster Manual, Ambush!, Envy, Conquest (b2), Lust for Blood (r).
+          1. Also Portal (b2), Gaper, I Am Error (g2); `Turn.MustAttack`, `ForceAttacks`.
+       9. Extra attacks or loot plays this turn: counted in `attacks` and `loot_plays` left.
+          1. E.g. Holy Chest (fsp2), Box (b2); no source shown.
+       10. "Can't" texts on objects only (eternal, monsters); none on a player.
+   13. Gates: `make lint`, `make test`, `make frontend` (764 Vitest) pass.
+       1. `make e2e`: 638 passed, 22 skipped, first run.
+       2. `make fuzz-sets FUZZTIME=60s` passes.
+5. Owner notes (2026-11-24)
+   1. Owner marks 18.30 solved.
 
-### [ ] 18.31 Client: effect icons for every effect
+### [x] 18.31 Client: effect icons for every effect
 
 1. Goal: the character's icons show every effect from elsewhere (ADR 037 item 3).
 2. Tasks:
    1. `tempSources` becomes the icon list for groups B and C.
       1. Group A (card in the player's own area): no icon.
       2. Lasting B sources get icons too (owner change of V-41.4).
+      3. A this-turn effect keeps its icon, own cards too (ADR 037 item 3.8).
+      4. Shields get icons: "Prevents the next N damage (this turn)".
    2. Each stat key gets an effect text: `stats.effect.<key>`.
       1. E.g. "Can't gain souls", "Max hand size 2", "+5¢ to attack".
    3. One source's lines of one stat add up.
    4. An icon whose lines are one number stat shows the sum.
    5. Above 4 icons: the first 4 and a "+K" chip.
       1. The chip opens the character's zoom (18.32).
+      2. On hover, as an icon's zoom opens (ADR 037 item 3.9).
    6. Icons appear and leave as now (SB-12, SB-13; ADR 012).
    7. Words in `en.json` and every locale; `make i18n`.
    8. 5.26: every place that draws sources (stack, history, odds line).
@@ -1019,8 +1072,56 @@ Ideas: B-04, B-05, B-08.
    3. Screenshots: few icons, many icons, without images.
    4. UC-12, wiki `Client.md`, `Animations.md`.
    5. Gates: `make lint`, `make frontend e2e`.
+4. Result (2026-11-24)
+   1. `tempSources` is now `effectIcons(sources, own)` in `stats.ts`.
+   2. Own area: the character and the player's `in_play` objects.
+      1. `statsOf` in `PlayerArea.tsx` passes them as `own`.
+      2. Items, souls and curses; their lasting effects get no icon.
+      3. A monster passes none: icons for this turn only, as before.
+   3. Every stat key has words in `stats.effect.*`; 26 new lines.
+      1. Also `stats.on_your_turn`, `badge.more_effects`.
+      2. Loot plays, attacks, purchases, Trinity Shield: "on your turn".
+      3. Pity for the Poor: "May buy a shop item for 0¢".
+      4. Skeleton Key, Bum-Bo!: "May attack any number of times".
+   4. Shields: one line each, never summed (`merged` keeps them apart).
+   5. Icon number: the sum when all lines are one number stat.
+      1. Number stats: HP, ATK, DC, rolls, attacked DC, damage taken.
+      2. Also shop price, loot plays, attacks, purchases, loot step.
+      3. Also attack tax, and a $ discount shown as "−N".
+      4. None: flags, hand cap, attack DC, shields, 98+ attacks, free shop.
+   6. Layout: 3 icons down the edge, then a column to their left.
+      1. Four icons hit the ATK badge in one column.
+   7. Above 4: `shownIcons` keeps 4; `MoreIcons` draws "+K".
+      1. The chip has no zoom of its own: the card's zoom shows.
+   8. `StatSource.amount` is optional now: a whole shield sends none.
+   9. No new animation; `source-icon` row updated.
+   10. 5.26, every place that draws sources:
+       1. `Card.tsx`: character and monster icons, zoom sums.
+       2. `stack.ts`: roll rows (`rollChanges`), odds line (`oddsLine`).
+       3. `history.ts`: roll changes (`rollChanges`).
+       4. All read amounts through `amountOf`; none gets shields.
+   11. Tests: Vitest `stats` (grouping, sums, numbers, chip, every key).
+       1. e2e `effect-icons.spec.ts`: room, gone card, "+K" chip.
+       2. Room: Tax for the Mighty on the player with a soul only.
+       3. Gone card: Soul Heart's shield after the card is discarded.
+   12. Docs: UC-12 3k; wiki `Client.md`, `Animations.md`.
+       1. ADR 037 items 3.10–3.14 (drift).
+   13. Screenshots: `.cache/screenshots/18.31/before/` and `after/`.
+       1. Few: `effects-room`, `effects-gone-card`; many: `effects-many`.
+       2. Without images: `*-noimages.png`; `crop-*` close-ups.
+   14. For 18.32: the chip zooms the character; the list goes there.
+       1. `effect()` in `stats.ts` gives each line's words.
+   15. Gates: `make lint`, `make test`, `make frontend` (774 Vitest) pass.
+       1. `make e2e` run 1: 643 passed, 1 failed: `playback.spec.ts:1975`, chromium.
+          1. The 19.237 flake; passed alone, same seed.
+       2. Run 2: 643 passed, 1 failed: the new gone-card test, webkit.
+          1. It waited for an empty stack, true before the play; fixed (5.16.10).
+       3. Run 3: 644 passed, 22 skipped.
+       4. Evidence: `.cache/e2e-evidence/18.31-run1/`, `18.31-run2/`.
+5. Owner notes (2026-11-24)
+   1. Owner marks 18.31 solved.
 
-### [ ] 18.32 Client: "Effects on you" in the zoom
+### [x] 18.32 Client: "Effects on you" in the zoom
 
 1. Goal: the zoomed character lists every effect on its player (ADR 037 item 4).
 2. Tasks:
@@ -1030,8 +1131,360 @@ Ideas: B-04, B-05, B-08.
    4. A hidden source: "a hidden card".
    5. Own and opponents' characters alike.
    6. Words in `en.json` and every locale; `make i18n`.
+   7. No repeats: HP, ATK, rolls and damage taken stay in their sum lines.
+   8. Shields are in the list.
 3. Done when:
    1. Vitest: the order and the lines.
    2. e2e: the "+K" chip opens this list.
    3. Screenshots; UC-12; wiki `Client.md`.
    4. Gates: `make lint`, `make frontend e2e`.
+4. Result (2026-11-24)
+   1. `effectList` and `shownEffects` in `stats.ts`; `Effects` in `CardZoom.tsx`.
+   2. Layout: beside the card, above the keyword notes (`card-zoom-notes`).
+      1. Not under the sums: the zoom already filled a 720 px window.
+      2. ADR 037 items 4.5–4.7 (drift).
+   3. Title: "Effects on you"; another player's (or a watched one): "Effects on Kai".
+      1. `statsOf` in `PlayerArea.tsx` passes it as `effectsOn`.
+   4. Order: "This turn", then "While in play"; each in the server's order.
+   5. Line: "−5¢ to shop prices — Steamy Sale!" (`stats.effect_from`).
+      1. A hidden source: "a hidden card".
+   6. Left out: HP, ATK, DC, rolls, attack rolls, attacked DC, damage taken.
+   7. Shields in it, one line each; one source's parts add up (`merged`).
+   8. Limit: 8 lines, this turn first, then "K more effects".
+      1. Eight two-row lines stand no taller than the card at 720 px.
+   9. Words: `stats.effect_from`, `zoom.effects_you`, `zoom.effects_on`.
+      1. Also `zoom.effects_turn`, `zoom.effects_lasting`, `zoom.effects_more`.
+   10. No new animation; it comes and goes with the zoom.
+   11. 5.26: every zoom of a character.
+       1. Own area, opponents, a watched player: all through `statsOf`.
+       2. Hover, right click and long press: all three set `Zoom.effects`.
+       3. Monsters and other cards pass no `effectsOn`: no list.
+   12. Tests: Vitest `effectList`, `shownEffects` (order, groups, repeats, shields, hidden).
+       1. e2e `effect-icons.spec.ts`: the chip's zoom lists this turn's effects.
+       2. New: Steamy Sale! in the own area, no icon, listed for both players.
+   13. Docs: UC-12 3l; wiki `Client.md`.
+   14. Screenshots: `.cache/screenshots/18.32/before/` and `after/`.
+       1. Few: `effects-own-zoom`, `effects-opponent-zoom`; many: `effects-chip-zoom`.
+       2. Full list cut at 8: `effects-chip-zoom-full` (temporary test change).
+       3. Without images: `*-noimages.png`.
+   15. Gates: `make lint`, `make test`, `make frontend` (781 Vitest) pass.
+       1. `make e2e`: 646 passed, 22 skipped, first run.
+5. Owner notes (2026-11-24)
+   1. Owner marks 18.32 solved.
+
+### [x] 18.33 ADR 037: show only what the table hides
+
+1. Goal: ADR 037 follows the owner's review of 18.29–18.32.
+2. Owner review (2026-11-24)
+   1. A card on the table already shows its effect; don't repeat it.
+      1. E.g. Curse of Tiny Hands: no "max hand size 2" on the character.
+      2. A room's ATK change shows in the badge and the zoom sum line.
+   2. Show only hidden effects, e.g. a played Soul Heart.
+   3. All shields in one icon.
+   4. "Must attack": the attack button red, its tooltip names the target.
+   5. Red Candle: a die on its card.
+   6. Other game-wide effects: on the character card.
+   7. The "+K" chip gets its own shape.
+   8. Credit Card: price 0 already shows; nothing more.
+3. Result (2026-11-24, main conversation)
+   1. ADR 037: Context 8; Decision 1.9.4, 3, 3.1–3.2, 3.10, 3.15–3.18, 4.1, 7–9.
+   2. Consequences Positive 2 fixed.
+   3. 18.34–18.37 plan the work; one owner review after 18.37.
+
+### [x] 18.34 Client: icons only for hidden effects
+
+1. Goal: no icon or list line for an effect whose card lies on the table (ADR 037 items 3, 4.1).
+2. Tasks:
+   1. `effectIcons`: a lasting (`in_play`) source never gets an icon.
+      1. Own area, rooms, monsters, others' items alike (item 3.1).
+      2. The `own` set from 18.31 goes away if nothing else needs it.
+   2. This-turn and next-roll effects and shields keep icons.
+   3. The zoom's "Effects on you" holds the same effects (item 4.1).
+      1. Its "While in play" part goes away if nothing is left in it.
+   4. The badges and their zoom sum lines stay as they are.
+   5. One icon for all of a player's shields (item 3.15).
+      1. Its number: how many shields.
+      2. Hover: each shield, in the order they block (oldest first).
+      3. Whole-damage and cap shields read as such.
+   6. The "+K" chip: a pill "⋯ K", no card art (item 3.16).
+   7. 5.26: monsters' icons, the zoom, e2e helpers that count icons.
+3. Done when:
+   1. Vitest: a lasting room or own-area effect gives no icon and no line.
+   2. Vitest: three shields give one icon "3", three lines in order.
+   3. e2e `effect-icons.spec.ts` follows the new rule.
+      1. The room test now checks no icon; the badge sum names the room.
+      2. Steamy Sale: no icon, no line.
+   4. Screenshots before and after; also without images.
+   5. UC-12, wiki `Client.md`; gates `make lint`, `make test`, `make frontend`, `make e2e`.
+4. Result (2026-11-24)
+   1. `effectIcons(sources, name)`: an `in_play` source never gets an icon.
+      1. The `own` list is gone from `statsOf` and `Card`'s `stats`.
+   2. Shields: one icon, key `shields`; number: how many, even 1.
+      1. Name `stats.shields` ("3 shields"); lines name each card.
+      2. Lines in the server's order, the blocking order (`shieldViews`).
+      3. Art and zoom: the first shield with a known card.
+   3. `effectList`: `turn` only; `lasting` and "While in play" removed.
+      1. With nothing hidden, the zoom shows no list.
+   4. Chip: `chipText` "⋯ K", a dark pill (`card-sources-more`).
+   5. Removed: `stats.on_your_turn`, `zoom.effects_lasting`, `yourTurn`.
+   6. Zoom sum lines keyed by index: two equal shield lines (`CardZoom.tsx`).
+   7. Badges and sum lines unchanged.
+   8. 5.26: every place that draws effect icons or the list:
+      1. `Card.tsx`: characters and monsters share `effectIcons`.
+      2. `CardZoom.tsx`: `Effects` and the sum lines.
+      3. `PlayerArea.tsx`: `statsOf` for own, opponents, watched.
+      4. `stack.ts`, `history.ts`: roll changes only; unchanged.
+      5. e2e: `effect-icons.spec.ts`, `stats.spec.ts`; no other counts icons.
+   9. Tests: Vitest `stats` (lasting, three shields, chip, list).
+      1. e2e room: Might for the Meek; no icon, ATK sum names it.
+      2. e2e new: three shields, one icon "3", zoom lines in order.
+      3. e2e Steamy Sale!: no icon, no list.
+   10. Docs: UC-12 3h, 3k, 3l, new 3m; wiki `Client.md`, `Animations.md`.
+       1. ADR 037 items 3.19, 4.8 (drift).
+   11. Screenshots: `.cache/screenshots/18.34/before/` and `after/`.
+       1. New: `effects-shields`, `effects-shields-zoom`; `*-noimages.png`.
+       2. Close-ups: `crop-effects-many`, `crop-effects-shields`.
+   12. Gates: `make lint`, `make test`, `make frontend` (783 Vitest) pass.
+       1. `make e2e` run 1: 642 passed, 6 failed, chromium, one 5 min stall.
+          1. hand, hover, info specs; saves and joins timed out.
+          2. Evidence: `.cache/e2e-evidence/18.34-run1/`.
+       2. Run 2: 646 passed, 2 failed: `playback.spec.ts:1975`, both browsers.
+          1. The 19.237 flake, seed 114790418; passed alone after.
+          2. Evidence: `.cache/e2e-evidence/18.34-run2/`.
+       3. Run 3: 648 passed, 22 skipped.
+5. Owner notes (2026-11-24)
+   1. Owner marks 18.34 solved.
+
+### [x] 18.35 Client: "must attack" on the attack button
+
+1. Goal: a player who owes an attack sees it on their attack button (ADR 037 item 7).
+2. Where it is today:
+   1. `TurnActions.tsx`: attack and buy icon buttons by the own name.
+   2. `mustTargets(view)` in `prompt.ts`: the monsters to attack; red border.
+   3. Cards: Monster Manual, Ambush!, Envy, Conquest (b2); Lust for Blood (r).
+      1. Also Portal (b2), Gaper and I Am Error (g2) (18.30 task 5 list).
+3. Tasks:
+   1. The attack button turns red while an attack is owed.
+   2. Its tooltip names the target: a monster's name, a player, or "the monster deck".
+   3. Check the view says enough for each card; if not, the engine adds it.
+   4. The monster's red border stays.
+   5. Words in `en.json`; `make i18n`.
+4. Done when:
+   1. Vitest for the tooltip text per target kind.
+   2. e2e: a forced attack (saved game) shows the red button and its tooltip.
+   3. Screenshots; UC for attacks if its text changes; wiki `Client.md`.
+   4. Gates as 18.34.
+5. Result (2026-11-24)
+   1. `TurnActions`: prop `must`; the attack icon gets class `must`, red.
+      1. Red lit or dim, pressed too; the monster's dashed frame stays.
+      2. Tooltip: "Attack (A) · You must attack: Fatty".
+   2. One source: `mustAttackTip` in `prompt.ts` is `mustAttackLine` on own turn.
+      1. `forcedAttack` gains `random`; `mustTargets` unchanged.
+      2. None while the attack is open, nor on others' turns.
+   3. Engine: view field `random_attack` (Pilfering Krampus, Q-31).
+      1. From `randomAttackDue` of the active player; `omitempty`.
+      2. Go test in `pilfering_krampus_norm_test.go`.
+      3. New key `banner.random_minion`: "a random minion".
+   4. Cards checked (5.24, 5.26); card_db and engine searched:
+      1. A monster: Monster Manual (b2); Krampus (fsp2); The Harbingers, Friendly Ball (r).
+      2. A player: Lust for Blood! (r), via its character.
+      3. The monster deck: Ambush! (b2); Gaper, I Am Error! (g2); Blind Rage (r).
+      4. Any target, the count: Portal, Envy, Conquest (b2); Boss Rush! (fsp2).
+         1. Also Curse of Blood Lust (fsp2); Blood Lust, Gutted Fatty, Challenge Room (r).
+      5. A random minion: Pilfering Krampus (Normal); the view lacked it, now sent.
+      6. Boss Rush! "on one of them" is not enforced by the engine; left as is.
+      7. Pilfering Krampus (comp) is a TODO card; nothing to show.
+   5. Tests: Vitest `mustAttackTip` per target kind (prompt.test.ts).
+      1. e2e `must-attack.spec.ts`: Monster Manual on Fatty; Ambush! from the deck.
+   6. Docs: UC-46 3d, 3e; wiki `Client.md`, `Rules-engine.md`; ADR 037 items 7.4, 7.5.
+   7. Screenshots: `.cache/screenshots/18.35/before/` and `after/`.
+      1. `must-attack-monster`, `-deck`; new `-manual`, `-ambush`, `-none`; `*-noimages.png`.
+      2. Close-ups: `crop-must-attack-monster*`.
+   8. Gates: `make lint`, `make test`, `make frontend` (784 Vitest) pass.
+      1. `make e2e` run 1: 652 passed, 22 skipped.
+6. Owner notes (2026-11-24)
+   1. Owner marks 18.35 solved.
+
+### [x] 18.36 Engine: hidden effects that are not stats
+
+1. Goal: the view sends the hidden effects of ADR 037 items 3.17, 3.18 and 8.
+2. Tasks:
+   1. On a player, as `Sources` entries with a source card:
+      1. `skip_turn`: Famine, Haunted!, Overflow! (`Player.SkipTurns`); amount: turns.
+      2. `extra_turn`: XIX. The Sun (`Game.ExtraTurn`).
+      3. `copy_next_loot`: Blank Card (`Player.CopyNextLoot`).
+      4. `lingering`: Black Heart's "when that player dies" (`Game.Lingering`).
+   2. Game-wide, on the user's character (item 3.18):
+      1. `double_rewards`: A Lucky Penny! (a boost), not Blessing of the Sack (a room).
+      2. `roll_to_one`: Eternal D6 once used.
+      3. `compost`: Compost (`Game.Compost`).
+      4. `lingering`: Lemon Mishap, Plan C.
+      5. The user: the controller of the card or ability that made it.
+   3. Cursed Lil Haunt and Blessing of the Sack lie on the table: nothing sent.
+   4. Red Candle: its chosen number in the view of that item (item 8).
+   5. Where state has no source, add one (as 18.30 did for Lust for Blood).
+   6. Saves stay readable: new fields `omitempty` (ADR 019).
+3. Done when:
+   1. One Go view test per effect with real cards; texts named (5.25).
+   2. Fuzz green; old records replay.
+   3. ADR 037 matches the code; wiki `Rules-engine.md`.
+   4. Gates as 18.34.
+4. Result (2026-11-24)
+   1. `hiddenViews` in `view.go`, after the shields in `playerSources`.
+   2. On a player:
+      1. `skip_turn`: Famine, Haunted!, Overflow!; amount: turns; `next_turn`.
+      2. `extra_turn`: XIX. The Sun; on the active player; `turn`.
+      3. `copy_next_loot`: Blank Card; `turn`.
+      4. `lingering`: Black Heart (the chosen player), The Mirror (its payer); `turn`.
+   3. Game-wide, `everyone: true`, on the player who made it:
+      1. `double_rewards`: A Lucky Penny!; `roll_to_one`: Eternal D6; `turn`.
+      2. `compost`: Compost; `next_loot` (till a player loots).
+      3. `lingering`: Lemon Mishap, Plan C; `turn`.
+      4. `many_dice`: Mutant Spider (5.24); amount 4; `next_roll`.
+      5. The user: the source's controller (`madeBy`); a gone card keeps it.
+   4. New `lasts`: `next_turn`, `next_loot` (ADR 037 item 1.13).
+   5. Sources the engine lacked, all `omitempty`:
+      1. `Player.SkipSources` (`Game.SkipNextTurn`), `Player.CopySource`.
+      2. `Game.ExtraTurnSource`, `Game.CompostSource`, `ManyDice.Source`.
+      3. An older state's skip shows with no card.
+   6. `Ability.ShownOn` says whom a lingering ability shows on.
+      1. `ShownOnController`, `ShownForEveryone`; Black Heart its own.
+      2. `TestEveryLingeringIsShown`: Red Candle, Poker Chip are not.
+   7. Red Candle: already sent as its card's `dice` (15.67); nothing new.
+   8. Client: `protocol.ts` keys, `lasts` values, `everyone`.
+      1. `viewFields.test.ts`: `everyone` unread till 18.37.
+      2. No words yet: the client draws no icon for the new keys.
+      3. `stats.test.ts`: the "words for every stat" check skips them till 18.37.
+   9. Cards checked (5.24), card_db texts of every set:
+      1. Covered: the cards in items 2 and 3.
+      2. On the table, nothing sent: Blessing of the Sack, Cursed Lil Haunt.
+      3. Already stats: Two of Clubs, Holy Card, Holy Mantle.
+         1. Also Parabite, Polycephalus, Round Worm (next attack roll).
+      4. On their card: Lemegeton (a counter), Red Candle (`dice`).
+      5. On a monster: Dinga's doubled rewards; it gives them at once.
+      6. Room end-of-turn texts on the table: Dice Rooms, Greed Looms, Red Vise.
+         1. Also Spider Webs, Bum-Bo Is Loose!, Holy Portal, Challenge Room.
+      7. Poker Chip: its lingering goes on the stack at once.
+      8. Open: Sibling Rivalry's chosen player (`Turn.NextHelpers`) is not sent.
+         1. A "next attack" effect, not one of this step's kinds.
+   10. Helpers checked: `Linger`, `PushLingering`, `SkipNextTurn`, `sunEffect`.
+       1. Also `RerollWithDice` and the two-dice push: bound to a roll at once.
+   11. Tests: `cards/hidden_effects_view_test.go`, one per effect, texts named.
+   12. Docs: ADR 037 items 1.12, 1.13, 8.2; wiki `Rules-engine.md`.
+   13. Gates: `make lint`, `make test`, `make frontend` (784 Vitest) pass.
+       1. `make e2e` run 1: 652 passed, 22 skipped.
+   14. Records: no effect on playing or watching (ADR 031 plays views).
+       1. Only `engine.Replay` (tests) checks old checksums; none differ today.
+       2. A record kept from before could differ at a 100th-step state check.
+5. Owner notes (2026-11-24)
+   1. Owner marks 18.36 solved.
+
+### [x] 18.37 Client: icons for the new hidden effects; Red Candle's die
+
+1. Goal: 18.36's effects show as icons; Red Candle shows its die (ADR 037 items 3.17, 3.18, 8).
+2. Tasks:
+   1. A `stats.effect.<key>` text for each new key.
+      1. A game-wide one says it is for every player.
+      2. E.g. "Rewards are doubled for every player this turn".
+   2. They follow 18.34's rules: icons, the zoom list, the chip.
+   3. Red Candle: a `Die` with the chosen number on its card, till end of turn.
+      1. As kept dice show on a card (`DieBadges`); the chooser's dice look.
+      2. Without images: the plain die.
+   4. Words in `en.json`; `make i18n`.
+3. Done when:
+   1. Vitest for the texts.
+   2. e2e: Blank Card used shows its icon; Red Candle shows its die (saved games).
+   3. Screenshots; also without images; UC-12; wiki `Client.md`.
+   4. Gates as 18.34.
+4. Result (2026-11-24)
+   1. `effect` in `stats.ts`: a line per new key (`stats.effect.<key>`).
+      1. `skip_turn`: "Skips the next turn" / "Skips the next 2 turns".
+      2. `extra_turn`: "Takes an extra turn after this one"; no "this turn".
+      3. `copy_next_loot`: "The next loot card you play is copied".
+      4. `lingering`: "Its card's effect lasts"; the zoomed card says what.
+      5. `double_rewards`: "Rewards are doubled".
+      6. `roll_to_one`: "A roll of 2 or 3 becomes 1".
+      7. `compost`: "The next loot comes from the loot discard".
+      8. `many_dice`: "The next roll is 4 dice; you choose the result".
+   2. `everyone`: `stats.for_everyone`, "For every player: …" (ADR 3.18.2).
+      1. Read in `effect`; gone from the unread list (`viewFields.test.ts`).
+   3. Numbers: none on the new icons (ADR 3.12, item 10.3).
+   4. `next_turn`, `next_loot` get icons; only `in_play` stays hidden.
+   5. Zoom: a second group "Until used" (`zoom.effects_later`).
+      1. `next_turn`, `next_loot`, `next_roll`; "This turn" keeps `turn`.
+      2. `shownEffects` cuts at 8 lines over both, this turn's first.
+   6. Red Candle: its die showed already (15.67); no client change.
+      1. Seen on its card, during the turn, images on and off.
+      2. No icon on any character (ADR 037 item 8.1).
+      3. Test only: the fake bridge and `cardName` read Four Souls+ too.
+   7. 5.26: every place that draws effects:
+      1. `Card.tsx`: icons (characters, monsters) and the zoom's list.
+      2. `CardZoom.tsx`: `Effects`, now two groups.
+      3. `PlayerArea.tsx`: `statsOf` passes sources; unchanged.
+      4. `stack.ts`, `history.ts`: roll changes only; unchanged.
+   8. Tests: Vitest `stats` (each key's line, icon, no number, groups).
+      1. The "words for every stat" check has no skip list now.
+      2. e2e `hidden-effects.spec.ts`: Famine's skip ("Until used").
+      3. A Lucky Penny! on its user's character only; Blank Card.
+      4. Red Candle's chosen 4 as a die on its card.
+   9. Docs: UC-12 3n; wiki `Client.md`, `Frontend-tests.md`; ADR 037 item 10.
+   10. Screenshots: `.cache/screenshots/18.37/before/` and `after/`.
+       1. `effects-skip`, `-everyone`, `-blank-card`, `-red-candle`.
+       2. After also `-skip-zoom`, `-everyone-zoom`; `*-noimages.png`.
+   11. Gates: `make lint`, `make test`, `make frontend` (789 Vitest) pass.
+       1. `make e2e` run 1: 659 passed, 1 failed: `playback.spec.ts:1975`.
+          1. The 19.237 flake, seed 114790418.
+          2. Evidence: `.cache/e2e-evidence/18.37-run1/`.
+       2. Run 2: 660 passed, 22 skipped.
+5. Owner notes (2026-11-24)
+   1. Owner marks 18.37 solved.
+
+### [x] 18.38 Sibling Rivalry: the chosen player shows it
+
+1. Goal: the player Sibling Rivalry chose shows it till the attack ends.
+2. Owner (2026-11-24): yes, as a hidden effect (ADR 037 item 3.17).
+   1. Card: "the chosen player must make an attack roll after each attack roll".
+   2. "If that monster dies this attack, the chosen player also gains the rewards."
+   3. Once the card is tapped, nothing on the table says who was chosen.
+3. Tasks:
+   1. Engine: key `next_attack_helper` on the chosen player's sources.
+      1. Source: Sibling Rivalry; lasts `turn`.
+      2. From `Turn.NextHelpers`; gone once that attack ends.
+      3. Source card kept where the engine lacks it; `omitempty`.
+   2. Client: an icon with the card's art on the chosen player.
+      1. Text, e.g. "Rolls with Ann's next attack; shares its rewards".
+      2. No number (ADR 037 item 3.12).
+   3. The 5.24 search: only Sibling Rivalry calls `HelpNextAttack` today.
+      1. Check every set's texts for "the chosen player … attack roll".
+   4. Words in `en.json`; `make i18n`.
+4. Done when:
+   1. Go test: the key is on the chosen player only, gone after the attack.
+   2. Vitest for the text; e2e: the icon shows on the chosen player.
+   3. Screenshots, also without images; UC-12; ADR 037 appended.
+   4. Gates as 18.34.
+5. Result (2026-11-24)
+   1. Engine: key `next_attack_helper` in `hiddenViews`; lasts `turn`.
+      1. While `Turn.NextHelpers` holds the player.
+      2. Through that attack from `Attack.Share`; gone when it ends.
+      3. New `Player.HelpSource` (`omitempty`), set by `HelpNextAttack`.
+      4. `HelpNextAttack` takes the source; cleared at end of turn.
+   2. Client: line `stats.effect.next_attack_helper`.
+      1. "Rolls with Ann's next attack; shares its rewards".
+      2. Ann: the active player (`seatNameOf`), passed as `active`.
+      3. Fallback `stats.active_player`: "the active player".
+      4. In `saysWhen`: no "this turn"; no number.
+   3. Cards checked (5.24), card_db texts of every set:
+      1. Only Sibling Rivalry (r) helps the next attack and shares rewards.
+      2. Gus, Sisters Vis, Ultra Greed (r): helpers of an attack on them.
+         1. Their card lies on the table; nothing sent.
+      3. Jacob and Esau (r): starts with Sibling Rivalry; covered.
+   4. Tests: Go `TestViewHiddenSiblingRivalry` (before, during, after).
+      1. Vitest `stats.test.ts` "Sibling Rivalry (18.38)".
+      2. e2e `hidden-effects.spec.ts`: icon on the chosen player only; zoom.
+   5. Docs: UC-12 3o; ADR 037 item 11; wiki `Client.md`, `Rules-engine.md`.
+   6. Screenshots: `.cache/screenshots/18.38/before/` and `after/`.
+      1. `effects-sibling-rivalry`; after also `-zoom`; `*-noimages.png`.
+   7. Gates: `make lint`, `make test`, `make frontend` (792 Vitest) pass.
+      1. `make e2e` run 1: 662 passed, 22 skipped.
+6. Owner notes (2026-11-25)
+   1. Owner marks 18.38 solved.

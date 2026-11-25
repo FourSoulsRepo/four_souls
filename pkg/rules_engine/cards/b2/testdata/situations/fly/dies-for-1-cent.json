@@ -1,0 +1,21 @@
+{
+  "title": "Isaac (1 ATK) kills the Fly (1 HP, DC 2) with a 6: does he gain its reward, 1¢, and no loot, treasure or soul?",
+  "source": ["card fly", "card isaac", "R-ATK-12", "R-CARD-13", "R-DEATH-08", "R-DEATH-09"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "monsters": [{"card": "fly", "dead": true}, {"slot": 1, "card": "pooter"}],
+    "after": [{"player": 0, "cents": 1, "hand": 0, "items": [], "souls": 0}]
+  }
+}

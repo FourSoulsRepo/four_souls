@@ -1,0 +1,23 @@
+{
+  "title": "Charmed Fat Bat at 1 HP: Isaac kills it and gains a treasure, then Cain, the player he chooses, gains the next one",
+  "source": ["card charmed_fat_bat", "card clotty", "R-DEATH-06", "R-DEATH-07", "R-DEATH-09", "R-CARD-02"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["charmed_fat_bat", "fly"],
+    "monster_damage": {"charmed_fat_bat": 3},
+    "decks": {"monster": ["clotty"], "treasure": ["book_of_sin", "the_d6"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["charmed_fat_bat", "player 2 (cain)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [{"player": 0, "items": ["book_of_sin"]}, {"player": 1, "items": ["the_d6"]}, {"player": 2, "items": []}],
+    "monsters": [{"card": "charmed_fat_bat", "dead": true}, {"slot": 1, "card": "clotty"}],
+    "discards": {"monster": ["charmed_fat_bat"]}
+  }
+}

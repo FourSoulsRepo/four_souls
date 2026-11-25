@@ -1,0 +1,16 @@
+{
+  "title": "The Keeper uses Wooden Nickel on Cain and rolls a 4: does Cain gain 4¢?",
+  "source": ["card wooden_nickel", "R-ABIL-10"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "the_keeper", "items": ["wooden_nickel"]}, {"character": "cain"}],
+    "active": 0,
+    "rolls": [4]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "wooden_nickel", "choices": ["player 2 (cain)"]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [4],
+    "after": [{"player": 0, "cents": 0, "deactivated": ["wooden_nickel"]}, {"player": 1, "cents": 4}]
+  }
+}

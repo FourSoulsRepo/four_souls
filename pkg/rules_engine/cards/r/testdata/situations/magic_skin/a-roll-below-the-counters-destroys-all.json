@@ -1,0 +1,16 @@
+{
+  "title": "Isaac's Magic Skin has 3 counters and he rolls a 2 as his turn starts: are the Skin and his Spoon Bender destroyed?",
+  "source": ["card magic_skin", "R-TURN-03"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "cain", "items": ["the_d6"]}, {"character": "isaac", "items": ["magic_skin", "spoon_bender"], "counters": [{"card": "magic_skin", "count": 3}]}],
+    "active": 0,
+    "rolls": [2]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "resolved_rolls": [2], "discards": {"treasure": ["magic_skin", "spoon_bender"]},
+       "after": [{"player": 1, "items": []}, {"player": 0, "items": ["the_d6"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

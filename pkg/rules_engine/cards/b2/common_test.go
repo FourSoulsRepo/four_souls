@@ -1,7 +1,6 @@
 package b2
 
 import (
-	"slices"
 	"testing"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
@@ -17,25 +16,17 @@ func table(t *testing.T, seats ...engine.SituationPlayer) *enginetest.Table {
 	return enginetest.New(t, Set, seats...)
 }
 
-// testExtraLoot checks a character's ↷: one more loot play, on your own
-// turn and on another player's turn.
-func testExtraLoot(t *testing.T, character engine.CardRef) {
+// testExtraLootOnAnotherTurn checks a character's ↷ on another player's
+// turn: that player gets one more loot play (Player.ExtraLootPlays). The
+// rest of the ↷ is in <character>/extra-loot-play-in-response.json.
+func testExtraLootOnAnotherTurn(t *testing.T, character engine.CardRef) {
 	t.Helper()
 	tb := table(t, seat(character), seat(character))
 	tb.Start(0, character, 0)
 	tb.Pass(0)
 	tb.Activate(1, character, 0) // in response, on another player's turn
-	if got := tb.G.Turn.LootPlays; got != 2 {
-		t.Errorf("active player's loot plays = %d, want 2", got)
-	}
-	if tb.G.Object(tb.Find(0, character)).Charged {
-		t.Error("the character is still charged after ↷")
-	}
 	if got := tb.G.Players[1].ExtraLootPlays; got != 1 {
 		t.Errorf("other player's extra loot plays = %d, want 1", got)
-	}
-	if rule := tb.Refused(0, character, 0); rule != "R-ABIL-07" {
-		t.Errorf("second use refused by %s, want R-ABIL-07 (deactivated)", rule)
 	}
 }
 
@@ -84,29 +75,6 @@ const (
 	foe = "player 2 (cain)"
 )
 
-// inDiscard reports whether the loot discard holds the card.
-func inDiscard(g *engine.Game, card engine.CardRef) bool {
-	for _, id := range g.Discards[engine.LootDeck] {
-		if g.Object(id).Card == card {
-			return true
-		}
-	}
-	return false
-}
-
-// testGain plays a coin card and checks the cents.
-func testGain(t *testing.T, card engine.CardRef, n int) {
-	t.Helper()
-	tb := lootTable(t, card)
-	tb.Play(0, card)
-	if got := tb.G.Players[0].Cents; got != n {
-		t.Errorf("cents = %d, want %d", got, n)
-	}
-	if !inDiscard(tb.G, card) {
-		t.Error("the loot card is not in the loot discard (R-CARD-07)")
-	}
-}
-
 // itemTable: player 0 (Isaac) has the items and the hand; player 1 is
 // Cain; a fly and a leech are in the monster slots.
 func itemTable(t *testing.T, items []engine.CardRef, hand ...engine.CardRef) *enginetest.Table {
@@ -123,100 +91,6 @@ func itemTable(t *testing.T, items []engine.CardRef, hand ...engine.CardRef) *en
 // items is a shorthand for a list of cards.
 func items(cards ...engine.CardRef) []engine.CardRef { return cards }
 
-// testPlainMonster kills a monster with attack rolls of 6 and checks the
-// rewards the active player gains.
-func testPlainMonster(t *testing.T, card engine.CardRef) {
-	t.Helper()
-	tb := monsterTable(t, items(card), seat("isaac"), seat("cain"))
-	m, _ := tb.G.Monsters[0].TopOf()
-	d := Set.Cards[slices.IndexFunc(Set.Cards, func(c engine.CardDef) bool { return c.Ref == card })]
-	rolls := make([]int, d.HP+1)
-	for i := range rolls {
-		rolls[i] = 6
-	}
-	tb.Attack(card, rolls...)
-	if tb.G.Object(m).Zone.Kind == engine.ZoneInPlay {
-		t.Fatalf("%s survived %d hits", card, d.HP)
-	}
-	want := map[engine.RewardKind]int{}
-	for _, r := range d.Rewards {
-		want[r.Kind] += r.Amount
-	}
-	pl := tb.G.Players[0]
-	if pl.Cents != want[engine.RewardCents] || len(pl.Hand) != want[engine.RewardLoot] {
-		t.Errorf("cents %d hand %d, want %d and %d", pl.Cents, len(pl.Hand), want[engine.RewardCents], want[engine.RewardLoot])
-	}
-	if items := len(pl.InPlay) - d.Soul; items != want[engine.RewardTreasure] {
-		t.Errorf("%d treasures, want %d", items, want[engine.RewardTreasure])
-	}
-	if s := tb.G.SoulValue(0); s != d.Soul {
-		t.Errorf("soul value %d, want %d", s, d.Soul)
-	}
-}
-
-// hasCurse reports whether player p has the curse.
-func hasCurse(g *engine.Game, p int, card engine.CardRef) bool {
-	for _, id := range g.Players[p].InPlay {
-		if o := g.Object(id); o.Card == card && o.Role == engine.RoleCurse {
-			return true
-		}
-	}
-	return false
-}
-
-// killWithSixes attacks the monster in slot 1 with rolls of 6 until it
-// dies, answering the prompts that follow with choices.
-func killWithSixes(t *testing.T, tb *enginetest.Table, choices ...string) {
-	t.Helper()
-	m, _ := tb.G.Monsters[0].TopOf()
-	rolls := make([]int, tb.G.HP(m)+1)
-	for i := range rolls {
-		rolls[i] = 6
-	}
-	tb.G.ForceRolls(rolls...)
-	tb.Do(engine.Intent{Player: tb.G.Turn.Active, Kind: engine.IntentAttack}, append([]string{string(tb.G.Object(m).Card)}, choices...)...)
-	if tb.G.Object(m).Zone.Kind == engine.ZoneInPlay {
-		t.Fatalf("%s survived", tb.G.Object(m).Card)
-	}
-}
-
-// slayTable: the monster in slot 1, Isaac and Cain with the given setups.
-func slayTable(t *testing.T, monster engine.CardRef, isaac, cain engine.SituationPlayer) *enginetest.Table {
-	t.Helper()
-	return enginetest.NewSetup(t, engine.SituationSetup{Players: []engine.SituationPlayer{isaac, cain}, Monsters: items(monster)}, Set)
-}
-
-// bonusGame starts a real game with the bonus souls set aside; b2 has
-// exactly 3, so all of them are in play.
-func bonusGame(t *testing.T, soul engine.CardRef) *engine.Game {
-	t.Helper()
-	g, _, err := engine.NewGame(engine.Setup{Seed: 3, Players: 2, Sets: []engine.CardSet{Set}, BonusSouls: true, Characters: items("isaac", "cain")})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !slices.ContainsFunc(g.BonusSouls, func(id engine.ObjectID) bool { return g.Object(id).Card == soul }) {
-		t.Fatalf("%s is not an active bonus soul", soul)
-	}
-	return g
-}
-
-// runSome applies one allowed intent so the engine runs its checks.
-func runSome(t *testing.T, g *engine.Game) {
-	t.Helper()
-	p := g.Prompt().Player
-	allowed := g.Allowed(p)
-	if len(allowed) == 0 {
-		t.Fatal("nothing allowed")
-	}
-	in := allowed[0]
-	if in.Kind == engine.IntentDiscard {
-		in.Objects = in.Objects[:g.Prompt().Count]
-	}
-	if _, err := g.Apply(in); err != nil {
-		t.Fatal(err)
-	}
-}
-
 // viewDice are the die numbers the spectator view shows on player p's
 // card ref (15.67).
 func viewDice(tb *enginetest.Table, p int, ref engine.CardRef) []int {
@@ -230,32 +104,27 @@ func viewDice(tb *enginetest.Table, p int, ref engine.CardRef) []int {
 	return nil
 }
 
-// rollTable has a roll of n on the stack, owned by player 1.
-func rollTable(t *testing.T, n int, seats ...engine.SituationPlayer) *enginetest.Table {
+// attackRoll declares an attack on monster in a 2-player game and stops
+// with the first attack roll on the stack and the attacker to act.
+func attackRoll(tb *enginetest.Table, monster engine.CardRef) {
+	tb.T.Helper()
+	if _, err := tb.G.Apply(engine.Intent{Player: 0, Kind: engine.IntentAttack}); err != nil {
+		tb.T.Fatal(err)
+	}
+	tb.Pass(0)
+	tb.Pass(1)
+	tb.Choose(string(monster))
+}
+
+// ownRoll is a table with a roll of n on the stack, owned by player 0.
+func ownRoll(t *testing.T, n int, seats ...engine.SituationPlayer) *enginetest.Table {
 	t.Helper()
 	return enginetest.NewSetup(t, engine.SituationSetup{
 		Players: seats,
-		Stack:   []engine.SituationStack{{DiceRoll: n, Owner: 1}},
+		Stack:   []engine.SituationStack{{DiceRoll: n, Owner: 0}},
 	}, Set)
 }
 
-// resolvedRoll is the result of the first roll that resolved.
-func resolvedRoll(t *testing.T, events []engine.Event) int {
-	t.Helper()
-	for _, e := range events {
-		if e.Kind == engine.EvRollResolved {
-			return e.Amount
-		}
-	}
-	t.Fatal("no roll resolved")
-	return 0
-}
-
-// handCards are the cards in player p's hand, in order.
-func handCards(g *engine.Game, p int) []engine.CardRef {
-	var out []engine.CardRef
-	for _, id := range g.Players[p].Hand {
-		out = append(out, g.Object(id).Card)
-	}
-	return out
-}
+// sackFirst puts the roll result on the stack first, so the other card's
+// "each time a player rolls" trigger resolves first (R-ABIL-15, 19.233).
+const sackFirst = "mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢."

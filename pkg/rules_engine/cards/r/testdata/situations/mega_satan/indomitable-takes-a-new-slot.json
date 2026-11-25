@@ -1,0 +1,21 @@
+{
+  "title": "Mega Satan! is next on the monster deck: Isaac kills the Fly; Mega Satan! takes a new slot, and the Fly's slot refills with the card under it",
+  "source": ["card mega_satan", "card fly", "card clotty", "R-ABIL-23", "R-DEATH-09", "R-SHOP-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["mega_satan", "clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [{"player": 0, "cents": 1}],
+    "monsters": [{"card": "fly", "dead": true}, {"slot": 1, "card": "clotty"}, {"slot": 2, "card": "leech"}, {"slot": 3, "card": "mega_satan"}]
+  }
+}

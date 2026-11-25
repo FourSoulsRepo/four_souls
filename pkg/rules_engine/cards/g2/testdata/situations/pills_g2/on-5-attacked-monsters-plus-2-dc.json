@@ -1,0 +1,21 @@
+{
+  "title": "Isaac (3 HP with Breakfast) plays Pills! and rolls a 5, then attacks the Leech (DC 4): is its DC 6, the Fly's still 2, so a 5 misses and a 6 hits?",
+  "source": ["card pills_g2", "card leech", "card breakfast", "R-ABIL-27", "R-ATK-12", "R-ATK-13"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["breakfast"], "hand": ["pills_g2"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [5, 5, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "pills_g2", "expect": {"allowed": true, "resolved_rolls": [5]}},
+    {"player": 0, "kind": "attack", "choices": ["leech"],
+     "expect": {"allowed": true, "monsters": [{"slot": 1, "card": "fly", "evasion": 2}, {"slot": 2, "card": "leech", "evasion": 6}]}},
+    {"kind": "throw",
+     "expect": {"allowed": true, "resolved_rolls": [5, 6], "monsters": [{"card": "leech", "dead": true}, {"slot": 2, "card": "dip"}],
+                "after": [{"player": 0, "damage": 2}]}}
+  ],
+  "expect": {"allowed": true}
+}

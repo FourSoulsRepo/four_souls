@@ -420,8 +420,8 @@ func TestViewShowsTheAttackHelpers(t *testing.T) {
 	a := g.Turn.Active
 	h, s := g.next(a), g.next(g.next(a))
 	putMonster(g, 0, "gaper")
-	g.HelpNextAttack(h, true)
-	g.HelpNextAttack(s, false)
+	g.HelpNextAttack(h, true, 0)
+	g.HelpNextAttack(s, false, 0)
 	attack(t, g)
 	g.forcedRolls = []int{1}
 	choose(t, g, "gaper")
@@ -491,5 +491,36 @@ func TestViewShowsEveryGainOfAMonster(t *testing.T) {
 	}
 	if top.Copy != "dagaz_like" || !slices.Equal(top.MoreCopies, []CardRef{"coin_bag"}) {
 		t.Errorf("copy %q, more %v; want dagaz_like, [coin_bag]", top.Copy, top.MoreCopies)
+	}
+}
+
+// TestViewShowsTheCardsUnderAnItem: a monster put under an item is face
+// up for every viewer (R-ZONE-13, as on a real table); once it leaves,
+// the item shows none (19.244).
+func TestViewShowsTheCardsUnderAnItem(t *testing.T) {
+	g := newAbilityGame(t)
+	a := g.Turn.Active
+	ball := giveItem(g, a, "coin_bag")
+	g.PutUnder(ball, putMonster(g, 0, "gaper"))
+	under := func(v Viewer) []CardRef {
+		for _, c := range g.View(v).Players[a].InPlay {
+			if c.ID == ball {
+				return c.Under
+			}
+		}
+		t.Fatalf("viewer %+v: the item is not in play", v)
+		return nil
+	}
+	viewers := []Viewer{{Kind: ViewPlayer, Player: a}, {Kind: ViewPlayer, Player: g.next(a)}, {Kind: ViewSpectator}}
+	for _, v := range viewers {
+		if got := under(v); !slices.Equal(got, []CardRef{"gaper"}) {
+			t.Errorf("viewer %+v: under %v, want [gaper]", v, got)
+		}
+	}
+	g.FromUnder(ball, g.Object(ball).Under[0], 0)
+	for _, v := range viewers {
+		if got := under(v); got != nil {
+			t.Errorf("viewer %+v: under %v after the release, want none", v, got)
+		}
 	}
 }

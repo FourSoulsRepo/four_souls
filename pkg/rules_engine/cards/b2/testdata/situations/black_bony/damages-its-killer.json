@@ -1,0 +1,21 @@
+{
+  "title": "Isaac kills Black Bony with three 6s, then rolls a 6 for its reward: does it deal 1 damage to him and does he loot 6?",
+  "source": ["card black_bony", "card isaac", "R-ATK-12", "R-DEATH-05", "R-DEATH-06", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["black_bony"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["black_bony"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 6, 6],
+    "monsters": [{"card": "black_bony", "dead": true}],
+    "after": [{"player": 0, "damage": 1, "hand": 6}, {"player": 1, "damage": 0}]
+  }
+}

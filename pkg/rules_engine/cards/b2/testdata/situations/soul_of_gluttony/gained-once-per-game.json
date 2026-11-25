@@ -1,0 +1,23 @@
+{
+  "title": "Isaac gains Soul of Gluttony with 11 loot cards, then destroys it with Chaos Card: with 10 loot cards still, does he gain it again?",
+  "source": ["card soul_of_gluttony", "card chaos_card", "R-CARD-23", "R-CARD-24"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["chaos_card"], "hand": ["a_penny", "two_cents", "three_cents", "four_cents", "a_dime", "a_nickel", "bomb", "gold_bomb", "butter_bean", "dagaz", "mega_battery", "lil_battery"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly"],
+    "bonus_souls": ["soul_of_gluttony"],
+    "loot_plays": 2
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "a_penny",
+     "expect": {"allowed": true, "after": [{"player": 0, "hand": 11, "souls": 1, "soul_cards": ["soul_of_gluttony"]}]}},
+    {"player": 0, "kind": "activate", "card": "chaos_card", "choices": ["Destroy an item or soul.", "soul_of_gluttony"],
+     "expect": {"allowed": true, "after": [{"player": 0, "hand": 11, "souls": 0, "soul_cards": []}]}},
+    {"player": 0, "kind": "play", "card": "two_cents"}
+  ],
+  "expect": {"allowed": true, "after": [{"player": 0, "hand": 10, "cents": 3, "souls": 0, "soul_cards": []}, {"player": 1, "souls": 0, "soul_cards": []}]}
+}

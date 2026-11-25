@@ -39,6 +39,16 @@ type Turn struct {
 	// MustAttackDeck of them on the monster deck.
 	MustAttacks    int `json:"must_attacks,omitempty"`
 	MustAttackDeck int `json:"must_attack_deck,omitempty"`
+	// MustAttackOneOfCards are the cards the active player must make an
+	// additional attack on one of this turn (Boss Rush!, Friendly Ball,
+	// Lust for Blood!; 19.241). They name cards, not objects: a boss
+	// that comes up uncovered is a new object (R-ZONE-01) and still one
+	// of them (owner, 2026-11-24). Only a card the active player can
+	// attack now counts (owedTargets): a covered one (R-ZONE-10), or one
+	// in a discard, a deck or souls, is none; with none left, the duty
+	// ends. An attack on one meets it. It replaced must_attack_one_of
+	// (object IDs), which only older records' views hold (ADR 031).
+	MustAttackOneOfCards []CardRef `json:"must_attack_one_of_cards,omitempty"`
 	// RandomAttackMade: an attack this turn went to one of the monsters
 	// a MustAttackRandom card lists; the duty is met (Q-31).
 	RandomAttackMade bool `json:"random_attack_made,omitempty"`
@@ -276,7 +286,7 @@ func (g *Game) startNextTurn() {
 	next := g.next(g.Turn.Active)
 	regular := !g.ExtraTurn
 	if g.ExtraTurn {
-		next, g.ExtraTurn = g.Turn.Active, false
+		next, g.ExtraTurn, g.ExtraTurnSource = g.Turn.Active, false, 0
 		g.emit(Event{Kind: EvExtraTurn, Player: next})
 	}
 	// In a challenge the timer ticks before the starting player's next
@@ -289,6 +299,9 @@ func (g *Game) startNextTurn() {
 			break
 		}
 		g.Players[next].SkipTurns--
+		if pl := &g.Players[next]; len(pl.SkipSources) > pl.SkipTurns {
+			pl.SkipSources = pl.SkipSources[1:] // the oldest skip is used
+		}
 		g.emit(Event{Kind: EvTurnSkipped, Player: next})
 		if regular {
 			g.turnTaken(next) // a skipped turn counts as taken (R-TURN-16)
@@ -416,7 +429,8 @@ func (g *Game) healAll() {
 			}
 			o.endGains(GainEndOfTurn)
 		}
-		g.Players[pl.ID].CopyNextLoot = false
+		g.Players[pl.ID].CopyNextLoot, g.Players[pl.ID].CopySource = false, 0
+		g.Players[pl.ID].HelpSource = 0
 	}
 	for _, id := range g.MonstersInPlay() {
 		g.Object(id).endGains(GainEndOfTurn) // a monster's gained abilities (Q-47)
@@ -540,4 +554,13 @@ func (g *Game) askRoomStep(p PlayerID) {
 		return
 	}
 	g.ask(Choice{Purpose: ChooseRoom, Player: p, Rule: "R-TURN-12", Objects: rooms, Question: promptDiscardRoom.Msg()}, append(labels, AskKeep.Msg()))
+}
+
+// SkipNextTurn makes player p skip one more of their next turns: "skips
+// their next turn" (Famine, Haunted!, Overflow!). source is the object
+// whose ability did it, for the view (ADR 037 item 3.17).
+func (g *Game) SkipNextTurn(p PlayerID, source ObjectID) {
+	pl := &g.Players[p]
+	pl.SkipTurns++
+	pl.SkipSources = append(pl.SkipSources, source)
 }

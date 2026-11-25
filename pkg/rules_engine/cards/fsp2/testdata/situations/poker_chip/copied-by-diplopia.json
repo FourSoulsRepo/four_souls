@@ -1,0 +1,19 @@
+{
+  "title": "Isaac's Diplopia copies Cain's Poker Chip; Isaac plays 3 Cents! and rolls a 5: does he gain 6¢, with no roll for Cain's own Chip on Isaac's turn?",
+  "source": ["card poker_chip", "card diplopia", "card three_cents", "R-MECH-08"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["diplopia"], "hand": ["three_cents"]}, {"character": "cain", "items": ["poker_chip"]}],
+    "active": 0,
+    "rolls": [5]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "diplopia", "choices": ["poker_chip"]},
+    {"player": 0, "kind": "play", "card": "three_cents"}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [5],
+    "after": [{"player": 0, "cents": 6, "deactivated": ["diplopia"]}, {"player": 1, "cents": 0}]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "title": "Isaac (1 ATK) kills Gurdy (5 HP, DC 4) with 5 sixes: does he gain its reward, 7¢, and its soul, and no treasure?",
+  "source": ["card gurdy", "card isaac", "R-ATK-12", "R-CARD-13", "R-DEATH-08", "R-DEATH-09"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["gurdy"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 6, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["gurdy"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 6, 6, 6],
+    "monsters": [{"card": "gurdy", "dead": true}, {"slot": 1, "card": "pooter"}],
+    "after": [{"player": 0, "cents": 7, "hand": 0, "items": [], "souls": 1, "soul_cards": ["gurdy"]}]
+  }
+}

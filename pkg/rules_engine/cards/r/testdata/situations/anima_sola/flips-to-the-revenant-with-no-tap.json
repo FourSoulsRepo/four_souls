@@ -1,0 +1,18 @@
+{
+  "title": "The Deserter uses Anima Sola: it flips to The Revenant with no loot; on her next turn, recharged, may she use it again?",
+  "source": ["card anima_sola", "R-CARD-39", "R-MECH-33", "R-ABIL-08", "R-TURN-02"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "the_deserter", "items": ["anima_sola"]}, {"character": "cain"}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "anima_sola",
+     "expect": {"allowed": true, "after": [{"player": 0, "hand": 0, "items": ["anima_sola"], "deactivated": ["anima_sola"]}]}},
+    {"player": 0, "kind": "end_turn"},
+    {"player": 1, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 0, "after": [{"player": 0, "deactivated": []}]}},
+    {"player": 0, "kind": "activate", "card": "anima_sola", "expect": {"allowed": false, "rule": "R-ABIL-08"}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-08"}
+}

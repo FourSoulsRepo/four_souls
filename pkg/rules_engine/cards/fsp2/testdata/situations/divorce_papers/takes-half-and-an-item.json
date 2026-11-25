@@ -1,0 +1,21 @@
+{
+  "title": "Isaac uses Divorce Papers on Cain (7¢, 3 loot cards, Mystery Sack): does he get 3¢, 1 loot card and the Sack, and is the card destroyed?",
+  "source": ["card divorce_papers", "R-MECH-37", "R-MECH-03", "R-MECH-23"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["divorce_papers"]},
+      {"character": "cain", "cents": 7, "hand": ["bomb", "two_cents", "four_cents"], "items": ["mystery_sack"]}
+    ],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "divorce_papers", "choices": ["player 2 (cain)", "bomb", "mystery_sack"]},
+  "expect": {
+    "allowed": true,
+    "discards": {"treasure": ["divorce_papers"]},
+    "after": [
+      {"player": 0, "cents": 3, "hand_cards": ["bomb"], "items": ["mystery_sack"]},
+      {"player": 1, "cents": 4, "hand_cards": ["two_cents", "four_cents"], "items": []}
+    ]
+  }
+}

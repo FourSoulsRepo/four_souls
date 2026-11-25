@@ -1,0 +1,19 @@
+{
+  "title": "The shop has 2 slots; Isaac reveals Shop Upgrade!: are 2 more slots added and filled, and may he attack once more?",
+  "source": ["card shop_upgrade", "R-ATK-09", "R-MECH-31", "R-SHOP-02"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "shop": ["the_d6", "lucky_foot"],
+    "decks": {"treasure": ["breakfast", "dinner"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "shop_upgrade",
+     "expect": {"allowed": true, "attacks": 1, "discards": {"monster": ["shop_upgrade"]}}},
+    {"player": 0, "kind": "purchase",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["the_d6", "lucky_foot", "breakfast", "dinner", "ask.deck.treasure"]}}}
+  ],
+  "expect": {"allowed": true}
+}

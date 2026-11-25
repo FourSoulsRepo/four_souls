@@ -349,6 +349,9 @@ export interface CardView {
   // more_copies: the cards it gained abilities from after copy, in the
   // order gained (Trick on Hard, 19.157).
   more_copies?: string[];
+  // under: the cards put under this card, face up for everyone, e.g.
+  // Friendly Ball's monster; older servers send none (19.244).
+  under?: string[];
 }
 
 
@@ -373,15 +376,23 @@ export interface RewardView {
   roll?: boolean;
 }
 
-// StatSource is one source of a stat change (V-41). card is "" or absent
-// when the source is hidden; older servers send no sources.
+// StatSource is one source of a stat change (V-41), or another effect on
+// a player (ADR 037, 18.30). card is "" or absent when the source is
+// hidden; older servers send no sources. A flag stat (a lock, no souls)
+// has amount 1. A "shield" without amount prevents the whole next
+// damage; "shield_cap" caps it at amount. The keys from "skip_turn" on
+// are hidden effects that are no stats (ADR 037 items 3.17, 3.18, 18.36).
 export interface StatSource {
-  stat: "hp" | "atk" | "dc" | "roll" | "attack_roll" | "attacked_dc" | "damage_taken";
+  stat: "hp" | "atk" | "dc" | "roll" | "attack_roll" | "attacked_dc" | "damage_taken" | "shop_price" | "loot_plays" | "attacks" | "purchases" | "loot_step" | "lock_others" | "loot_double" | "death_ward" | "recharge_limit" | "hand_cap" | "lock_turn" | "no_char_recharge" | "reveal_hand" | "choose_attack" | "no_forced_loss" | "paid_discount" | "no_souls" | "penalty_item_to" | "player_attack_dc" | "one_ability" | "one_loot" | "attack_tax" | "shield" | "shield_cap" | "skip_turn" | "extra_turn" | "copy_next_loot" | "lingering" | "double_rewards" | "roll_to_one" | "compost" | "many_dice" | "next_attack_helper";
   source?: number;
   card?: string;
-  amount: number;
-  lasts: "in_play" | "turn" | "next_roll";
+  amount?: number; // absent on a shield of the whole next damage
+  // next_turn: till the player's next turn, which they skip; next_loot:
+  // till a player next loots, maybe past this turn (18.36).
+  lasts: "in_play" | "turn" | "next_roll" | "next_turn" | "next_loot";
   when?: Msg; // a condition, e.g. "first attack roll"
+  // everyone: a game-wide effect, sent on the player who made it (18.36).
+  everyone?: boolean;
 }
 
 export interface SlotView {
@@ -429,6 +440,13 @@ export interface Turn {
   must_attack?: number;
   must_attacks?: number;
   must_attack_deck?: number;
+  // must_attack_one_of: the cards the active player owes an extra
+  // attack on one of (Boss Rush!, Friendly Ball, Lust for Blood!; 19.241).
+  // Only older records send it; newer servers send the cards below.
+  must_attack_one_of?: number[];
+  // must_attack_one_of_cards: the same duty by card ref, so a boss that
+  // comes up from under a dead one still counts (19.241, owner 2026-11-24).
+  must_attack_one_of_cards?: string[];
   deck_attacks?: number;
   end_declared?: boolean;
   death_end?: boolean;
@@ -564,6 +582,9 @@ export interface GameView {
   // declared purchase (15.30). Older servers send neither.
   attack?: AttackView;
   buying?: boolean;
+  // random_attack: the active player owes an attack on a random
+  // monster (Pilfering Krampus, Q-31); older servers send none (18.35).
+  random_attack?: boolean;
   // first_roll is the first-player roll before turn 1: who still rolls,
   // in seat order, and this round's dice so far (GS-06, 15.43).
   first_roll?: FirstRoll;

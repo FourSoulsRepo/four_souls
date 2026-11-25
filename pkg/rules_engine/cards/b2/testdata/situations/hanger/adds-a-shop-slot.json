@@ -1,0 +1,22 @@
+{
+  "title": "No shop slot is on the table; Isaac kills Hanger: is a shop slot added and filled from the treasure deck?",
+  "source": ["card hanger", "card isaac", "R-ATK-12", "R-MECH-31", "R-SHOP-02", "R-SHOP-06", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["hanger"],
+    "decks": {"monster": ["pooter"], "treasure": ["breakfast"]},
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["hanger"],
+     "expect": {"allowed": true,
+       "monsters": [{"card": "hanger", "dead": true}],
+       "events": [{"kind": "expanded"}],
+       "after": [{"player": 0, "cents": 7}]}},
+    {"player": 0, "kind": "purchase",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["breakfast", "ask.deck.treasure"]}}}
+  ],
+  "expect": {"allowed": true}
+}

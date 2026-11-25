@@ -1,5 +1,10 @@
 package rulesengine
 
+import (
+	"fmt"
+	"slices"
+)
+
 // Question is one question an Ask effect puts to the ability's
 // controller while it resolves. Options gets the answers so far and
 // returns the option labels; no options skips the question (answer -1).
@@ -147,7 +152,7 @@ func (g *Game) continueAsk(a *Asking) {
 			continue
 		}
 		if q.Random {
-			i := g.RNG.Intn(len(opts))
+			i := g.randomPick(opts)
 			g.emit(Event{Kind: EvRandomPick, Player: a.Controller, Amount: i, Label: opts[i]})
 			a.Answers = append(a.Answers, i)
 			continue
@@ -175,6 +180,33 @@ func (g *Game) continueAsk(a *Asking) {
 	delete(g.asks, a.Key)
 	e.do(c, a.Answers)
 	g.Queue = append(g.Queue, rest...)
+}
+
+// randomPick picks one of opts at random: "chosen at random", which
+// every player at a table sees. Every random pick of the engine comes
+// here (24.30): a question's (Question.Random) and a random attack's
+// target. A situation may name the next picks by their plain labels
+// (setup.random); a game never does, so it draws from the RNG as ever.
+// A named pick that is no option is kept as pickErr and the pick falls
+// back to the RNG; the situation runner reports it.
+func (g *Game) randomPick(opts []Msg) int {
+	if len(g.forcedPicks) == 0 {
+		return g.RNG.Intn(len(opts))
+	}
+	want := g.forcedPicks[0]
+	g.forcedPicks = g.forcedPicks[1:]
+	g.pickCount++
+	labels := make([]string, len(opts))
+	for i, o := range opts {
+		labels[i] = g.Plain(o)
+	}
+	if i := slices.Index(labels, want); i >= 0 {
+		return i
+	}
+	if g.pickErr == nil {
+		g.pickErr = fmt.Errorf("situation: random: pick %d %q is not an option of %q", g.pickCount, want, labels)
+	}
+	return g.RNG.Intn(len(opts))
 }
 
 // askOrder opens the order prompt of q and reports true, or answers it

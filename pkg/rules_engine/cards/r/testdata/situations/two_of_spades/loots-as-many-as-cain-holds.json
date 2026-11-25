@@ -1,0 +1,12 @@
+{
+  "title": "Cain holds 3 loot cards; Isaac plays Two Of Spades on him: does Isaac loot 3?",
+  "source": ["card two_of_spades", "R-CARD-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["two_of_spades"]}, {"character": "cain", "hand": ["bomb", "bomb", "a_nickel"]}],
+    "active": 0,
+    "decks": {"loot": ["a_penny", "two_cents", "three_cents", "four_cents"]}
+  },
+  "action": {"player": 0, "kind": "play", "card": "two_of_spades", "choices": ["player 2 (cain)"]},
+  "expect": {"allowed": true, "decks": {"loot": ["four_cents"]}, "discards": {"loot": ["two_of_spades"]}, "after": [{"player": 0, "hand_cards": ["a_penny", "two_cents", "three_cents"]}, {"player": 1, "hand": 3}]}
+}

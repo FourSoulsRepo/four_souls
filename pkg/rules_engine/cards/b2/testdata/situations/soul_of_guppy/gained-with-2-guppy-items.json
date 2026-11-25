@@ -1,0 +1,20 @@
+{
+  "title": "Soul of Guppy is an active bonus soul; Cain is active with no Guppy item, Isaac has Guppy's Head, Guppy's Paw and Mystery Sack; Cain plays A Penny!: does Isaac gain the soul?",
+  "source": ["card soul_of_guppy", "card guppys_head", "card guppys_paw", "card mystery_sack", "card a_penny", "R-ABIL-22", "R-CARD-22", "R-CARD-23"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["guppys_head", "guppys_paw", "mystery_sack"]},
+      {"character": "cain", "hand": ["a_penny"]}
+    ],
+    "active": 1,
+    "monsters": ["fly"],
+    "bonus_souls": ["soul_of_guppy"]
+  },
+  "action": {"player": 1, "kind": "play", "card": "a_penny"},
+  "expect": {"allowed": true,
+    "after": [
+      {"player": 0, "souls": 1, "soul_cards": ["soul_of_guppy"]},
+      {"player": 1, "cents": 1, "souls": 0, "soul_cards": []}
+    ]}
+}

@@ -1,0 +1,21 @@
+{
+  "title": "The Rainmaker at 1 HP: Isaac misses with a 1 and loots 1; his 6 kills it; Curse of the Hunted from the monster deck covers the Fly and goes to Cain",
+  "source": ["card the_rainmaker", "card curse_of_the_hunted", "R-ABIL-16", "R-ABIL-20", "R-ATK-13", "R-DEATH-05", "R-DEATH-06", "R-DEATH-08", "R-ZONE-11", "R-TURN-04"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["the_rainmaker", "fly"],
+    "monster_damage": {"the_rainmaker": 2},
+    "decks": {"monster": ["curse_of_the_hunted"], "loot": ["a_penny", "a_dime", "a_nickel", "two_cents"]},
+    "rolls": [1, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["the_rainmaker", "curse_of_the_hunted", "ask.slot_card 2 fly", "player 2 (cain)"],
+     "expect": {"allowed": true, "resolved_rolls": [1, 6],
+       "after": [{"player": 0, "damage": 1, "souls": 1, "soul_cards": ["the_rainmaker"], "hand_cards": ["a_penny", "a_dime", "a_nickel", "two_cents"]}],
+       "monsters": [{"card": "the_rainmaker", "dead": true}, {"slot": 2, "card": "fly", "atk": 1}]}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1, "monsters": [{"slot": 2, "card": "fly", "atk": 2}]}}
+  ],
+  "expect": {"allowed": true}
+}

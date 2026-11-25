@@ -1,0 +1,15 @@
+{
+  "title": "Isaac (2¢) plays Two of Diamonds on Cain (5¢): does Cain gain 5¢, and Isaac nothing?",
+  "source": ["card two_of_diamonds", "R-CARD-07"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["two_of_diamonds"], "cents": 2}, {"character": "cain", "cents": 5}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "two_of_diamonds", "choices": ["player 2 (cain)"]},
+  "expect": {
+    "allowed": true,
+    "discards": {"loot": ["two_of_diamonds"]},
+    "after": [{"player": 0, "cents": 2, "hand": 0}, {"player": 1, "cents": 10}]
+  }
+}

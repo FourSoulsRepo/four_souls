@@ -1,0 +1,19 @@
+{
+  "title": "Isaac destroys Experimental Treatment and rolls a 6, so it becomes his soul; then he destroys the soul and rolls a 3: does he gain 9¢ and lose the soul?",
+  "source": ["card experimental_treatment", "R-CARD-18", "R-CARD-38", "R-ABIL-07"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["experimental_treatment"]}, {"character": "cain"}],
+    "active": 0,
+    "rolls": [6, 3]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "experimental_treatment",
+     "expect": {"allowed": true, "resolved_rolls": [6], "discards": {"treasure": []},
+       "after": [{"player": 0, "items": [], "souls": 1, "soul_cards": ["experimental_treatment"]}]}},
+    {"player": 0, "kind": "activate", "card": "experimental_treatment",
+     "expect": {"allowed": true, "resolved_rolls": [3], "discards": {"treasure": ["experimental_treatment"]},
+       "after": [{"player": 0, "cents": 9, "souls": 0, "soul_cards": []}]}}
+  ],
+  "expect": {"allowed": true}
+}

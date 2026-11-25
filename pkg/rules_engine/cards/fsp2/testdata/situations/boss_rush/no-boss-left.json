@@ -1,0 +1,21 @@
+{
+  "title": "Isaac kills both bosses of Boss Rush! with Tech X before his extra attack: does the owed attack end, so he may end the turn with it unused?",
+  "source": ["card boss_rush", "card tech_x", "R-ATK-03"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["tech_x"], "counters": [{"card": "tech_x", "count": 6}]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fatty", "fly"],
+    "decks": {"monster": ["spider", "monstro", "dip", "widow", "clotty"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "boss_rush", "choices": ["ask.slot 1", "ask.slot 2"],
+     "expect": {"allowed": true, "monsters": [{"slot": 1, "card": "monstro"}, {"slot": 2, "card": "widow"}]}},
+    {"player": 0, "kind": "activate", "card": "tech_x", "ability": 1, "choices": ["monstro"],
+     "expect": {"allowed": true, "monsters": [{"card": "monstro", "dead": true}]}},
+    {"player": 0, "kind": "activate", "card": "tech_x", "ability": 1, "choices": ["widow"],
+     "expect": {"allowed": true, "monsters": [{"card": "widow", "dead": true}], "attacks": 1}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1}}
+  ],
+  "expect": {"allowed": true}
+}

@@ -1,0 +1,12 @@
+{
+  "title": "Isaac is dead at 0 HP and uses Guppy's Paw on Cain: he can't pay 1 HP, so is no damage prevented?",
+  "source": ["card guppys_paw", "R-MECH-44", "R-MECH-03", "R-ABIL-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["guppys_paw"], "damage": 2, "dead": true}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "guppys_paw", "choices": ["player 2 (cain)"]},
+  "expect": {"allowed": true, "events": [{"kind": "shielded", "none": true}], "after": [{"player": 0, "deactivated": ["guppys_paw"]}]}
+}

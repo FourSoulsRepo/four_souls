@@ -60,6 +60,8 @@ type recorder struct {
 	decks [][]engine.CardRef
 	steps []DumpStep
 	rolls []int
+	// picks are the plain labels of the random picks made (24.30).
+	picks []string
 	todo  []string
 	depth int
 	// dropped counts passes left out since the last step, thrown dice
@@ -109,13 +111,16 @@ func (tb *Table) enter(record func(r *recorder)) func() {
 	}
 }
 
-// saw notes the dice in events: every die thrown becomes setup.rolls.
+// saw notes the dice in events: every die thrown becomes setup.rolls,
+// and every random pick setup.random.
 func (tb *Table) saw(events []engine.Event) {
 	if tb.rec == nil {
 		return
 	}
 	for _, e := range events {
 		switch {
+		case e.Kind == engine.EvRandomPick:
+			tb.rec.picks = append(tb.rec.picks, tb.G.Plain(e.Label))
 		case e.Kind != engine.EvDiceRolled || e.Text == "first":
 		case len(e.Dice) > 0: // many dice: all of them (R-DICE-11)
 			tb.rec.rolls = append(tb.rec.rolls, e.Dice...)
@@ -132,6 +137,25 @@ func (r *recorder) add(s DumpStep) {
 	r.steps = append(r.steps, s)
 	if len(r.steps) > 1 && len(r.tb.G.Stack) > 0 && (s.Kind == "activate" || s.Kind == "play") {
 		r.note("step %d (%s %s) responds to the stack; steps can't (owner answer 7): start from setup.stack instead", len(r.steps), s.Kind, s.Card)
+		r.deckAttackRoll()
+	}
+}
+
+// deckAttackRoll notes the stacked attack roll a response answers
+// during a deck attack, as setup.stack says it (24.33). The dump writes
+// steps, not setup.stack, so it stays a todo line to copy.
+func (r *recorder) deckAttackRoll() {
+	g := r.tb.G
+	if !g.Attack.Deck || !g.Attack.Started {
+		return
+	}
+	for _, it := range g.Stack {
+		if it.Kind != engine.StackRoll || !it.Attack || it.Roll == 0 {
+			continue
+		}
+		o := g.Object(it.Target.Object)
+		r.note(`step %d answers an attack roll of a deck attack; in setup.stack it is {"kind": "attack_roll", "dice_roll": %d, "card": %q, "owner": %d, "from_deck": true, "slot": %d} (24.33), `+
+			"with the steps and rolls before it left out", len(r.steps), it.Roll, o.Card, it.Controller, o.Zone.Index+1)
 	}
 }
 
@@ -305,7 +329,7 @@ func (r *recorder) direct(log []engine.Intent) {
 func (r *recorder) fillSetup(g *engine.Game) {
 	cur := observe(g)
 	changed(reflect.ValueOf(&r.setup).Elem(), reflect.ValueOf(r.base), reflect.ValueOf(cur),
-		"Players", "Decks", "Stack", "Priority", "Phase", "Declared", "Rolls")
+		"Players", "Decks", "Stack", "Priority", "Phase", "Declared", "Rolls", "Random")
 	for i := range min(len(r.setup.Players), len(cur.Players)) {
 		changed(reflect.ValueOf(&r.setup.Players[i]).Elem(), reflect.ValueOf(r.base.Players[i]), reflect.ValueOf(cur.Players[i]))
 	}
@@ -322,6 +346,7 @@ func (r *recorder) fillSetup(g *engine.Game) {
 		}
 		r.setup.Decks[name] = append(top, r.setup.Decks[name]...)
 	}
+	r.pruneChallenge()
 	rebuilt, err := engine.BuildTable(r.setup, r.sets...)
 	if err != nil {
 		r.note("setup: the dumped setup does not build: %v", err)
@@ -353,6 +378,7 @@ func observe(g *engine.Game) engine.SituationSetup {
 			Character: ch.Card, Cents: pl.Cents, Damage: pl.Damage, Dead: pl.Dead,
 			ExtraLootPlays: pl.ExtraLootPlays, Counters: counters("character", ch.Counters),
 		}
+		sp.Counters = append(sp.Counters, counters(engine.PlayerCounters, pl.Counters)...)
 		if !ch.Charged {
 			sp.Deactivated = append(sp.Deactivated, "character")
 		}
@@ -404,9 +430,122 @@ func observe(g *engine.Game) engine.SituationSetup {
 		s.BonusSouls = append(s.BonusSouls, o.Card)
 		s.Counters = append(s.Counters, counters(o.Card, o.Counters)...)
 	}
+	if g.Challenge != nil {
+		s.Game, s.Bosses = observeChallenge(g), nil // the challenge puts its boss out
+	}
 	loot, attacks, purchases := g.Turn.LootPlays, g.Turn.Attacks, g.Turn.Purchases
 	s.LootPlays, s.Attacks, s.Purchases = &loot, &attacks, &purchases
+	s.MustAttack = mustAttack(g)
+	s.MustAttacks, s.MustAttackDeck = g.Turn.MustAttacks, g.Turn.MustAttackDeck
+	for _, ref := range g.Turn.MustAttackOneOfCards {
+		if attackableCard(g, ref) {
+			s.MustAttackOneOf = append(s.MustAttackOneOf, ref)
+		}
+	}
 	return s
+}
+
+// observeChallenge reads a challenge as setup.game (24.34): every
+// present as it is now; pruneChallenge drops what its start says.
+func observeChallenge(g *engine.Game) *engine.SituationGame {
+	c := g.Challenge
+	gm := &engine.SituationGame{Type: engine.GameChallenge, ID: c.ID, Difficulty: c.Difficulty, Holidays: c.Holidays}
+	if g.Object(c.Card).Flipped {
+		gm.RuleCard = g.CardOf(c.Card)
+	}
+	for _, p := range c.Presents {
+		sp := engine.SituationPresent{Kind: p.Kind, Destroyed: p.Destroyed}
+		o := g.Object(p.Object)
+		switch {
+		case p.Destroyed:
+		case p.Flipped && o.Zone.Kind == engine.ZoneInPlay:
+			to := int(o.Controller)
+			sp.To = &to
+		case p.Flipped: // flipped, nobody gained it yet: no setup says it; the diff shows it
+			continue
+		default:
+			sp.Counters = o.CountersOf("")
+		}
+		gm.Presents = append(gm.Presents, sp)
+	}
+	return gm
+}
+
+// pruneChallenge drops from setup.game's presents, and from the
+// counters on its final boss, what the challenge's start puts there
+// anyway, so the dump names only what the test changed.
+func (r *recorder) pruneChallenge() {
+	s := &r.setup
+	if s.Game == nil || s.Game.Type != engine.GameChallenge {
+		return
+	}
+	plain := cloneSetup(r.tb.T, *s)
+	plain.Game.Presents, plain.Game.Holidays, plain.Counters = nil, false, nil
+	g, err := engine.BuildTable(plain, r.sets...)
+	if err != nil {
+		return // the rebuild in fillSetup reports it
+	}
+	start := observeChallenge(g)
+	if !s.Game.Holidays { // after Happy Holidays! every present is named
+		s.Game.Presents = slices.DeleteFunc(s.Game.Presents, func(p engine.SituationPresent) bool {
+			return slices.ContainsFunc(start.Presents, func(q engine.SituationPresent) bool { return reflect.DeepEqual(p, q) })
+		})
+	}
+	if len(s.Game.Presents) == 0 {
+		s.Game.Presents = nil
+	}
+	if len(g.Bosses) == 0 {
+		return
+	}
+	id, ok := g.Bosses[0].TopOf()
+	if !ok {
+		return
+	}
+	boss := g.Object(id)
+	s.Counters = slices.DeleteFunc(s.Counters, func(c engine.SituationCounter) bool {
+		return c.Card == boss.Card && c.Count == boss.CountersOf(c.Name)
+	})
+	if len(s.Counters) == 0 {
+		s.Counters = nil
+	}
+}
+
+// mustAttack is the ref of the card the active player must attack this
+// turn (19.235), when setup.must_attack can name it: a card in play the
+// active player may attack. Otherwise the rebuilt table lacks the duty,
+// and the diff makes it a todo.
+func mustAttack(g *engine.Game) engine.CardRef {
+	return attackableRef(g, g.Turn.MustAttack)
+}
+
+// attackableRef is the ref of id when setup.must_attack can name it: a
+// card in play the active player may attack (19.235). A covered one
+// (R-ZONE-10) has none.
+func attackableRef(g *engine.Game, id engine.ObjectID) engine.CardRef {
+	if id == 0 || g.Object(id).Zone.Kind != engine.ZoneInPlay || !g.CanBeAttacked(id) {
+		return ""
+	}
+	for _, pl := range g.Players {
+		if pl.Character == id {
+			if _, ok := g.PlayerAttackDC(pl.ID); !ok {
+				return ""
+			}
+		}
+	}
+	return g.Object(id).Card
+}
+
+// attackableCard: setup.must_attack_one_of can name ref, a card the
+// active player may attack now (19.241). The duty names cards, but a
+// rebuilt table has no covered card, and one gone from the table is no
+// target, so both are left out.
+func attackableCard(g *engine.Game, ref engine.CardRef) bool {
+	for i := range g.Objects {
+		if id := engine.ObjectID(i); g.Object(id).Card == ref && attackableRef(g, id) != "" {
+			return true
+		}
+	}
+	return false
 }
 
 func counters(card engine.CardRef, cs []engine.Counter) []engine.SituationCounter {
@@ -530,6 +669,15 @@ func flatten(g *engine.Game) map[string]string {
 		sf := v.Type().Field(i)
 		if sf.IsExported() && sf.Name != "RNG" && sf.Name != "Objects" {
 			f.walk(v.Field(i), sf.Name, 0)
+		}
+	}
+	// A challenge's TurnFrom and RoundFrom mark where a turn's objects
+	// start (R-COOP-11). A setup makes every object before the first
+	// turn; a test that adds objects after StartChallenge moves the mark,
+	// which no file needs to say.
+	for k := range f.out {
+		if strings.HasPrefix(k, "Challenge.TurnFrom") || strings.HasPrefix(k, "Challenge.RoundFrom") {
+			delete(f.out, k)
 		}
 	}
 	return f.out
@@ -660,11 +808,21 @@ func (r *recorder) write() {
 	if len(r.rolls) > 0 {
 		d.Setup.Rolls = r.rolls
 	}
+	unnamed := slices.Index(r.picks, "")
+	if len(r.picks) > 0 && unnamed < 0 {
+		d.Setup.Random = r.picks
+	}
 	d.Todo = append(d.Todo,
 		"a draft of "+r.name+" (24.7): write title as a question, fill source, and write expect from the Go test's checks "+
 			"and their sources, never from a run (CLAUDE.md 5.25); then remove todo and save it under testdata/situations")
 	if len(r.rolls) > 0 {
 		d.Todo = append(d.Todo, "setup.rolls are every die the test threw, forced or not")
+	}
+	switch {
+	case unnamed >= 0:
+		d.Todo = append(d.Todo, fmt.Sprintf("random pick %d has no label (a hidden card), so setup.random can't name it; the file's picks come from seed", unnamed+1))
+	case len(r.picks) > 0:
+		d.Todo = append(d.Todo, "setup.random are every random pick the test made, by option label")
 	}
 	if len(r.steps) == 0 {
 		d.Todo = append(d.Todo, "no step was recorded: the runner needs at least one")

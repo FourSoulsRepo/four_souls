@@ -1,0 +1,27 @@
+{
+  "title": "Isaac (6 HP with two Lards) rolls 1, 1 against Bony (DC 3, 1 ATK): is the first miss 1 damage and the second 3, as Bony gains +2 ATK after each 1?",
+  "source": ["card bony", "card lard", "card isaac", "R-ATK-13", "R-ATK-12", "R-CARD-13"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["lard", "lard"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["bony", "fly"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [1, 1, 3, 3]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["bony"]},
+    {"kind": "throw", "choices": ["lard: Each time you take damage, discard a loot card."],
+     "expect": {"allowed": true, "resolved_rolls": [1], "after": [{"player": 0, "damage": 1, "hp": 5}]}},
+    {"kind": "throw", "choices": ["lard: Each time you take damage, discard a loot card."],
+     "expect": {"allowed": true, "resolved_rolls": [1], "after": [{"player": 0, "damage": 4, "hp": 2}]}},
+    {"kind": "throw", "expect": {"allowed": true, "resolved_rolls": [3], "monsters": [{"slot": 1, "card": "bony", "damage": 1}]}},
+    {"kind": "throw", "expect": {"allowed": true, "resolved_rolls": [3]}}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 1, 3, 3],
+    "monsters": [{"card": "bony", "dead": true}, {"slot": 1, "card": "dip"}],
+    "after": [{"player": 0, "damage": 4, "hp": 2, "hand": 1}]
+  }
+}

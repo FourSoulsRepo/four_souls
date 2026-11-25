@@ -37,6 +37,7 @@ const rightExpect = `{"allowed": true,
 	"monsters": [
 		{"slot": 1, "card": "gaper", "damage": 1, "hp": 1, "atk": 1, "evasion": 3, "dead": false},
 		{"slot": 2, "card": "boss"},
+		{"card": "boss"},
 		{"card": "dummy", "dead": true}
 	],
 	"counters": [{"card": "gaper", "name": "level", "count": 1}, {"card": "gaper", "count": 0}],
@@ -84,7 +85,13 @@ func TestSituationExpectChecksFail(t *testing.T) {
 		{`"monsters": [{"card": "gaper", "atk": 2}]`, "monster gaper atk is 1, expected 2"},
 		{`"monsters": [{"card": "gaper", "evasion": 4}]`, "monster gaper evasion is 3, expected 4"},
 		{`"monsters": [{"card": "gaper", "dead": true}]`, "monster gaper dead is false, expected true"},
-		{`"monsters": [{"card": "dummy", "dead": false}]`, "monster dummy dead is true, expected false"},
+		{`"monsters": [{"card": "dummy", "dead": false}]`, "monster dummy is in no slot, options [gaper boss]"},
+		// 19.234: without dead true the card must be on top of a slot;
+		// the event is in the monster deck, the dummy in the discard.
+		{`"monsters": [{"card": "dummy"}]`, "monster dummy is in no slot, options [gaper boss]"},
+		{`"monsters": [{"card": "ambush_event"}]`, "monster ambush_event is in no slot, options [gaper boss]"},
+		{`"monsters": [{"card": "ambush_event", "dead": false}]`, "monster ambush_event is in no slot, options [gaper boss]"},
+		{`"monsters": [{"card": "ambush_event", "dead": true}]`, "monster ambush_event dead is false, expected true"},
 		{`"monsters": [{"card": "dummy", "damage": 0}]`, "monster dummy is in no slot, options [gaper boss]"},
 		{`"monsters": [{"damage": 0}]`, "monsters: a check needs card"},
 		{`"counters": [{"card": "gaper", "name": "level", "count": 2}]`, "level counters on gaper are 1, expected 2"},
@@ -97,6 +104,16 @@ func TestSituationExpectChecksFail(t *testing.T) {
 		{`"attacks": 0`, "attacks is 1, expected 0"},
 		{`"over": true`, "over is false, expected true"},
 		{`"winners": [0]`, "winners are [], expected [0]"},
+		// 19.234: an entry or a list that would check nothing.
+		{`"after": [{"player": 1}]`, "player 1 checks nothing: name a field to check"},
+		{`"after": [{"player": 0, "counters": []}]`, "player 0 counters is empty: it checks nothing"},
+		{`"after": []`, "after is empty: it checks nothing"},
+		{`"monsters": []`, "monsters is empty: it checks nothing"},
+		{`"counters": []`, "counters is empty: it checks nothing"},
+		{`"decks": {}`, "decks is empty: it checks nothing"},
+		{`"discards": {}`, "discards is empty: it checks nothing"},
+		{`"deck_bottoms": {}`, "deck_bottoms is empty: it checks nothing"},
+		{`"events": []`, "events is empty: it checks nothing"},
 	} {
 		got := runExpect(t, expectTable(`{"allowed": true, `+c.expect+`}`))
 		if want := "step 1 (play bomb_loot): " + c.want; len(got) != 1 || got[0] != want {
@@ -136,6 +153,38 @@ func TestSituationExpectOldCounts(t *testing.T) {
 	got = runExpect(t, expectTable(`{"allowed": true, "after": [{"player": 0, "hand": 2, "souls": 0}]}`))
 	if s := strings.Join(got, "\n"); !strings.Contains(s, "player 0 hand is 1, expected 2") || !strings.Contains(s, "player 0 souls is 1, expected 0") {
 		t.Errorf("mismatch %q; want hand and souls as counts", got)
+	}
+}
+
+// bonusTable: hero_a has belt ("You may attack an additional time on
+// your turn", like Champion Belt) and finger ("You may play an
+// additional loot card on your turn", like Polydactyly), and 1 extra
+// loot play (as Cain's ↷ gives); the turn's own loot play and attack
+// are used. hero_a plays a penny; expect is the step's.
+func bonusTable(expect string) string {
+	return `{"sets": ["test", "abilities"],
+		"setup": {"players": [{"character": "hero_a", "items": ["belt", "finger"], "hand": ["penny"], "extra_loot_plays": 1}, {"character": "hero_b"}],
+			"active": 0, "monsters": ["gaper"], "loot_plays": 0, "attacks": 0},
+		"steps": [{"player": 0, "kind": "play", "card": "penny", "expect": ` + expect + `}]}`
+}
+
+// attacks and loot_plays count what the active player can still do,
+// bonus ones too (24.28).
+func TestSituationExpectBonusCounts(t *testing.T) {
+	// belt's text: 1 attack beyond the turn's (R-TURN-07), which is
+	// used. finger's text and the extra play: 2 loot plays beyond the
+	// turn's (R-TURN-05); the penny uses one of them.
+	if got := runExpect(t, bonusTable(`{"allowed": true, "attacks": 1, "loot_plays": 1}`)); len(got) != 0 {
+		t.Errorf("mismatch %q; want none", got)
+	}
+	for _, c := range []struct{ expect, want string }{
+		{`"attacks": 0`, "attacks is 1, expected 0"},
+		{`"loot_plays": 0`, "loot_plays is 1, expected 0"},
+	} {
+		got := runExpect(t, bonusTable(`{"allowed": true, `+c.expect+`}`))
+		if want := "step 1 (play penny): " + c.want; len(got) != 1 || got[0] != want {
+			t.Errorf("%s: mismatch %q; want %q", c.expect, got, want)
+		}
 	}
 }
 
@@ -202,6 +251,8 @@ func TestSituationExpectResolvedAndEvents(t *testing.T) {
 		{`"events": [{"kind": "damaged", "player": 0}]`, `events: no "damaged" for player 0, expected one`},
 		{`"events": [{"kind": "damaged", "player": 1, "none": true}]`, `events: 1 "damaged" for player 1, expected none`},
 		{`"events": [{"kind": "died"}]`, `events: no "died", expected one`},
+		// 19.234: a seat no player has would pass every none check.
+		{`"events": [{"kind": "died", "player": 2, "none": true}]`, "events: no player 2"},
 	} {
 		got := runExpect(t, stackTable(`{"allowed": true, `+c.expect+`}`))
 		if want := "step 1 (pass): " + c.want; len(got) != 1 || got[0] != want {
@@ -254,6 +305,26 @@ func TestSituationExpectDeckBottoms(t *testing.T) {
 		got := g.mismatches(true, "", nil, Expectation{Allowed: true, DeckBottoms: c.bottoms})
 		if len(got) != 1 || got[0] != c.want {
 			t.Errorf("%v: mismatch %q; want %q", c.bottoms, got, c.want)
+		}
+	}
+	// 19.234: [] expects an empty deck; the test sets have no rooms.
+	for _, e := range []Expectation{
+		{Allowed: true, Decks: map[string][]CardRef{"room": {}}},
+		{Allowed: true, DeckBottoms: map[string][]CardRef{"room": {}}},
+	} {
+		if got := g.mismatches(true, "", nil, e); len(got) != 0 {
+			t.Errorf("%+v: mismatch %q; want none", e, got)
+		}
+	}
+	for _, c := range []struct {
+		e    Expectation
+		want string
+	}{
+		{Expectation{Allowed: true, Decks: map[string][]CardRef{"loot": {}}}, "loot deck top is [penny], expected []"},
+		{Expectation{Allowed: true, DeckBottoms: map[string][]CardRef{"loot": {}}}, "loot deck bottom is [bomb_loot], expected [] in any order"},
+	} {
+		if got := g.mismatches(true, "", nil, c.e); len(got) != 1 || got[0] != c.want {
+			t.Errorf("%+v: mismatch %q; want %q", c.e, got, c.want)
 		}
 	}
 	// The top stays top first: the penny put on top is still there.

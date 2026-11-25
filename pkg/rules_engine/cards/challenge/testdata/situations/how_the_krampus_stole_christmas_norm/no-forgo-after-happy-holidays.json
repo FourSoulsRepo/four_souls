@@ -1,0 +1,22 @@
+{
+  "title": "Krampus challenge, Normal: Happy Holidays! is done and the presents are items; Isaac kills the Fly; is he asked to forgo its 1¢?",
+  "source": ["card how_the_krampus_stole_christmas_norm", "card fly", "R-KRAMPUS-07", "R-KRAMPUS-10", "Q-33"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal", "holidays": true,
+             "presents": [{"kind": "cents", "to": 1}, {"kind": "loot", "to": 0}, {"kind": "treasure", "to": 1}, {"kind": "soul", "to": 0}]},
+    "players": [{"character": "isaac", "souls": ["monstro", "gemini", "chub"]}, {"character": "cain", "souls": ["carrion_queen", "pin"]}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"treasure": ["boomerang", "breakfast", "box", "blank_card"], "monster": ["pooter"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"]}
+  ],
+  "expect": {"allowed": true,
+    "resolved_rolls": [6],
+    "events": [{"kind": "forgone", "none": true}],
+    "monsters": [{"card": "fly", "dead": true}],
+    "after": [{"player": 0, "cents": 1, "items": ["breakfast", "blank_card"]}, {"player": 1, "cents": 0, "items": ["boomerang", "box"]}]}
+}

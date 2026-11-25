@@ -9,8 +9,8 @@
     "rolls": [6, 6]
   },
   "steps": [
-    {"player": 0, "kind": "attack", "choices": ["fly"], "expect": {"allowed": true, "attacks": 0}},
-    {"player": 0, "kind": "attack", "choices": ["leech"], "expect": {"allowed": true}}
+    {"player": 0, "kind": "attack", "choices": ["fly"], "expect": {"allowed": true, "attacks": 1}},
+    {"player": 0, "kind": "attack", "choices": ["leech"], "expect": {"allowed": true, "attacks": 0}}
   ],
   "expect": {
     "allowed": true,

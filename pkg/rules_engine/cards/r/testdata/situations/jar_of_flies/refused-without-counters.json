@@ -1,0 +1,12 @@
+{
+  "title": "Isaac's Jar Of Flies has no counters: is its ↷ ability refused?",
+  "source": ["card jar_of_flies", "R-ABIL-07"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["jar_of_flies"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "jar_of_flies", "ability": 1},
+  "expect": {"allowed": false, "rule": "R-ABIL-07"}
+}

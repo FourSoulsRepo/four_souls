@@ -1,0 +1,20 @@
+{
+  "title": "Isaac plays Berkano on Cain's Bag Lunch twice: does the first put a counter on it (Cain +1 HP, no steal), and the second destroy it?",
+  "source": ["card bag_lunch", "card berkano", "card cain", "Q-16", "Q-19", "R-ABIL-19", "R-ZONE-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["a_penny", "berkano", "berkano"]}, {"character": "cain", "items": ["bag_lunch"]}],
+    "active": 0,
+    "shop": ["spoon_bender", "sack_of_pennies"],
+    "loot_plays": 3
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "a_penny",
+     "expect": {"allowed": true, "after": [{"player": 1, "hp": 2, "items": ["bag_lunch"]}]}},
+    {"player": 0, "kind": "play", "card": "berkano", "choices": ["bag_lunch"],
+     "expect": {"allowed": true, "after": [{"player": 1, "hp": 3, "items": ["bag_lunch"], "counters": [{"card": "bag_lunch", "count": 1}]}]}},
+    {"player": 0, "kind": "play", "card": "berkano", "choices": ["bag_lunch", "sack_of_pennies"],
+     "expect": {"allowed": true, "discards": {"loot": ["a_penny", "berkano", "berkano", "bag_lunch"]}, "after": [{"player": 1, "hp": 2, "items": ["sack_of_pennies"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

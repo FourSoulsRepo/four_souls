@@ -1,0 +1,21 @@
+{
+  "title": "Isaac attacks Swarm of Flies (5 HP, DC 2) and rolls 5, 6, 6, 6, 6: does the 5 hit and also deal him 1 damage?",
+  "source": ["card swarm_of_flies", "card isaac", "R-ATK-12", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["swarm_of_flies"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [5, 6, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["swarm_of_flies"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [5, 6, 6, 6, 6],
+    "monsters": [{"card": "swarm_of_flies", "dead": true}],
+    "after": [{"player": 0, "damage": 1, "cents": 5}]
+  }
+}

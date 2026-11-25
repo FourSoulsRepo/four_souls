@@ -1,0 +1,21 @@
+{
+  "title": "Isaac kills Dank Globin and picks Cain, who holds A Dime!! and Bomb!: must Cain discard both?",
+  "source": ["card dank_globin", "card isaac", "R-ATK-12", "R-MECH-25", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "hand": ["a_dime", "bomb"]}],
+    "active": 0,
+    "monsters": ["dank_globin"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["dank_globin", "player 2 (cain)", "a_dime", "bomb"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "dank_globin", "dead": true}],
+    "discards": {"loot": ["a_dime", "bomb"]},
+    "after": [{"player": 0, "hand": 2}, {"player": 1, "hand": 0}]
+  }
+}

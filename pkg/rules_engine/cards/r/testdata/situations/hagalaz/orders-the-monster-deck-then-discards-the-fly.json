@@ -1,0 +1,13 @@
+{
+  "title": "Isaac plays Hagalaz on the monster deck, puts a Clotty on top and the Pooter second, then discards the Fly: does the Clotty refill the slot and leave the Pooter on top?",
+  "source": ["card hagalaz", "R-DEATH-09", "R-SHOP-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["hagalaz"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["pooter", "clotty", "clotty", "clotty", "clotty"]}
+  },
+  "action": {"player": 0, "kind": "play", "card": "hagalaz", "choices": ["ask.deck.monster", "clotty", "pooter", "clotty", "clotty", "clotty", "fly"]},
+  "expect": {"allowed": true, "discards": {"monster": ["fly"], "loot": ["hagalaz"]}, "monsters": [{"slot": 1, "card": "clotty"}, {"slot": 2, "card": "leech"}], "decks": {"monster": ["pooter", "clotty", "clotty", "clotty"]}}
+}

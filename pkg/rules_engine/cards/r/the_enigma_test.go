@@ -23,4 +23,4 @@ func TestTheEnigma(t *testing.T) {
 	}
 }
 
-func TestTheEnigmaCharacter(t *testing.T) { testCharacter(t, "the_enigma", "flip") }
+func TestTheEnigmaStartingItem(t *testing.T) { testStartingItem(t, "the_enigma", "flip") }

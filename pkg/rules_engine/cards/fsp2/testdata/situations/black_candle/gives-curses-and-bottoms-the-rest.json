@@ -1,0 +1,21 @@
+{
+  "title": "Isaac uses Black Candle; the top 6 monster cards hold Curse of Pain: does Cain get it, and do the other 5 go to the bottom?",
+  "source": ["card black_candle", "card curse_of_pain", "R-ABIL-20"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["black_candle"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fatty", "monstro"],
+    "decks": {"monster": ["spider", "dip", "trite", "leech", "curse_of_pain", "fly"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "black_candle", "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true,
+       "deck_bottoms": {"monster": ["spider", "dip", "trite", "leech", "fly"]},
+       "discards": {"monster": []},
+       "after": [{"player": 0, "deactivated": ["black_candle"]}, {"player": 1, "damage": 0}]}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "damage": 0}, {"player": 1, "damage": 1}]}}
+  ],
+  "expect": {"allowed": true}
+}

@@ -1,0 +1,19 @@
+{
+  "title": "Eternal Chest: Isaac discards A Penny! and rolls a 4; he gains 7¢, not the Penny's 1¢",
+  "source": ["card eternal_chest", "R-ABIL-07", "R-MECH-25", "R-ABIL-24", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["a_penny"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["eternal_chest"],
+    "rolls": [4]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "eternal_chest", "choices": ["a_penny"]}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [4], "after": [{"player": 0, "cents": 7, "hand": 0, "items": []}], "discards": {"loot": ["a_penny"], "room": []}}
+}

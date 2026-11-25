@@ -1,0 +1,21 @@
+{
+  "title": "Trick or Treat, Normal: Mischievous The Haunt has 1 trick counter and the players hold no souls; Isaac hits it with Bomb!, then kills it outright with Chaos Card; how much damage does it take?",
+  "source": ["card mischievous_the_haunt_norm", "card bomb", "card chaos_card", "R-TRICK-06", "R-CHAL-05", "Q-30"],
+  "sets": ["b2", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "normal"},
+    "players": [{"character": "isaac", "items": ["chaos_card"], "hand": ["bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "counters": [{"card": "mischievous_the_haunt_norm", "name": "trick", "count": 1}]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["mischievous_the_haunt_norm"], "expect": {"allowed": true, "events": [{"kind": "prevented"}], "monsters": [{"card": "mischievous_the_haunt_norm", "damage": 0}]}},
+    {"player": 0, "kind": "activate", "card": "chaos_card", "choices": ["Kill a player or monster.", "mischievous_the_haunt_norm"], "expect": {"allowed": true, "monsters": [{"card": "mischievous_the_haunt_norm", "damage": 0, "hp": 4}]}}
+  ],
+  "expect": {
+    "allowed": true,
+    "over": false,
+    "discards": {"loot": ["bomb"], "treasure": ["chaos_card"]}
+  }
+}

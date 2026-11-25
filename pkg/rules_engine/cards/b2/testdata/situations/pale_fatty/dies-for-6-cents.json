@@ -1,0 +1,21 @@
+{
+  "title": "Isaac (1 ATK) kills the Pale Fatty (4 HP, DC 3) with 4 sixes: does he gain its reward, 6¢, and no loot, treasure or soul?",
+  "source": ["card pale_fatty", "card isaac", "R-ATK-12", "R-CARD-13", "R-DEATH-08", "R-DEATH-09"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["pale_fatty"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["pale_fatty"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 6, 6],
+    "monsters": [{"card": "pale_fatty", "dead": true}, {"slot": 1, "card": "pooter"}],
+    "after": [{"player": 0, "cents": 6, "hand": 0, "items": [], "souls": 0}]
+  }
+}

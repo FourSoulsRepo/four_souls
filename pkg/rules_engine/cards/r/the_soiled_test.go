@@ -2,4 +2,4 @@ package r
 
 import "testing"
 
-func TestTheSoiledCharacter(t *testing.T) { testCharacter(t, "the_soiled", "ibs") }
+func TestTheSoiledStartingItem(t *testing.T) { testStartingItem(t, "the_soiled", "ibs") }

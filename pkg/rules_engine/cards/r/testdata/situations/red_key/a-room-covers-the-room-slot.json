@@ -1,0 +1,23 @@
+{
+  "title": "Isaac's Red Key puts Spider Webs on Blessing Of Greed; he kills the Fly and discards Spider Webs at the room step: is Blessing Of Greed back, so Cain gains 3¢?",
+  "source": ["card red_key", "card spider_webs", "card blessing_of_greed", "R-ZONE-10", "R-ZONE-11", "R-TURN-10", "R-TURN-12"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["red_key"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["blessing_of_greed"],
+    "decks": {"room": ["spider_webs"], "monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "red_key", "choices": ["ask.deck.room", "spider_webs", "ask.slot 1"],
+     "expect": {"allowed": true, "monsters": [{"card": "spider_webs"}], "after": [{"player": 0, "deactivated": ["red_key"]}]}},
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "cents": 1}]}},
+    {"player": 0, "kind": "end_turn", "choices": ["spider_webs"],
+     "expect": {"allowed": true, "active": 1, "discards": {"room": ["spider_webs"]}, "monsters": [{"card": "blessing_of_greed"}],
+       "after": [{"player": 0, "deactivated": ["character", "red_key"]}, {"player": 1, "cents": 3}]}}
+  ],
+  "expect": {"allowed": true}
+}

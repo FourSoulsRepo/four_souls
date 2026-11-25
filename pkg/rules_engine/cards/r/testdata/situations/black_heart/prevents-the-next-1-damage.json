@@ -1,0 +1,16 @@
+{
+  "title": "Isaac plays Black Heart on Cain, then Mega Bomb! on him: does Cain take 1 of the 2 damage and live?",
+  "source": ["card black_heart", "card mega_bomb", "card cain", "R-MECH-46"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["black_heart", "mega_bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "loot_plays": 2
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "black_heart", "choices": ["player 2 (cain)"]},
+    {"player": 0, "kind": "play", "card": "mega_bomb", "choices": ["player 2 (cain)"]}
+  ],
+  "expect": {"allowed": true, "discards": {"loot": ["black_heart", "mega_bomb"]}, "after": [{"player": 1, "damage": 1, "hp": 1, "dead": false}], "events": [{"kind": "died", "player": 1, "none": true}]}
+}

@@ -1,0 +1,23 @@
+{
+  "title": "Gold on Bum-Bo!: Isaac plays A Dime!!; do the 10¢ level up Bum-Bo!, or Golden Trinket, or go to Isaac? (waits for Q-27, still open: checks the engine's current answer, (a))",
+  "source": ["card bum_bo", "card a_dime", "card golden_trinket", "R-ABIL-38", "Q-27"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["golden_trinket", "bum_bo"], "hand": ["a_dime"],
+       "counters": [{"card": "bum_bo", "name": "gold", "count": 1}]},
+      {"character": "cain", "cents": 5}
+    ],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "a_dime"},
+  "expect": {
+    "allowed": true,
+    "discards": {"loot": ["a_dime"]},
+    "after": [
+      {"player": 0, "cents": 0, "hand": 0, "counters": [
+        {"card": "bum_bo", "count": 10}, {"card": "bum_bo", "name": "gold", "count": 1}, {"card": "golden_trinket", "count": 0}]},
+      {"player": 1, "cents": 5}
+    ]
+  }
+}

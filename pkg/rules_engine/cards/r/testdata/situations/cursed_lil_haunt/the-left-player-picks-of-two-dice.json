@@ -1,0 +1,22 @@
+{
+  "title": "Cursed Lil Haunt in a slot: Isaac attacks the Fly and rolls two dice, 1 and 6; Cain on his left picks the 1, a miss; then of 6 and 6 the 6 kills it",
+  "source": ["card cursed_lil_haunt", "card fly", "card clotty", "R-ATK-12", "R-ATK-13", "R-ABIL-29", "R-TURN-01"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["cursed_lil_haunt", "fly"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [1, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"], "expect": {"allowed": true, "prompt": {"player": 1, "options": ["1", "6"]}}},
+    {"kind": "choose", "choices": ["1", "6"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 6],
+    "after": [{"player": 0, "damage": 1, "cents": 1}],
+    "monsters": [{"card": "fly", "dead": true}, {"slot": 1, "card": "cursed_lil_haunt"}, {"slot": 2, "card": "clotty"}]
+  }
+}

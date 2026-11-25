@@ -1,0 +1,26 @@
+{
+  "title": "Charmed Fatty at 1 HP: Isaac misses with a 1 and takes 1 damage, so he discards his Bomb!; then a 6 kills it, he loots 2 and Cain loots 2",
+  "source": ["card charmed_fatty", "card clotty", "R-ATK-12", "R-ATK-13", "R-DEATH-06", "R-DEATH-07", "R-DEATH-09"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["charmed_fatty"],
+    "monster_damage": {"charmed_fatty": 4},
+    "decks": {"monster": ["clotty"], "loot": ["a_penny", "a_dime", "a_nickel", "two_cents"]},
+    "rolls": [1, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["charmed_fatty", "bomb", "player 2 (cain)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 6],
+    "after": [
+      {"player": 0, "damage": 1, "hand_cards": ["a_penny", "a_dime"]},
+      {"player": 1, "hand_cards": ["a_nickel", "two_cents"]}
+    ],
+    "monsters": [{"card": "charmed_fatty", "dead": true}, {"slot": 1, "card": "clotty"}],
+    "discards": {"loot": ["bomb"], "monster": ["charmed_fatty"]}
+  }
+}

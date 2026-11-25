@@ -1,0 +1,23 @@
+{
+  "title": "Krampus challenge, Normal: the players hold 5 souls and two minions are in play; Isaac has 2 attacks and makes the random attack, which kills the Dip; may his next attack go to Pilfering Krampus?",
+  "source": ["card pilfering_krampus_norm", "card how_the_krampus_stole_christmas_norm", "R-KRAMPUS-11", "R-KRAMPUS-13", "R-KRAMPUS-14", "R-ATK-02", "Q-30", "Q-31"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal"},
+    "players": [{"character": "isaac", "souls": ["fly", "fly", "fly", "fly", "fly"]}, {"character": "cain"}],
+    "active": 0,
+    "attacks": 2,
+    "monsters": ["leech", "fly"],
+    "minions": ["pooter", "dip"],
+    "rolls": [6],
+    "random": ["dip"]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "expect": {"allowed": true, "events": [{"kind": "random_pick"}], "monsters": [{"card": "dip", "dead": true}, {"card": "pooter"}], "after": [{"player": 0, "cents": 0, "souls": 5}]}},
+    {"player": 0, "kind": "attack", "expect": {"allowed": true, "prompt": {"player": 0, "options": ["leech", "fly", "pooter", "ask.deck.monster"]}}}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6]
+  }
+}

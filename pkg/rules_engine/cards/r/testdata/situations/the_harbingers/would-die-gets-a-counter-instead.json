@@ -1,0 +1,25 @@
+{
+  "title": "The Harbingers at 1 HP: Isaac's 6 would kill it; instead it gets a counter, Isaac gains a treasure, his attack is cancelled and it heals to full",
+  "source": ["card the_harbingers", "R-ABIL-29", "R-ABIL-30", "R-MECH-07", "R-ATK-14"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech", "the_harbingers"],
+    "monster_damage": {"the_harbingers": 3},
+    "decks": {"treasure": ["book_of_sin"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["the_harbingers"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "attacks": 0,
+    "after": [{"player": 0, "souls": 0, "items": ["book_of_sin"], "damage": 0}],
+    "monsters": [{"slot": 3, "card": "the_harbingers", "damage": 0, "hp": 4}],
+    "counters": [{"card": "the_harbingers", "count": 1}],
+    "discards": {"monster": []}
+  }
+}

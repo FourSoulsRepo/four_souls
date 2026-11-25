@@ -1,0 +1,16 @@
+{
+  "title": "Isaac kills the Fly: does Jar Of Flies get a counter?",
+  "source": ["card jar_of_flies", "card fly", "R-ATK-12"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["jar_of_flies"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "attack", "choices": ["fly"]},
+  "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}], "after": [
+    {"player": 0, "cents": 1, "counters": [{"card": "jar_of_flies", "count": 1}]}
+  ]}
+}

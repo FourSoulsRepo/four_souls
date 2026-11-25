@@ -1,0 +1,19 @@
+{
+  "title": "Shell Game: Isaac pays 3¢ and rolls a 5; he gains 5¢ and the room stays",
+  "source": ["card shell_game", "R-ABIL-24", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "cents": 3},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["shell_game"],
+    "rolls": [5]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "shell_game"}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [5], "after": [{"player": 0, "cents": 5, "hand": 0, "items": []}], "discards": {"room": []}, "monsters": [{"card": "shell_game"}]}
+}

@@ -1,0 +1,20 @@
+{
+  "title": "Dice Room!!!: as it enters play both shop items go to the treasure discard",
+  "source": ["card dice_room_3", "R-CARD-34", "R-ZONE-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "shop": ["jawbone", "spoon_bender"],
+    "rooms": ["dice_room_3"],
+    "stack": [{"kind": "trigger", "card": "dice_room_3", "owner": 0}]
+  },
+  "steps": [
+    {"player": 0, "kind": "pass"}
+  ],
+  "expect": {"allowed": true, "resolved": ["dice_room_3"], "discards": {"treasure": ["jawbone", "spoon_bender"]}, "after": [{"player": 0, "items": []}, {"player": 1, "items": []}]}
+}

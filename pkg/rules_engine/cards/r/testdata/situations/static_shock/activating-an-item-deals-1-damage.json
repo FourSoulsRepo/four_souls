@@ -1,0 +1,17 @@
+{
+  "title": "Static Shock: Isaac activates his Sack Of Pennies; he gains 1¢ and takes 1 damage",
+  "source": ["card static_shock", "card sack_of_pennies", "R-MECH-01"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["sack_of_pennies"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "rooms": ["static_shock"]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "sack_of_pennies"}
+  ],
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 1, "damage": 1, "deactivated": ["sack_of_pennies"]}, {"player": 1, "damage": 0}]}
+}

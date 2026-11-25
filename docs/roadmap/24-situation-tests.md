@@ -349,7 +349,7 @@ Ideas: TS-13, LR-04, R-03.
    5. Owner: may a table of fixed cases become a file per case?
    6. The Wheel of Fortune would be 6 files.
 
-### [ ] 24.9 Docs
+### [x] 24.9 Docs
 
 1. Goal: a simple new card test starts as a file.
 2. Tasks:
@@ -358,6 +358,46 @@ Ideas: TS-13, LR-04, R-03.
    3. `CLAUDE.md` Commands: how to run one set's files.
 3. Done when:
    1. A simple new card from the guide needs no Go test.
+4. Done (2026-11-25): `Adding-a-card.md`, step 3 "Test it"
+   1. Files first; Go for what the format can't say (ADR 034 1).
+   2. Simple and complicated, with examples; a table is one file per case.
+   3. A missing field goes into the format first (ADR 034 1.8, 1.9).
+   4. Where the file goes: the four trees, props, the set's runner.
+   5. `source` forms; an open Q only with a "waits" title (ADR 034 9.8).
+   6. Values from the rules (5.25); a mismatch is a bug for step 19.
+   7. Each file fails with one value changed.
+   8. Worked example: Bomb!'s `kills-the-fly.json`, each value's source.
+   9. How to run a card's files, one file, a set.
+   10. Start from the dump: a Go sketch, `SITUATION_DUMP`, then delete it.
+   11. The Go example was `TestBomb`, gone since 24.12.
+   12. Now `TestRulingDamageToDeadPlayer`, the ADR's complicated example.
+   13. Fan set: its runner passes `b2.Set, Set`; the checklist names files.
+5. `Situation-payload.md`: every step 24 field checked against the structs.
+   1. All fields were there; fixed drift and gaps only.
+   2. `events` without `player` counts a monster's too (24.24 item 5).
+   3. Pilfering Krampus's random attack: no longer "stays Go" (24.27, 24.30).
+   4. `source`: an open Q only with a "waits" title; the runner checks only that it exists.
+   5. Counters: `"player"` in a player's list; a challenge boss's count left, 0 allowed.
+   6. The runner: commands for a set, a card, a file, cross-set, rule topics.
+   7. Dump: a file's folder by the layout, not only a card folder.
+6. Same drift, other pages (5.26):
+   1. `Effect-blocks.md`, `Rules-engine.md`: "tested" counts situation files (`cardgen` does).
+   2. `Rules-engine.md`: challenge tests are situation files now (24.27).
+7. A `-run` pattern is a regex per level: `bomb` also matches `gold_bomb`.
+   1. The docs anchor it: `'TestSituations/^bomb$/'`.
+8. `CLAUDE.md` Commands 4.29: run one set, card, file; the dump.
+9. ADR 034: 12.10 the cross-set runner, 12.11 leftovers (24.32).
+10. Done when, checked for real in a scratch copy of `pkg/rules_engine`:
+   1. A new b2 loot card `scratch_bomb`: 1 damage, gain 1¢.
+   2. One file from the guide: `scratch_bomb/hits-cain-and-gains-1-cent.json`.
+   3. It passed; with Cain's damage 2 it failed, naming the value.
+   4. A bad source (`R-FOO-99`) failed, naming it.
+   5. `go test ./cards/ ./cards/b2` passed; no Go test.
+   6. `cardgen` counts it tested by its folder (`report.go`).
+   7. A hand-added card needs its deck group too; `cardgen` writes it.
+   8. The dump of a two-line Go sketch gave the setup and step; no `expect`.
+   9. Nothing of it is committed.
+11. No wiki page added; `Home.md`, `_Sidebar.md` unchanged.
 
 ### [x] 24.10 Priority windows
 
@@ -638,54 +678,1492 @@ Ideas: TS-13, LR-04, R-03.
    1. Other cards' tests use them; their files are gone.
 13. `cardgen -report` unchanged.
 
-### [ ] 24.15 Bulk: b2 monsters
+### [x] 24.15 Bulk: b2 monsters
 
 1. Goal: Basic and Cursed Monster (about 46 tests).
+2. Counts (2026-11-23): 46 tests in 44 `_test.go` files of the family.
+   1. 38 Basic, 6 Cursed Monster cards; Stoney has 3 tests.
+   2. Dinga: no Go test left (24.7).
+3. Moved: 46 tests, as 46 files; every `_test.go` of the family is gone.
+   1. `testPlainMonster`, 14: Cod Worm, Clotty, Conjoined Fatty, Dip.
+   2. Also Fatty, Fat Bat, Fly, Leech, Pale Fatty, Pooter.
+   3. Also Red Host, Spider, Squirt, Trite: `<card>/dies-for-<reward>.json`.
+   4. TestBigSpider, TestBlackBony, TestBoomFly, TestDankGlobin.
+   5. TestDople, TestEvilTwin, TestGreedling, TestHanger, TestHopper.
+   6. TestHorf, TestKeeperHead, TestLeaper, TestMomsDeadHand, TestMomsEye.
+   7. TestMomsHand, TestMulligan, TestMulliboom, TestPortal, TestPsyHorf.
+   8. TestRageCreep, TestRingOfFlies, TestSwarmOfFlies, TestWizoob.
+   9. Cursed: Gaper, Keeper Head, Fatty, Psy Horf, Horf, Mom's Hand.
+   10. TestStoney, TestStoneyCovered, TestStoneyFromTheDeck.
+4. Split: 0. Stayed Go: 0. Needed a format change: 0.
+5. Engine state read in Go, said by a game action in the file:
+   1. Big Spider's `DeckAttacks`: the next attack offers only the deck.
+   2. Portal's `MustAttacks`: `attacks` 1, an end of turn refused by R-ATK-03.
+   3. Hanger's shop slot: a purchase offers the new slot's Breakfast.
+   4. Mulligan's slot: two refill cards are both in play.
+   5. Hopper's `AttackRolls`: `resolved_rolls` 6, 5, 5.
+   6. Stoney covered: a deck attack puts the Pooter on it, then kills it.
+   7. The Go test used `CoverMonsterSlot` and `KillObject`.
+   8. Stoney from the deck: no roll, no `attack_target`; then an end of turn.
+6. Drafts: 39 of 46 files kept the dumped steps.
+   1. 37 got monster or treasure deck tops in `setup.decks`.
+   2. So the refill and a gained treasure are named.
+   3. Steps added: Big Spider, Hanger, Portal, Stoney from the deck.
+   4. A prompt check splits a step: Mom's Dead Hand, Stoney.
+   5. One-step Mystery Sack drafts became `action` (4).
+7. Checks added from the card text (owner answer 8):
+   1. Every kill: the monster died, its reward, the slot's refill.
+   2. Plain monsters: no other reward kind, no soul.
+   3. Black Bony: a reward roll of 6 loots 6; Boom Fly: 4¢.
+   4. Dank Globin: both cards in the loot discard; Wizoob: Monstro too.
+   5. Cursed: the roll's own result (4¢, loot 1) beside the curse.
+   6. Mom's Hand: one attack roll; Mom's Dead Hand: the steal options.
+   7. Dople, Evil Twin, Mulliboom: Cain's `died`; Isaac unhurt.
+8. Go tests that did not check what they claimed: 1.
+   1. TestMomsEye had no check (`_ = tb`).
+   2. The file checks Isaac's `looked_at` and Cain's hand.
+9. Bugs logged: 19.233; not fixed here.
+   1. Mystery Sack's result resolves after Cursed Horf's trigger; no order asked.
+   2. The Cursed Horf file leaves out the loot and its discard.
+10. `cardgen -report` unchanged.
 
-### [ ] 24.16 Bulk: b2 events, curses, souls
+### [x] 24.16 Bulk: b2 events, curses, souls
 
 1. Goal: Good and Bad Event, Curse, Bonus and Lost Soul (about 25 tests).
+2. Counts (2026-11-23): 25 tests in 25 `_test.go` files of the family.
+   1. 26 cards: 12 Good Event, 5 Bad Event, 5 Curse, 3 Bonus Soul, 1 Lost Soul.
+   2. Chest (2nd): no Go test left (24.3); Soul of Wrath is in `r`.
+3. Moved: 23 tests, as 23 files; their `_test.go` files are gone.
+   1. TestAmbush, TestCursedChest, TestDarkChest, TestDarkChest2.
+   2. TestDevilDeal, TestGoldChest, TestGoldChest2, TestSecretRoom.
+   3. TestICanSeeForever, TestShopUpgrade, TestXLFloor, TestWeNeedToGoDeeper.
+   4. TestMegaTrollBomb, TestTrollBombs, TestLostSoul.
+   5. TestCurseOfAmnesia, TestCurseOfGreed, TestCurseOfLoss.
+   6. TestCurseOfPain, TestCurseOfTheBlind.
+   7. TestSoulOfGluttony, TestSoulOfGreed, TestSoulOfGuppy.
+4. Split: 2, a file each.
+   1. TestChest: the file checks the cents, the discard, the Fly uncovered.
+   2. The discarded event's `Card` and `Prev` stay Go: TestChestDiscardedEvent.
+   3. TestGreedEvent: the file checks the choice, the cents, `lost_cents`.
+   4. The event's `Amount` stays Go: TestGreedEventLostCentsAmount.
+5. Stayed Go whole: 0. Needed a format change: 0.
+   1. The splits keep event fields (`Card`, `Prev`, `Amount`), as 24.13.
+6. Engine state read in Go, said by a game action in the file:
+   1. Ambush's `MustAttackDeck`: `attacks` 2, an end of turn refused by R-ATK-03.
+   2. Then an attack offers only the monster deck.
+   3. Shop Upgrade's shop slots: a purchase offers both new slots' items.
+   4. Curses (`hasCurse`): no curse check (24.5); the curse's effect says it.
+   5. Also `discards.monster` is `[]`: the curse did not go to discard.
+   6. Soul of Guppy's condition: Cain is active with no Guppy item.
+   7. So turn order asks Cain first; Isaac, with 2, gains the soul.
+   8. Bonus souls: `setup.bonus_souls`; A Penny! is the action that checks them.
+7. Drafts: 15 of 23 kept the dumped setup.
+   1. Soul of Gluttony and Soul of Greed: a real game, no `Table`, no draft.
+   2. Deck tops fixed in `setup.decks`, so the file names them (6).
+   3. Curse of Amnesia, Gold Chest, I Can See Forever, Shop Upgrade.
+   4. Also XL Floor, We Need To Go Deeper.
+   5. Curse of Greed: Cain's 5¢, set between steps, is in `setup`.
+   6. Soul of Guppy: no step; Cain active and his A Penny! added.
+   7. One-step reveal drafts became `action` (13).
+   8. Greed!: a prompt check splits the reveal from the choice.
+8. Checks added from the card text (owner answer 8):
+   1. Every event: it is in the monster discard; roll events: `resolved_rolls`.
+   2. Shop Upgrade, XL Floor, We Need To Go Deeper: one more attack.
+   3. XL Floor: the Pooter fills the new slot.
+   4. Curse of Greed: no loss at the end of Isaac's turn.
+   5. Curse of the Blind: DC 2 on Isaac's turn; Curse of Pain: no damage then.
+   6. Curse of Loss: Monstro and the curse in the monster discard, Cain `died`.
+   7. Dark Chest, Troll Bombs: `died` for Isaac only; Mega Troll Bomb: both.
+   8. Greed!: Cain is the only choice; Isaac loses nothing.
+   9. I Can See Forever: the 5 other cards on top, in the chosen order.
+   10. Lost Soul: no item, not in the loot discard.
+   11. Bonus souls: the other player gains none.
+9. Go tests that did not check what they claimed: 1.
+   1. TestSoulOfGluttony always skipped: its loop moved only Cain's few cards.
+   2. The file gives Cain 10 loot cards in setup and checks the soul.
+10. Refusal: Ambush's end of turn cites R-ATK-03; its text fits.
+11. No rules bug found; `cardgen -report` unchanged.
+12. Helpers `hasCurse`, `handCards` removed from `common_test.go`: no use left.
 
-### [ ] 24.17 Bulk: b2 bosses and characters
+### [x] 24.17 Bulk: b2 bosses and characters
 
 1. Goal: Boss, Epic Boss, Character (about 49 tests).
+2. Counts (2026-11-23): 49 tests in 46 `_test.go` files of the family.
+   1. 31 Boss, 4 Epic Boss, 11 Character cards.
+   2. Bosses: one test each; Cain 2 tests, Eden 3.
+3. Moved: 35 tests, as 35 files; their `_test.go` files are gone.
+   1. Plain bosses: Gurdy, Little Horn, Monstro: `<card>/dies-for-<reward>.json`.
+   2. TestCarrionQueen, TestChub, TestConquest, TestDaddyLongLegs, TestDarkOne.
+   3. TestDeath, TestDelirium, TestEnvy, TestFamine, TestGemini, TestGluttony.
+   4. TestGreed, TestGurdyJr, TestLarryJr, TestLust, TestMaskOfInfamy.
+   5. TestMegaFatty, TestMom, TestPestilence, TestPeep, TestPin, TestPride.
+   6. TestRagMan, TestSatan, TestScolex, TestSloth, TestTheBloat.
+   7. TestTheHaunt, TestTheDukeOfFlies, TestTheLamb, TestWar, TestWrath.
+4. Split: 11, a file each: every character's ↷ test.
+   1. Blue Baby, Cain, Eden, Eve, Isaac, Judas, Lazarus.
+   2. Also Lilith, Maggy, Samson, The Forgotten.
+   3. File: `<character>/extra-loot-play-in-response.json`.
+   4. The active one's ↷ starts on `setup.stack`; the other responds.
+   5. It checks 2 loot plays, both deactivated, a second ↷ refused.
+   6. Stays Go: the other player's `ExtraLootPlays` (`testExtraLootOnAnotherTurn`).
+   7. No check says it (24.5 rejected `extra_loot_plays`).
+   8. No step can use it: a play in response is mid-stack (owner answer 7).
+   9. Stays Go: the starting item, from a real game start (`newGame`).
+   10. Cain's and Eden's start order and Eden's choice stay Go too.
+5. Stayed Go whole, complicated (ADR 034 1.5): 3.
+   1. Game start, events, views, replay: TestCainGoesFirstWithoutARoll.
+   2. Also TestEdenBeforeCain, TestEdensAtOnce.
+6. Needed a format change: 0 whole tests.
+   1. The splits keep an `extra_loot_plays` check and the game start.
+7. Engine state read in Go, said by a game action in the file:
+   1. `AttackRolls`: `resolved_rolls` (Carrion Queen, Chub, Mega Fatty, Pin, Duke).
+   2. `MustAttacks` (Conquest, Envy): `attacks` 1, an end of turn refused by R-ATK-03.
+   3. `Evasion`, `MonsterATK` (Larry Jr., Mask, Gemini): the attack's target question.
+   4. The step stops there; then the rolls show the DC.
+   5. Mom's `len(Monsters)`: two refill cards in slots, the third on the deck.
+   6. Daddy Long Legs' `Boosts`: a 4 then misses; the Fly has DC 3.
+   7. Famine: two `end_turn` steps; Cain is active again.
+8. Drafts: 26 of 46 files kept the dumped steps.
+   1. Monster or treasure deck tops in `setup.decks` (35), so cards are named.
+   2. Characters: no draft kept; a response is `setup.stack` (owner answer 7).
+   3. Gurdy Jr.: the roll of 1 starts as an `attack_roll` on `setup.stack`.
+   4. A prompt check splits a step: Death, Satan!, Delirium.
+   5. Also Gemini, Larry Jr., Mask of Infamy: no step in the draft.
+   6. Satan! starts at 1 HP: one 6 kills it and a player.
+   7. Conquest, Envy: a refused `end_turn` step added.
+9. Setups made to prove the card text:
+   1. Dark One, War: Isaac 3 HP survives the 2 damage; it was "2 or dead".
+   2. Gluttony: Cain 4 HP; a 5 among the 6s deals him nothing.
+   3. Daddy Long Legs: a Fly beside it, a 4 after the 1.
+   4. Larry Jr.: a 3 misses, a 4 hits; Mask of Infamy: a 5 misses.
+10. Checks added from the card text (owner answer 8):
+   1. Every kill: the monster died, its reward, its soul; most: the refill.
+   2. Delirium: the Fly back to DC 2; the deck's 5 top cards, Delirium 5th.
+   3. Death, Satan!: both players offered; only Cain `died`.
+   4. Pride: its trigger resolves before the first attack roll (R-ATK-25).
+   5. Pride, Scolex, Sloth: the cards in the loot discard.
+   6. Rag Man: no soul, 3 loot, the Pooter still on the deck.
+   7. Gurdy Jr.: its trigger, then Mr. Boom, then the roll (R-STACK-02).
+   8. Greed: Isaac 1 damage; The Bloat: Isaac 2; The Lamb: Cain has no soul.
+11. Go tests that did not check what they claimed: 2.
+   1. TestGurdyJr checked damage ≥ 1; the roll of 1 alone dealt that.
+   2. The file checks 2 damage on 3 HP and the resolve order.
+   3. TestDaddyLongLegs checked only that some boost existed.
+   4. The file checks the 4 missing and the Fly's DC 3.
+12. Runner note, no change here: a `monsters` check with only `card` checks nothing.
+   1. `dead: false` also passes for a card in a deck.
+   2. Mom's file checks `damage` 0, so the card must be in a slot.
+13. No rules bug found; `cardgen -report` unchanged.
+14. Helpers `testPlainMonster`, `killWithSixes` removed: no use left.
+   1. `testExtraLoot` is now `testExtraLootOnAnotherTurn`.
 
-### [ ] 24.18 Bulk: b2 other
+### [x] 24.18 Bulk: b2 other
 
 1. Goal: b2 test files with no card kind (about 57 tests).
+2. Counts (2026-11-23): 57 tests looked at.
+   1. 33 in files of no card: history 5, interactions 2, pride 3, three_plus 1, yuggy 22.
+   2. 22 of card kinds no family had (24.12-24.17 left them).
+   3. 1 Cent to 4 Cent, Pill/Rune, Dice Shard/Soul Heart, One-Use Treasure.
+   4. Also Holy/Charmed Monster; Charged Baby's test sat in `holy_moms_eye_test.go`.
+   5. 2 in `godhead_test.go`, reported by no sub-step.
+   6. Not looked at again: Go tests reported "stays Go" before.
+3. Moved: 47 tests, as 55 files; their Go tests are gone.
+   1. Yuggy's rulings, 22: 17 in `interactions/`, 5 in card folders.
+   2. Card folders: Chaos Card (eternal), Mom's Shovel, Guppy's Paw (dead).
+   3. Also Soul of Gluttony (once per game), The D20 (a shop item).
+   4. TestPrideDeckAttackTriggersBeforeTheRoll, TestPrideResolvesBeforeTheAttackRoll: `pride/`.
+   5. TestAttackWithNoTargetTriggerRollsAtOnce: `fly/` (R-ATK-25 shown with the Fly).
+   6. Coins: TestAPenny, TestTwoCents, TestThreeCents, TestFourCents.
+   7. Runes and pills: TestBlankRune (2 files), TestEhwaz.
+   8. TestPills, TestPills2, TestPills3: 3 files each (owner answer 11).
+   9. TestDiceShard, TestSoulHeart, TestBox, TestChaosCard, TestTheD4, TestMomsShovel.
+   10. Holy: Dinga, Dip, Keeper Head, Squirt, Mom's Eye (2 tests).
+   11. TestChargedBabyOffersOnlySpentActiveItems: `charged_baby/`.
+4. Split: 1. TestGodheadAsksForDiceValues.
+   1. `godhead/offers-1-or-6.json`: the options 1 and 6, then a 1 resolves.
+   2. The options' key (`ask.dice`) stays Go: no check reads a key.
+5. Stayed Go, complicated (ADR 034 1.5, 1.6): 7, and 2 from 24.8.
+   1. Views and stack item fields (`Text`, `TargetCard`): the 5 history tests.
+   2. Real game start, decks counted: TestThreePlusCards.
+   3. Engine API (`cardkit.DieFaces`): TestDieFacesAreDiceValues.
+   4. The 2 of `interactions_test.go`: Go since 24.8, not judged again.
+6. Needed a format change: 0.
+7. Engine state read in Go, said by a game action in the file:
+   1. Placebo's `AbilitiesOf`: Placebo copies the shop's Mystery Sack; 3 gains 4¢.
+   2. The D20's shop slot: a purchase offers the treasure deck's Dinner.
+   3. Guppy's Paw's `Shields`: no `shielded` event.
+   4. Pride before the roll: a `throw` step stops at the first throw.
+   5. Its step checks `resolved` Pride and no roll yet.
+   6. The roll at once: no `passed_priority` between the pick and the throw.
+8. Drafts: 34 of 55 files kept the dumped setup and steps.
+   1. A response is `setup.stack` and `priority` 1 (owner answer 7): 9.
+   2. Chaos Card (3), Sloth, Decoy, Glass Cannon, Godhead, Dice Shard.
+   3. Curved Horn: the first attack roll starts on `setup.stack`.
+   4. Deck tops in `setup.decks`, so cards are named: Ehwaz, Pills (2), The D4, The D20.
+   5. Pride's deck attack also answers the slot (`ask.slot_card 1 fly`).
+   6. No draft: Placebo (no step), Soul of Gluttony (a real game).
+9. Checks added from the card text (owner answer 8):
+   1. Every loot card in the loot discard; roll cards: `resolved_rolls`.
+   2. Ehwaz: Pooter and Spider fill the slots; Fly and Leech in the discard.
+   3. Dice Shard: Cain, the roll's controller, throws the reroll.
+   4. Soul Heart: `prevented`, the Fly dies; Box!: each play allowed.
+   5. Chaos Card, The D4, Mom's Shovel: the treasure discard; The D4 the new items.
+   6. Mom's Shovel recharged on Isaac's next turn; the soul is Monstro.
+   7. The Dead Cat: 8 counters left; Yum Heart: no `died`.
+   8. Curved Horn: 2 damage on Big Spider, then the second 6 kills it.
+   9. Chaos Card and XIII. Death: the treasure discard has both items.
+   10. Sloth: no attack roll resolves; Isaac gains its soul and 1¢.
+   11. Decoy: Isaac has the Decoy; Glass Cannon and The D20: no roll.
+   12. Holy monsters: the Sack's own result beside the trigger.
+10. Go tests that did not check what they claimed: 1.
+   1. TestYuggyBonusSoulOncePerGame always skipped, as TestSoulOfGluttony (24.16).
+   2. `soul_of_gluttony/gained-once-per-game.json` checks it for real.
+   3. Isaac gains it, Chaos Card destroys it, a play leaves 10 cards: no soul.
+11. Sources: Yuggy's Reddit comment IDs have no thread ID, so no link.
+   1. The files cite the card text and the R-rules made from them.
+   2. R-ABIL-34, R-ABIL-35, R-DICE-07, R-CARD-24, R-CARD-34, R-MECH-51.
+12. Refusal: Modeling Clay's tapped copy cites R-ABIL-07; it fits (with R-ABIL-10).
+13. No rules bug found; `cardgen -report` unchanged.
+14. Helpers:
+   1. `attackRoll`, `ownRoll` moved to `common_test.go`: other tests use them.
+   2. Removed, no use left: `inDiscard`, `testGain`, `slayTable`, `bonusGame`.
+   3. Also `runSome`, `rollTable`, `resolvedRoll`.
+15. `open-questions.md`: Q-29's and S-YUG's test references point at the files.
 
-### [ ] 24.19 Bulk: fsp2
+### [x] 24.19 Bulk: fsp2
 
 1. Goal: every fsp2 test (about 89 tests).
+2. Counts (2026-11-23): 95 tests in 80 `_test.go` files of `cards/fsp2`.
+   1. `common_test.go` holds helpers only.
+   2. fsp2 gets its runner: `situations_test.go`, with its first files.
+   3. Every file names `"sets": ["b2", "fsp2"]`: fsp2 plays with the Base Game.
+3. Moved: 82 tests, as 91 files; 67 `_test.go` files are gone.
+   1. Tables, one file per case (owner answer 11): Angel Room 3.
+   2. Also Black Rune, Cursed Eye, Gimpy, Head of Krampus 2 each.
+   3. Also Holy Chest, Pills! (3-4 / 5-6), Poker Chip 2 each.
+   4. Every other card test: one file in its card folder.
+   5. Poker Chip through Diplopia: `poker_chip/copied-by-diplopia.json`.
+   6. No `interactions/`: no test is about two fsp2 cards.
+   7. No cross-set file; `cards/testdata/situations/` stays unwired.
+4. Split: 9, a file each; the rest stays Go.
+   1. Test1Up: the heal's `Amount` stays Go (`Test1UpHealsOnce`).
+   2. TestBossRushOwnSlot: `CheckInvariants` stays Go (engine API).
+   3. TestMutantSpider: the dice event and the prompt text stay Go.
+   4. TestRedCandle, TestTelepathyForDummies: view dice stay Go.
+   5. Bum-Bo, Dark Judas, Guppy, Whore of Babylon: `<character>/extra-loot-play.json`.
+   6. Their starting item stays Go: `testStartingItem` (a real game start).
+5. Stayed Go whole: 4.
+   1. Save and load: TestGimpySaveAtDiscard (ADR 034 1.5).
+   2. Views: TestGuppysEye (1.5).
+   3. Event field `Object`: TestCurseOfImpulseDeactivatedEvents (24.6).
+   4. TestGetOutOfJailCard: needs a format change.
+   5. Cain acts with priority over a stack, after the card resolved.
+   6. A step can't stop there (owner answer 7); no setup field holds the lock.
+6. Engine state or API in Go, said by a game action in the file:
+   1. `DealDamageTo`: Bomb! in hand, or on `setup.stack` with `priority`.
+   2. Abaddon, Gimpy, Globin, Isaac!, Lard, Smart Fly, Tumor.
+   3. Dark Arts, The Left Hand: Cain starts with 1 damage; Bomb! kills him.
+   4. Mama Haunt: Cain misses the Leech on his own turn and dies.
+   5. `KillObject`: an attack (Swarmer, The Fallen, Mom's Heart!).
+   6. Mom's Heart! starts with 7 damage; one 6 kills it.
+   7. Headless Horseman: three hits, then a 3 misses for 1, two 4s kill.
+   8. `DeckAttacks`: Blastocyst, Gold Key: the next attack offers only the deck.
+   9. Gold Key: three deck attacks on events after the Fly, each allowed.
+   10. `MustAttacks`: Boss Rush!, Krampus: an end of turn refused by R-ATK-03.
+   11. `PlayerATK`, `Evasion`, `HP`: a prompt check stops at the target question.
+   12. Nerve Ending, Widow, Polyphemus, The Wiz: then misses and hits show them.
+   13. `Lingering` (Red Candle): Cain's 3 on his turn deals no damage.
+   14. `FreeLoot`, `ExtraLootPlays` (Distant Admiration): later plays and a refusal.
+   15. Responses to a waiting roll or loot: `setup.stack` (owner answer 7).
+   16. 20/20, Libra, Euthanasia, Pills! (cancel).
+7. Needed a format change: 1 whole test (5.4); the splits keep Go-only fields.
+8. Drafts: most kept the dumped setup; each got `title`, `source`, `expect`.
+   1. Deck tops in `setup.decks`, so refills, loot and treasure are named.
+   2. `ForceRolls` after a direct call: all dice in `setup.rolls`.
+   3. No draft (no step): Guppy's Eye, Nerve Ending, Widow, Polyphemus, ? Card refused.
+9. Setups changed to prove the card text:
+   1. Brain, Roundy: Breakfast for HP, not Lard; one fsp2 card per file.
+   2. Flaming Hopper: no Lard; it took no damage.
+   3. Bony keeps two Lards: 6 HP shows 1, then 3 damage; throw steps check each.
+   4. Forget Me Now: Cain's Fatty soul is Widow, a soul card (R-CARD-18).
+   5. Dark Arts: one file; a 6 gives 2¢, the Sack gives nothing on a 6.
+   6. The Go test compared two tables; the file needs no second one.
+10. Checks added from the card text (owner answer 8):
+   1. Every kill: the monster died, its reward, its soul, the refill.
+   2. Roll cards and attacks: `resolved_rolls`; used items: `deactivated`.
+   3. Loot cards, destroyed items, events: their discard pile.
+   4. Black Candle: all 5 other cards at the bottom; Cain's Curse of Pain hurts him.
+   5. Curse of Blood Lust: Isaac may end the turn he used his attack.
+   6. Cursed Eye on 1: no `damaged` for Isaac; Monstro still in its slot.
+   7. Daddy Long Legs: Cain gets the Fly's 1¢.
+   8. Divorce Papers: Cain keeps 4¢ and two cards; the card is destroyed.
+   9. Hourglass: a `deactivated` event for Cain; Isaac still loots 1.
+   10. Mom's Eye Shadow: the Fly untouched; Monstro II: Maggy unhurt.
+   11. Mom's Heart!: Isaac's 2 souls; Poker Chip via Diplopia: one roll only.
+   12. Rubber Cement: both slots refilled; Tape Worm: Isaac's own damage.
+   13. Telepathy for Dummies: the start roll and the loot step's card.
+11. Go tests that did not check what they claimed: 2.
+   1. TestKrampus: Isaac ended his own turn first; that passed only by 19.235.
+   2. The file starts in Isaac's end phase; Cain's end is refused.
+   3. TestBlackCandle: 2 cards not in the top 5, not the bottom.
+   4. The file names all 5 cards at the bottom.
+   5. Weak, not wrong: 5 refusals accepted any rule.
+   6. Blood Lust, both Krampus tests: the files check R-ATK-03.
+12. Refusals: rules from the rules text.
+   1. No loot play left: R-CARD-08 fits (Distant Admiration, 4 files).
+   2. Second ↷ of a character: R-ABIL-07 fits.
+   3. ? Card with no ↷ item cites R-ABIL-04; R-ABIL-40 fits (19.236).
+   4. Its file checks `allowed: false` only.
+13. Bugs logged: 19.235 and 19.236; not fixed here.
+   1. 19.235: a setup with Krampus in a slot skips its duty that turn.
+14. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 1104 changes.
+   2. Only swaps in any-order lists passed, as they should.
+15. Helpers: `testCharacter` is now `testStartingItem`.
+   1. Removed, no use left: `table`, `lootTable`, `inDiscard`, `foe`.
+   2. Also `settleAny`, `top`, `topID`, `attackRolls`, `declareAttack`.
+   3. Also `testStats`, `sackFirst`; the files spell the Sack's label.
+16. `cardgen -report` unchanged.
 
-### [ ] 24.20 Bulk: g2
+### [x] 24.20 Bulk: g2
 
 1. Goal: every g2 test (about 71 tests).
+2. Counts (2026-11-23): 77 tests in 58 `_test.go` files of `cards/g2`.
+   1. `common_test.go` holds helpers only.
+   2. g2 gets its runner: `situations_test.go`, with its first files.
+   3. Every file names `"sets": ["b2", "g2"]`: g2 plays with the Base Game.
+3. Moved: 71 tests, as 82 files; 52 `_test.go` files are gone.
+   1. Tables, one file per case (owner answer 11): I Am Error! 3.
+   2. Also Crooked Penny, Gaper, Infamy, Joker, Trap Door! 2 each.
+   3. Also Lord of the Pit, The Missing Page, Pills! (3 / 5) 2 each.
+   4. TestHolyMantleOnYourTurn: 2 files; see item 7.
+   5. Every other test: one file in its card folder.
+   6. No `interactions/`: a second g2 card is only a prop.
+   7. E.g. The Butter Bean rolls for Fruitcake and The Missing Page.
+   8. No cross-set file; `cards/testdata/situations/` stays unwired.
+4. Split: 4, the characters' `testCharacter`.
+   1. Apollyon, Azazel, The Keeper, The Lost: `<character>/extra-loot-play.json`.
+   2. Their starting item stays Go: `testStartingItem` (a real game start).
+   3. The Lost also: `the_lost/recharges-a-character-at-end-of-turn.json`.
+5. Stayed Go whole: 2.
+   1. Save and load: TestPlanCSaveAtKill (ADR 034 1.5).
+   2. TestCurseOfTinyHands: needs a format change.
+   3. A step can't answer a hand-size discard, and `prompt` can't check it.
+   4. Max hand size shows only in that discard (R-TURN-11).
+6. Engine calls in Go, said by a game action in the file:
+   1. `DealDamageTo` on a monster: Bomb! steps (Begotten, Fistula, Gurglings).
+   2. The first check is at the target question, at full HP.
+   3. `DealDamageTo` on a player: an attack that misses (Holy Card, Holy Mantle).
+   4. Another player's turn: `phase: loot`, `priority` 1, as 24.10.
+   5. Boil at 1 HP: `setup.monster_damage`.
+   6. `MustAttacks`, `MustAttackDeck` (Gaper, I Am Error!): `attacks` 1.
+   7. Then an end of turn refused by R-ATK-03; an attack offers only the deck.
+   8. `Turn.Attacks` after a cancel: a second attack is allowed.
+   9. `Evasion`, `MonsterATK`, `HP`, `PlayerATK`: a prompt check stops at the target question.
+   10. `Lingering` (Lemon Mishap): Cain's 1 on his turn leaves Monstro unhurt.
+   11. `len(Shop)` (Ouija Board, Void): a purchase offers the new shop items.
+   12. Responses: `setup.stack` (owner answer 7).
+   13. Lord of the Pit, The Bible: an `attack_roll`; I Can't Believe…: Lil Battery.
+   14. Fruitcake (Q-10): the three activations, Fruitcake on top.
+7. Setups changed to prove the card text:
+   1. Holy Mantle's "next death only": two Bombs on the Lost on Isaac's turn.
+   2. The Go test's second damage came after its turn had ended.
+   3. Breakfast for 3 HP: Imp (was Placenta, a g2 card), Knight, Polycephalus, Pills! on 5.
+   4. Knight: throw steps check each 1; the order of the two damages is no rule.
+   5. Credit Card after a purchase: 23¢, so Breakfast can be paid.
+8. Checks added from the card text (owner answer 8):
+   1. Every kill: the monster died, its reward, its soul, the refill.
+   2. Roll cards and attacks: `resolved_rolls`; used items: `deactivated`.
+   3. Loot cards and events: their discard pile.
+   4. Charger, Hush, The Cage: stats at the target question, then a kill.
+   5. Fistula: DC back to 2 on Cain's turn; Death's Head: not offered as a target.
+   6. Curse of Fatigue: the options; The Lost: hers, with `hp` 1, `souls` 1.
+   7. Ouija Board: the other 3 at the bottom, 2 attacks; Trap Door!: the deck order.
+   8. Steven on 2: the roll resolves, Steven takes no damage; on 6: no kill.
+   9. Joker: `looked_at`; Plan C: the soul, 6¢, then both `died`.
+9. Go tests that did not check what they claimed: 3.
+   1. TestCreditCardAfterAPurchase: 3¢ left either way.
+   2. With 3¢ Breakfast can't be bought at 10¢, nor would a free one cost.
+   3. TestTheLost: Cain's own recharge step recharged him anyway.
+   4. The file recharges Isaac, the third seat, before his turn.
+   5. TestPolycephalus: "dies at 3" was wrong; the 4th roll is a 1 (R-ATK-19).
+   6. Isaac died; the check only counted 4 rolls.
+   7. Weak, not wrong: I Can't Believe…'s refusal accepted any rule.
+   8. The file checks R-ABIL-40; Holy Mantle's recharge was a `t.Log`.
+10. Refusals: rules from the rules text.
+   1. I Can't Believe… on another player's item: R-ABIL-40 fits.
+   2. Second ↷ of a character: R-ABIL-07 fits.
+   3. End of turn with an attack owed: R-ATK-03 fits.
+11. Choice made here: Lord of the Pit with no attack is allowed.
+   1. "Cancel an attack" names no target, so R-ABIL-40 does not apply.
+   2. It does nothing: 1 attack left.
+   3. Reversed by 19.237 (owner, 2026-11-23): refused by R-ABIL-40.
+12. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 813 changes.
+13. No rules bug found.
+14. Helpers removed, no use left: `table`, `lootTable`, `inDiscard`, `foe`.
+   1. Also `declareAttack`, `settleAny`, `fight`, `topID`, `engineRef`.
+   2. Also `attackIntent`, `attackRolls`, `testStats`, `beanFirst`.
+   3. `testCharacter` is now `testStartingItem`; the files spell the Bean's label.
+15. Old step 19 entries name removed Go tests; left as history.
+16. `cardgen -report` unchanged.
 
-### [ ] 24.21 Bulk: r rooms
+### [x] 24.21 Bulk: r rooms
 
 1. Goal: Room (about 59 tests).
+2. Counts (2026-11-23): 59 tests in 57 `_test.go` files of the family.
+   1. 61 Room cards; Beggar, Bomb Bum, Red Champions, Red Vise: files since 24.5-24.6.
+   2. Spider Webs and Tax For The Mighty have 2 tests each.
+3. Moved: 58 tests, as 59 files; 56 `_test.go` files are gone.
+   1. TestAllHallowsEve, TestAngelicIntervention, TestBattleRoyale, 2, 3.
+   2. TestBlackChampions, TestBlessingOfGluttony, Greed, Steam, The Inner Eye, The Sack.
+   3. TestBlindRage, TestBloodDonation, TestBloodLustR, TestBloodMoney, TestBumBoIsLoose.
+   4. TestButterFingers, TestChallengeRoom, TestConjoinedTwin, TestDevilBeggar.
+   5. TestDiceRoom1 to 6, TestEdensBlessingR, TestEquality, TestEternalChest.
+   6. TestFloorSpikes, TestFortuneTeller, TestGreedLooms, TestGus, TestHaunted.
+   7. TestHeavyIsTheHead, TestIAmErrorR, TestIsaacsBlessing, TestKeyMaster, TestLaserEye.
+   8. TestMaggysBlessing, TestMightForTheMeek, TestPityForThePoor, TestPlanetarium.
+   9. TestRestockMachine, TestSamsonsBlessing, TestShadowOfFamine, TestShadowOfWar.
+   10. TestShellGame, TestSlotMachine, TestSocialGoals, TestSpiderWebs, TestSplashDamage.
+   11. TestStaticShock, TestSpoilsOfWar, TestTheMirror, TestWhiteChampions.
+   12. TestTaxForTheMighty: 2 files, one per case (owner answer 11).
+   13. TestTaxForTheMightyForcedAttack: `tax_for_the_mighty/forced-attack-unpaid-may-end-the-turn.json`.
+   14. Social Goals: in its own folder; Auction Gavel is a prop (as 24.20).
+   15. An `interactions/` file would drop it from cardgen's "tested".
+4. Split: 0.
+5. Stayed Go: 1. TestSpiderWebsDeactivatedEvent: the event's `Object` (24.6, as 24.19).
+   1. The Spider Webs file checks the event's kind and player only.
+6. Needed a format change: 0.
+7. Engine state or API in Go, said by a game action in the file:
+   1. `CanGainSouls` (All Hallows' Eve): Isaac kills Chub, Cain Little Horn; no soul.
+   2. `PlayerAttackDC` (Battle Royale 2, 3): a roll one below misses, the DC hits.
+   3. `MonsterATK`, `Evasion`, `PlayerHP`, `PlayerATK`: a prompt check, or a turn's end.
+   4. `MustAttackDeck` (Blind Rage): end refused by R-ATK-03; the attack offers only the deck.
+   5. `MustAttacks` (Blood Lust, Challenge Room): `attacks` 1, end refused by R-ATK-03.
+   6. `DealDamageTo` (Blood Money, Shadow Of War, Spoils Of War): a miss at 1 HP, or Bomb!.
+   7. `RefillSlots` (Dice Rooms): the "enters play" trigger on `setup.stack`.
+   8. `SkipTurns` (Haunted): Cain ends his turn and is active again.
+   9. `GiveCents` (Social Goals): Cain bids 6¢ on Isaac's Auction Gavel.
+   10. `AddNamedCounters` (Social Goals): `setup.counters`, as the draft had them.
+   11. `ForceAttacks` (Tax, forced): `must_attacks` 1, `must_attack_deck` 1 (19.235).
+8. Drafts: 27 of 59 files kept the dumped setup and steps.
+   1. The `setup` helper's 6 Clotty and 6 Book Of Sin: only the named tops kept.
+   2. No step in the draft (7): a step added; stats at the attack target question.
+   3. Dice Rooms: a mid-stack pass; now a `trigger` item on `setup.stack`.
+   4. Refused steps added: Blind Rage, Blood Lust, Challenge Room, Might For The Meek.
+   5. Setups changed to prove the card text: see item 10.
+9. Checks added from the card text (owner answer 8):
+   1. Roll rooms: `resolved_rolls`; costs: cents, damage, the loot discard.
+   2. Rooms that discard themselves: the room discard; the slot refills (R-SHOP-06).
+   3. Kills: the monster died, its reward; Gus: the soul, Cain's helper roll.
+   4. Dice Room!: at the turn's end it goes to discard, White Champions refills.
+   5. Dice Rooms: the discards, the new items and hands, the refilled slots.
+   6. Inner Eye: the deck order after the Pooter; the Fly back in slot 1.
+   7. Might For The Meek: a third attack refused by R-TURN-07.
+   8. Shadow Of War: the room's trigger resolves before the death penalty.
+   9. Equality: a third player gains 1¢ too; Splash Damage: Samson unhurt.
+   10. Social Goals: the goal counters, every player's 2 treasures.
+   11. Tax: the `gave_cents` event; Isaac's 1¢ from the Fly.
+10. Setups changed to prove the card text:
+   1. Floor Spikes: the Fly and Breakfast; Isaac takes exactly 2 and lives.
+   2. Gus: 2 HP left; it dies only from Cain's helper roll.
+   3. Heavy Is The Head: Jawbone for Glitch, which has no ↷ (R-MECH-54).
+   4. Shadow Of Famine: the second ability is Sack Of Pennies, not the room.
+11. Go tests that did not check what they claimed: 2.
+   1. TestFloorSpikes: damage ≥ 2, but the Leech's 2 ATK killed Isaac alone.
+   2. TestShadowOfFamine: Shadow Of Famine has no activated ability to refuse.
+   3. Weak, not wrong: Blind Rage, Shadow Of Famine, Tax refusals accepted any rule.
+   4. The files check R-ATK-03 and R-ABIL-12.
+12. Refusals: rules from the rules text.
+   1. Shadow Of Famine, Tax For The Mighty: R-ABIL-12, a static ability; it fits.
+   2. Blind Rage, Blood Lust, Challenge Room: R-ATK-03 fits.
+   3. Might For The Meek's third attack: R-TURN-07 fits.
+13. Note, no change: `attacks` leaves out a static bonus attack (as 24.13).
+   1. Might For The Meek: `attacks` 0 after the first attack; the second is allowed.
+14. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 607 changes.
+   2. Only changes that say another true thing passed (14).
+   3. E.g. a player index to another player with the same values.
+15. No rules bug found.
+16. Helpers removed, no use left: `fightRoom`, `enterRoom`.
+17. `cardgen -report` unchanged.
 
-### [ ] 24.22 Bulk: r passive and eternal treasures
+### [x] 24.22 Bulk: r passive and eternal treasures
 
 1. Goal: Passive and Eternal Treasure (about 55 tests).
+2. Counts (2026-11-24): 55 tests in 44 `_test.go` files of the family.
+   1. 25 Passive, 20 Eternal Treasure cards; Sumptorium: files since 24.5.
+   2. Starting item tests in character files wait for 24.25.
+3. Moved: 51 tests, as 53 files; 40 `_test.go` files are gone.
+   1. TestAbyss, TestAbyssOnBagLunchKeepsHP, TestAbel, TestAlabasterBox.
+   2. TestTheRevenantAttacked, TestDeathPenaltySkipsTheRevenant.
+   3. TestHourglassSkipsTheRevenant: cross-set (fsp2 Hourglass).
+   4. It is `cards/testdata/situations/interactions/hourglass-anima-sola-skips-the-revenant.json`.
+   5. TestBackstabber, TestBallOfBandages, TestBagOfCrafting, TestBerserk.
+   6. TestBloodPuppy, TestBobbyBomb, TestBobbyBombStartOfTurn, TestBookOfVirtues.
+   7. TestCeremonialBlade, TestChocolateMilk, TestConsolationPrize, TestDeadWeight.
+   8. TestDamocles, TestDamoclesDestroyedOnDeath, TestFetalHaunt, TestFlip.
+   9. TestFireMind: 2 files, one per table (dealt on a 6, taken on a 1).
+   10. TestGello, TestGnawedLeafNotYourTurn, TestGnawedLeafCancels.
+   11. TestHaloOfFlies, TestHaloOfFliesWhenAttacked, TestHandicappedPlacard.
+   12. TestHemoptysis, TestHypercoagulation, TestIBS, TestKeepersBargain.
+   13. TestJudasShadow, TestLemegeton, TestLodestone, TestLunch, TestLilChest.
+   14. TestKeepersBox: 2 files, one per table.
+   15. TestMomsBottleOfPills, TestPunchingBag, TestPlaydoughCookie, TestRockBottom.
+   16. TestSiblingRivalry, TestSoulbond, TestSpelunkerHat.
+   17. TestSpindownDice, TestSpindownDiceBagLunch, TestTrickPenny, TestTrickPennyPaid.
+4. Split: 3, a file each; the rest stays Go.
+   1. TestAnimaSola: the flip and the refused ↷ are a file.
+   2. The view's face up stays Go: TestAnimaSolaShowsTheRevenant (ADR 023).
+   3. TestClassicRoller: the reroll and the kill are a file.
+   4. The event's `Dice` stays Go: TestClassicRollerThrowsBothDice (24.6).
+   5. TestGlitch: the gained Jawbone's steal and the recharge are a file.
+   6. `Eternal()` and `Gained` stay Go: TestGlitchStaysEternalAndGainsAtTurnEnd.
+5. Stayed Go whole: 1. TestIBSCancelsDeckAttack: needs a format change.
+   1. IBS answers an attack roll waiting on a deck attack (Q-24).
+   2. A step can't stop there (owner answer 7).
+   3. `setup.stack` can't say the monster came from a deck attack.
+6. Needed a format change: 1 whole test (5); the splits keep Go-only fields.
+7. Engine state set by hand in Go, said by a game action in the file:
+   1. Anima Sola's `Flipped`: the Deserter uses it; a turn later it is recharged.
+   2. The Revenant attacked: she flips it on Isaac's loot step (`phase: loot`).
+   3. Alabaster Box's added counter: two more turns pass instead.
+   4. Bobby Bomb's milled card: Cain plays Bomb! into the loot discard.
+   5. Lemegeton's `Charged`: Lil Battery recharges it.
+   6. Rock Bottom's shortened hand: Isaac plays a Bomb!.
+   7. Keeper's Box's `len(Shop)`: a second purchase offers both new slots' items.
+   8. Handicapped Placard's `Evasion`, Punching Bag's HP: a prompt check.
+   9. `DealDamageTo` (Revenant penalty): the Leech kills the Deserter.
+8. Responses: `setup.stack` or `declared` (owner answer 7).
+   1. Classic Roller, Gello: an `attack_roll` on `setup.stack`.
+   2. Lodestone: a dice roll of 3 on `setup.stack`.
+   3. Sibling Rivalry: `declared: attack`, `priority` 1.
+9. Drafts: 40 of 56 files kept the dumped setup and steps.
+   1. The `setup` helper's 6 Clotty and 6 Book Of Sin: only named tops kept.
+   2. Deck tops in `setup.decks`, so refills, loot and treasure are named.
+   3. Bobby Bomb, Mom's Bottle of Pills: all 10 loot tops are named.
+   4. So the hand and the 8 bottom cards are known.
+   5. Throw steps check one roll: Ball Of Bandages, Dead Weight, Halo Of Flies.
+   6. No step in the draft: Handicapped Placard (an attack), Lunch (Mega Bomb!).
+   7. Setups changed to prove the card text: see item 10.
+10. Setups changed to prove the card text:
+   1. Ball Of Bandages: the Leech (DC 4), so the 3 misses.
+   2. Lodestone: the Leech (DC 4); the roll of 3 comes first, then the attack.
+   3. Lunch: Isaac takes 2 from his own Mega Bomb! and lives.
+11. Checks added from the card text (owner answer 8):
+   1. Kills: the monster died, its reward; most: the slot's refill.
+   2. Roll cards and attacks: `resolved_rolls`; used items: `deactivated`.
+   3. Destroyed items and played loot: their discard pile.
+   4. Abyss: the counters, ATK 1 after one item; Bag Lunch in the loot discard.
+   5. Anima Sola: no loot as it flips to The Revenant; the Revenant not a target after.
+   6. Backstabber: the target options; Samson is not offered.
+   7. Berserk: `attacks` 1 after the first kill, the bonus counted (24.28).
+   8. Ceremonial Blade: the discarded card is the end of turn's loot.
+   9. Flip: amginE ehT's 2 ATK, recharged, both Bombs in the loot discard.
+   10. Gello: no roll resolves, `attacks` 1, the Fly's 1¢ to Isaac.
+   11. Halo Of Flies: Cain's damage after each roll: 0, 1, then dead.
+   12. Hemoptysis, Hypercoagulation: the counters each step.
+   13. Spindown Dice on Bag Lunch: Cain's 3 HP.
+12. Go tests that did not check what they claimed: 3.
+   1. TestBallOfBandages: a 3 hits the Pooter (DC 3); no combat damage either way.
+   2. TestLodestone: "the 3 missed" was wrong; a 3 hits the Pooter.
+   3. Its check passed once the Pooter died.
+   4. TestHaloOfFliesWhenAttacked: `Damage != 0 && !Dead` passed once Cain died.
+   5. The files check the miss, the DC and Cain's damage after the 6.
+13. Refusals: rules from the rules text.
+   1. Abyss used twice: R-ABIL-07, as 24.18 (with R-ABIL-10).
+   2. The Revenant's ↷: R-ABIL-08; it has no activated ability.
+14. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 771 changes.
+   2. Only changes that say another true thing passed (22).
+   3. E.g. a 3 in `[3, 3]` changed to the other 3.
+   4. The cross-set file: 4 changes by hand, each failed.
+15. No rules bug found.
+16. Helper removed, no use left: `table2`.
+17. `cardgen -report` unchanged.
+18. Owner (2026-11-24): TestIBSCancelsDeckAttack stays Go.
+   1. No setup field for an attack on a monster revealed from the deck.
+   2. Add one only when more tests need it.
 
-### [ ] 24.23 Bulk: r other treasures
+### [x] 24.23 Bulk: r other treasures
 
 1. Goal: Active, Paid, Soul Treasure (about 35 tests).
+2. Counts (2026-11-25): 35 tests in 24 `_test.go` files of the family.
+   1. 15 Active, 6 Paid, 3 Soul Treasure cards; each has a Go test.
+3. Moved: 33 tests, as 37 files; 22 `_test.go` files are gone.
+   1. TestAuctionGavel, TestAuctionGavelNoBids, TestBirthright (2 files).
+   2. TestBatteryPack: 2 files, one per case (owner answer 11).
+   3. TestBookOfTheDead, TestCarBattery, TestCarBatteryRechargeStep.
+   4. TestCarBatteryOffersOnlyRechargeableItems, TestCursedSoul, TestCursedSoulIsGivenAway.
+   5. TestEternalD6, TestExperimentalTreatmentSoul, TestExperimentalTreatmentDie.
+   6. TestFriendlyBall, TestFriendlySack, TestHallowedGround, TestHandMeDowns.
+   7. TestJarOfFlies: 3 files, one per case; TestJarOfFliesThreeCounters, TestJarOfFliesCounts.
+   8. TestKeepersPenny, TestKeepersSack; TestKeepersSackEndOfTurn: 2 files, one per table.
+   9. TestMagicSkin, TestMagicSkinDestroys, TestMarbles, TestMemberCard.
+   10. TestRedKey, TestRedKeyNotDuringAnAttack, TestSacrificialDagger, TestTheJar.
+   11. TestUltraFleshKid: 2 files, 11 and 12 counters; TestUndefined.
+   12. Birthright's copy and Undefined's: a prop card in the card's own folder.
+4. Split: 1, a file; the rest stays Go.
+   1. TestXRayVision: the discard and the end-of-turn recharge are a file.
+   2. The `looked_at` event's `Card` stays Go: TestXRayVisionShowsTheHand (24.6).
+5. Stayed Go whole: 1. TestExperimentalTreatmentCancelled: needs a format change.
+   1. Butter Bean cancels the ability; its cost destroyed the card.
+   2. A stacked `activate` needs its card in play; the destroyed one is not.
+   3. A step can't respond mid-stack (owner answer 7).
+6. Needed a format change: 1 whole test (5); the split keeps an event field.
+7. Engine state set or read in Go, said by a game action in the file:
+   1. `CardOf`, `Eternal` (Birthright): the copy of Keeper's Bargain cuts 3¢ more.
+   2. Then the death penalty offers only the copy and spares Keeper's Bargain.
+   3. `CardOf` (Undefined): it copies Breakfast; 3 HP through Cain's turn, 2 after.
+   4. `G.Recharge` (Car Battery): Battery Pack recharges Isaac's items, not it.
+   5. `MillTop` (Book Of The Dead): Isaac kills the Pooter first.
+   6. `MillTop` (Hallowed Ground): Isaac plays A Penny! into the loot discard.
+   7. `DiscardRoom` (Red Key): Isaac kills the Fly; the room step discards Spider Webs.
+   8. `.Charged` (Friendly Ball): his next turn recharges it.
+   9. `.Charged`, added counters (Eternal D6, Jar Of Flies, Dagger, Ultra Flesh Kid!): `setup.counters`.
+   10. `MustAttackOneOfCards` (Friendly Ball): end refused by R-ATK-03; the attack offers only the Leech.
+   11. A direct `G.Apply` attack (Red Key): `declared: attack`.
+8. Drafts: 19 of 38 files kept the dumped setup and steps.
+   1. The `setup` helper's 6 Clotty and 6 Book Of Sin: only named tops kept.
+   2. Setups changed to prove the card text: see item 7.
+   3. Member Card: the draft did not build; see item 10.
+   4. Prompt checks split a step: Car Battery, Birthright (2), Member Card, Friendly Ball.
+   5. Steps added: Auction Gavel's purchase, Battery Pack's end of turn.
+9. Checks added from the card text (owner answer 8):
+   1. Used ↷ items: `deactivated`; $ abilities: not; roll cards: `resolved_rolls`.
+   2. Auction Gavel: Isaac 3¢, Cain pays nothing; with no bid the purchase offers the item.
+   3. Battery Pack: a counter at his turn's end; Cain's spent Jawbone not recharged.
+   4. Book Of The Dead: the monster discard empty; Clotty in slot 1.
+   5. Car Battery: the recharge step recharges his Sack; the spent Breakfast stays.
+   6. Cursed Soul: given to Cain, who takes 1 damage and a counter (R-MECH-12).
+   7. Eternal D6: the 3 resolves as 1; the Fly dies on the 6.
+   8. Experimental Treatment: the soul from the discard; on 1, the penalty's Spoon Bender.
+   9. Friendly Ball: the Leech dies; the Fly under it comes back (R-ZONE-11).
+   10. Friendly Sack: Samson's two cards; Hand Me Downs: only Cain loots.
+   11. Jar Of Flies on 3: the Fly dies, 1¢, and the Jar counts that death.
+   12. Keeper's Penny: the counter stays on it at Cain's (R-MECH-12).
+   13. Magic Skin: the counter goes with it; both destroyed cards in the discard.
+   14. Member Card: the deck order; The Battery fills the shop slot.
+   15. Red Key: Spider Webs deactivates Isaac's character; Blessing Of Greed gives Cain 3¢.
+   16. The Jar: `prevented`, no `damaged`; Bomb! in the loot discard.
+   17. X-Ray Vision: the deck's next card; Cain keeps his Bomb!.
+10. Go tests that did not check what they claimed: 2.
+   1. TestKeepersSackEndOfTurn: "damage 0, healed at its end" holds without any damage.
+   2. Isaac (2 HP) takes 2 and dies; the file checks `damaged`, `died`, the Sack kept.
+   3. TestMemberCard put `mom_s_bra` on the deck: no such card; nothing was put.
+   4. Its order answers named a card not there; it checked no order.
+   5. The file uses `moms_bra` and checks the deck order.
+11. Refusals: rules from the rules text.
+   1. Battery Pack, Jar Of Flies without counters: R-ABIL-07 fits.
+   2. Friendly Ball's end of turn with the Leech owed: R-ATK-03 fits.
+   3. Red Key during an attack, Friendly Ball's two ↷: R-ABIL-07 does not fit (19.242).
+   4. Their files check `allowed: false` only.
+12. Bugs logged: 19.242; not fixed here.
+   1. Owner question in it: may Friendly Ball's first ↷ be used with a card under it?
+13. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 668 changes.
+   2. 25 passed: each dropped a whole check entry, not a value.
+   3. 10 passed: each said another true thing.
+   4. E.g. a player index to another player with the same values.
+14. Helpers: none removed; each is still used.
+15. `cardgen -report` unchanged.
 
-### [ ] 24.24 Bulk: r monsters, bosses, events, souls
+### [x] 24.24 Bulk: r monsters, bosses, events, souls
 
 1. Goal: monsters, bosses, events, Bonus Soul, Curse (about 49 tests).
+2. Counts (2026-11-25): 65 tests in 58 `_test.go` files of the family.
+   1. 40 Monster card files: Basic, Cursed, Holy/Charmed, Boss, Epic Boss, The Harbingers.
+   2. 13 Event files, 4 of them Curse; 5 Bonus Soul files.
+   3. Mega Satan!, Soul of Wrath: files since 24.5 and 24.3; one Go test each was left.
+3. Moved: 63 tests, as 63 files; 56 `_test.go` files are gone.
+   1. Charmed: Bony, Clotty, Dip (2), Fat Bat, Fatty, Globin, Greedling, Keeper, Monstro.
+   2. Holy: Brain, Greedling (2), Portal, Psy Horf.
+   3. Cursed: Dople, Lil Haunt, Mulligan.
+   4. Basic: Corny, Gutted Fatty, Mushroom, Null, Peeping Fatty, Red Ghost, Whipper.
+   5. Bosses: Baby Plum, Brownie, Clog, Mama Gurdy, MOTHER!, Turdlings.
+   6. Also Dogma, Mega Satan! (Indomitable), Rag Mega, Sisters Vis, Ultra Greed!.
+   7. Also The Harbingers (2), The Rainmaker, The Scourge (2), The Siren (2).
+   8. Events: Betrayal!, Double Treasure!, Dressing Table, Golden Troll Bomb!.
+   9. Also Lust for Blood!, Mother's Shadow!, Overflow!, Pitfall!, TNT Barrel!.
+   10. Curses: Empathy, the Hollow, the Hunted, the Soulless (2).
+   11. Bonus souls: Envy (2), Lust, Pride, Sloth, Wrath.
+4. Split: 1. TestHornfel.
+   1. The file checks the prevented combat damage and the kill.
+   2. The random player stays Go: TestHornfelHurtsOnePlayerAtRandom.
+5. Stayed Go whole: 1. TestCursedMulliboom: needs a format change.
+   1. 3 damage to a player chosen at random; no file can name the player.
+   2. An `events` entry without `player` also counts a monster's events.
+   3. So `died` without `player` passes on the Fly's own death.
+   4. Change: an `events` entry for any player, not a monster.
+   5. Hornfel's Go part needs the same; 2 tests.
+6. Needed a format change: 1 whole test (5); the split keeps the same check.
+7. Engine state or API in Go, said by a game action in the file:
+   1. `GiveCurseFromDeck`: a `reveal` step on the curse, as 24.16.
+   2. A later attack gets `setup.attacks` 2.
+   3. `PlaceFromOutside` (The Harbingers): the card in slot 3 of the setup.
+   4. Dogma's file brings it into a new slot by Indomitable.
+   5. `AddCountersTo`: `setup.counters`.
+   6. `DealDamageTo` (Soul of Wrath): Cain is active; his Bomb! kills Isaac.
+   7. `SkipTurns` (Overflow!): two `end_turn` steps; Isaac is active again.
+   8. `MustAttacks` (Gutted Fatty): `attacks` 1, an end of turn refused by R-ATK-03.
+   9. `len(Monsters)` (Cursed Mulligan, Gutted Fatty, MOTHER!, Mega Satan!): each new slot's card.
+   10. `AttackRolls`, `Attack.On`: `resolved_rolls`; throw steps check the HP between rolls.
+   11. `MonsterATK` (Curse of the Hunted): the slots' `atk` on Isaac's and Cain's turn.
+   12. `EndDeclared` (Pitfall!): `active` 1.
+   13. `CardOf` (The Beast!): the slot's `hp` 6, `atk` 2; see item 12.
+8. Drafts: 38 of 64 files kept the dumped setup and steps.
+   1. The `setup` helper's 6 Clotty and 6 Book Of Sin: only named tops kept.
+   2. Deck tops in `setup.decks`, so refills, loot and treasure are named.
+   3. Curses: a `reveal` step; Curse of the Hollow, the Hunted: monster slots added.
+   4. A prompt check splits a step: Charmed Dip, Cursed Lil Haunt, Red Ghost.
+   5. Also The Siren, Lust for Blood!, Soul of Envy.
+   6. Throw steps added: Charmed Globin, Brownie, Holy Brain, Null, MOTHER!.
+   7. Also Cursed Dople, Hornfel, The Scourge.
+   8. Steps added: Holy Portal, Gutted Fatty, Lust for Blood!, Overflow!.
+   9. Also The Rainmaker, Curse of the Hunted, Curse of the Soulless passed on.
+9. Setups changed to prove the card text:
+   1. Baby Plum at 3 HP; two of Isaac's 1s killed him (2 HP) in the Go test.
+   2. Its last two dice are 1 and 1: no rule orders its roll and the reward roll.
+   3. Corny with 2 players: Cain is the only non-active player, so he dies.
+   4. Curse of the Soulless passed on: Samson kills Monstro on his turn.
+   5. Soul of Wrath: Cain's turn from the setup.
+10. Checks added from the card text (owner answer 8):
+   1. Every kill: the monster died, its reward, its soul, the refill.
+   2. Every event: it is in the monster discard, the slot refilled.
+   3. Charmed: both players' rewards; Charmed Fat Bat, Monstro: the treasures named.
+   4. Charmed Globin: 2 HP after the miss; Holy Brain: the Fly's DC 1 too.
+   5. Holy Greedling: Holy Dinga refills slot 1; Holy Portal: a second attack.
+   6. Brownie: DC 4, then 3; Null: HP after each roll; MOTHER!: four slots.
+   7. Clog: Isaac's hand is Cain's card and his 3 loot; Peeping Fatty: the deck order.
+   8. Red Ghost: the other players offered; Rag Mega: Cain lives.
+   9. The Siren: Cain offered as a target; Ultra Greed!: Isaac and Cain gain nothing.
+   10. The Rainmaker: the Fly uncovered; ATK 2 on Cain's turn (his curse).
+   11. Golden Troll Bomb!, Mother's Shadow!: their place in the monster deck.
+   12. Dressing Table: the Spoon Bender in the treasure discard, a new treasure.
+   13. Lust for Blood!: end refused by R-ATK-03; only Cain offered.
+   14. Curse of Empathy: Isaac's cents after the reveal and after the kill.
+   15. Curse of the Hunted: ATK back to normal on Cain's turn.
+   16. Bonus souls: the soul cards; Soul of Sloth: no change on the 5th item.
+11. Values the rules gave, not the first guess:
+   1. A gained bonus soul has no counters: R-CARD-22, R-ZONE-01.
+   2. Soul of Lust, Pride, Wrath check `count` 0 on the gained soul.
+   3. Sisters Vis: Samson's treasure before Isaac's reward (R-DEATH-05).
+12. Runner notes, no change here:
+   1. A `monsters` or `counters` check names a card by its ref, not its face.
+   2. The Beast! is `the_harbingers` there; its stats show the flip.
+   3. Prevented combat damage shows as `cancelled`, not `prevented` (Hornfel).
+   4. "Each player rolls": no rule orders the rolls' resolution.
+   5. The Beast!, Overflow!: no `resolved_rolls`; the deaths and skips show the dice.
+13. Go tests that did not check what they claimed: 0.
+   1. Weak, not wrong: Mega Satan! (slot 1 "not the Fly"), Cursed Mulligan (3 slots).
+   2. The files name each slot's card.
+14. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 1058 changes.
+   2. Only changes that say another true thing passed (27).
+   3. E.g. a player index to another player with the same values.
+15. No rules bug found.
+16. Helpers removed, no use left: `charmedGift`, `sirenTable`, `giveCurse`.
+   1. `harbingersTable`, `bonusTable`, `bonusCounters` went with their files.
+17. `cardgen -report` unchanged.
 
-### [ ] 24.25 Bulk: r loot and characters
+### [x] 24.25 Bulk: r loot and characters
 
 1. Goal: loot cards, Outside, Character (about 50 tests).
+2. Counts (2026-11-25): 61 tests in 43 `_test.go` files of the family.
+   1. 38 loot tests in 23 files; 23 Character tests in 20 files.
+   2. Outside: only The Harbingers; moved in 24.24.
+3. Moved: 38 tests, as 40 files; 21 `_test.go` files are gone.
+   1. TestALuckyPenny, TestALuckyPennyDoublesOnce, TestAceOfDiamonds, TestAlgiz.
+   2. TestBagLunch, TestBerkano, TestBerkanoShopItem, TestBerkanoEternalNoSteal.
+   3. TestBlackHeartPreventsOne, TestBlackHeartWhenThatPlayerDies, TestBrokenRemote.
+   4. TestCallusStopsNonCombat, TestCallusAllowsCombat, TestDadsNote, TestGoldenTrinket.
+   5. TestHagalaz, TestKeyAttackAgain, TestKeyDeckTopToSlot, TestLuckyToe.
+   6. TestLuckyToeNotInLootStep, TestMagicMarker, TestMagicMarkerRollResult, TestMegaBomb.
+   7. TestPillsRollThreeTimes, TestPillsLootThree, TestPillsPutOneBack, TestPillsPutThreeBack.
+   8. TestRibOfGreedDeathPenalty, TestRibOfGreedAllowsSteals, TestRibOfGreedAbilityDiscard.
+   9. TestStickyNickelGain, TestStickyNickelSticks, TestTick, TestTwoOfSpades, TestWishbone.
+   10. TestEmergencyContact: `emergency_contact/cain-cancels-it-in-response.json`.
+   11. TestTheBalefulATK: 3 files, 0, 1 and 3 souls (owner answer 11).
+   12. TestTheCapriciousShopItem.
+4. Split: 20, a file each: every character's `testCharacter`.
+   1. File: `<character>/plays-an-additional-loot-card.json`.
+   2. It checks 2 loot plays, two A Penny! played, a second ↷ refused (R-ABIL-07).
+   3. Also the starting HP and ATK from the card: The Baleful, The Dauntless 1 HP.
+   4. Stays Go: the starting item, from a real game start (`testStartingItem`).
+   5. The Go tests are now `Test<Character>StartingItem`.
+5. Stayed Go whole: 3.
+   1. TestMagicMarkerIsLeftOut: game starts over 20 seeds (ADR 034 1.7).
+   2. TestTheEnigma: game start, characters outside the game.
+   3. TestEmergencyContactDeckAttack: needs a format change.
+   4. Cain responds to the roll of a deck attack; a step can't (owner answer 7).
+   5. `setup.stack` has no deck attack: a revealed card covering a slot card.
+6. Needed a format change: 1 whole test (5.3).
+   1. Change: a stacked attack roll of a deck attack (24.29 item 6).
+7. Engine state set in Go, said by a game action in the file:
+   1. `MillTop` (Dad's Note): Isaac attacks the deck; Pooter, Dip, Chest go to discard.
+   2. `G.Eternal` (Algiz): on his turn Cain's own Berkano destroys the Purse.
+   3. `PlayerHP` before a step (Bag Lunch): an A Penny! step first; Cain 2 HP.
+   4. `soulOf` (The Baleful): `souls` in setup; Fat Bat (3 HP) dies in 3, 2 or 1 hits.
+   5. `ExtraLootPlays`, a mid-stack play (Emergency Contact): `setup.stack`, `priority` 1.
+   6. `Cents` set between steps (Magic Marker): 3¢ from the setup.
+8. Drafts: 33 of 60 files kept the dumped setup and steps.
+   1. The `setup` helper's 6 Clotty and 6 Book Of Sin: only named tops kept.
+   2. Loot and treasure tops named, so hands and gains name their cards.
+   3. Characters: steps added; Dad's Note, Algiz, Bag Lunch: see item 7.
+   4. A prompt check splits a step: Dad's Note.
+9. Checks added from the card text (owner answer 8):
+   1. Every loot card: the loot discard; a trinket destroyed goes there too (R-ZONE-06).
+   2. A Lucky Penny!: the Fly dies and Clotty refills; Black Heart: Samson (2 HP) dies too.
+   3. Callus: no `damaged` event; a 6 after the miss kills the Fly.
+   4. Dad's Note: the Chest is not offered; the Dip covers the Pooter; only the Chest left.
+   5. Golden Trinket: it is spent; Hagalaz: the slot's Clotty and the deck order.
+   6. Key: the next deck card; Lucky Toe, Pills!, Two Of Spades: the looted cards.
+   7. Pills! on 1: all three put back, in order; Rib Of Greed: the penalty's item and ↷.
+   8. Sticky Nickel: not in the discard; Tick: one attack left after the first kill.
+   9. Wishbone: the named treasure; Bag Lunch: Cain steals once it is destroyed.
+   10. Emergency Contact: no roll resolved; Berkano, Algiz: the treasure discard.
+10. Values the rules gave, not the first guess:
+   1. Pills! (roll 3 times): the three rolls resolve as `[5, 3, 1]`, not `[1, 3, 5]`.
+   2. The dice are rolled together, then stacked (R-DICE-02); no rule says their order.
+   3. The file checks the outcomes, not `resolved_rolls`; all 3 dice are used (24.32).
+11. Go tests that did not check what they claimed: 0.
+   1. Weak, not wrong: Wishbone counted 2 items; the file names them.
+   2. Algiz, Bag Lunch passed a steal answer never asked; the files leave it out.
+12. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 918 changes.
+   2. Only changes that drop a check entry or say another true thing passed.
+   3. E.g. a player index to another player with the same values.
+13. No rules bug found.
+14. Helpers removed, no use left: `lootTable`, `useRoom`, `soulOf`.
+   1. `lootRoomTable` folded into `roomTable`; `testCharacter` is `testStartingItem`.
+15. `cardgen -report` unchanged.
 
-### [ ] 24.26 Bulk: r other
+### [x] 24.26 Bulk: r other
 
 1. Goal: r test files with no card kind (about 55 tests).
+2. Counts (2026-11-25): 27 tests looked at.
+   1. 22 in files of no card: attack target order 3, Golden Trinket 11, reprints 1, room step 6.
+   2. Golden Trinket: `golden_trinket_bum`, `_counters`, `_eve`, `gained_tap` (Glitch too).
+   3. 5 of a card kind no family had: One-Use Treasure.
+   4. Mama Mega, Pageant Boy, R Key (2), The Clicker.
+   5. So fewer than 55: the count was taken before 24.21-24.25.
+   6. Not looked at again: Go tests reported "stays Go" before.
+3. Moved: 23 tests, as 23 new files and one file extended; their Go tests are gone.
+   1. TestRagMegaResolvesBeforeTheAttackRoll, TestDogmaResolvesBeforeTheAttackRoll.
+   2. TestAngelicInterventionCancelsBeforeAnyRoll: a check in `cancels-an-attack-on-the-deck.json`.
+   3. TestGoldOnBumFriendAndTechX, TestGainCentsWithGoldOnBumBo, TestCountersDontMix.
+   4. TestBumBoStaticsOnGoldenTrinket: 2 files, 10 levels and none (owner answer 11).
+   5. TestGoldOnBumBoNoLevel, TestTwoGoldCountersBothGained, TestEveGoldenTrinketLine.
+   6. TestChargedBabyRechargesGoldenTrinket, TestDeathDeactivatesGoldenTrinket.
+   7. TestGlitchGainedTapIsRechargeable: `glitch/its-gained-tap-can-be-spent-and-recharged.json`.
+   8. TestCurseOfImpulseDeactivatesGoldenTrinket: cross-set (fsp2 Curse of Impulse).
+   9. It is `cards/testdata/situations/interactions/curse-of-impulse-golden-trinket.json`.
+   10. TestRoomStep, TestDiceRoomIsNotTheRoomStep: r `interactions/`, after the rooms.
+   11. TestRoomStepNeedsADeath, TestOnlyTheActivePlayerUsesRooms, TestSocialGoalsStaysTillFourGoals.
+   12. TestMamaMega, TestPageantBoy, TestRKey, TestRKeyEntersDeactivated.
+4. Where the rule tests went: all in the r tree, the rule in `source`.
+   1. Rooms, Golden Trinket, Rag Mega, Dogma are r cards, so none is base-set only.
+   2. One rule, one card: the card's folder (Blessing Of Greed, Social Goals, Blood Donation).
+   3. Several r rooms: `interactions/blessing-of-greed-dice-room-5.json`.
+   4. Also `interactions/dice-room-3-spider-webs-blessing-of-greed.json`.
+   5. b2 cards beside an r card are props: the r card's folder (Charged Baby, Bomb!).
+5. Split: 1. TestTheClicker.
+   1. The file checks the items, the damage, the charged character, the discard.
+   2. The character card and `CharactersOutside` stay Go: TestTheClickerCharacterIsSamson.
+   3. No check names a character card; Samson and Isaac have the same stats.
+6. Stayed Go whole: 3.
+   1. Skipped for an open question: TestGainCentsReplacementGained (Q-27).
+   2. Real game start, decks counted: TestReprintWithoutItsSet (ADR 034 1.6).
+   3. Game start and views: TestRoomsOption (1.5, 1.6).
+7. Needed a format change: 0.
+8. Engine state or API in Go, said by a game action in the file:
+   1. `AbilitiesOf` counts (4, 3): the last ability refused by R-ABIL-07, the next by R-ABIL-08.
+   2. R-ABIL-08: "has no such activated ability"; R-ABIL-07: it is there, its cost unpaid.
+   3. `PlayerATK` with set counters: `setup.counters`, ATK at the target question.
+   4. Also the first attack roll: a 2 resolves as 4 on the Leech with 10 levels, a 3 as 3 with none.
+   5. `KillPlayer`: Isaac's or Eve's own Bomb! on 2 or 1 damage left; the penalty's choice.
+   6. `DiscardToHand` (Eve's line): Hallowed Ground on her next turn, 3 counters in setup.
+   7. `Deactivatable` (Glitch): Cain's Bomb! kills the Capricious; Glitch stays charged.
+   8. `Rechargeable`: Lil Battery offers Glitch and `ask.cancel` once it is spent.
+   9. `FirstAttackRoll`: a `throw` step stops at the first roll; `resolved` the trigger, no roll yet.
+   10. Angelic Intervention: no `dice_rolled` event for Isaac.
+   11. A direct `G.Apply` room use: the use on `setup.stack`, Isaac 1 damage, `priority` 1.
+9. Drafts: 18 of 24 files kept the dumped setup and steps.
+   1. The `setup` helper's 6 Clotty and 6 Book Of Sin: only named tops kept.
+   2. Loot and monster tops named: Bum Friend, Charged Baby, Mama Mega, R Key, room steps.
+   3. No step in the draft: Bum-Bo!'s statics (2), an attack added.
+   4. Rebuilt with game actions: Golden Trinket's death, Eve's line, Glitch, the room use.
+   5. One-step drafts became `action` (8).
+   6. A throw step splits the attack: Rag Mega, Dogma.
+10. Checks added from the card text (owner answer 8):
+   1. Rag Mega, Dogma: the discard before the roll, the roll, the kill.
+   2. Golden Trinket: the counters on each item, the trinket spent, the deck top.
+   3. Bum-Bo!'s statics: the kill, the slot's refill, no damage.
+   4. Charged Baby: the roll's Loot 1, A Penny! in hand.
+   5. Death penalty: Breakfast and Bomb! in their discards; the Sack and character spent.
+   6. Eve's line: Hallowed Ground's counters, the loot discard, Eve back on her turn.
+   7. Room step: the Fly's 1¢ and refill, the monster discard, Dice Room!!!!! in the slot.
+   8. Blessing Of Greed: Cain gains 3¢ when it stays or comes in the end phase.
+   9. Dice Room!!!: Spider Webs does not deactivate Isaac's character (R-TURN-18).
+   10. Social Goals: its kill and roll-a-6 goal counters, no goal completed.
+   11. Mama Mega: both `died`, the refills, the Pooter's loot discarded by the penalty.
+   12. R Key: the souls in the monster discard, Bomb! discarded, 3 A Penny! each.
+   13. Pageant Boy, R Key, The Clicker, Mama Mega: in the treasure discard.
+   14. The Clicker: The D6 not in a discard (R-ABIL-18).
+11. Go tests that did not check what they claimed: 1.
+   1. TestTheClicker: "charged (Q-18)" passed either way; Isaac's character was charged.
+   2. The file starts it spent; the new one comes in charged.
+12. Refusals: rules from the rules text.
+   1. A gained ↷ on a spent Golden Trinket: R-ABIL-07 fits (with R-ABIL-10), as 24.18.
+   2. Tech X's "Remove 3 counters" with 2 or 1: R-ABIL-07 fits.
+   3. An ability past the trinket's last: R-ABIL-08 fits, as The Revenant (24.22).
+   4. Cain's room use on Isaac's turn: R-CARD-33 fits.
+13. Open owner questions in two files (Q-27, Q-28).
+   1. `golden_trinket/a-dime-levels-bum-bo-not-it.json`: the trinket gets no levels (Q-27 (a)).
+   2. `golden_trinket/bum-friend-and-tech-x-share-its-one-tap.json`: one tap (Q-28 (a)).
+   3. Both cite the question; ADR 034 9.3 says a `Q-` source is resolved.
+   4. `open-questions.md` Q-27, Q-28, Q-29 name the files.
+14. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 791 changes.
+   2. Only changes that drop a check entry or say another true thing passed (64).
+   3. E.g. a player index to another player with the same values.
+15. No rules bug found.
+16. Helpers removed, no use left: `inDiscard`, `me`, `handHas`, `settleAny`, `hurt`.
+   1. Also `room`, `sackFirst`.
+17. `cardgen -report` unchanged.
 
-### [ ] 24.27 Bulk: challenge
+### [x] 24.27 Bulk: challenge
 
 1. Goal: Challenge and Challenge Boss (about 50 tests).
+2. Counts (2026-11-25): 51 tests in 12 `_test.go` files of `cards/challenge`.
+   1. Krampus: 31 (rule card and presents 16, boss 12, game starts 3).
+   2. Trick or Treat: 20 (rule card 10, boss 8, game starts 2).
+   3. The package has no `situations_test.go`; no file existed to embed.
+3. Moved: 0. Split: 0.
+   1. No runner added: `go:embed` needs a first file.
+4. Stayed Go, a real game start (ADR 034 1.6, 1.7): 5.
+   1. TestKrampusSetup, TestTrickSetup: `NewGame`, presents, views.
+   2. TestRegularKrampusStays: the regular Krampus in a dealt deck.
+   3. TestKrampusWholeGames, TestTrickWholeGames: random games, replay, save.
+5. Needed a format change: 46, every other test.
+   1. Each builds a table, then calls `StartChallenge` (`krampus`, `trick`).
+   2. A setup can't start a challenge, as 24.3 found.
+   3. The dump says it: "hand-set before step 1, … Challenge".
+   4. `setup.bosses` alone is a final boss in a regular game.
+   5. No game reaches that table: no rule card, presents or timer.
+   6. So no file with `bosses` only; that would be a workaround.
+6. The change these tests need (owner to decide; not done here):
+   1. `setup.challenge`: an ID and a difficulty: `{"id": "krampus", "difficulty": "normal"}`.
+   2. It runs `StartChallenge` on the built table: boss, rule card, presents, timer.
+   3. It needs 2 players (R-COOP-01); `bosses` then must not name the boss.
+   4. Presents come from the treasure deck top, so `setup.decks` names them.
+   5. All 46 need this field.
+7. Further fields some of the 46 need, besides `setup.challenge`:
+   1. Present counters as a check: 16 (forgo, the presents roll, What's in the Box?).
+   2. Present state in setup (counters, destroyed, Happy Holidays done): 8.
+   3. Player counters (fear, R-TRICK-08), setup and check: 8.
+   4. 24.3 rejected `AddPlayerCounters` and `AddPresentCounters` as challenge only.
+   5. The rule card's side (Treat up) in setup: 3.
+   6. Trick counters on the boss: `setup.counters` already says them.
+   7. A won challenge: `over` and `winners` say it; a lost one's reason is an event field.
+8. Go-only parts that would stay Go or split even then:
+   1. Views: TestWhatsInTheBox, TestHappyHolidays, TestKrampusForcedAttack.
+   2. Also TestGhostlyTrickeryView whole (ADR 037 sources).
+   3. Save and load mid-question: TestForgoCents.
+   4. Event fields: the loss reason (TestAllPresentsLost), `abilities_gained` text.
+9. Not format changes, to plan with it:
+   1. Test sets `krampus_trial` (Mixed Bag), `trick_trial` (bare mob): Go test cards.
+   2. The challenge runner would have to pass them, or files use real cards.
+   3. `Boosts` (ATK, HP): a real card or more rolls can replace them.
+   4. `DealDamageTo`, `KillPlayer`: a Bomb! or a miss, as 24.19.
+10. Go tests that did not check what they claimed: 0 found.
+11. No rules bug found; no 19.N item.
+12. `cardgen -report` unchanged: challenge 10 of 14 tested.
+13. Stays open: waits for the owner on item 6.
+14. Resumed after 24.34 (2026-11-25): the 46 tests of item 5.
+   1. Every field item 7 lists came with 24.34 (`setup.game` and the rest).
+   2. Two commits: Krampus, then Trick or Treat.
+15. Moved: 38 tests, as 91 new files; 7 `_test.go` files are gone.
+   1. Krampus rule card: TestPresentsNotInPlay, TestForgoMixed, TestForgoRolledReward.
+   2. Also TestForgoSoulValue, TestForgoDoubledAndOther, TestNoForgoAfterHolidays.
+   3. Also TestKrampusGoal, TestForgoWithLuckyToe (2 files, one per order).
+   4. Also TestWhatsInTheBoxHard, TestWhatsInTheBoxUltra, TestHappyHolidaysHard, TestHappyHolidaysUltra.
+   5. Pilfering Krampus: TestKrampusGuarded (3 files and 24.34's), TestKrampusChaosCard (2).
+   6. Also TestKrampusRollNormal, TestKrampusRollHard, TestKrampusRollUltra: 6 files each, one per roll.
+   7. Also TestKrampusExtraRollsHard (4), TestKrampusExtraRollsUltra (2).
+   8. Also TestKrampusGuardedHard, TestKrampusGuardedUltra (2 each).
+   9. Also TestKrampusForcedAttackLater (3), TestKrampusMinionSpoils.
+   10. The Haunt: TestTrickGuard (4 files and 24.34's), TestTrickGuardOutrightKill (2).
+   11. Also TestTrickFear, TestTrickFearStays, TestTrickFearEvasion (2), TestTrickDeathRoll (2).
+   12. Also TestHauntHard (2), TestHauntUltraFear.
+   13. Trick/Treat: TestNobodysFool, TestGhostlyTrickeryRolls (3, one per difficulty).
+   14. Also TestGhostlyTrickeryDamage (2), TestGhostlyTrickeryCents (3).
+   15. Also TestYouDontScareMe, TestHallowsEveBounty (3), TestTrickGoal (2).
+16. Split: 7; files say the rest, the parts below stay Go.
+   1. TestForgoCents: 2 files; the save and load mid-question and the text key stay Go.
+   2. Go: TestForgoCentsSaveMidQuestion.
+   3. TestWhatsInTheBox: 2 files; the minion slot order and the view stay Go.
+   4. Go: TestWhatsInTheBoxOrderAndView; no check names a minion slot.
+   5. TestAllPresentsLost: the file; the loss reason (`Challenge.Reason`) stays Go.
+   6. Go: TestAllPresentsLostReason.
+   7. TestHappyHolidays: the file; the view stays Go (TestHappyHolidaysView).
+   8. TestKrampusForcedAttack: the file; the view stays Go (TestKrampusForcedAttackView).
+   9. TestTrickFlip: 3 files; the question's text key stays Go (TestTrickFlipQuestionText).
+   10. TestGhostlyTrickeryGain: the file; the event's `Text`, `Card` stay Go.
+   11. Go: TestGhostlyTrickeryGainEvent.
+17. Stayed Go whole: 1, and the 5 of item 4.
+   1. Views: TestGhostlyTrickeryView (ADR 034 1.5).
+18. Needed a format change: 0.
+19. Engine calls in Go, said by a game action in the file:
+   1. `Boosts` ATK: more 6s in `rolls`; the targets have 1 HP, Krampus 5, The Haunt 4.
+   2. `Boosts` HP: Breakfast and Dinner give Isaac 4 HP.
+   3. `DealDamageTo`: a Bomb! on the boss or on Cain.
+   4. `KillPlayer`: Chaos Card kills Cain.
+   5. `AddPresentCounters`, `DestroyPresent`, `FlipPresents`: `game.presents`, `holidays`, a turn-start roll.
+   6. `AddPlayerCounters`: `"card": "player"`; `setTricks`: `setup.counters` on the boss.
+   7. `flipToTreat`: `game.rule_card`; `MinionFromDeck`: a destroyed present at a turn start.
+   8. `Turn.RandomAttackMade`: the random attack made first, with `setup.random`.
+   9. `Turn.MustAttack`: `setup.must_attack`; `Turn.Attacks`: `setup.attacks`.
+   10. Below 0 (`AddNamedCounters -10`): a kill with no trick counters left.
+   11. A destroyed present takes no counters: a turn-start roll on it.
+   12. `trickOn`'s 6 bare mobs: `setup.decks.monster`.
+20. Drafts: few kept; most setups were written from the Go helpers.
+   1. The dump wrote `game` and presents; boosts and hand settles were todos.
+   2. Roll tables: one file per case, written by a script; `expect` from R-KRAMPUS-12.
+   3. Trigger order (R-ABIL-15): named in `choices` where several trigger at once.
+   4. The first named goes on the stack first, so it resolves last.
+   5. The win trigger goes last, so it resolves first; no death roll then (R-CHAL-15).
+21. Checks added from the card text (owner answer 8):
+   1. Every forgo: all four presents' counters, the `forgone` event, the refill.
+   2. Destroyed presents: in the treasure discard; minions in slots, the next deck top.
+   3. Happy Holidays!: each present an item, charged, no counters; once only.
+   4. Rolls: `resolved_rolls`; Krampus's extra rolls resolve last thrown first (R-STACK-02).
+   5. Fear: on both players in every file; trick counters after each kill.
+   6. Evasion: the Leech and The Haunt too, the cap at 6 (R-ATK-18).
+   7. Ghostly Trickery: its rolls before the attack roll, by value (5s, then the 6).
+   8. Goals: `over`, `winners` [0, 1], `challenge_won`, no `challenge_lost`.
+   9. A lost challenge: `winners` [], no minions for the fourth present.
+22. Go tests that did not check what they claimed: 0 found.
+23. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: about 2600 changes.
+   2. Only changes that drop a check entry or say another true thing passed.
+   3. E.g. a fear count 0 under another counter name; a slot dropped from a check.
+24. Helpers removed, no use left: `kill`, `blocked`, `attackOptions`, `boss`.
+   1. Also `tricks`, `setTricks`, `fear`, `flipToTreat`, `hp`, `damageTo`, `rollsOf`.
+25. No rules bug found; no 19.N item.
+26. `cardgen -report` unchanged: challenge 10 of 14 tested.
+   1. The 4 not started are the competitive cards (`_comp`, R-KRAMPUS-16, R-TRICK-17).
+
+### [x] 24.28 Turn checks count every attack and loot play left
+
+1. Why (owner, 2026-11-24)
+   1. `expect.attacks` reads only `Turn.Attacks`.
+   2. A bonus from a card always in effect is left out (24.13, 24.21 item 13).
+   3. Might For The Meek: `attacks` 0 after the first attack; a second is allowed.
+   4. Owner: the check counts what the player can still do.
+2. Change
+   1. `attacks`: the attacks the active player has left, bonus ones too.
+   2. The engine's own count: `attacksLeft` (`combat.go`).
+   3. `loot_plays`: the same, by `lootPlaysFor` (`activate.go`).
+   4. It then counts `extra_loot_plays` and static bonus loot plays.
+   5. Same mechanism, same fix (CLAUDE.md 5.26).
+   6. Setup fields keep their meaning: base counts, bonus ones on top.
+   7. No rules change; the game already counts them so.
+3. Files
+   1. Every file whose `attacks` or `loot_plays` check changes is fixed.
+   2. The new value comes from the card text, not from the run (5.25).
+   3. Might For The Meek, Champion Belt and similar: check the bonus at once.
+   4. List each file changed and why in the report.
+4. Tests and docs
+   1. Go: a pass and a fail for a static bonus attack and loot play.
+   2. Wiki `Situation-payload.md`: the two checks, and the dump if it changes.
+   3. ADR 034: drift edited in place, if any.
+5. Done (2026-11-24)
+   1. `checkGame`: `attacks` reads `attacksLeft`, `loot_plays` `lootPlaysFor(active)`.
+   2. No engine game code changed; no version bump.
+   3. Only one file failed with the new counts: Champion Belt, attacks twice.
+6. Files changed, values from the card text:
+   1. Champion Belt, attacks twice: `attacks` 1 after the first attack, 0 after the second.
+   2. Champion Belt, a second time: `attacks` 0 after the bonus attack.
+   3. Might For The Meek: `attacks` 1 after the Fly; 0 after the Leech kept.
+   4. Skeleton Key: `attacks` 98 after one attack, 97 after two ("up to 99").
+   5. Polydactyly: `loot_plays` 1 after the first A Penny!, 0 after the second.
+   6. Belly Button: `loot_plays` 2; no loot played; R-TURN-05 added to `source`.
+   7. Polydactyly: R-TURN-05 added to `source`.
+7. Other checks searched (5.26):
+   1. Player `hp`, `atk`, `souls`; monster `hp`, `atk`, `evasion`: engine counts already.
+   2. Expect has no other turn count; `after` has none.
+   3. The 74 files with an `attacks` or `loot_plays` check were read.
+   4. `AddLootPlays` on one's own turn adds to `Turn.LootPlays`; those files keep their values.
+   5. Dump: writes setup only, base counts; no change.
+   6. Go card tests read `Turn.Attacks`, `Turn.LootPlays` (about 20 files).
+   7. None has a bonus card; left as is.
+8. Note, no change: a stacked `attack_roll` in setup uses a base attack only.
+   1. With `setup.attacks` 0 it uses no bonus attack; the engine would.
+   2. No file does that today.
+9. Tests: `TestSituationExpectBonusCounts`, a pass and two fails.
+   1. Test cards `belt` and `finger`, like Champion Belt and Polydactyly.
+10. Wiki `Situation-payload.md`: the two checks and the setup meaning.
+11. ADR 034: no drift; it does not say what the counts read.
+12. No rules bug found.
+
+### [x] 24.29 A stacked attack roll spends an attack as the game does
+
+1. Why (owner, 2026-11-24, after 24.28)
+   1. `setup.stack` with an `attack_roll` starts an attack.
+   2. `stackedAttackRoll` (`situation_stack.go`) takes it from `Turn.Attacks` only.
+   3. With `attacks` 0 and a bonus card, the bonus attack stays unused.
+   4. The game would spend it: `spendAttack` (`combat.go`).
+   5. With no attack left at all, the setup is still accepted.
+2. Change
+   1. The stacked roll spends its attack by `spendAttack`, as the game.
+   2. No attack left: a setup error citing R-TURN-07, as `declared` does.
+   3. Look at `spendAttack`'s deck-attack part: say if it fits a slot monster.
+   4. One shared place; no second copy of the rule (CLAUDE.md 5.24).
+3. Files
+   1. Any file the error now refuses: fix its setup from the card text.
+   2. A file with a bonus card and a stacked roll checks `attacks` after it.
+4. Tests and docs
+   1. Go: the bonus attack spent; the error with none left.
+   2. Wiki `Situation-payload.md`: the stacked roll's attack.
+   3. ADR 034: drift edited in place, if any.
+5. Done (2026-11-25)
+   1. `stackedAttackRoll` spends the attack by `spendAttack`, as a declaration.
+   2. The turn's own attack first, then a bonus one.
+   3. No attack left (`attacksLeft` 0): a setup error naming R-TURN-07.
+   4. The rule stays in `spendAttack` and `attacksLeft`; the setup only calls them.
+   5. `setUpDeclared` calls the same two; no copy of the rule.
+   6. No engine game code changed; no version bump.
+6. Deck-attack part of `spendAttack`
+   1. It runs only while `Turn.DeckAttacks` > 0.
+   2. A setup has no deck attack field; `DeckAttacks` is always 0 there.
+   3. So the stacked roll is never a monster deck attack.
+   4. If a deck-attack field comes, a slot monster roll needs a rule then.
+7. Order with the attack duties (19.235)
+   1. `setUpDuties` runs after the stack, as before.
+   2. `spendAttack` finds `MustAttacks` 0 then, so takes none off.
+   3. The duty fields stay what is left after the roll, as for `declared`.
+   4. The R-ATK-22 check on the rolled `must_attack` card is unchanged.
+8. Files: none changed.
+   1. 14 files have a stacked `attack_roll`; all keep `attacks` 1 by default.
+   2. None sets `setup.attacks`; none has a bonus attack card.
+   3. Bonus cards searched: Champion Belt, Bum-Bo, Might For The Meek, Berserk, Skeleton Key.
+   4. Go card tests with a stacked roll (? Card): pass unchanged.
+9. Tests: `TestStackedAttackRollSpendsABonusAttack`, `TestStackedAttackRollNeedsAnAttack`.
+   1. Test card `belt`, like Champion Belt; `attacks` 0 after the roll.
+10. Wiki `Situation-payload.md`: stacked items, window errors, attack duties.
+11. ADR 034: no drift.
+12. No rules bug found.
+
+### [x] 24.30 Setup: random picks named like dice
+
+1. Why (owner, 2026-11-25, after 24.24)
+   1. "A player chosen at random": at a real table everyone sees who.
+   2. So a file names the pick, as `rolls` names the dice.
+   3. A check for "any player" is not wanted.
+   4. Waiting: TestCursedMulliboom; Hornfel's Go part (24.24).
+2. Change
+   1. Setup field `random`: the next random picks, in order.
+   2. Each pick is named as a `choices` label, e.g. `"player 2 (cain)"`.
+   3. A pick not among the options is an error naming them.
+   4. Picks after the list are random (from `seed`), as dice.
+   5. One shared place: every random pick in the engine reads it (5.24).
+   6. Check every random pick: `Question.Random`, random attacks, others.
+   7. Shuffles and random deck order are no picks; say what you found.
+3. Dump
+   1. The dump tool writes the picks a Go test made into `random`.
+4. Files
+   1. TestCursedMulliboom and Hornfel's Go part become files.
+   2. Their Go tests are deleted when a file says the same or more.
+   3. List other random-pick Go tests a later bulk step can move.
+5. Tests and docs
+   1. Go: a named pick used; a bad pick refused; picks after the list.
+   2. Wiki `Situation-payload.md`: the field, with an example.
+   3. ADR 034: drift edited in place, if any.
+6. Done: `setup.random`
+   1. `SituationSetup.Random`: the next picks, by plain option label.
+   2. One place reads it: `Game.randomPick` (`ask.go`).
+   3. Only `setup.random` sets it (`forcedPicks`, unexported, not saved).
+   4. A bad pick: the run fails naming the pick and the options.
+   5. An empty pick: a setup error.
+   6. Picks after the list: `RNG.Intn`, as before.
+7. Random picks found (every `RNG` use in the engine)
+   1. `Question.Random` in `continueAsk`: now `randomPick`.
+   2. Its cards: Monstro's Tooth, Ring of Flies, Boomerang (b2).
+   3. Also Betrayal, and `randomPlayerTakes`: Corny, Cursed Mulliboom, Hornfel (r).
+   4. `attackRandom` (Pilfering Krampus, Q-31): now `randomPick`.
+   5. No picks: `ShuffleDeck`, `ToBottomRandom` (Q-22), deck ratios.
+   6. No picks: the character deal and bonus souls at game setup.
+   7. No pick: the first-player roll (`RNG.D6`, a die, setup only).
+   8. No pick: `Imagine` (bots), its own RNG on a copy.
+8. Live games unchanged
+   1. No forced picks: the same `RNG.Intn(n)` call, same `n`.
+   2. Records and engine replay tests pass unchanged.
+   3. No version bump: no game behaviour changed.
+   4. `make site` and `make e2e` run, as the call path is live code.
+9. Dump
+   1. Every `random_pick` a test made goes to `setup.random`.
+   2. A pick with an empty label (a hidden card): no `random`, a todo.
+10. Files moved
+   1. `cursed_mulliboom/a-monster-dies-3-damage-to-the-picked-player.json`.
+   2. `hornfel/its-1-damage-goes-to-the-player-picked-at-random.json`.
+   3. Deleted: `TestCursedMulliboom`, `TestHornfelHurtsOnePlayerAtRandom`.
+   4. Their files name Cain and check each player's damage.
+   5. Mulliboom: Cain has damage 2, HP 0, not 3 (R-MECH-16).
+   6. Also the Fly's reward, the refill, and Cain's ↷ deactivated (R-DEATH-14).
+   7. Each failed with each `expect` leaf changed (49 changes), then passed.
+11. Tests added
+   1. `situation_random_test.go`: named picks; a bad and an empty pick.
+   2. Picks after the list random over 20 seeds; a random attack's target.
+   3. `TestDumpRecordsRandomPicks`: Monstro's Tooth named, Boomerang a todo.
+12. Later bulk steps
+   1. No other Go test in `cards/` checks a random pick.
+   2. Krampus challenge tests: a challenge can't start from a setup.
+   3. Files that could name their pick: b2 `monstros_tooth`.
+   4. b2 `boomerang`, `ring_of_flies`: hidden cards, no label to name.
+   5. r `corny`: one option only; Betrayal 3-4: no test yet.
+13. Open question
+   1. Hidden-card picks have empty labels (Boomerang, Ring of Flies).
+   2. Betrayal labels them "card N"; the same would make them nameable.
+   3. That changes live prompt labels, so it waits for the owner.
+14. Helper removed, no use left: `fight` (cards/r).
+15. Gates: `make lint test`, `make site` (2.31 MB gzip), `make e2e` (670 passed).
+
+### [ ] 24.31 Setup: name a random pick from a hidden hand
+
+1. Owner (2026-11-25): logged, not done now; wait for the owner.
+2. Why (24.30 item 15)
+   1. Boomerang, Ring of Flies pick a hidden hand card at random.
+   2. Its label is empty, so `setup.random` can't name it.
+3. Plan
+   1. Name the pick by card ref: `"random": ["a_penny"]`.
+   2. The engine labels hidden options inside; players still see no name.
+   3. Live prompts and events stay as they are.
+4. Files
+   1. Boomerang and Ring of Flies name their picks.
+   2. `monstros_tooth/a-random-player-destroys-an-item.json` names its player.
+
+### [x] 24.32 Setup: an unused roll or pick is an error
+
+1. Why (owner, 2026-11-25)
+   1. `rolls` or `random` left over at the end: the setup is likely wrong.
+   2. E.g. a roll that never happened.
+2. Change
+   1. A file whose listed rolls or picks are not all used fails.
+   2. The error names the field and what was left.
+   3. One shared check for both fields.
+3. Files
+   1. Every file the check now fails: fix it from the card text (5.25).
+   2. A leftover that hid a wrong test: say so in the report.
+4. Tests and docs
+   1. Go: a leftover roll fails; a leftover pick fails; all used passes.
+   2. Wiki `Situation-payload.md`: both fields.
+5. Done (2026-11-25): the check
+   1. `Game.unusedSetup` (`situation.go`): one check for both fields.
+   2. It reads what is left of `forcedRolls` and `forcedPicks`.
+   3. One line per field: `setup.rolls: 2 left unused: [4, 1]`.
+   4. Picks are quoted: `setup.random: 1 left unused: ["player 2 (cain)"]`.
+   5. `RunSituation` fills `Answer.Unused` once, after the last step and the top `expect`.
+6. Where it applies
+   1. Test files only: `enginetest.CheckSituation` adds each line as `<file>, end: …`.
+   2. It comes after the mismatches; both are reported.
+   3. Payloads (sandbox, website): no error; they are only explored.
+   4. As the strict reading: test files strict, payloads as before (rule 2).
+   5. `Answer.Unused` is `json:"-"`: the answer sent is unchanged.
+   6. No engine game code changed; no version bump; no `make site`, `make e2e`.
+7. Files: every tree run; one file failed.
+   1. `conjoined_fatty/kills-isaac-and-ends-the-attack.json`: rolls `[1, 6, 6, 6, 6]`.
+   2. Only the 1 is thrown: Isaac (2 HP) dies to the Fatty's 2 ATK.
+   3. His attack is cancelled (R-DEATH-12), so no more rolls.
+   4. The four 6s were a guard: had the attack gone on, they kill the Fatty.
+   5. Now `rolls` `[1]`, and the end checks `resolved_rolls` `[1]`: one roll only.
+   6. Not a hidden wrong test: the guard was right, just silent.
+8. No hidden wrong test found; no rules bug; no 19.N item.
+9. Tests (`enginetest/situations_test.go`)
+   1. `TestCheckSituationAllRollsAndPicksUsed`: a Fly roll, a Monstro's Tooth pick.
+   2. `TestCheckSituationLeftoverRoll`: `[6, 4, 1]` on the Fly.
+   3. `TestCheckSituationLeftoverPick`: Razor Blade picks nothing; a pick and a roll left.
+   4. `TestPayloadLeftoversDoNotFail`: matches, `Unused` set, not in the JSON.
+10. Wiki `Situation-payload.md`: both fields, a "Leftover rolls and picks" part, the runner.
+11. ADR 034: no drift.
+
+### [x] 24.33 Setup: an attack roll from a deck attack
+
+1. Why (owner, 2026-11-25: two tests need it)
+   1. TestIBSCancelsDeckAttack (24.22 item 18).
+   2. TestEmergencyContactDeckAttack (24.25).
+   3. Each answers an attack roll that waits during a deck attack.
+   4. A step can't answer mid-stack (owner answer 7).
+   5. `setup.stack` can't say the monster came from the monster deck.
+2. Change
+   1. A stacked `attack_roll` may say its monster was revealed from the deck.
+   2. The revealed card covers a slot's card, as a real deck attack (R-ATK-05).
+   3. It counts as a monster (Q-24) and spends an attack as the game (24.29).
+   4. If the turn has deck attacks, say how the stacked roll counts (24.29 item 6).
+   5. Errors name what is wrong, as other setup fields.
+3. Files
+   1. Both Go tests become files; delete them when a file says the same or more.
+   2. Values from the card text and rules (5.25).
+4. Tests and docs
+   1. Go: a deck-attack roll set up; a wrong one refused.
+   2. Wiki `Situation-payload.md`: the field, with an example.
+   3. ADR 034: drift edited in place, if any.
+5. Done (2026-11-25): `from_deck` and `slot` on a stacked `attack_roll`
+   1. `"from_deck": true, "slot": 1`: `card` was revealed from the monster deck.
+   2. It covers the card in that monster slot, from 1 (R-ATK-08, R-ZONE-10).
+   3. `stackedReveal` (`situation_stack.go`) places it by `coverMonsterSlot`, as `placeRevealed`.
+   4. The attack: on the revealed card, `Attack.Deck` set, as `attackDeck`.
+   5. So it counts as an attack on a monster (Q-24); "declared on" abilities skip it (R-ATK-05).
+   6. It spends an attack by `spendAttack`, as every stacked roll (24.29).
+   7. Nothing triggers as it is placed: entry triggers resolved before the roll (R-ATK-25).
+   8. A later roll of the attack names the card without `from_deck`; it hits the same copy.
+6. Errors, each naming the rule
+   1. `from_deck` without `slot`, `slot` without `from_deck`, either on another kind.
+   2. A slot out of range: "options 1 to N".
+   3. No monster-deck card (R-ATK-08), an event (R-ATK-09), unattackable (R-ATK-10).
+   4. `from_deck` on a later roll (R-ATK-08); no attack left (R-TURN-07).
+7. Deck-attack duties (24.29 item 6)
+   1. No setup field for `Turn.DeckAttacks`; it stays 0.
+   2. So `spendAttack` takes a regular, then a bonus attack, also for a deck attack.
+   3. A deck-only attack ("attack the deck an additional time") is one more in `attacks`.
+   4. `must_attack_deck` is what is left after the roll, as `must_attacks` (24.29 item 7).
+   5. No new field: no file needs one; the duty meaning stays as 19.235.
+8. Live games unchanged
+   1. Only the setup builds it; no game code changed; no version bump.
+   2. `make site` run, as the payload format got a field (rule 6): 2.31 MB gzip.
+   3. No `make e2e`: no client or live code changed.
+9. Files moved
+   1. `ibs/cancels-an-attack-on-a-monster-revealed-from-the-deck.json`.
+   2. `emergency_contact/cancels-an-attack-on-a-monster-revealed-from-the-deck.json`.
+   3. Deleted: `TestIBSCancelsDeckAttack`, `TestEmergencyContactDeckAttack`, and their files.
+   4. Helper removed, no use left: `top` (cards/r).
+10. Checks added from the card text (owner answer 8)
+   1. Both: `attack_ended`, no roll resolved, `attacks` 0 (R-TURN-07).
+   2. IBS: the Pooter stays in slot 1; Bomb! in the loot discard; no ¢; IBS not deactivated.
+   3. Emergency Contact: the Leech back on top of slot 1 (R-ZONE-11), not a refill.
+   4. The named monster deck top (Dip) is still on top; Pooter at the bottom.
+11. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 55 changes.
+   2. Only changes that drop a check entry or say another true thing passed (8).
+   3. E.g. `after` player 0 to 1: Cain also has damage 0.
+12. Tests (`situation_deck_attack_test.go`)
+   1. `TestStackedDeckAttackRollMatchesADeckAttack`: same state as a real deck attack.
+   2. It compares slots (covered card), the attack, attacks left, the stacked roll.
+   3. `TestStackedDeckAttackSecondRoll`: a later roll hits the revealed copy.
+   4. `TestStackedDeckAttackRollErrors`: each error above, by its text.
+   5. `TestStackedDeckAttackRollJSON`: a payload kills the revealed card; the gaper uncovers.
+13. Dump: a todo, not the field.
+   1. The dump writes steps, never `setup.stack`, so it can't write the roll.
+   2. A response during a deck attack now adds a todo line to copy.
+   3. It names the roll: `{"kind": "attack_roll", …, "from_deck": true, "slot": 1}`.
+   4. Test: `TestDumpNotesADeckAttackRoll`.
+14. Wiki `Situation-payload.md`: "A deck attack's roll", with an example; the dump line.
+   1. The stacked items table and the covered-card note under attack duties.
+15. ADR 034: no drift.
+16. No rules bug found.
+17. `cardgen -report` unchanged.
+
+### [x] 24.34 Setup: the game type, a challenge first
+
+1. Why (owner, 2026-11-25, after 24.27)
+   1. 46 challenge tests need a setup that starts a challenge (24.27).
+   2. Owner: one field for the game type, open for future types.
+2. Field `game`
+   1. `"game": {"type": "regular"}` is the default; leaving it out is the same.
+   2. `"game": {"type": "challenge", "id": "krampus", "difficulty": "normal"}`.
+   3. A challenge starts on the built table as a real game (`StartChallenge`).
+   4. Boss, rule card, presents, timer as the game places them.
+   5. Exactly 2 players (R-COOP-01); `bosses` must not name the boss again.
+   6. Presents come from the treasure deck top, so `decks` can name them.
+   7. An unknown type or id is an error listing the options.
+   8. Team games are not in the engine (Q-03, parked): `"team"` is refused as not yet.
+   9. Fields that fit one type only are errors with another type.
+3. Smaller fields (24.27 report)
+   1. Present counters: a check (16 tests) and a setup field (8).
+   2. Present state in setup: destroyed, Happy Holidays done (8).
+   3. Player counters (fear): setup and check (8).
+   4. The rule card's side up (Treat), in setup (3).
+   5. Each only if tests need it; name the tests.
+4. Dump
+   1. The dump writes `game` when a Go test started a challenge.
+5. Tests and docs
+   1. Go: each type set up; each error.
+   2. Wiki `Situation-payload.md`: the field and its options, with examples.
+   3. ADR 034: drift edited in place, if any.
+   4. 24.27 resumes after this, in its own agent.
+6. Done (2026-11-25): `setup.game`
+   1. `SituationGame` (`situation_game.go`): `type`, `id`, `difficulty`.
+   2. No `game`, or `"type": "regular"`: a regular game, the same table.
+   3. `challenge`: `startChallenge` on the built table, before slot counters.
+   4. The round starts last (`startRound`): Starter and `turnTaken`, as `StartChallenge`.
+   5. So boss, rule card, presents, timer 8 as a real start (R-COOP-02).
+   6. Presents: the treasure deck top after `setup.decks`, in kind order.
+   7. A Go test compares the state with `StartChallenge`: equal.
+7. Where the challenges come from
+   1. `CardSet.Challenges`: the set that holds their cards lists them.
+   2. `challenge.Set` gets Krampus and Trick or Treat in an `init`.
+   3. `set_gen.go` is generated; the defs name `Set`, so not in its literal.
+   4. The engine imports no card package; the sets passed carry them.
+8. Errors, each with the options
+   1. No type; an unknown type: `options [regular challenge]`.
+   2. `team`: not in the game yet (Q-03, parked).
+   3. Regular with `id`, `difficulty`, `presents`, `holidays`, `rule_card`.
+   4. No or unknown `id` (`[krampus trick_or_treat]`); no or bad `difficulty`.
+   5. A challenge whose set is not loaded: "in none of the sets".
+   6. Not 2 players (R-COOP-01); `bosses` (R-CHAL-02); `bonus_souls` (R-COOP-02).
+9. Smaller fields (24.27 item 7), all added
+   1. `game.presents`: `counters` left, `destroyed`, `to` (a seat).
+   2. Need it: TestForgoCents, TestWhatsInTheBox (and Hard, Ultra), TestAllPresentsLost.
+   3. Also TestKrampusExtraRollsUltra (soul present at 1, `setCounters`).
+   4. `game.holidays`: Happy Holidays! done; every live present names `to`.
+   5. Need it: TestNoForgoAfterHolidays (`FlipPresents`, Q-33).
+   6. `game.rule_card`: the side up by ref, `treat_normhardultra`.
+   7. Need it: TestYouDontScareMe, TestHallowsEveBounty, TestTrickGoal (`flipToTreat`).
+   8. `"card": "player"` in counters: on the player (R-MECH-13).
+   9. Need it: TestTrickFearStays, TestTrickFearEvasion, TestTrickDeathRoll, TestYouDontScareMe.
+   10. `expect.presents`: `counters`, `destroyed`, `to` per kind.
+   11. `after[].counters` with `"card": "player"` checks fear.
+10. Boss counters in a challenge
+   1. `setup.counters` on the boss sets those left, not more on top.
+   2. `count` 0 leaves none; only in a challenge, only counters it put out.
+   3. So `setTricks(tb, n)` is `counters` with the count n.
+11. Not added: the timer
+   1. No Go test of the 46 sets or checks it by hand.
+12. Runner: `cards/challenge/situations_test.go`
+   1. Passes `trickSets()`: every set, `challenge`, `krampus_trial`, `trick_trial`.
+   2. Two new files (no Go test moved or deleted):
+   3. `pilfering_krampus_norm/can-not-be-attacked-below-5-souls.json`.
+   4. `mischievous_the_haunt_norm/can-be-attacked-at-as-many-souls-as-trick-counters.json`.
+   5. Each failed with its souls or counters changed, then passed.
+13. Test sets `krampus_trial`, `trick_trial`
+   1. The runner passes them; a file names them in `sets`.
+   2. No real card replaces Mixed Bag: no monster has ¢ and loot rewards.
+   3. None replaces the bare mob: Mom's Heart (fsp2) has no reward but 8 HP.
+   4. `trickOn`'s 6 bare mobs on the monster deck: `setup.decks.monster`.
+   5. Test: TestTrialSetsReachFiles.
+14. Dump
+   1. A started challenge is `setup.game`; its boss is no `bosses` entry.
+   2. Presents, holidays, rule card side, boss counters: only what changed.
+   3. Player counters as `"card": "player"`.
+   4. `Challenge.TurnFrom`, `RoundFrom` are left out of the diff.
+   5. They mark the turn's first object (R-COOP-11); a helper's `PutOnDeck` moves it.
+   6. Test: TestDumpRecordsAChallenge.
+15. Tests (`cards/challenge/situation_game_test.go`)
+   1. TestGameRegularIsTheDefault: same save as no game.
+   2. TestGameKrampusStarts: each difficulty, from R-KRAMPUS-04, 05 and R-COOP-02.
+   3. TestGameTrickStarts: R-TRICK-03, 04.
+   4. TestGameErrors: every error above, and the present field errors.
+   5. TestGamePresentsSetUp, TestGameHolidaysSetUp, TestGameRuleCardSide.
+   6. TestGameBossCountersAndFear, TestGameChecks.
+16. Live games unchanged
+   1. Only the setup builds it; `startChallenge` is the game's own.
+   2. No version bump; no `make e2e`.
+   3. `make site` run: the payload format got fields (rule 6); 2.33 MB gzip.
+17. Docs
+   1. Wiki `Situation-payload.md`: "Game type", counters on the player, checks, runner, dump.
+   2. ADR 034: items 10.29 to 10.33 appended.
+18. No rules bug found; `cardgen -report` unchanged.
+19. 24.27 can resume: every field its item 7 lists exists.
+20. Owner (2026-11-25)
+   1. Boss counters in a challenge set the count left: confirmed.
+   2. Fear as counters on card `player`: confirmed.

@@ -1,0 +1,21 @@
+{
+  "title": "Isaac hits Dingle (3 HP, DC 3) with a 3 and rolls a 6, then hits again and rolls a 2: does Dingle die to 1 + 1 + 1, and does the 2 deal Isaac 1 damage?",
+  "source": ["card dingle", "card isaac", "R-ATK-12", "R-ABIL-03", "R-CARD-10", "R-CARD-14"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["dingle", "gurdy"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [3, 6, 3, 2]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["dingle"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [3, 6, 3, 2],
+    "monsters": [{"card": "dingle", "dead": true}, {"slot": 1, "card": "dip"}, {"slot": 2, "card": "gurdy", "damage": 0}],
+    "after": [{"player": 0, "damage": 1, "cents": 6, "soul_cards": ["dingle"]}, {"player": 1, "damage": 0}]
+  }
+}

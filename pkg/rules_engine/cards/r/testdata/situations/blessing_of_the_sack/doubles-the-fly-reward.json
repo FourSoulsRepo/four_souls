@@ -1,0 +1,24 @@
+{
+  "title": "Blessing Of The Sack: Isaac kills the Fly and gains its 1¢ twice",
+  "source": ["card blessing_of_the_sack", "card fly", "R-DEATH-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["blessing_of_the_sack"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "fly", "dead": true}],
+    "after": [{"player": 0, "cents": 2, "hand": 0}, {"player": 1, "cents": 0}]
+  }
+}

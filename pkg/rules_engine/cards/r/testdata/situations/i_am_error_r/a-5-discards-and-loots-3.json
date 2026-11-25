@@ -1,0 +1,26 @@
+{
+  "title": "I Am Error (room): at the start of Cain's turn he rolls a 5, discards his hand and loots 3, then loots 1 in his loot step",
+  "source": ["card i_am_error_r", "R-TURN-03", "R-TURN-04", "R-ABIL-24", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["a_penny"]},
+      {"character": "cain", "hand": ["bomb"]}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["i_am_error_r"],
+    "decks": {"loot": ["a_dime", "a_nickel", "two_cents", "three_cents"]},
+    "rolls": [5]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 1,
+    "resolved_rolls": [5],
+    "after": [{"player": 0, "hand_cards": ["a_penny"]}, {"player": 1, "hand": 4, "hand_cards": ["a_dime", "a_nickel", "two_cents", "three_cents"]}],
+    "discards": {"loot": ["bomb"]}
+  }
+}

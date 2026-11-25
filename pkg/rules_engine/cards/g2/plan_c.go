@@ -19,6 +19,7 @@ var planC = engine.CardDef{
 	Lingering: []engine.Ability{{
 		Kind:    engine.Triggered,
 		Text:    "At the end of the turn, kill all players.",
+		ShownOn: engine.ShownForEveryone,
 		Trigger: engine.Trigger{On: engine.EvEndOfTurn, Match: func(*engine.Game, engine.ObjectID, engine.Event) bool { return true }},
 		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
 			p := c.G.Turn.Active // in turn order from the active player

@@ -1,0 +1,20 @@
+{
+  "title": "Cain has 9¢, Isaac none; Isaac reveals Greed!: is Cain the only choice, and does he lose all 9¢?",
+  "source": ["card greed_event", "R-ATK-09", "R-MECH-42"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "cents": 9}],
+    "active": 0,
+    "monsters": ["fly"]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "greed_event",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["player 2 (cain)"]}}},
+    {"kind": "choose", "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true,
+       "events": [{"kind": "lost_cents", "player": 1}, {"kind": "lost_cents", "player": 0, "none": true}],
+       "discards": {"monster": ["greed_event"]},
+       "after": [{"player": 0, "cents": 0}, {"player": 1, "cents": 0}]}}
+  ],
+  "expect": {"allowed": true}
+}

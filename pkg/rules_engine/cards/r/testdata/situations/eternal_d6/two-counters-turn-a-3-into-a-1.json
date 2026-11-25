@@ -1,0 +1,22 @@
+{
+  "title": "Isaac puts a second counter on Eternal D6, removes both, then attacks the Fly: does his 3 become a 1 and miss, then a 6 kill it?",
+  "source": ["card eternal_d6", "card fly", "R-ATK-12", "R-ATK-13", "R-DICE-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["eternal_d6"], "counters": [{"card": "eternal_d6", "count": 1}]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [3, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "eternal_d6",
+     "expect": {"allowed": true, "after": [{"player": 0, "deactivated": ["eternal_d6"], "counters": [{"card": "eternal_d6", "count": 2}]}]}},
+    {"player": 0, "kind": "activate", "card": "eternal_d6", "ability": 1,
+     "expect": {"allowed": true, "after": [{"player": 0, "counters": [{"card": "eternal_d6", "count": 0}]}]}},
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "resolved_rolls": [1, 6], "monsters": [{"card": "fly", "dead": true}],
+       "after": [{"player": 0, "damage": 1, "cents": 1}]}}
+  ],
+  "expect": {"allowed": true}
+}

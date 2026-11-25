@@ -1,0 +1,19 @@
+{
+  "title": "Isaac buys Keeper's Box from the treasure deck: are 2 shop slots added and filled, so his second purchase offers 4 shop items?",
+  "source": ["card keepers_box", "R-MECH-31", "R-SHOP-06", "R-SHOP-02"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "cents": 20}, {"character": "cain"}],
+    "active": 0,
+    "purchases": 2,
+    "shop": ["spoon_bender", "jawbone"],
+    "decks": {"treasure": ["keepers_box", "breakfast", "dinner"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "purchase", "choices": ["ask.deck.treasure"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 10, "items": ["keepers_box"]}]}},
+    {"player": 0, "kind": "purchase",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["spoon_bender", "jawbone", "breakfast", "dinner", "ask.deck.treasure"]}}}
+  ],
+  "expect": {"allowed": true}
+}

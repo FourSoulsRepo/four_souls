@@ -2,4 +2,6 @@ package r
 
 import "testing"
 
-func TestTheDauntlessCharacter(t *testing.T) { testCharacter(t, "the_dauntless", "hypercoagulation") }
+func TestTheDauntlessStartingItem(t *testing.T) {
+	testStartingItem(t, "the_dauntless", "hypercoagulation")
+}

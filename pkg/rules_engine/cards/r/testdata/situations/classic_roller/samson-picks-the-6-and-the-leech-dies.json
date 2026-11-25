@@ -1,0 +1,22 @@
+{
+  "title": "Flash Isaac's attack roll of 1 on the Leech waits on the stack; he uses Classic Roller, rerolls 6 and 2, and Samson picks the 6: does the Leech die?",
+  "source": ["card classic_roller", "card leech", "R-MECH-47", "R-ATK-12"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "flash_isaac", "items": ["classic_roller"]}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["leech"],
+    "stack": [{"kind": "attack_roll", "dice_roll": 1, "card": "leech", "owner": 0}],
+    "decks": {"loot": ["a_penny"]},
+    "rolls": [6, 2]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "classic_roller", "choices": ["ask.roll_of 1", "player 3 (samson)", "6"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "monsters": [{"card": "leech", "dead": true}],
+    "after": [{"player": 0, "damage": 0, "hand_cards": ["a_penny"], "deactivated": ["classic_roller"]}]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "title": "Cain has Daddy Long Legs; at the start of his turn he deals 1 damage to the Fly: does it die and give him 1¢?",
+  "source": ["card daddy_long_legs_fsp2", "card fly", "R-TURN-03", "R-CARD-13"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "items": ["daddy_long_legs_fsp2"]}],
+    "active": 0,
+    "monsters": ["fly", "fatty"],
+    "decks": {"monster": ["dip"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "choices": ["fly"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 1,
+    "monsters": [{"card": "fly", "dead": true}, {"slot": 1, "card": "dip"}, {"slot": 2, "card": "fatty", "damage": 0}],
+    "after": [{"player": 0, "cents": 0}, {"player": 1, "cents": 1}]
+  }
+}

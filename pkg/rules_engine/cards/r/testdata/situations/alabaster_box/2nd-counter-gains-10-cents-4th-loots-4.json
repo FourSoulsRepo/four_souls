@@ -1,0 +1,23 @@
+{
+  "title": "Isaac's Alabaster Box has 1 counter: at the start of his next turns it gets its 2nd counter (gain 10¢), 3rd and 4th (loot 4)?",
+  "source": ["card alabaster_box", "R-TURN-03", "R-TURN-04"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "cain"},
+      {"character": "isaac", "items": ["alabaster_box"], "counters": [{"card": "alabaster_box", "count": 1}]}
+    ],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 1, "cents": 10, "hand": 1, "counters": [{"card": "alabaster_box", "count": 2}]}]}},
+    {"player": 1, "kind": "end_turn"},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 1, "cents": 10, "hand": 2, "counters": [{"card": "alabaster_box", "count": 3}]}]}},
+    {"player": 1, "kind": "end_turn"},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 1, "cents": 10, "hand": 7, "items": ["alabaster_box"], "counters": [{"card": "alabaster_box", "count": 4}]}]}}
+  ],
+  "expect": {"allowed": true}
+}

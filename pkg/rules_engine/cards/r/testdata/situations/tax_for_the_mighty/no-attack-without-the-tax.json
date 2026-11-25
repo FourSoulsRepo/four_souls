@@ -1,0 +1,18 @@
+{
+  "title": "Tax For The Mighty: Isaac controls the most souls and has 0¢, so he can't pay Cain 2¢ to attack",
+  "source": ["card tax_for_the_mighty", "R-MECH-44", "R-ABIL-12"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "souls": ["chub"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["tax_for_the_mighty"]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "expect": {"allowed": false, "rule": "R-ABIL-12"}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-12", "attacks": 1}
+}

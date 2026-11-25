@@ -1,0 +1,20 @@
+{
+  "title": "Blood Money: Isaac at 1 HP misses the Fly and dies; Cain gains 4¢",
+  "source": ["card blood_money", "R-ATK-13", "R-DEATH-13"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "damage": 1},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["blood_money"],
+    "rolls": [1]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "events": [{"kind": "died", "player": 0}, {"kind": "died", "player": 1, "none": true}], "after": [{"player": 0, "cents": 0}, {"player": 1, "cents": 4}]}}
+  ],
+  "expect": {"allowed": true}
+}

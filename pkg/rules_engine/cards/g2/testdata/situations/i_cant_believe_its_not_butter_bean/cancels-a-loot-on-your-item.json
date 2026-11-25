@@ -1,0 +1,20 @@
+{
+  "title": "Isaac's Lil Battery waits on the stack, aimed at Cain's spent Bible: may Cain cancel it with I Can't Believe It's Not Butter Bean?",
+  "source": ["card i_cant_believe_its_not_butter_bean", "card lil_battery", "R-STACK-06"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain", "items": ["i_cant_believe_its_not_butter_bean", "the_bible"], "deactivated": ["the_bible"]}
+    ],
+    "active": 0,
+    "stack": [{"kind": "play", "card": "lil_battery", "owner": 0, "choices": ["the_bible"]}],
+    "priority": 1
+  },
+  "action": {"player": 1, "kind": "activate", "card": "i_cant_believe_its_not_butter_bean", "choices": ["lil_battery"]},
+  "expect": {
+    "allowed": true,
+    "discards": {"loot": ["lil_battery"]},
+    "after": [{"player": 1, "deactivated": ["the_bible", "i_cant_believe_its_not_butter_bean"]}]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "title": "Isaac declares an attack on Pride and chooses Cain: are Cain's 2 loot cards gone before the first attack roll is thrown?",
+  "source": ["card pride", "R-ATK-25", "R-ATK-02"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "hand": ["a_dime", "bomb"]}],
+    "active": 0,
+    "monsters": ["pride"],
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["pride", "player 2 (cain)", "a_dime", "bomb"],
+     "expect": {"allowed": true, "resolved": ["pride"], "resolved_rolls": [], "after": [{"player": 1, "hand": 0}]}},
+    {"kind": "throw"}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [6, 6], "monsters": [{"card": "pride", "dead": true}]}
+}

@@ -1,0 +1,22 @@
+{
+  "title": "Holy Greedling in a slot: Isaac kills the Fly and gains its 1¢; he says yes and gains 3¢ more",
+  "source": ["card holy_greedling", "card fly", "card clotty", "R-DEATH-05", "R-DEATH-06", "R-DEATH-09"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["holy_greedling", "fly"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly", "ask.yes"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [{"player": 0, "cents": 4}, {"player": 1, "cents": 0}, {"player": 2, "cents": 0}],
+    "monsters": [{"slot": 1, "card": "holy_greedling"}, {"card": "fly", "dead": true}, {"slot": 2, "card": "clotty"}],
+    "discards": {"monster": ["fly"]}
+  }
+}

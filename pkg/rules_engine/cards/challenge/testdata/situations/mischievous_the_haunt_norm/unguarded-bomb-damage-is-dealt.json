@@ -1,0 +1,20 @@
+{
+  "title": "Trick or Treat, Normal: Mischievous The Haunt has 3 trick counters and the players hold 3 souls; Isaac's Bomb! hits it; does it take the damage?",
+  "source": ["card mischievous_the_haunt_norm", "card bomb", "R-TRICK-06", "Q-30"],
+  "sets": ["b2", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "normal"},
+    "players": [{"character": "isaac", "souls": ["monstro", "gemini"], "hand": ["bomb"]}, {"character": "cain", "souls": ["chub"]}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "counters": [{"card": "mischievous_the_haunt_norm", "name": "trick", "count": 3}]
+  },
+  "action": {"player": 0, "kind": "play", "card": "bomb", "choices": ["mischievous_the_haunt_norm"]},
+  "expect": {
+    "allowed": true,
+    "events": [{"kind": "prevented", "none": true}],
+    "monsters": [{"card": "mischievous_the_haunt_norm", "damage": 1, "hp": 3}],
+    "counters": [{"card": "mischievous_the_haunt_norm", "name": "trick", "count": 3}],
+    "discards": {"loot": ["bomb"]}
+  }
+}

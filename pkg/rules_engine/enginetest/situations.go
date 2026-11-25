@@ -29,6 +29,9 @@ const (
 	// RuleTree is the engine's tree: a folder per rule topic in lower
 	// case, as R-ATK is atk/.
 	RuleTree
+	// InteractionTree is the cross-set tree in cards/: interactions/
+	// only, so a card's own files stay in its set's tree (19.238).
+	InteractionTree
 )
 
 // RunSituations runs a card tree: every file under testdata/situations
@@ -42,6 +45,13 @@ const (
 func RunSituations(t *testing.T, files fs.FS, sets ...engine.CardSet) {
 	t.Helper()
 	run(t, CardTree, files, sets)
+}
+
+// RunInteractionSituations runs the cross-set tree, as RunSituations;
+// it holds only interactions/.
+func RunInteractionSituations(t *testing.T, files fs.FS, sets ...engine.CardSet) {
+	t.Helper()
+	run(t, InteractionTree, files, sets)
 }
 
 // RunRuleSituations runs the engine's rule tree, as RunSituations.
@@ -136,14 +146,19 @@ func CheckSituation(tree Tree, files fs.FS, path string, sets ...engine.CardSet)
 		for _, m := range ans.Mismatch {
 			out = append(out, path+", "+m)
 		}
-		return out
+	} else {
+		step := strings.TrimSpace(fmt.Sprintf("step 1 (%s %s", s.Action.Kind, s.Action.Card)) + ")"
+		if ans.Rule != "" {
+			step += fmt.Sprintf(", refused by %s: %s", ans.Rule, ans.Reason)
+		}
+		for _, m := range ans.Mismatch {
+			out = append(out, fmt.Sprintf("%s, %s: %s", path, step, m))
+		}
 	}
-	step := strings.TrimSpace(fmt.Sprintf("step 1 (%s %s", s.Action.Kind, s.Action.Card)) + ")"
-	if ans.Rule != "" {
-		step += fmt.Sprintf(", refused by %s: %s", ans.Rule, ans.Reason)
-	}
-	for _, m := range ans.Mismatch {
-		out = append(out, fmt.Sprintf("%s, %s: %s", path, step, m))
+	// A test file uses every roll and pick it lists (24.32); a payload
+	// may leave some, so only this runner reads Unused.
+	for _, u := range ans.Unused {
+		out = append(out, path+", end: "+u)
 	}
 	return out
 }
@@ -166,6 +181,10 @@ func checkLayout(tree Tree, path string, sets []engine.CardSet) string {
 	case CardTree:
 		if folder != "interactions" && !hasCard(sets, folder) {
 			return fmt.Sprintf("folder %q: want a card ref of sets %v, or interactions", folder, setNames(sets))
+		}
+	case InteractionTree:
+		if folder != "interactions" {
+			return fmt.Sprintf("folder %q: the cross-set tree holds only interactions; a card's files go in its set's tree", folder)
 		}
 	case RuleTree:
 		topics, err := ruleTopics()

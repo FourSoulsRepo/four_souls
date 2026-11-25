@@ -1,0 +1,21 @@
+{
+  "title": "Isaac has Rubber Cement and misses the Trite with a 3; the Cement rolls a 2 and he hits the Fly: does the Fly die and the Dip replace it?",
+  "source": ["card rubber_cement", "card trite", "card fly", "R-ATK-13", "R-DEATH-09", "R-CARD-13"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["rubber_cement"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["trite", "fly"],
+    "decks": {"monster": ["dip", "pooter"]},
+    "rolls": [3, 2, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["trite", "fly"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [3, 2, 6],
+    "monsters": [{"card": "fly", "dead": true}, {"card": "trite", "dead": true}, {"slot": 1, "card": "pooter"}, {"slot": 2, "card": "dip"}],
+    "after": [{"player": 0, "damage": 1, "cents": 1, "hand": 2}]
+  }
+}

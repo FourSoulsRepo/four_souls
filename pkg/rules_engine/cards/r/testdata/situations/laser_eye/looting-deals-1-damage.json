@@ -1,0 +1,19 @@
+{
+  "title": "Laser Eye!: Cain loots 1 in his loot step and takes 1 damage",
+  "source": ["card laser_eye", "R-TURN-04"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["laser_eye"],
+    "decks": {"loot": ["a_penny", "a_dime"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "damage": 0}, {"player": 1, "damage": 1, "hand_cards": ["a_penny"]}]}
+}

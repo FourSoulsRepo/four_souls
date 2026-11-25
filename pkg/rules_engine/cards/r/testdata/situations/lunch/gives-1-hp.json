@@ -1,0 +1,11 @@
+{
+  "title": "Isaac (2 HP) with Lunch plays Mega Bomb! on himself: with +1 HP, does he live at 1 HP?",
+  "source": ["card lunch", "card mega_bomb", "R-MECH-15"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["lunch"], "hand": ["mega_bomb"]}, {"character": "cain"}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "mega_bomb", "choices": ["player 1 (isaac)"]},
+  "expect": {"allowed": true, "events": [{"kind": "died", "none": true}], "after": [{"player": 0, "hp": 1, "damage": 2}]}
+}

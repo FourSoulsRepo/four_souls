@@ -40,7 +40,7 @@ const unread: Record<string, string> = {
   'Turn.bonus_loot_used': "what is left is the player's loot_plays",
   'Turn.bonus_attacks_used': "what is left is the player's attacks",
   'Turn.bonus_purchases_used': "what is left is the player's purchases",
-  'Turn.random_attack_made': 'the Q-31 duty itself is not in the view',
+  'Turn.random_attack_made': 'the view sends the Q-31 duty as random_attack (18.35)',
   'Turn.shop_bought': 'the purchase prompt shows each price (20.11)',
   'Turn.free_shop_item': 'the purchase prompt shows the 0¢ price (20.11)',
   'Turn.monster_died': 'the room replace comes as a prompt',

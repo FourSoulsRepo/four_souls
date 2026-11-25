@@ -1,0 +1,23 @@
+{
+  "title": "Isaac has Soy Milk: is the Fatty's DC 3 on his turn, and does each of his 4 hits on it deal 1 to Gurdy?",
+  "source": ["card soy_milk", "card fatty", "R-ATK-12", "R-CARD-13"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["soy_milk"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["gurdy", "fatty"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [3, 3, 3, 3]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0}, "monsters": [{"slot": 1, "card": "gurdy", "evasion": 5}, {"slot": 2, "card": "fatty", "evasion": 3}]}},
+    {"kind": "choose", "choices": ["fatty"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [3, 3, 3, 3],
+    "monsters": [{"slot": 1, "card": "gurdy", "damage": 4}, {"card": "fatty", "dead": true}, {"slot": 2, "card": "dip"}],
+    "after": [{"player": 0, "damage": 0}]
+  }
+}

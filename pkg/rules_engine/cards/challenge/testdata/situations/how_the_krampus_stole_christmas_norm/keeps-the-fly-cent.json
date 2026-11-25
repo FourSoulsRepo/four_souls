@@ -1,0 +1,22 @@
+{
+  "title": "Krampus challenge, Normal: Isaac kills the Fly and says no to the forgo; does he gain its 1¢?",
+  "source": ["card how_the_krampus_stole_christmas_norm", "card fly", "R-KRAMPUS-05", "R-KRAMPUS-07", "Q-32"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal"},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly", "ask.no"]}
+  ],
+  "expect": {"allowed": true,
+    "resolved_rolls": [6],
+    "events": [{"kind": "forgone", "none": true}],
+    "monsters": [{"card": "fly", "dead": true}, {"slot": 2, "card": "pooter"}],
+    "after": [{"player": 0, "cents": 1}],
+    "presents": [{"kind": "cents", "counters": 8}]}
+}

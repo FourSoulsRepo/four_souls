@@ -1,9 +1,10 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { language, t } from '../i18n';
-import { useApp, type Zoom } from '../store';
+import { useApp, type Zoom, type ZoomEffects } from '../store';
 import { feel } from '../feel';
 import { keyword, placeZoom, type Place } from '../zoom';
 import { outcomeGrid, type Outcome } from '../history';
+import { shownEffects } from '../stats';
 import { artistsOf, translatorsOf } from '../cards';
 import { counterColor } from '../counters';
 import type { CounterView } from '../protocol';
@@ -22,11 +23,12 @@ import './Card.css';
 // card's keywords stand beside it (H-13). A card the player can't use
 // now says why under it (15.29, F-17, C-06). A history headline's zoom
 // shows what it did beside the card, after an arrow (15.90). A changed
-// stat's sum goes under the card (15.92). Under it, its artists (CD-14,
+// stat's sum goes under the card (15.92); a character's effects stand
+// beside it (18.32). Under it, its artists (CD-14,
 // 20.24) and, for a translated card, its translators (CD-06, 16.5), in
 // outlined game letters like the reference's credit (ADR 027 "Credits"
 // 13). A two-sided card shows its other side beside it, smaller
-// (ADR 023).
+// (ADR 023); so does a card with cards under it, each of them (19.244).
 export function CardZoom() {
   const zoom = useApp((s) => s.zoom);
   const setZoom = useApp((s) => s.setZoom);
@@ -102,8 +104,11 @@ export function CardZoom() {
           )}
           {zoom.stats && zoom.stats.length > 0 && (
             <ul className="card-zoom-stats" aria-label={t('zoom.stats')}>
-              {zoom.stats.map((line) => (
-                <li key={line}>{line}</li>
+              {zoom.stats.map((line, i) => (
+                // Two shields of one card say the same (18.34); the
+                // lines' order is stable.
+                // eslint-disable-next-line @eslint-react/no-array-index-key
+                <li key={i}>{line}</li>
               ))}
             </ul>
           )}
@@ -149,19 +154,67 @@ export function CardZoom() {
             <figcaption>{t('zoom.other_side')}</figcaption>
           </figure>
         )}
+        {zoom.under?.map((c, i) => (
+          // The cards under a card keep their order.
+          // eslint-disable-next-line @eslint-react/no-array-index-key
+          <figure key={i} className="card-zoom-side card-zoom-under">
+            <Card cardRef={c} size="hand" noZoom />
+            <figcaption>{t('zoom.under')}</figcaption>
+          </figure>
+        ))}
         {zoom.outcome && zoom.outcome.length > 0 && <Outcomes list={zoom.outcome} swords={zoom.swords ?? false} />}
-        {footnotes && footnotes.length > 0 && (
-          <aside className="card-zoom-tips" role="note" aria-label={t('zoom.keywords')}>
-            {footnotes.map((f) => (
-              <p key={f.title} className="card-zoom-tip">
-                <b>{keyword(f.title)}</b>
-                <CardText text={f.text} />
-              </p>
-            ))}
-          </aside>
+        {(zoom.effects !== undefined || (footnotes?.length ?? 0) > 0) && (
+          <div className="card-zoom-notes">
+            {zoom.effects && <Effects list={zoom.effects} />}
+            {footnotes && footnotes.length > 0 && (
+              <aside className="card-zoom-tips" role="note" aria-label={t('zoom.keywords')}>
+                {footnotes.map((f) => (
+                  <p key={f.title} className="card-zoom-tip">
+                    <b>{keyword(f.title)}</b>
+                    <CardText text={f.text} />
+                  </p>
+                ))}
+              </aside>
+            )}
+          </div>
         )}
       </div>
     </div>
+  );
+}
+
+// Effects is a zoomed character's list of the hidden effects on its
+// player (ADR 037 item 4, 18.32): beside the card, above its keyword
+// notes, so the zoom keeps the card's height. This turn's effects, then
+// "Until used" for the ones that may outlast it (18.37): a lasting
+// one's card lies on the table (item 4.1, 18.34). Above
+// MAX_EFFECT_LINES a last line counts the rest (shownEffects).
+function Effects({ list }: { list: ZoomEffects }) {
+  const { turn, later, more } = shownEffects(list);
+  const group = (title: string, lines: string[]) =>
+    lines.length > 0 && (
+      <li className="card-zoom-effects-group">
+        <b>{title}</b>
+        <ul aria-label={title}>
+          {lines.map((line, i) => (
+            // Two sources may say the same; a list's order is stable.
+            // eslint-disable-next-line @eslint-react/no-array-index-key
+            <li key={i}>{line}</li>
+          ))}
+        </ul>
+      </li>
+    );
+  return (
+    <section className="card-zoom-effects">
+      <h3>
+        <BotText text={list.title} />
+      </h3>
+      <ul aria-label={list.title}>
+        {group(t('zoom.effects_turn'), turn)}
+        {group(t('zoom.effects_later'), later)}
+        {more > 0 && <li className="card-zoom-effects-more">{t('zoom.effects_more', { n: more })}</li>}
+      </ul>
+    </section>
   );
 }
 

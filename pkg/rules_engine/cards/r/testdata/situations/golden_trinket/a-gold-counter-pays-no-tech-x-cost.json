@@ -1,0 +1,21 @@
+{
+  "title": "Tech X has 2 counters; Isaac plays Golden Trinket and puts its gold counter on Tech X: may he pay Tech X's \"Remove 3 counters\"?",
+  "source": ["card golden_trinket", "card tech_x", "R-MECH-12", "R-ABIL-07", "R-ABIL-19"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["tech_x", "bum_bo"], "hand": ["golden_trinket"],
+       "counters": [{"card": "tech_x", "count": 2}]},
+      {"character": "cain", "cents": 5}
+    ],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "golden_trinket", "choices": ["tech_x"],
+     "expect": {"allowed": true, "after": [{"player": 0, "items": ["tech_x", "bum_bo", "golden_trinket"],
+       "counters": [{"card": "tech_x", "name": "gold", "count": 1}, {"card": "tech_x", "count": 2}, {"card": "bum_bo", "count": 0}]}]}},
+    {"player": 0, "kind": "activate", "card": "tech_x", "ability": 1, "choices": ["player 2 (cain)"],
+     "expect": {"allowed": false, "rule": "R-ABIL-07"}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-07", "after": [{"player": 0, "counters": [{"card": "tech_x", "count": 2}]}, {"player": 1, "dead": false}]}
+}

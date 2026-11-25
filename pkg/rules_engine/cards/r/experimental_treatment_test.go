@@ -6,30 +6,9 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-func TestExperimentalTreatmentSoul(t *testing.T) {
-	tb := setup(t, engine.SituationSetup{Players: []engine.SituationPlayer{seat("isaac", "experimental_treatment"), seat("cain")}})
-	tb.G.ForceRolls(6)
-	tb.Activate(0, "experimental_treatment", 0)
-	if tb.G.SoulValue(0) != 1 {
-		t.Fatal("6: it becomes his soul")
-	}
-	// As a soul it keeps its ability (R-CARD-38, S-YUG).
-	tb.G.ForceRolls(3)
-	tb.Activate(0, "experimental_treatment", 0)
-	if tb.G.SoulValue(0) != 0 || tb.G.Players[0].Cents != 9 {
-		t.Errorf("the soul is destroyed for another roll: souls %d, cents %d", tb.G.SoulValue(0), tb.G.Players[0].Cents)
-	}
-}
-
-func TestExperimentalTreatmentDie(t *testing.T) {
-	tb := setup(t, engine.SituationSetup{Players: []engine.SituationPlayer{seat("isaac", "experimental_treatment", "spoon_bender"), seat("cain")}})
-	tb.G.ForceRolls(1)
-	tb.Activate(0, "experimental_treatment", 0, "spoon_bender")
-	if !tb.G.Players[0].Dead {
-		t.Error("1: you die")
-	}
-}
-
+// Stays Go (24.23): Butter Bean cancels the ability on the stack, but
+// its cost destroyed the card, and setup.stack can't hold an ability
+// whose card is no longer in play.
 func TestExperimentalTreatmentCancelled(t *testing.T) {
 	tb := setup(t, engine.SituationSetup{Players: []engine.SituationPlayer{
 		seat("isaac", "experimental_treatment"), {Character: "cain", Hand: []engine.CardRef{"butter_bean"}},

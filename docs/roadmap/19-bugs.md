@@ -33,15 +33,15 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226 | 27 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193, 19.232 | 19 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151, 19.110, 19.195, 19.222, 19.223, 19.225, 19.226, 19.233, 19.236, 19.237, 19.238, 19.241, 19.242, 19.243 | 34 |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106, 19.173, 19.174, 19.175, 19.176, 19.178, 19.188, 19.192, 19.193, 19.232, 19.244 | 20 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45, 19.224                                   | 3     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157, 19.180, 19.181, 19.182, 19.183, 19.184, 19.185, 19.186, 19.187 | 15 |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141, 19.191 | 16 |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119, 19.167, 19.200, 19.230 | 14 |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148, 19.166, 19.198                          | 4     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194, 19.197, 19.217, 19.231 | 46 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154, 19.163, 19.164, 19.165, 19.158, 19.169, 19.194, 19.197, 19.217, 19.231, 19.239, 19.240 | 48 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.159, 19.161, 19.162, 19.168, 19.170, 19.171, 19.172, 19.179, 19.189, 19.196, 19.202, 19.203, 19.219, 19.220 | 36 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91, 19.201, 19.218             | 6     |
@@ -58,19 +58,22 @@ This step never closes; new reports are appended.
 | W  | Undo and redo: replay differs            | Engine     | 19.177                                                 | 1     |
 | X  | Bots: a bot or its driver wrong          | Bots       | 19.199, 19.204, 19.205, 19.206, 19.207, 19.208, 19.209, 19.210, 19.211, 19.212, 19.213, 19.214, 19.215, 19.216, 19.221 | 15 |
 | Y  | A left game: its step state kept         | Client     | 19.227                                                 | 1     |
+| Z  | Situation runner: a check checks nothing | Go tests   | 19.234                                                 | 1     |
+| AA | Situation setup: a start-of-turn duty lost | Engine   | 19.235                                                 | 1     |
+| AB | Go server test: fails often, cause not found | Go tests | 19.245                                               | 1     |
 
-Totals by system (218 items):
+Totals by system (235 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U, W | 48 |
-| Card data | C       | 2     |
-| Client    | D–G, O, P, S, V, Y | 55 |
+| Engine    | A, B, T, U, W, AA | 58 |
+| Card data | C       | 3     |
+| Client    | D–G, O, P, S, V, Y | 56 |
 | Server    | H, N    | 5     |
-| e2e       | I, J    | 81    |
+| e2e       | I, J    | 84    |
 | Release   | K       | 6     |
 | None      | L       | 2     |
-| Go tests  | M       | 1     |
+| Go tests  | M, Z, AB | 3    |
 | Go tools  | Q       | 2     |
 | Vitest    | R       | 1     |
 | Bots      | X       | 15    |
@@ -6430,7 +6433,7 @@ Totals by system (218 items):
 6. Owner notes (2026-11-18)
    1. Owner marks 19.224 solved.
 
-### [ ] 19.225 A forced attack is refused by R-ABIL-12, a static ability rule
+### [x] 19.225 A forced attack is refused by R-ABIL-12, a static ability rule
 
 1. Goal: a forced attack's refusal cites the rule that says it.
 2. Report (24.14 bulk move, 2026-11-18)
@@ -6454,8 +6457,10 @@ Totals by system (218 items):
    5. The random minion attack cites R-KRAMPUS-13, its own rule (Q-31).
    6. The Monster Manual file expects R-ATK-03.
    7. Other R-ABIL-12 denials are a card's static "can't"; they fit.
+6. Owner notes (2026-11-23)
+   1. Owner marks 19.225 solved.
 
-### [ ] 19.226 The Bone's soul is refused by R-ABIL-09, a controller rule
+### [x] 19.226 The Bone's soul is refused by R-ABIL-09, a controller rule
 
 1. Goal: the refusal cites the rule that says it.
 2. Report (24.14 bulk move, 2026-11-18)
@@ -6478,6 +6483,8 @@ Totals by system (218 items):
    2. Other R-ABIL-09 denials: a card the player doesn't control; they fit.
    3. `TestTheBoneSoulHasNoAbilities` moved to a step in
       `the_bone/deals-damage-then-becomes-a-soul.json`.
+6. Owner notes (2026-11-23)
+   1. Owner marks 19.226 solved.
 
 ### [x] 19.227 The next roller gets no Throw button; everyone sees "throwing…"
 
@@ -6664,3 +6671,866 @@ Totals by system (218 items):
 7. Moved (owner, 2026-11-19): the same logic as every other player effect.
    1. Decision: ADR 037; plan: 18.28–18.32.
    2. The fix is 18.29.
+
+### [x] 19.233 A Roll- result skips the order of same-time roll triggers
+
+1. Goal: a roll ability's result and a "when you roll N" trigger are ordered by R-ABIL-15.
+2. Report (24.15 bulk move, 2026-11-23)
+   1. Cursed Horf in a slot; Isaac rolls a 2 for Mystery Sack.
+   2. Both trigger as the roll resolves (R-DICE-06, R-ABIL-24).
+   3. Cursed Horf resolves first: Isaac dies, the penalty finds no loot card.
+   4. Then the Sack's "Loot 1" resolves: the dead Isaac keeps the card.
+   5. Nobody was asked the order.
+3. Cause (the engine)
+   1. `stack.go` pushes the result trigger (`RollFor`) as the roll resolves.
+   2. The roll triggers are placed after it, at the next priority.
+   3. So they always resolve first; `ChooseTriggerOrder` never sees the pair.
+4. Rules
+   1. R-ABIL-24: the result is a trigger; the roller controls it.
+   2. R-ABIL-15: triggers at once are ordered; each player orders their own.
+   3. Cursed Horf's trigger is the active player's (R-CARD-10).
+   4. Open: does the result trigger count as "at once" with them?
+5. Tasks:
+   1. Decide with the owner; a Q-item if the rules text is unclear.
+   2. Check every roll trigger against every Roll- ability, all sets (5.24).
+   3. The file then checks the loot and its discard.
+   4. File: `cards/b2/testdata/situations/cursed_horf/rolling-a-2-deals-2-damage.json`.
+6. Owner (2026-11-23): Isaac picks the order, as for other triggers at once.
+7. Done (2026-11-23)
+   1. `stack.go`: the result trigger joins `PendingTriggers` (R-ABIL-15).
+   2. One shared place: every Roll- card against every roll trigger, all sets.
+   3. Same controller: asked; another player's: turn order, no question.
+   4. `Clone` copies its new fields; `CloneRules` lists them.
+   5. Cursed Horf file: Horf first, so the Sack loots before the death.
+   6. It checks the question, the order, and A Penny! in the loot discard.
+   7. Tests that roll with Mystery Sack or The Butter Bean answer the order.
+   8. They keep the old order: the result first, the other trigger resolves first.
+   9. Go: Charged Baby, Crystal Ball, Holy monsters, Hourglass, Fruitcake, …
+   10. Files: 15 in `cards/b2/testdata/situations/`, R-ABIL-15 in each source.
+8. Owner notes (2026-11-23)
+   1. Owner marks 19.233 solved.
+
+### [x] 19.234 Situation files: a monster check with only `card` checks nothing
+
+1. Goal: every `expect` entry checks what the wiki says it means.
+2. Report (24.17 bulk move, 2026-11-23)
+   1. `{"card": "fly"}` in `expect.monsters` checks nothing.
+   2. `"dead": false` also passes for a card in a deck or anywhere else.
+   3. The wiki says `dead: false` means a slot holds the card.
+   4. Seen in the Peep and Mom files of 24.17.
+   5. Owner (2026-11-23): fix it now.
+3. Cause (the situation runner, `situation_expect.go`)
+   1. `checkMonster` checks the slot only for `slot` or a number field.
+   2. `dead: false` is `!found && leftPlay`: false also off the table.
+   3. So a file can pass while it checks less than it says.
+4. Tasks:
+   1. A monster entry without `dead: true` needs the card on top of a slot.
+   2. With `slot`, that slot; without, any slot, in slot order.
+   3. The mismatch says it is in no slot and lists the slot cards.
+   4. `dead: true` keeps its meaning.
+   5. 5.26: every other check with only its key, a false or an empty value.
+   6. Go tests: a pass and a fail for each fix.
+   7. Rerun every situation file; fix each failing one from the rules (5.25).
+   8. A rules bug found that way: its own 19 item.
+   9. Wiki `Situation-payload.md`; ADR 034 if it drifts.
+   10. Wiki: the missing `setup.bonus_souls` line (24.16).
+5. Done (2026-11-23)
+   1. `checkMonster`: without `dead: true` the card must top a slot.
+   2. With `slot`, that slot; else any slot, in slot order.
+   3. Else: "monster fly is in no slot, options [...]", the slot cards.
+   4. `dead: false` now says the same as no `dead`.
+   5. `dead: true` unchanged: in no slot, and in a discard or souls.
+6. 5.26: other checks with only a key, a false or an empty value
+   1. Fixed: a player entry with only `player` checked nothing.
+   2. Fixed: an empty `after`, `monsters`, `counters`, `events` checked nothing.
+   3. Fixed: an empty `decks`, `discards`, `deck_bottoms` map, too.
+   4. Also a player's empty `counters` list; each is now a mismatch.
+   5. Fixed: `decks` or `deck_bottoms` `[]` for a deck passed always.
+   6. Now `[]` expects that deck to be empty, as other card lists.
+   7. Fixed: an `events` seat no player has; `none` passed always.
+   8. Fine: player `dead: false` and `over: false` compare the value.
+   9. Fine: counters with `count` 0 need the card; none on it.
+   10. Fine: `prompt: {}` checks a question is open (documented).
+   11. Fine: `prompt.options: []` never matches a question.
+   12. Fine: `[]` in `discards`, `resolved`, `resolved_rolls`, `winners`.
+   13. Fine: `[]` in `items`, `hand_cards`, `soul_cards`, `deactivated`.
+   14. Fine: `events` without `none` needs one; `allowed` false a refusal.
+   15. Fine: a `slot` with `dead: true` fails on the slot's card.
+7. Situation files that failed after the fix: 1 of 343.
+   1. `the_d10/covers-a-monster-on-a-3.json`, step 1.
+   2. It checked the covered Fly as `dead: false`.
+   3. A covered card is not in play (R-ZONE-10): in no slot.
+   4. It had checked only that the Fly was in no discard or souls.
+   5. Now: an empty monster discard, no souls for either player.
+   6. The end check still shows the Fly back in slot 1 (R-ZONE-11).
+   7. The other 48 `card`-only and 8 `dead: false` entries hold.
+   8. No rules bug found; no new item.
+8. Tests and docs
+   1. Go: `TestSituationExpectChecksFail`, `…ResolvedAndEvents`, `…DeckBottoms`.
+   2. A pass and a fail for each fix; `rightExpect` adds `{"card": "boss"}`.
+   3. Wiki `Situation-payload.md`: Checks, the example, `setup.bonus_souls`.
+   4. ADR 034: no drift; unchanged.
+9. Owner notes (2026-11-23)
+   1. Owner marks 19.234 solved.
+   2. The totals table correction (219 to 224 items) is fine.
+
+### [x] 19.235 A setup with Krampus in a slot lets the active player skip it
+
+1. Goal: a situation setup in the action phase keeps Krampus's duty.
+2. Report (24.19 bulk move, 2026-11-23)
+   1. Setup: Isaac active, open action phase, Krampus in slot 1, 1 attack left.
+   2. Isaac ends his turn without attacking; it is allowed.
+   3. Krampus: "The active player must attack this once each turn if able."
+   4. R-ATK-03, R-ATK-22: the forced attack must be obeyed.
+   5. The wiki says a setup starts after the start-of-turn triggers.
+   6. So Krampus's start-of-turn duty should hold in that turn.
+   7. `TestKrampus` relied on it: Isaac's own end of turn passed first.
+3. Cause (the situation setup)
+   1. Krampus sets `Turn.MustAttack` by two triggers in `krampus.go`.
+   2. `AtStartOfEachTurn` and `WhenThisEntersPlay`.
+   3. A setup puts cards in slots with no trigger and no turn start.
+   4. So the duty is never set for the setup's own turn.
+4. Tasks:
+   1. Decide with the owner: the setup sets each start-of-turn duty, or a field.
+   2. Check every start-of-turn "must attack" card, all sets (5.24).
+   3. E.g. Blind Rage, The Harbingers, challenge minions (Q-31).
+   4. The Krampus file then may check Isaac's own refused end of turn.
+   5. File: `cards/fsp2/testdata/situations/krampus/must-be-attacked.json`.
+   6. It starts in Isaac's end phase, so it does not rely on this bug.
+5. Owner notes (2026-11-23)
+   1. A field, not derived from the cards in the slots.
+   2. A card in a slot does not prove its duty is in force.
+   3. A player may have stopped it, e.g. with an eternal card's ability.
+   4. So the setup names the duties that hold this turn.
+   5. Without the fields no duty is in force, as before.
+6. Done (2026-11-23)
+   1. Setup fields: `must_attack`, `must_attacks`, `must_attack_deck`.
+   2. They set `Turn.MustAttack`, `MustAttacks`, `MustAttackDeck`; no own logic.
+   3. `must_attack`: a ref the active player may attack now; else options.
+   4. A player's character counts only while players can be attacked (R-ATK-20).
+   5. Set after a declared attack counted: the turn as the setup starts.
+   6. Allowed in `start`, `loot`, `action`; start-of-turn triggers are done (R-TURN-03).
+   7. `phase: end`: an error naming R-ATK-03; the end is declared.
+   8. Negative numbers are errors.
+   9. No field for the random minion attack (R-KRAMPUS-13, Q-31).
+   10. It is a "while" effect; only `RandomAttackMade` is turn state.
+   11. Its one hand-set use is a challenge Go test; challenges stay Go (24.3).
+   12. The dump writes the duties into `setup`; no todo for them.
+   13. A `must_attack` the setup can't name stays a todo.
+   14. New file: `krampus/isaac-must-attack-it-this-turn.json`.
+   15. Isaac's end refused (R-ATK-03); only Krampus offered; then he may end.
+   16. Go tests: `situation_duty_test.go`, a dump test, a strict-read case.
+   17. Wiki `Situation-payload.md`: Attack duties; ADR 034 10.23, 10.24.
+   18. A stacked attack roll on the `must_attack` card: an error, R-ATK-22.
+7. Checked (5.24): every card that sets a duty, all sets.
+   1. Start of turn: Krampus (fsp2), The Harbingers, Blind Rage (r).
+   2. Other triggers: Portal, Conquest, Envy, Ambush (b2); Gaper, I Am Error! (g2).
+   3. Also Gutted Fatty, Challenge Room, Lust for Blood, Friendly Ball (r).
+   4. Also Blood Lust (r), Curse of Blood Lust, Boss Rush! (fsp2).
+   5. Activated: Monster Manual (b2), Sisters Vis (r, a question only).
+   6. Challenge: Pilfering Krampus (Normal), `MustAttackRandom`.
+   7. Helpers: `mustAttackThis` (fsp2, r), `ForceAttacks`, `AddDeckAttack`.
+8. Checked files and tests: none built a duty by hand but one.
+   1. b2 files: ambush, conquest, envy, portal, monster_manual (2).
+   2. fsp2 files: krampus (2), curse_of_blood_lust, boss_rush, head_of_krampus (2).
+   3. b2 blood_lust (2), mega_battery: no duty in them.
+   4. Each sets its duty by the card's own action; it tests the card.
+   5. So none changed; a field there would skip what they test.
+   6. r Go tests: blind_rage, blood_lust_r, challenge_room, friendly_ball.
+   7. Also gutted_fatty, lust_for_blood, sisters_vis, the_harbingers.
+   8. Also dogma, the_clicker; g2: gaper, i_am_error.
+   9. All reach the duty by a turn start or a card; none set by hand.
+   10. Challenge `pilfering_krampus_norm_test.go` sets two by hand.
+   11. `RandomAttackMade` and `MustAttack`; it starts a challenge, so stays Go.
+9. Owner notes (2026-11-23)
+   1. Owner marks 19.235 solved.
+
+### [x] 19.236 ? Card with nothing to copy is refused by R-ABIL-04
+
+1. Goal: the refusal cites the rule that says it.
+2. Report (24.19 bulk move, 2026-11-23)
+   1. No item with a ↷ ability is in play; Isaac plays ? Card.
+   2. Refused by R-ABIL-04: targets are picked as the ability goes on the stack.
+   3. R-ABIL-40: a loot card with no valid target can't be played.
+   4. So R-ABIL-40 says why, not R-ABIL-04.
+3. Cause (the engine)
+   1. `prompt.go` denies the copy with R-ABIL-04 (`refuseNothingToCopy`).
+   2. Other R-ABIL-04 uses there are questions, not refusals.
+4. Tasks:
+   1. The denial cites R-ABIL-40.
+   2. Check every copy refusal and every R-ABIL-04 denial, all sets (5.24).
+   3. The file then checks `"rule": "R-ABIL-40"`.
+   4. File: `cards/fsp2/testdata/situations/questionmark_card/needs-an-item.json`.
+5. Done (2026-11-23)
+   1. `prompt.go` denies a copy with nothing to copy by R-ABIL-40.
+   2. Checked: no other refusal cites R-ABIL-04; its other uses are questions.
+   3. The ? Card file checks `"rule": "R-ABIL-40"`.
+6. Owner notes (2026-11-23)
+   1. Owner marks 19.236 solved.
+
+### [x] 19.237 Lord of the Pit is usable with no attack to cancel
+
+1. Goal: a card that cancels an attack needs an attack to cancel.
+2. Report (24.20 bulk move; owner, 2026-11-23)
+   1. Lord of the Pit: "↷: Cancel an attack. That player may attack an additional time this turn."
+   2. With no attack going on it taps and does nothing.
+   3. 24.20 allowed it: "Cancel an attack" names no target.
+   4. Owner: only allow a valid attack; with none there is nothing to cancel.
+   5. So the attack is what it acts on: its target (R-ABIL-05).
+   6. No attack: refused by R-ABIL-40, as Q-55.
+3. Cause (the engine)
+   1. `targetsAvailable` sees only `TargetSpec`s.
+   2. A card that cancels an attack has none; the attack is checked on resolution.
+   3. So nothing refuses it while no attack is in progress.
+4. Tasks:
+   1. One shared check in the engine: an attack the ability acts on.
+   2. `targetsAvailable` sees it; the refusal is R-ABIL-40, "no valid target".
+   3. Decide which attack states count as in progress, from the rules.
+   4. Check every card that cancels an attack, all sets (5.24).
+   5. Situation files: refused with no attack; works during one.
+   6. Lord of the Pit's `no-attack-no-extra-attack.json` expects the refusal.
+   7. Q-55: an attack to cancel counts as a target.
+5. Done (2026-11-23)
+   1. `Ability.Attack` and `Mode.Attack`: the attack it acts on (`AttackNeed`).
+   2. Kinds: an attack; your attack; an attack on a monster; your attack on a monster.
+   3. `Game.AttackFor` decides it; `targetsAvailable` and `availableModes` ask it.
+   4. None: denied by R-ABIL-40, "no valid target"; a mode is not offered.
+   5. Card effects re-check with `AttackFor` on resolution (R-ABIL-06).
+   6. Rules engine 0.5.7; CHANGELOG Unreleased.
+6. In progress: which attack states count
+   1. From the declaration, before the target (R-ATK-02, R-ATK-04).
+   2. Through the target, its rolls and their damage on the stack (R-ATK-11).
+   3. Till it ends: a death, 0 HP, a cancel, the turn's end (R-ATK-14).
+   4. An ended attack is gone (`Attack.On` false); nothing to cancel.
+   5. "On a monster": once the target is a monster (R-ATK-04).
+   6. A deck attack counts once a monster is revealed (R-ATK-05, Q-24).
+   7. An attack on a player, item or room is not "on a monster".
+   8. "Your attack": only the active player attacks (R-ATK-01).
+7. Checked (5.24): every card that cancels or ends an attack, all sets.
+   1. g2 Lord of the Pit, "Cancel an attack.": fixed, an attack.
+   2. g2 The Bible, mode "Cancel your attack.": fixed, your attack.
+   3. Its other modes still need a curse or a Mom!; with none, refused.
+   4. r IBS, mode "Cancel your attack on a monster.": fixed.
+   5. Its "Gain 3¢." mode stays; so IBS is offered with that mode only.
+   6. r Emergency Contact: fixed, an attack on a monster.
+   7. r Gello: already a target, "a monster being attacked"; unchanged.
+   8. fsp2 1-Up: a trigger, and it prevents death too; unchanged.
+   9. r The Harbingers: a trigger on its own death; unchanged.
+   10. r Turdlings, r Angelic Intervention: triggers during an attack; unchanged.
+   11. Triggers are never played or used, so R-ABIL-40 does not apply.
+   12. b2 Mom's Hand, g2 Steven, fsp2 Cursed Eye: end the turn; triggers.
+   13. fsp2 20/20: already a target, an attack roll; unchanged.
+   14. r Red Key: "can't be activated during an attack", the reverse; unchanged.
+   15. b2, challenge: no card cancels an attack.
+   16. Helpers: `CancelAttack`, `CancelAttackAfterDamage`, `endAttack` callers.
+8. Tests: situation files, each failed with the check off.
+   1. Lord of the Pit: `no-attack-no-extra-attack.json` now refused.
+   2. Also `cancels-a-declared-attack.json`, `refused-after-the-attack-ended.json`.
+   3. The Bible: `refused-with-nothing-to-act-on.json`, `no-cancel-without-an-attack.json`.
+   4. Also `refused-on-another-players-attack.json`.
+   5. Emergency Contact: `refused-with-no-attack.json`, `refused-before-the-target.json`.
+   6. Also `cancels-an-attack-on-a-monster.json`.
+   7. IBS: `only-gain-3-cents-with-no-attack.json`.
+9. Bots and clients: no change needed.
+   1. `Allowed` tries each intent through `check`, so through `targetsAvailable`.
+   2. Bots pick from `Allowed`; the client gets `Allowed` in each update.
+   3. `Blocked` shows the refusal's words: "no valid target".
+   4. A player with only such a card no longer gets a window to act in (`CanAct`).
+10. Docs
+   1. R-ABIL-40: an attack it cancels counts as a target.
+   2. Q-55 item 6; its "Rulings to revisit" row names Lord of the Pit.
+   3. Wiki `Adding-a-card.md`: the `Attack` field.
+   4. 24.20 item 11: reversed by 19.237.
+   5. `Situation-payload.md`: no change.
+11. Gates (2026-11-23)
+   1. `make lint test` and `make site` passed; site: engine 0.5.7.
+   2. `make e2e`: 636 passed, 2 failed; evidence in `.cache/e2e-evidence/19.237/`.
+   3. Neither deal had a card changed here; both are unrelated.
+   4. aim.spec.ts:406 (chromium): a shop item's hover mark stayed after the mouse left.
+   5. Hover presence is client to client; no engine refusal in it.
+   6. playback.spec.ts:1975 (webkit, seed 114790418): Pass came live after the banner went.
+   7. Eden with The D10, Samson with Blood Lust; a timing check under load.
+   8. Each passed alone on the first rerun, the same seed too; no new item.
+12. Owner notes (2026-11-23)
+   1. Owner marks 19.237 solved.
+
+### [x] 19.238 ? Card copies an ability with no valid target
+
+1. Goal: ? Card copies only an ability with a valid target, as Placebo.
+2. Report (owner, 2026-11-23)
+   1. ? Card: "As you play this, choose an item. This copies one of that item's ↷ abilities."
+   2. It may copy Lord of the Pit with no attack in progress.
+   3. It offers a copied ability whose targets don't exist.
+   4. Picking one leads to a target prompt with only Cancel.
+   5. Owner: "match with Placebo".
+3. Cause (the engine)
+   1. `tapAbilitiesInPlay` lists every ↷ ability of the items in play.
+   2. `lootPlayable` only checks that the list is not empty.
+   3. Neither asks `targetsAvailable`, so R-ABIL-40 is skipped (Q-55).
+   4. Placebo checks each copied ability in `activatable`, so it refuses them.
+4. Tasks:
+   1. The copy prompt offers only abilities with a valid target.
+   2. None: playing ? Card is refused by R-ABIL-40.
+   3. Check every user of the list: aims, situation stack, bots, client, the answer.
+   4. Check every copy mechanism, all sets (5.24).
+   5. Situation files: refused; only the other item offered; copy during an attack.
+   6. The copy fizzles when the attack ends first (R-ABIL-06, R-MECH-32).
+5. Done (2026-11-23)
+   1. New `copyableTapAbilities(p, self)`: `tapAbilitiesInPlay` through `targetsAvailable`.
+   2. The same check Placebo's copies get in `activatable`; no second copy of the rule.
+   3. The copy pays no cost (`finishActivation`, `Loot`), so only targets count.
+   4. The copy prompt (`apply`, IntentPlayLoot) offers only that list.
+   5. `lootPlayable`: no ↷ ability in play: R-ABIL-40, `refuseNothingToCopy` (19.236).
+   6. ↷ abilities, none with a valid target: R-ABIL-40, `refuseNoTarget`.
+   7. "No valid target now" says why; "No item with a ↷ ability" would be false.
+   8. Rules engine 0.5.8; CHANGELOG Unreleased.
+   9. Q-55 item 7: a copied ability needs a valid target too.
+6. Checked: every user of the list and the flag.
+   1. `prompt.go` `apply` and `lootPlayable`: changed.
+   2. `choice.go` `ChooseCopyAbility`: starts the chosen one from the filtered list; unchanged.
+   3. `aims.go:41`: ? Card asks no target first, so no aim; unchanged.
+   4. `situation_stack.go:107`: ? Card can't start on the stack; unchanged.
+   5. `Allowed` and `Blocked` ask `check`, so `lootPlayable`; bots and client follow.
+   6. Bot `choiceWeights` (`ChooseCopyAbility`): weighs the offered options; unchanged.
+   7. Server `asksFirst` (rollback): the purpose only; unchanged.
+7. Checked (5.24): every copy mechanism, all sets.
+   1. fsp2 ? Card (`CopiesTapOnPlay`): fixed.
+   2. b2 Placebo (`CopiesTapAbilities`): `activatable` checks each copy; unchanged.
+   3. It skips eternal items, so it never copies Lord of the Pit.
+   4. b2 Blank Card: copies a played loot with its chosen targets; unchanged.
+   5. b2 Modeling Clay, b2 Diplopia, r Birthright, r Undefined: become a copy.
+   6. Their own target is a `TargetSpec`, checked already; unchanged.
+   7. The copy's abilities are then used through `activatable`; unchanged.
+   8. r Glitch (`GainAbilities`): gained abilities use `activatable`; unchanged.
+   9. g2, challenge: no other card copies an ability.
+8. Tests
+   1. Cross-set files: `cards/testdata/situations/interactions/`.
+   2. The fsp2 runner loads b2 and fsp2 only; Lord of the Pit is g2.
+   3. So the layout's cross-set tree (ADR 034 5.3); `cards/situations_test.go` wires it.
+   4. `questionmark-card-lord-of-the-pit-refused-with-no-attack.json`: R-ABIL-40.
+   5. `questionmark-card-lord-of-the-pit-mystery-sack-offers-only-the-sack.json`.
+   6. `questionmark-card-lord-of-the-pit-cancels-an-attack.json`: 1 attack, then the Fly dies.
+   7. The first two failed with the check off; the third is the working case.
+   8. Go: `TestQuestionmarkCardCopyFizzlesWhenTheAttackEnds` (fsp2).
+   9. Cain's Lord of the Pit cancels first; the copy fizzles; 1 attack, not 2.
+   10. Go, as Cain responds mid-stack (24 owner answer 7).
+9. Docs
+   1. Q-55 item 7; R-ABIL-40 already covers it ("a loot card … with targets").
+   2. Cross-set tree now wired, as `Situation-payload.md` says; no wiki change.
+10. Gates (2026-11-23)
+   1. `make lint test` and `make site` passed; site: engine 0.5.8.
+   2. `make e2e`: 637 passed, 1 failed; evidence in `.cache/e2e-evidence/19.238/`.
+   3. playback.spec.ts:1975 (chromium, seed 114790418): the 19.237 flake.
+   4. Eden with The D10, Samson with Blood Lust; no ? Card; unrelated.
+   5. It passed alone on the first rerun, the same seed; no new item.
+11. Owner decision (2026-11-24)
+   1. The cross-set tree `cards/testdata/situations/` is the place for these files.
+   2. It holds only `interactions/`; a card's own files stay in its set's tree.
+   3. `enginetest.RunInteractionSituations` checks that; the layout test covers it.
+12. Owner notes (2026-11-25)
+   1. Owner marks 19.238 solved.
+
+### [ ] 19.239 Card zoom credit test fails with Russian card names
+
+1. Goal: `the zoom credits the card artist` passes in every language.
+2. Report (agent in 12.12, 2026-11-24)
+   1. `make screenshots LOCALE=ru` fails `cards.spec.ts:67`.
+   2. It expects 1 credit line; Russian shows 2.
+   3. Russian cards also credit their translators (CD-06).
+   4. Fails since 16.5 made Russian a card-name language; not new in 12.12.
+3. Cause (the e2e test)
+   1. The test assumes English: "English credits no translators" (line 66).
+   2. In `LOCALE=ru` the zoom adds the translators' line; the app is right.
+4. Tasks:
+   1. The test checks the artist line in any language.
+   2. The translators' line is checked only where the language has one.
+   3. Check every e2e spec for the same English-only credit check (5.26).
+   4. `make screenshots LOCALE=ru` and `make e2e` pass.
+
+### [ ] 19.240 Eden start test checks the English card name
+
+1. Goal: the Eden start-of-game test passes in every language.
+2. Report (agent in 12.12, 2026-11-24)
+   1. `make screenshots LOCALE=ru` fails the Eden test in `start.spec.ts`.
+   2. Line 62 expects the caption with the literal card name `'Eden'`.
+   3. With Russian card names the caption names Eden in Russian.
+   4. Fails since 16.5; not new in 12.12.
+3. Cause (the e2e test)
+   1. A hard-coded English card name, not `cardName('eden')`.
+   2. The app shows the right name; the test is wrong.
+4. Tasks:
+   1. The test takes the name from the card data, as other specs do.
+   2. Search every e2e spec for literal card names in shown text (5.26).
+   3. Fix them all in the same change.
+   4. `make screenshots LOCALE=ru` and `make e2e` pass.
+
+### [x] 19.241 Boss Rush!: the extra attack may go at any target
+
+1. Goal: Boss Rush!'s extra attack goes only at the bosses it revealed.
+2. Report (owner, 2026-11-24, from 18.35)
+   1. Card: "must make an additional attack on one of them this turn".
+   2. The engine lets the player attack any monster, the deck, or a player.
+   3. The attack button's tooltip (18.35) says "You must attack", no target.
+3. Cause (the card code)
+   1. `revealTwoBosses` in `cards/fsp2/common.go` calls `ForceAttacks(1, false)`.
+   2. That owes an attack on any target; it names no monster.
+4. Placement stays as it is (owner question, 2026-11-24)
+   1. "One or more monster slots": both bosses may share one slot.
+   2. In one slot the top boss covers the other (R-ZONE-10).
+   3. Then only the top boss can be attacked; the extra attack is on it.
+   4. In two slots the player picks either boss.
+5. Tasks:
+   1. The owed attack names both bosses, as Monster Manual names one.
+   2. A boss that left play or lies covered is no target.
+   3. No boss left to attack: the owed attack ends.
+   4. Tooltip and red frame name the bosses (18.35, `mustAttackLine`).
+   5. Search every set for "an additional attack on" a named group (5.24).
+   6. Situation tests: one slot, two slots, a boss killed first.
+6. Cause, in full (the engine)
+   1. `ForceAttacks(1, false)` adds an attack and `MustAttacks` 1.
+   2. `MustAttacks` is a count on any target; nothing names the bosses.
+   3. `PlaceFromDeck` gave back no object, so the bosses' new IDs were lost (R-ZONE-01).
+   4. Friendly Ball and Lust for Blood! named one card in `MustAttack`.
+   5. They also set `MustAttacks` 1: with their card gone, any target was still owed.
+7. Result (2026-11-24)
+   1. New turn field `must_attack_one_of`, `omitempty` (ADR 031 item 5).
+   2. `ForceAttackOn(ids...)` in `monsters.go`: one more attack, owed on one of ids.
+   3. `owedTargets` in `guards.go`: the one place for named duties.
+      1. `MustAttack` and `MustAttackOneOf`, each in play and attackable.
+      2. A covered boss is not in play (R-ZONE-10); a dead one is gone.
+   4. The target question, the end-turn refusal and `startAttack` use it.
+      1. The question offers only the owed cards; the attacker picks (R-ATK-03).
+      2. An attack on one of them meets the duty.
+      3. None left: the duty ends; the extra attack stays, free.
+   5. `PlaceFromDeck` returns the placed object; Boss Rush! names both.
+   6. Situation setup `must_attack_one_of`; the dump writes it (ADR 034 10.25).
+   7. Protocol encoder: the new field; `random_attack_made` was missing too, now sent.
+   8. Client: `Forced.targets` lists every named card on top of its slot.
+      1. Each gets the dashed red frame (`mustTargets`).
+      2. Banner and tooltip: "You must attack: Monstro or Widow" (`banner.either`).
+      3. Old records keep `must_attack` with `must_attacks`: drawn as before.
+   9. Rules engine 0.5.9; CHANGELOG Unreleased.
+8. Checked (5.24): every "additional attack" and forced attack, all sets.
+   1. fsp2 Boss Rush!, "on one of them": fixed, both bosses.
+   2. r Friendly Ball, "an additional attack on it": fixed, `ForceAttackOn`.
+   3. r Lust for Blood!, "an additional attack against them": fixed, `ForceAttackOn`.
+   4. b2 Monster Manual, "must attack that monster": no extra attack; `MustAttack`, unchanged.
+   5. fsp2 Krampus, r The Harbingers, "attack this once each turn": `MustAttack`, unchanged.
+   6. b2 Portal, Envy, Conquest; r Gutted Fatty, Challenge Room (a roll): any target, unchanged.
+   7. r Blood Lust, fsp2 Curse of Blood Lust: any target, unchanged.
+   8. b2 Ambush!; g2 Gaper, I Am Error!; r Blind Rage: the monster deck, unchanged.
+   9. challenge Pilfering Krampus: a random minion (`MustAttackRandom`), unchanged.
+   10. r Gello, "may make an additional attack": not owed, unchanged.
+   11. Helpers: `ForceAttacks`, `ForceAttackOn`, `owedTargets`, `askAttackTarget`.
+   12. Also `startAttack`, the end-turn check in `prompt.go`, `PlaceFromDeck`.
+   13. Client: `forcedAttack`, `mustTargets`, `mustAttackLine`, `mustAttackTip`.
+   14. Client: `Card` (frame), `TurnActions` (button), `Board` (deck frame).
+9. Tests
+   1. Situations in `cards/fsp2/testdata/situations/boss_rush/`:
+      1. `one-slot-only-the-top-boss-may-be-attacked`: Widow only; then the turn ends.
+      2. `two-slots-either-boss`: Monstro or Widow; the turn can't end.
+      3. `a-boss-killed-first`: Chaos Card kills Monstro; Widow only.
+      4. `no-boss-left`: Tech X kills both; the turn ends, the attack unused.
+      5. `the-duty-as-a-setup-field`: `setup.must_attack_one_of`.
+   2. Go: `TestFriendlyBall` checks the duty names the leech.
+   3. Go: `TestAppendTurnMatchesJSON` in `internal/protocol`.
+   4. Vitest `prompt.test.ts`: two slots, one slot, one dead, none left.
+   5. e2e `must-attack.spec.ts`: Boss Rush!'s two bosses framed, tooltip names both.
+10. Open point for the owner
+   1. A covered boss comes up as a new object once the top one dies (R-ZONE-01).
+   2. So it is not "one of them" any more; the duty may end then.
+   3. Today that is only when the top boss dies before the extra attack.
+11. Docs: UC-46 3f; wiki `Client.md`, `Rules-engine.md`, `Situation-payload.md`, `Effect-blocks.md`.
+12. Screenshots: `.cache/screenshots/19.241/before/` and `after/`.
+   1. `must-attack-boss-rush`, `-hover`; `*-noimages.png`.
+   2. Before: the state the old engine left (`must_attacks` 1).
+13. Gates: `make lint`, `make test`, `make frontend` (793 Vitest) pass.
+   1. `make e2e` run 1: 664 passed, 22 skipped.
+14. Owner decision (2026-11-24): the covered boss still counts.
+   1. Card: "on one of them"; the covered boss is one of the two revealed.
+   2. When: both bosses in one slot; the top one dies before the extra attack.
+   3. E.g. a Bomb, Chaos Card, or another player's damage kills it.
+   4. Then the boss under it comes up; the attack is still owed on it.
+   5. Tasks:
+      1. The duty names the bosses' cards, not their objects.
+      2. So a boss that comes up uncovered is still a target.
+      3. A boss in a discard, a deck or souls is still no target.
+      4. Situation test: one slot, the top boss killed by a Bomb.
+      5. Same check for Friendly Ball and Lust for Blood! (5.24).
+   6. Result (2026-11-24)
+      1. Turn field `MustAttackOneOfCards`, `must_attack_one_of_cards`, `omitempty`.
+      2. It replaces `MustAttackOneOf` (object IDs) in the engine.
+      3. `ForceAttackOn(ids...)` keeps its signature; it stores the ids' cards.
+      4. `owedTargets` in `guards.go` stays the one place (5.24).
+         1. `MustAttack`: the object, in play and attackable, as before.
+         2. The card list: every current attack target with one of those cards.
+         3. So a boss that comes up uncovered is a target (R-ZONE-01).
+         4. A boss covered, in a discard, a deck or souls is none.
+      5. `startAttack`: an attack on one of those cards meets the duty.
+      6. The view sends the new field; old records keep `must_attack_one_of`.
+         1. ADR 031 item 5: a new field, the old one's meaning unchanged.
+         2. Client `forcedAttack` reads both; `cardsOnTable` finds the cards.
+      7. Setup `must_attack_one_of` names cards; a ref twice is an error.
+         1. The dump writes only cards attackable now.
+         2. A setup builds no covered card, so a covered one is left out.
+      8. A saved state from 0.5.9 loses its `must_attack_one_of` duty.
+         1. 0.5.9 was never released; no `StateMeaning` raise.
+      9. Rules engine 0.5.10; CHANGELOG Unreleased.
+   7. Checked (5.24)
+      1. fsp2 Boss Rush!: both bosses' cards; the uncovered one counts.
+      2. r Friendly Ball: the leech's card; it may be covered and come up too.
+      3. r Lust for Blood!: the character's card; it never changes zone.
+      4. Its owed target now also needs `PlayerAttackDC`, as every player target.
+      5. Helpers: `ForceAttackOn`, `owedTargets`, `startAttack`, `askAttackTarget`.
+      6. Also the end-turn check in `prompt.go`, `setUpDuties`, the dump.
+      7. Client: `forcedAttack`, `onTable`, `mustTargets`, `mustAttackLine`.
+   8. Tests
+      1. Situation `boss_rush/the-covered-boss-still-counts`.
+         1. Widow on Monstro in slot 2; Gold Bomb!! kills Widow (3 HP).
+         2. Monstro comes up; the turn can't end; the attack offers only Monstro.
+         3. Sources: card text, R-ZONE-10, R-ZONE-01, R-ATK-03.
+      2. Go: `TestFriendlyBall` checks the card "leech" is named.
+      3. Go: `TestAppendTurnMatchesJSON` with the new field.
+      4. Vitest `prompt.test.ts`: by card; one that came up; Lust for Blood!.
+      5. e2e `must-attack.spec.ts`: the save edit sets the new field.
+   9. Docs: UC-46 3f; ADR 034 10.26; wiki `Client.md`, `Rules-engine.md`.
+      1. Also `Situation-payload.md`, `Effect-blocks.md`.
+   10. No screen change: the frames and lines look as before; no screenshots.
+   11. Gates: `make lint`, `make test`, `make frontend` (794 Vitest) pass.
+      1. `make e2e` run 1: 663 passed, 1 failed: `playback.spec.ts:1975` (19.237 flake).
+      2. Evidence: `.cache/e2e-evidence/19.241b-run1/`.
+      3. Run 2: 664 passed, 22 skipped.
+15. Owner notes (2026-11-25)
+   1. Owner marks 19.241 solved.
+
+### [x] 19.242 A card's own condition is refused by R-ABIL-07, a cost rule
+
+1. Goal: such a refusal cites the rule that says it.
+2. Report (24.23 bulk move, 2026-11-25)
+   1. Red Key: "This can't be activated during an attack."
+   2. Used during a declared attack: refused by R-ABIL-07.
+   3. R-ABIL-07: text before a colon is a cost.
+   4. The sentence is no cost; it is not before a colon.
+   5. R-ABIL-08: abilities are usable with priority, "unless stated".
+   6. So R-ABIL-08 and the card text say why, not R-ABIL-07.
+   7. Friendly Ball: both ↷ abilities are refused by R-ABIL-07 too.
+   8. First: "under this if there are no cards under this".
+   9. Second: "put a monster from under this", with none under it.
+3. Cause (the card code)
+   1. `engine.If` makes a condition a cost (`condCost`, `ability.go`).
+   2. `activatable` denies an unpaid cost with R-ABIL-07 (`activate.go`).
+   3. Only `red_key.go` and `friendly_ball.go` use `engine.If`.
+4. Tasks:
+   1. Each such refusal cites the rule that fits.
+   2. Red Key: R-ABIL-08 ("unless stated").
+   3. Friendly Ball's second ability: R-ABIL-40, if "a monster from under this" is its target (R-ABIL-05).
+   4. Check every `engine.If` and `condCost` use, all sets (5.24).
+   5. The files then check the rule; today they check `allowed` only.
+   6. `cards/r/testdata/situations/red_key/not-during-an-attack.json`.
+   7. `cards/r/testdata/situations/friendly_ball/catches-and-releases-a-monster.json`.
+5. Owner question
+   1. Friendly Ball's first ability with a card under it.
+   2. "If there are no cards under this" reads as part of the effect.
+   3. By the text it may be used: it taps and does nothing.
+   4. The engine refuses it; the file keeps that until the owner decides.
+6. Owner answers (2026-11-25)
+   1. Red Key: follow the card; it can't be used during an attack (R-ABIL-08).
+   2. Friendly Ball's second: no monster under it, no valid target (R-ABIL-40).
+   3. Friendly Ball's first: usable only with no card under it.
+   4. With a card under it, it is refused, not tapped for nothing.
+   5. Owner also asked how a card under Friendly Ball shows on screen.
+   6. It doesn't: the client view has no cards under an item.
+   7. Screenshots: `.cache/screenshots/19.242/before/` (not tracked).
+7. Done (2026-11-25)
+   1. `engine.If` and `condCost` are gone; nothing else used them.
+   2. New `Ability.Needs`: conditions that are no cost (R-ABIL-07).
+   3. One type, `Need`, with two constructors.
+   4. `OnlyIf(say, ok)`: a limit the card states; refused by R-ABIL-08.
+   5. `activatable` checks it before the costs; the card's key says why.
+   6. `ActsOn(ok)`: a thing it acts on that no `TargetSpec` names.
+   7. `targetsAvailable` checks it: R-ABIL-40, "No valid target now".
+   8. So ? Card's copy is checked too (`copyableTapAbilities`, 19.238).
+   9. Red Key: `OnlyIf`, "Not during an attack"; R-ABIL-08.
+   10. Friendly Ball's first: `OnlyIf`, "Needs no cards under this"; R-ABIL-08.
+   11. Friendly Ball's second: `ActsOn` a card under it; R-ABIL-40.
+   12. Key `card.friendly_ball.needs_card` removed; `refuse.no_target` instead.
+   13. Rules engine 0.5.11; CHANGELOG Unreleased.
+8. Why R-ABIL-08 for Friendly Ball's first
+   1. R-ABIL-08: usable with priority and the cost, "unless stated".
+   2. "If there are no cards under this" is such a statement (owner answer 3).
+   3. No rule fits better: R-ABIL-07 is a cost; R-ABIL-40 is targets.
+   4. Its target, a monster not being attacked, is a `TargetSpec` already.
+   5. Same rule as Red Key: one mechanism, `OnlyIf`.
+9. Why a need, not a target spec, for the second
+   1. "A monster from under this" is its target (R-ABIL-05).
+   2. A `TargetSpec` would ask for it and light it while dragging (aims).
+   3. A card under an item is not shown in the client (owner keeps that open).
+   4. So `ActsOn` counts it as a target without a prompt, as `Attack` does.
+   5. No rule change: R-ABIL-40 already covers "an ability with targets".
+   6. Q-55: no change.
+10. Checked (5.24): every `engine.If`, `condCost` and R-ABIL-07 denial.
+   1. r Red Key: changed, `OnlyIf`.
+   2. r Friendly Ball, both abilities: changed, `OnlyIf` and `ActsOn`.
+   3. No other card in b2, g2, fsp2, r or challenge used `engine.If`.
+   4. `activatable`: the only R-ABIL-07 denial, the costs loop; now real costs only.
+   5. Costs left: `Tap`, `PayCents`, `PayHPCost`, `DestroySelf`, `RemoveCounters`.
+   6. Also `DiscardChosen`, `GiveChosen`, `DestroyChosen`: all paid before a colon.
+   7. `costSay` in `blocked.go`: the `condCost` case removed.
+   8. `finishActivation`, `hasTap`: read `Costs` only; unchanged.
+   9. `cards_test.go` `TestTapMatchesAbilities`: `Costs` only; unchanged.
+   10. b2 Placebo: copies go through `activatable`, so `Needs` apply; unchanged.
+   11. fsp2 ? Card: `copyableTapAbilities` asks `targetsAvailable`; `ActsOn` applies.
+   12. A copy is played, not activated, so `OnlyIf` is not checked; as before.
+11. Bots and client: no change needed.
+   1. `Allowed` tries each intent through `check`, so `activatable`.
+   2. Bots pick from `Allowed`; the client gets `Allowed` in each update.
+   3. `Blocked` shows the refusal's `say`: the card's key, or "No valid target now".
+   4. Keys follow ADR 021; `server-keys.json` rewritten.
+12. Tests: each failed with the needs check off.
+   1. `red_key/not-during-an-attack.json`: R-ABIL-08.
+   2. Sources: card text, R-ATK-02, R-ABIL-08.
+   3. `friendly_ball/catches-and-releases-a-monster.json` checks the rules.
+   4. Step 1, second with nothing under it: R-ABIL-40.
+   5. Step 5, first with the Leech under it: R-ABIL-08.
+   6. Sources added: R-ABIL-05, R-ABIL-08, R-ABIL-40.
+   7. These steps already covered both refusals; no extra Friendly Ball file.
+   8. A setup can't put a card under an item, so steps are the way.
+   9. New `interactions/questionmark-card-friendly-ball-offers-only-the-catch.json`.
+   10. ? Card offers only Friendly Ball's first; nothing is under ? Card.
+   11. Sources: both cards, R-ABIL-05, R-ABIL-40, Q-55.
+13. Docs: wiki `Effect-blocks.md`, `Adding-a-card.md`: `Needs`.
+   1. Rules text: no change.
+14. Gates (2026-11-25)
+   1. `make lint test` and `make site` passed; site: engine 0.5.11.
+   2. `make e2e`: 662 passed, 2 failed; evidence in `.cache/e2e-evidence/19.242/`.
+   3. growth.spec.ts:59 (chromium): a timeout in the long-game check; no card in it.
+   4. playback.spec.ts:1975 (chromium, seed 114790418): the 19.237 flake.
+   5. Neither has Red Key, Friendly Ball or ? Card; unrelated.
+   6. Both passed alone on the first rerun, the same seed too; no new item.
+15. Owner notes (2026-11-25)
+   1. Owner marks 19.242 solved.
+
+### [x] 19.243 ? Card copies Red Key during an attack
+
+1. Goal: a copied ability keeps the limits its card states.
+2. Report (owner, 2026-11-25, after 19.242)
+   1. Red Key: "This can't be activated during an attack."
+   2. ? Card copies a ↷ ability; it is played, not activated.
+   3. So its copy of Red Key works during an attack.
+   4. Owner: the copy keeps the limit; it is refused during an attack.
+3. Cause
+   1. 19.242 put stated limits in `Ability.Needs` (`OnlyIf`, R-ABIL-08).
+   2. `activatable` checks them; a played copy never reaches it.
+   3. `copyableTapAbilities` checks only targets (`targetsAvailable`).
+4. Tasks:
+   1. ? Card offers no copy whose stated limit is unmet.
+   2. With none left, ? Card is refused (R-ABIL-08 or R-ABIL-40, say which).
+   3. One shared check with `activatable`; no second copy of the rule (5.24).
+   4. Check every copy path, all sets: Placebo, ? Card, others (as 19.238).
+   5. A file: ? Card during an attack offers no Red Key copy.
+5. Done (2026-11-25)
+   1. New `copyRefusal(r, p, self)`: why ? Card may not copy ability r.
+   2. It asks `unmet(…, "R-ABIL-08", …)`, then `targetsAvailable`.
+   3. The same two checks `activatable` makes; no second copy of the rule.
+   4. Costs aside: the copy pays none (R-MECH-11).
+   5. `self` is the ? Card: "this" in a copied limit is the ? Card (R-MECH-11).
+   6. So Friendly Ball's first copy still passes; Q-56 unchanged.
+   7. `copyableTapAbilities` (the copy prompt) filters through it.
+   8. New `nothingToCopy`: `lootPlayable`'s ? Card check, moved and widened.
+   9. Rules engine 0.5.12; CHANGELOG Unreleased.
+6. Rule cited when nothing is left to copy
+   1. No ↷ item in play: R-ABIL-40, "nothing to copy" (19.236, unchanged).
+   2. Every copy held back by a stated limit: R-ABIL-08, the card's own key.
+   3. E.g. Red Key alone, during an attack: "Not during an attack".
+   4. Otherwise (some lack a target): R-ABIL-40, "No valid target now".
+   5. Why R-ABIL-08: the copy is refused by what the card states (owner).
+   6. That is R-ABIL-08's "unless stated", as for Red Key itself.
+   7. R-ABIL-40 would say "no valid target"; Red Key has no target, so false.
+   8. Mixed: a copy lacks a target, so R-ABIL-40, as 19.238.
+7. Checked (5.24): every copy path, all sets.
+   1. fsp2 ? Card (`CopiesTapOnPlay`): changed.
+   2. b2 Placebo (`CopiesTapAbilities`): `activatable` checks `Needs`; unchanged.
+   3. Placebo with Red Key during an attack: refused by R-ABIL-08 already.
+   4. b2 Blank Card: copies the loot just played, same moment, same check.
+   5. So a Blank Card copy of ? Card copies an allowed ability; unchanged.
+   6. b2 Modeling Clay, b2 Diplopia, r Birthright, r Undefined: become a copy.
+   7. The copy's abilities are used through `activatable`; unchanged.
+   8. r Glitch (`GainAbilities`): gained abilities use `activatable`; unchanged.
+   9. Only Red Key and Friendly Ball use `Needs`, both r.
+   10. g2, challenge: no other card copies an ability.
+8. Bots and client: no change needed.
+   1. `Allowed` (`actions.go`) and the play check call `lootPlayable`.
+   2. Bots pick from `Allowed`; the client gets it in each update.
+   3. `Blocked` shows the refusal's say: "Not during an attack".
+   4. Bot `ChooseCopyAbility` weighs only the offered options.
+9. Tests (cross-set, `cards/testdata/situations/interactions/`)
+   1. `questionmark-card-red-key-refused-during-an-attack.json`: R-ABIL-08.
+   2. `questionmark-card-red-key-mystery-sack-offers-only-the-sack-during-an-attack.json`.
+   3. `questionmark-card-red-key-offered-outside-an-attack.json`.
+   4. Sources: both cards, R-ATK-02, R-ABIL-08, R-MECH-11.
+   5. The first two failed with the limit check off.
+   6. The third is the working case; it can't fail with the check off.
+   7. It guards against a check that refuses Red Key's copy always.
+   8. `questionmark-card-friendly-ball-offers-only-the-catch.json` still passes.
+10. Docs
+   1. Q-55 item 8: a copy keeps the limits its card states.
+   2. Wiki `Effect-blocks.md`, `Adding-a-card.md`: `OnlyIf` for ? Card too.
+11. Gates (2026-11-25)
+   1. `make lint test` and `make site` passed; site: engine 0.5.12.
+   2. `make e2e`: 663 passed, 1 failed; evidence in `.cache/e2e-evidence/19.243/`.
+   3. rooms.spec.ts:72 (webkit, seed 2367047448): Samson's Blessing not seen in 5 s.
+   4. A room test; no ? Card or Red Key; unrelated.
+   5. It passed alone on the first rerun, the same seed; no new item.
+12. Owner notes (2026-11-25)
+   1. Owner marks 19.243 solved.
+
+### [x] 19.244 A card under an item is not shown
+
+1. Goal: players see the card under an item, as on a real table.
+2. Report (owner, 2026-11-25, 19.242)
+   1. Friendly Ball puts a monster under it.
+   2. Nothing on the table shows it; its zoom shows only the ball.
+   3. So no one knows what is under it, or what the second ↷ releases.
+   4. Before: `.cache/screenshots/19.242/before/` (not tracked).
+3. Cause
+   1. `Object.Under` lives only in the engine state.
+   2. The view (`CardView`, `view.go`) never sends it.
+4. Owner design (2026-11-25)
+   1. The card under the item peeks out from under it.
+   2. A hover on it, or on the item, shows its full card.
+5. Tasks:
+   1. View: the cards under an item, public to all players.
+   2. Client: the peeking card on every item that has cards under it.
+   3. Every place that draws items: table, playback, history (5.26).
+   4. Layers (ADR 015) and animations (ADR 012) by their rules.
+   5. e2e test; before and after screenshots in `.cache/screenshots/19.244/`.
+   6. A use case for the new visible behavior.
+6. Done (2026-11-25)
+   1. Engine: `CardView.Under` (`under`), refs of the cards under it.
+   2. Public: every player and spectator; tested for both players.
+   3. Server: `encode_card.go` sends it; a sample card sets it.
+   4. TS: `CardView.under` in `protocol.ts`.
+   5. No rule change, so no engine version bump (as 19.106, 19.157).
+   6. Client: `PlayCard` (`PlayerArea.tsx`) wraps a card in a `card-holder`.
+   7. The holder is always there: a catch never remounts the item.
+   8. Each card under it peeks out on its right, turned 4°.
+   9. `--peek` 2rem (table), 1.5rem (small); padding keeps the room.
+   10. Hover on the peek zooms that card (its own `Card` zoom).
+   11. Item zoom: `Zoom.under`; `CardZoom` shows each beside it, "Under it".
+   12. Long press and right click carry `under` too (`useZoom`).
+   13. Layers: no z-index; the peek comes first, the item lies on top.
+   14. So no new layer, no `Layers.md` row, no `layers.spec.ts` pair.
+   15. Animations: none added; the release keeps the slot's `card-pop`.
+   16. Text cards: the peek shows the right part of the drawn face.
+7. Checked (5.26)
+   1. `PlayerArea` `PlayCard`: own and others' items and curses; changed.
+   2. Characters (`OwnArea`, `OpponentArea`): nothing goes under them.
+   3. `Board.tsx` slots: only Friendly Ball calls `PutUnder`; no holder there.
+   4. Playback and records use `GameScreen` and `PlayerArea`; covered.
+   5. `HistoryStrip`, `StackPanel`, `ChoiceDialog`, `ChoiceBack`: refs only.
+   6. `Effects`, `Pile`, `Tuck`, `HandCard`: no card in play.
+   7. Website (`frontend/src/site`): draws no table.
+8. Tests
+   1. `TestViewShowsTheCardsUnderAnItem` (engine view): both players, spectator.
+   2. `TestSampleCardsSetEveryField` covers `Under` in the encoder.
+   3. e2e `under.spec.ts`: catch Fly, peek for both, both zooms, release.
+   4. No Vitest: no new logic outside components; `viewFields.test.ts` sees the read.
+9. Docs: UC-49; `docs/wiki/Client.md`; CHANGELOG.
+10. Screenshots (not tracked)
+   1. Before: `.cache/screenshots/19.244/before/` (from 19.242).
+   2. After: `.cache/screenshots/19.244/after/screen-under-*.png`.
+11. Gates (2026-11-25)
+   1. `make lint test` and `make site` passed; site: engine 0.5.12.
+   2. `make frontend`: 794 Vitest passed; `make e2e`: 666 passed.
+   3. `wails build -m -tags embed` (no `cardimages`) built.
+12. Owner design change (2026-11-25)
+   1. The item stays in its place, in line with the other items.
+   2. The card under it lies a little higher, behind the item.
+   3. Its top part shows above the item: the name and some art.
+   4. The rest of it is hidden by the item, as on a real table.
+   5. The side peek is replaced.
+   6. The row's sideways scroll must not clip the raised part.
+13. Done (design change, 2026-11-25)
+   1. The side peek is gone: no `--peek`, no turn, no right padding.
+   2. A card under an item lies behind it, raised by `--band`.
+   3. `--band`: 1.875rem (table), 1.375rem (side column).
+   4. Only its top band shows: the name and a little art.
+   5. The item keeps its place, in line with the row.
+   6. Several under one card: each a band higher; first put under on top.
+   7. Today only Friendly Ball holds one card.
+   8. Hover on a band zooms that card; the item zoom is unchanged.
+   9. Long press and right click as before (`useZoom`).
+   10. Text cards: the band shows the drawn name, readable.
+14. Clipping fix
+   1. `overflow-x: auto` on `.player-cards` clips above the row too.
+   2. `cardsRow` marks a row `has-under`; `--under-n` is its most under one card.
+   3. Such a row has `margin-top: -band·n` and `padding-top` as far.
+   4. So its cards keep their place; the row reaches up over the band.
+   5. The row takes `pointer-events: none`; its cards and bands take `auto`.
+   6. So the strip never blocks what lies under it.
+   7. The row still scrolls sideways (wheel and swipe over its cards).
+   8. Side columns do not clip (`overflow: visible`).
+   9. There the card above the row is the character: a band hid its stats.
+   10. So a side row makes room: no negative margin, bigger `row-gap`.
+   11. A side row moves down by the band while a card is under one.
+15. Layers (ADR 015)
+   1. The own row's band reaches onto the board, drawn later; it was hidden.
+   2. New layer `under` (5): a holder with cards under it.
+   3. Between `action-bar` and `sky`; every window covers it.
+   4. The holder is a stacking context: the item lies on its bands.
+   5. Row in `Layers.md`; pair in `layers.spec.ts`: band over the board.
+   6. Animations: none added or changed (ADR 012).
+16. Checked (5.26)
+   1. Own items row: the band over the board's rim; the ball unmoved.
+   2. Top opponent: the band in the hand row's free room; under no window.
+   3. Side opponents: under the character, its stats in view.
+   4. Curses rows use `PlayCard` and `cardsRow` too.
+   5. Full own row: scrolls; the last card's band shows once scrolled.
+   6. Windows 1024×600, 1280×720, 1920×1080: `expectFits`, bands shown.
+   7. Playback and records draw `PlayerArea`: covered.
+17. Tests
+   1. `under.spec.ts`: Friendly Ball catch, band for both players.
+   2. The ball's box is the same before, during and after the catch.
+   3. Hover on the band zooms Fly; the ball zoom shows "Under it".
+   4. The band takes the pointer at its middle (not covered, not clipped).
+   5. Second test: every seat, a full row, three window sizes.
+   6. Its names changed to Nim, Pel: Ivo, Jun clashed in the saves list.
+   7. `layers.spec.ts`: band over the board; the item over its band.
+18. Screenshots (not tracked): `.cache/screenshots/19.244/after-2/`.
+   1. `screen-under-band.png`, `screen-under-band-other.png`.
+   2. `screen-under-band-zoom.png`, `screen-under-ball-zoom.png`.
+   3. `screen-under-released.png`, `screen-under-before.png`.
+   4. `screen-under-seats.png` (full row), `-small`, `-large`, `-zoom`.
+   5. `screen-under-band-text.png`, `-other-text.png`: text cards.
+   6. `screen-layers-under-board.png`.
+19. Gates (2026-11-25)
+   1. `make lint test` passed; `make frontend`: 794 Vitest passed.
+   2. `make e2e`: 667 passed, 3 failed; evidence in `.cache/e2e-evidence/19.244-2/`.
+   3. two-sided and under: both continued a save named "Ivo, Jun".
+   4. Fixed by new names in `under.spec.ts`; both passed alone.
+   5. aim 20.6 drag tilt (roll 4.39 < 5): timing; passed alone.
+   6. `wails build -m -tags embed` built; `wailsjs` churn reverted.
+20. Owner notes (2026-11-25)
+   1. Side columns: the items row moves down by the band; keep it.
+   2. A row with a card under: scrollbar drag may not work; keep it.
+   3. Owner marks 19.244 solved.
+
+### [ ] 19.245 TestLongGameEnds fails about two runs in three
+
+1. Goal: the server's long-game limit test passes every run.
+2. Report (main session, 2026-11-25, gate for Q-27/Q-28)
+   1. `make lint test` failed twice in `internal/server`.
+   2. `TestLongGameEnds`: `limits_test.go:134: no games message`.
+   3. Alone, `-run '^TestLongGameEnds$'`: it fails in about 5.4 s, or passes in 0.4 s.
+   4. On `main`: 4 of 6 runs failed; on 0a1da025: 2 of 3.
+   5. So it is not new on the step branch; no code change caused it.
+   6. Log: `.cache/gate-evidence/q2728-internal-server.log` (not tracked).
+3. Cause: not found yet.
+   1. The test moves a fake clock past 24 hours.
+   2. Each player gets the idle notice, then waits for a games message.
+   3. The games message does not come within the wait.
+4. Tasks:
+   1. Find why the games message is missing or late.
+   2. Fix the server or the test; wait for the exact state (5.16.10).
+   3. Check the other limit tests for the same pattern (5.26).
+

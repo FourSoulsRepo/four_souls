@@ -1,0 +1,23 @@
+{
+  "title": "Cain has Soy Milk; on Isaac's turn is the Fatty's DC 2, and do Isaac's hits leave Monstro unhurt?",
+  "source": ["card soy_milk", "card fatty", "R-ATK-12"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "items": ["soy_milk"]}],
+    "active": 0,
+    "monsters": ["monstro", "fatty"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [2, 2, 2, 2]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0}, "monsters": [{"slot": 1, "card": "monstro", "evasion": 4}, {"slot": 2, "card": "fatty", "evasion": 2}]}},
+    {"kind": "choose", "choices": ["fatty"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [2, 2, 2, 2],
+    "monsters": [{"slot": 1, "card": "monstro", "damage": 0}, {"card": "fatty", "dead": true}],
+    "after": [{"player": 0, "damage": 0}]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "title": "Cain has Friendly Ball with nothing under it. Isaac plays ? Card: is only Friendly Ball's first ↷ ability offered, since nothing is under ? Card to put in a slot?",
+  "source": ["card questionmark_card", "card friendly_ball", "R-ABIL-05", "R-ABIL-40", "Q-55"],
+  "sets": ["b2", "fsp2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["questionmark_card"]}, {"character": "cain", "items": ["friendly_ball"]}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "questionmark_card"},
+  "expect": {
+    "allowed": true,
+    "prompt": {"player": 0, "options": ["friendly_ball: ↷: Put a monster not being attacked under this if there are no cards under this.", "ask.cancel"]}
+  }
+}

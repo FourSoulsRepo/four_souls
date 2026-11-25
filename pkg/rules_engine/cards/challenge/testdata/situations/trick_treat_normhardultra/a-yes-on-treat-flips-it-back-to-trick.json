@@ -1,0 +1,22 @@
+{
+  "title": "Trick or Treat, Normal: Treat is up; Isaac ends his turn and Cain says yes to the flip; what does his kill of the Fly give?",
+  "source": ["card trick_treat_normhardultra", "card treat_normhardultra", "R-TRICK-11", "R-TRICK-12", "R-TRICK-13", "Q-43", "Q-48"],
+  "sets": ["b2", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "normal", "rule_card": "treat_normhardultra"},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"monster": ["bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob"]},
+    "rolls": [6, 6, 1]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1, "prompt": {"player": 1, "options": ["ask.yes", "ask.no"]}}},
+    {"kind": "choose", "choices": ["ask.yes"]},
+    {"player": 1, "kind": "attack", "choices": ["fly", "mischievous_the_haunt_norm: Each time a monster dies, the active player rolls- 4-6: Remove a fear counter from a player."], "expect": {"allowed": true, "resolved": ["trick_treat_normhardultra", "attack_roll"], "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 1, "cents": 1}], "counters": [{"card": "mischievous_the_haunt_norm", "name": "trick", "count": 11}]}}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 1]
+  }
+}

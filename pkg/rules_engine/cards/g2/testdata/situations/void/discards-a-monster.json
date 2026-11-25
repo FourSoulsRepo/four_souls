@@ -1,0 +1,19 @@
+{
+  "title": "Apollyon uses Void on the Fly: does it go to the monster discard and the slot refill?",
+  "source": ["card void", "R-SHOP-06"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "apollyon", "items": ["void"], "hand": ["bomb", "bomb", "a_penny"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "shop": ["the_d6", "breakfast"],
+    "decks": {"monster": ["dip"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "void", "choices": ["Put a monster not being attacked into discard.", "fly"]},
+  "expect": {
+    "allowed": true,
+    "discards": {"monster": ["fly"]},
+    "monsters": [{"slot": 1, "card": "dip"}, {"slot": 2, "card": "leech"}],
+    "after": [{"player": 0, "cents": 0, "hand": 3, "deactivated": ["void"]}]
+  }
+}

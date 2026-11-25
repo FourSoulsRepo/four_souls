@@ -207,15 +207,22 @@ func (g *Game) AttackedPlayer() (PlayerID, bool) {
 // attack, and whether p may be attacked at all: the newest effect that
 // allows it sets it (R-MECH-06).
 func (g *Game) PlayerAttackDC(p PlayerID) (int, bool) {
+	pt, ok := g.playerAttackDCPart(p)
+	return pt.Amount, ok
+}
+
+// playerAttackDCPart is the effect PlayerAttackDC uses, with its source,
+// so the view shows the one that counts (ADR 037).
+func (g *Game) playerAttackDCPart(p PlayerID) (Part, bool) {
 	if p == g.Turn.Active || g.Players[p].Dead {
-		return 0, false
+		return Part{}, false
 	}
 	for i := len(g.Boosts) - 1; i >= 0; i-- {
 		if b := g.Boosts[i]; b.Stat == StatPlayerAttackDC && b.Object == 0 && b.Player == p {
-			return b.Amount, true // an effect of this turn is the newest
+			return Part{Stat: StatPlayerAttackDC, Source: b.Source, Amount: b.Amount, Lasts: LastsTurn}, true // an effect of this turn is the newest
 		}
 	}
-	dc, newest := 0, ObjectID(-1)
+	pt, newest := Part{Stat: StatPlayerAttackDC}, ObjectID(-1)
 	for _, id := range g.inPlay() {
 		d, ok := g.cards.find(g.CardOf(id))
 		if !ok {
@@ -223,11 +230,11 @@ func (g *Game) PlayerAttackDC(p PlayerID) (int, bool) {
 		}
 		for _, s := range d.Statics {
 			if s.Stat == StatPlayerAttackDC && s.Applies(g, id, p, 0) && id > newest {
-				dc, newest = s.amount(g, id), id
+				pt.Source, pt.Amount, pt.When, newest = id, s.amount(g, id), s.When, id
 			}
 		}
 	}
-	return dc, newest >= 0
+	return pt, newest >= 0
 }
 
 // PlayerHP is a player's remaining health (R-CARD-25, R-MECH-19).
@@ -428,10 +435,10 @@ func (g *Game) askAttackTarget() {
 		g.ask(c, labels)
 		return
 	}
-	if m := g.Turn.MustAttack; m != 0 && g.Object(m).Zone.Kind == ZoneInPlay && g.CanBeAttacked(m) {
-		c := Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Objects: []ObjectID{m}}
-		labels := g.targetLabels([]ObjectID{m})
-		if len(random) > 0 && !contains(random, m) {
+	if owed := g.owedTargets(); len(owed) > 0 {
+		c := Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Objects: owed}
+		labels := g.targetLabels(owed)
+		if len(random) > 0 && !slices.ContainsFunc(owed, func(id ObjectID) bool { return contains(random, id) }) {
 			c.Random, labels = true, append(labels, askAttackRandom.Msg())
 		}
 		g.ask(c, labels)
@@ -540,6 +547,9 @@ func (g *Game) startAttack(target ObjectID) {
 	g.Turn.NextHelpers, g.Turn.NextShare = nil, nil
 	if g.Turn.MustAttack == target {
 		g.Turn.MustAttack = 0 // the forced attack is made (Monster Manual, Krampus)
+	}
+	if slices.Contains(g.Turn.MustAttackOneOfCards, g.Object(target).Card) {
+		g.Turn.MustAttackOneOfCards = nil // made on one of them (Boss Rush!, 19.241)
 	}
 	if contains(g.randomAttackTargets(), target) {
 		g.Turn.RandomAttackMade = true // Q-31: an attack went to one of them
@@ -656,11 +666,12 @@ func (g *Game) AddAttackHelpers(ps ...PlayerID) {
 
 // HelpNextAttack makes p a helper of the active player's next attack
 // this turn; with share p also gains the rewards if the target dies
-// (Sibling Rivalry).
-func (g *Game) HelpNextAttack(p PlayerID, share bool) {
+// (Sibling Rivalry). source is the card that did it, for the view.
+func (g *Game) HelpNextAttack(p PlayerID, share bool, source ObjectID) {
 	if p == g.Turn.Active {
 		return
 	}
+	g.Players[p].HelpSource = source
 	g.Turn.NextHelpers = append(g.Turn.NextHelpers, p)
 	if share {
 		g.Turn.NextShare = append(g.Turn.NextShare, p)
@@ -1180,9 +1191,10 @@ func (g *Game) askRedirect(q PlayerID, declared ObjectID) {
 
 // GivePenaltyItem makes p, if p dies this turn, give player to the item
 // they would destroy for the death penalty instead ("they give the active player
-// the item they would destroy": Lust for Blood).
-func (g *Game) GivePenaltyItem(p, to PlayerID) {
-	g.Boosts = append(g.Boosts, Boost{Stat: StatPenaltyItemTo, Player: p, Amount: int(to) + 1})
+// the item they would destroy": Lust for Blood). source is the card
+// whose ability says so (ADR 037 item 1.6).
+func (g *Game) GivePenaltyItem(p, to PlayerID, source ObjectID) {
+	g.Boosts = append(g.Boosts, Boost{Stat: StatPenaltyItemTo, Player: p, Amount: int(to) + 1, Source: source})
 }
 
 // penaltyItemTo is who gets p's death-penalty item this turn, or NoPlayer.

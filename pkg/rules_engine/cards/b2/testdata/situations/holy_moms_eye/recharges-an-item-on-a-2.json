@@ -1,0 +1,13 @@
+{
+  "title": "Holy Mom's Eye is in a monster slot; Isaac rolls a 2 with Mystery Sack: may he recharge the Sack?",
+  "source": ["card holy_moms_eye", "card mystery_sack", "R-ABIL-16", "R-ABIL-15"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["mystery_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["holy_moms_eye"],
+    "rolls": [2]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢.", "mystery_sack"]},
+  "expect": {"allowed": true, "resolved_rolls": [2], "after": [{"player": 0, "deactivated": [], "hand": 1}]}
+}

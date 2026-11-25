@@ -1,0 +1,11 @@
+{
+  "title": "The Soiled discards Bomb! to IBS and chooses \"Gain 3¢.\": does she gain 3¢?",
+  "source": ["card ibs", "R-ABIL-11", "R-ABIL-07", "R-ABIL-04"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "the_soiled", "items": ["ibs"], "hand": ["bomb", "a_nickel", "dice_shard"]}, {"character": "cain"}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "ibs", "choices": ["Gain 3¢.", "bomb"]},
+  "expect": {"allowed": true, "discards": {"loot": ["bomb"]}, "after": [{"player": 0, "cents": 3, "hand_cards": ["a_nickel", "dice_shard"], "deactivated": []}]}
+}

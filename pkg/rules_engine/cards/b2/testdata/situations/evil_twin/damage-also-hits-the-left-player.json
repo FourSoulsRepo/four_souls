@@ -1,0 +1,21 @@
+{
+  "title": "Isaac hits Evil Twin (3 HP) with three 6s: is each damage also dealt to Cain, the player to his left, so Cain (2 HP) dies?",
+  "source": ["card evil_twin", "card isaac", "card cain", "R-ATK-12", "R-CARD-02", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["evil_twin"],
+    "decks": {"monster": ["pooter"], "treasure": ["breakfast"]},
+    "rolls": [6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["evil_twin"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "evil_twin", "dead": true}],
+    "events": [{"kind": "died", "player": 1}],
+    "after": [{"player": 0, "damage": 0, "items": ["breakfast"]}, {"player": 1, "dead": true}]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "title": "Isaac kills Swarmer (4 HP): are monster slots expanded by 2 and all refilled?",
+  "source": ["card swarmer", "card isaac", "R-ATK-12", "R-MECH-31", "R-DEATH-09", "R-CARD-13"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["swarmer", "fly"],
+    "decks": {"monster": ["leech", "trite", "spider", "dip"], "treasure": ["breakfast"]},
+    "rolls": [6, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["swarmer"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 6, 6],
+    "events": [{"kind": "expanded"}],
+    "monsters": [{"card": "swarmer", "dead": true}, {"slot": 2, "card": "fly"}, {"card": "leech"}, {"card": "trite"}, {"card": "spider"}],
+    "decks": {"monster": ["dip"]},
+    "after": [{"player": 0, "items": ["breakfast"]}]
+  }
+}

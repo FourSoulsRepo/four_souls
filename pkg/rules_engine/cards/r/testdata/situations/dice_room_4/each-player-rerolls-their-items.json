@@ -1,0 +1,25 @@
+{
+  "title": "Dice Room!!!!: as it enters play Isaac rerolls his Spoon Bender and Cain his Jawbone",
+  "source": ["card dice_room_4", "R-MECH-48", "R-CARD-02"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["spoon_bender"]},
+      {"character": "cain", "items": ["jawbone"]}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["dice_room_4"],
+    "decks": {"treasure": ["book_of_sin", "book_of_sin"]},
+    "stack": [{"kind": "trigger", "card": "dice_room_4", "owner": 0}]
+  },
+  "steps": [
+    {"player": 0, "kind": "pass"}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved": ["dice_room_4"],
+    "after": [{"player": 0, "items": ["book_of_sin"]}, {"player": 1, "items": ["book_of_sin"]}],
+    "discards": {"treasure": ["spoon_bender", "jawbone"]}
+  }
+}

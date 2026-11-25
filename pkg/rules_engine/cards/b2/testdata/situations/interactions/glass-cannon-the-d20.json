@@ -1,0 +1,23 @@
+{
+  "title": "Isaac's Glass Cannon targets Cain's The D20; Cain rerolls The D20 itself in response: does Glass Cannon fizzle, stay tapped and roll nothing?",
+  "source": ["card glass_cannon", "card the_d20", "R-ABIL-06", "R-MECH-48", "R-ZONE-01"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["glass_cannon"], "deactivated": ["glass_cannon"]},
+      {"character": "cain", "items": ["the_d20"]}
+    ],
+    "active": 0,
+    "decks": {"treasure": ["breakfast"]},
+    "stack": [{"kind": "activate", "card": "glass_cannon", "owner": 0, "choices": ["the_d20"]}],
+    "priority": 1
+  },
+  "action": {"player": 1, "kind": "activate", "card": "the_d20", "choices": ["the_d20"]},
+  "expect": {"allowed": true,
+    "resolved_rolls": [],
+    "discards": {"treasure": ["the_d20"]},
+    "after": [
+      {"player": 0, "items": ["glass_cannon"], "deactivated": ["glass_cannon"], "hand": 0},
+      {"player": 1, "items": ["breakfast"]}
+    ]}
+}

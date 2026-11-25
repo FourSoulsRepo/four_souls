@@ -1,0 +1,25 @@
+{
+  "title": "Trick or Treat, Normal: Trick is up and Mischievous The Haunt has no trick counters; Isaac kills it; who wins?",
+  "source": ["card trick_treat_normhardultra", "card mischievous_the_haunt_norm", "R-TRICK-01", "R-TRICK-06", "R-CHAL-15", "R-COOP-10", "R-ABIL-15"],
+  "sets": ["b2", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "normal"},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"monster": ["bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob"]},
+    "counters": [{"card": "mischievous_the_haunt_norm", "name": "trick", "count": 0}],
+    "rolls": [6, 6, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["mischievous_the_haunt_norm", "trick_treat_normhardultra: Each time you kill a monster, remove a trick counter from the final boss.", "mischievous_the_haunt_norm: Each time a monster dies, the active player rolls- 4-6: Remove a fear counter from a player."]}
+  ],
+  "expect": {
+    "allowed": true,
+    "over": true,
+    "winners": [0, 1],
+    "resolved_rolls": [6, 6, 6, 6, 6],
+    "events": [{"kind": "challenge_won"}, {"kind": "challenge_lost", "none": true}],
+    "after": [{"player": 0, "damage": 0}]
+  }
+}

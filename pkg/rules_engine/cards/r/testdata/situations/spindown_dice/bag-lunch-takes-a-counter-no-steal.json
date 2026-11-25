@@ -1,0 +1,15 @@
+{
+  "title": "The Broken uses Spindown Dice on Cain's Bag Lunch with no counter: does it take a counter instead (Cain 3 HP), with no destruction and no steal?",
+  "source": ["card spindown_dice", "card bag_lunch", "Q-16", "R-ABIL-29", "R-MECH-03"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "the_broken", "items": ["spindown_dice"]}, {"character": "cain", "items": ["bag_lunch"]}],
+    "active": 0,
+    "shop": ["jawbone"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "spindown_dice", "choices": ["bag_lunch"]},
+  "expect": {
+    "allowed": true,
+    "after": [{"player": 1, "items": ["bag_lunch"], "hp": 3, "counters": [{"card": "bag_lunch", "count": 1}]}]
+  }
+}

@@ -14,6 +14,9 @@ import (
 // "trigger" for a triggered ability and "attack_roll" for an attack roll.
 // Card and Ability pick the card as in an action; Choices are the mode
 // and targets chosen when it went on the stack, by option label.
+// FromDeck and Slot are for an attack_roll only: its monster Card was
+// revealed by an attack on the monster deck and covers the card in
+// monster slot Slot, from 1 (R-ATK-08, 24.33).
 //
 // An item is as it is once played: costs are paid and the setup shows
 // what they left (a stacked loot is not in hand, a tapped item is in
@@ -26,6 +29,8 @@ type SituationStack struct {
 	Card     CardRef  `json:"card,omitempty"`
 	Ability  int      `json:"ability,omitempty"`
 	Choices  []string `json:"choices,omitempty"`
+	FromDeck bool     `json:"from_deck,omitempty"`
+	Slot     int      `json:"slot,omitempty"`
 }
 
 // UnmarshalJSON rejects unknown fields, so a misspelt item is an error,
@@ -76,6 +81,12 @@ func (g *Game) stackedItem(st SituationStack) (StackItem, error) {
 		return StackItem{}, errors.New(`a dice roll has no card or choices; set "kind"`)
 	case (st.Kind == "attack_roll" || st.Kind == "trigger") && len(st.Choices) > 0:
 		return StackItem{}, fmt.Errorf("kind %q has no choices", st.Kind)
+	case st.Kind != "attack_roll" && (st.FromDeck || st.Slot != 0):
+		return StackItem{}, fmt.Errorf("kind %q has no from_deck or slot; they are for an attack_roll", st.Kind)
+	case st.FromDeck && st.Slot == 0:
+		return StackItem{}, fmt.Errorf("from_deck needs slot: the monster slot %q covers, from 1 (R-ATK-08)", st.Card)
+	case !st.FromDeck && st.Slot != 0:
+		return StackItem{}, errors.New(`slot is the monster slot a card revealed from the monster deck covers; set "from_deck": true, or leave slot out`)
 	}
 	if st.Kind != "" {
 		if _, ok := g.cards.find(st.Card); !ok {
@@ -180,7 +191,12 @@ func (g *Game) stackedTrigger(p PlayerID, st SituationStack) (StackItem, error) 
 
 // stackedAttackRoll: the active player attacks the monster card; the
 // attack is declared and its target chosen, which used one attack. It
-// needs the action phase (R-ATK-01).
+// needs the action phase (R-ATK-01) and an attack left (R-TURN-07). The
+// attack is spent as a declaration spends it (spendAttack): a regular
+// one first, then a bonus one (24.29). With FromDeck the attack was on
+// the monster deck and revealed the card (stackedReveal). A setup has
+// no deck-only attacks (Turn.DeckAttacks), so spendAttack takes a
+// regular or bonus one for it too; duties are set after the stack.
 func (g *Game) stackedAttackRoll(p PlayerID, st SituationStack) (StackItem, error) {
 	if p != g.Turn.Active {
 		return StackItem{}, fmt.Errorf("owner %d is not the active player; only they attack here", st.Owner)
@@ -188,11 +204,29 @@ func (g *Game) stackedAttackRoll(p PlayerID, st SituationStack) (StackItem, erro
 	if g.Turn.Step != StepAction {
 		return StackItem{}, errors.New("an attack roll needs phase action: attacks are declared only in the action phase (R-ATK-01)")
 	}
+	if !g.Attack.Started && g.attacksLeft() < 1 {
+		return StackItem{}, errors.New("an attack roll needs an attack left (R-TURN-07), and attacks is 0")
+	}
+	if st.FromDeck {
+		if g.Attack.Started {
+			return StackItem{}, fmt.Errorf("from_deck: an attack on the monster deck reveals one card, on the first attack roll (R-ATK-08); "+
+				"a later roll of the attack names %q without from_deck and slot", g.Object(g.Attack.Target).Card)
+		}
+		target, err := g.stackedReveal(st)
+		if err != nil {
+			return StackItem{}, err
+		}
+		g.spendAttack()
+		g.Attack = AttackState{On: true, Started: true, Target: target, Deck: true}
+	}
 	target, found := ObjectID(0), false
 	for _, id := range g.MonstersInPlay() {
 		if !found && g.Object(id).Card == st.Card {
 			target, found = id, true
 		}
+	}
+	if g.Attack.Started && g.Object(g.Attack.Target).Card == st.Card {
+		target, found = g.Attack.Target, true // the attacked copy, e.g. a revealed one
 	}
 	switch {
 	case !found:
@@ -200,14 +234,40 @@ func (g *Game) stackedAttackRoll(p PlayerID, st SituationStack) (StackItem, erro
 	case g.Attack.Started && g.Attack.Target != target:
 		return StackItem{}, errors.New("every attack roll must attack the same monster")
 	case !g.Attack.Started:
+		g.spendAttack()
 		g.Attack = AttackState{On: true, Started: true, Target: target}
-		if g.Turn.Attacks > 0 {
-			g.Turn.Attacks--
-		}
 	}
 	it := g.attackRollItem(p)
 	it.Roll = st.DiceRoll
 	return it, nil
+}
+
+// stackedReveal builds what an attack on the monster deck leaves once
+// its card is revealed and its target chosen: the card covers monster
+// slot st.Slot (R-ATK-08, R-ZONE-10), as placeRevealed puts it there,
+// and it is the attack's target. Only a monster: an event ends the
+// attack (R-ATK-09), a card that can't be attacked cancels it
+// (R-ATK-10), so no attack roll waits on either. It counts as an attack
+// on a monster (R-ATK-05, Q-24). What its entry triggered ("when an
+// attack is declared on this", R-ATK-06) resolved before the first roll
+// (R-ATK-25), so nothing triggers here, as for the other stack items.
+func (g *Game) stackedReveal(st SituationStack) (ObjectID, error) {
+	d, _ := g.cards.find(st.Card)
+	if deck, ok := d.Kind.Deck(); !ok || deck != MonsterDeck {
+		return 0, fmt.Errorf("from_deck: %q is no card of the monster deck, so no deck attack reveals it (R-ATK-08)", st.Card)
+	}
+	switch {
+	case d.Kind == EventCard:
+		return 0, fmt.Errorf("from_deck: %q is an event; revealed, it triggers and the attack is over (R-ATK-09), so no attack roll waits", st.Card)
+	case d.Unattackable:
+		return 0, fmt.Errorf("from_deck: %q can't be attacked; revealed, it stays and the attack is cancelled (R-ATK-10), so no attack roll waits", st.Card)
+	case st.Slot < 1 || st.Slot > len(g.Monsters):
+		return 0, fmt.Errorf("from_deck: slot %d is no monster slot, options 1 to %d (R-ATK-08)", st.Slot, len(g.Monsters))
+	}
+	before := len(g.PendingTriggers)
+	id := g.coverMonsterSlot(g.newObject(st.Card, Zone{Kind: ZoneOutside}, NoPlayer), st.Slot-1)
+	g.PendingTriggers = g.PendingTriggers[:before]
+	return id, nil
 }
 
 // stackedChoices reads the mode and targets of an ability by option

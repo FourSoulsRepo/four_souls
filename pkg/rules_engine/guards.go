@@ -1,5 +1,7 @@
 package rulesengine
 
+import "slices"
+
 // Card hooks that guard monsters, force an attack at random, or take a
 // dead monster's spoils away (ADR 028, Decision 6.4). Pilfering Krampus
 // uses them (R-KRAMPUS-11, R-KRAMPUS-13, R-KRAMPUS-14); the engine
@@ -38,6 +40,29 @@ func (g *Game) noSpoils(dying ObjectID) bool {
 	return false
 }
 
+// owedTargets lists what the active player must attack now (R-ATK-03):
+// the MustAttack card while it is in play (a covered card is not,
+// R-ZONE-10) and can be attacked, and every attack target whose card
+// is one of MustAttackOneOfCards (19.241). Those are named by card, so
+// a boss that comes up uncovered as a new object (R-ZONE-01) still
+// counts; one in a discard, a deck or souls is no attack target. With
+// several owed, the attacker picks (R-ATK-03).
+func (g *Game) owedTargets() []ObjectID {
+	var out []ObjectID
+	if id := g.Turn.MustAttack; id != 0 && g.Object(id).Zone.Kind == ZoneInPlay && g.CanBeAttacked(id) {
+		out = append(out, id)
+	}
+	if len(g.Turn.MustAttackOneOfCards) == 0 {
+		return out
+	}
+	for _, id := range g.attackTargets() {
+		if !contains(out, id) && slices.Contains(g.Turn.MustAttackOneOfCards, g.Object(id).Card) {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
 // randomAttackTargets lists the monsters the active player must attack
 // one of at random (MustAttackRandom) that can be attacked now; nil once
 // the duty is met this turn (Q-31).
@@ -74,8 +99,12 @@ func (g *Game) attackRandom(ids []ObjectID) {
 		g.askAttackTarget() // none left to attack: the usual choice
 		return
 	}
-	i := g.RNG.Intn(len(ids))
-	g.emit(Event{Kind: EvRandomPick, Player: g.Turn.Active, Amount: i, Label: CardOption(g.Object(ids[i]).Card), Object: ids[i]})
+	opts := make([]Msg, len(ids))
+	for j, id := range ids {
+		opts[j] = CardOption(g.Object(id).Card)
+	}
+	i := g.randomPick(opts)
+	g.emit(Event{Kind: EvRandomPick, Player: g.Turn.Active, Amount: i, Label: opts[i], Object: ids[i]})
 	g.attackChosen(ids[i])
 }
 

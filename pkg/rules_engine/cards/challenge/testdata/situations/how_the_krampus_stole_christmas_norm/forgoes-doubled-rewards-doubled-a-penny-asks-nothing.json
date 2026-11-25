@@ -1,0 +1,23 @@
+{
+  "title": "Krampus challenge, Normal, Blessing Of The Sack in the room slot: does A Penny! ask to forgo, and how many counters does the Fly's doubled 1¢ give?",
+  "source": ["card how_the_krampus_stole_christmas_norm", "card blessing_of_the_sack", "card a_penny", "R-KRAMPUS-07", "Q-32"],
+  "sets": ["b2", "r", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal"},
+    "players": [{"character": "isaac", "hand": ["a_penny"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "rooms": ["blessing_of_the_sack"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "a_penny",
+     "expect": {"allowed": true, "events": [{"kind": "forgone", "none": true}], "after": [{"player": 0, "cents": 1}],
+                "presents": [{"kind": "cents", "counters": 8}]}},
+    {"player": 0, "kind": "attack", "choices": ["fly", "ask.yes"],
+     "expect": {"allowed": true, "events": [{"kind": "forgone", "player": 0}], "monsters": [{"card": "fly", "dead": true}],
+                "after": [{"player": 0, "cents": 1}], "presents": [{"kind": "cents", "counters": 10}]}}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [6]}
+}

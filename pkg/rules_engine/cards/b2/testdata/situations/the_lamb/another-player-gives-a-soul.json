@@ -1,0 +1,20 @@
+{
+  "title": "Isaac kills The Lamb and chooses Cain: does Cain give Isaac his Monstro soul?",
+  "source": ["card the_lamb", "card isaac", "card monstro", "R-ATK-12", "R-CARD-13", "R-DEATH-05", "R-DEATH-08"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "souls": ["monstro"]}],
+    "active": 0,
+    "monsters": ["the_lamb"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 6, 6, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["the_lamb", "player 2 (cain)", "monstro"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "the_lamb", "dead": true}],
+    "after": [{"player": 0, "cents": 3, "souls": 2, "soul_cards": ["the_lamb", "monstro"]}, {"player": 1, "souls": 0, "soul_cards": []}]
+  }
+}

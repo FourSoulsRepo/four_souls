@@ -1,0 +1,15 @@
+{
+  "title": "Cain's Bomb! hits the Whore of Babylon, who has Gimpy; she picks \"Gain 2¢\": does she gain 2¢?",
+  "source": ["card gimpy", "card bomb", "R-ABIL-04"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "whore_of_babylon", "items": ["gimpy"]}, {"character": "cain"}],
+    "active": 0,
+    "stack": [{"kind": "play", "card": "bomb", "owner": 1, "choices": ["player 1 (whore_of_babylon)"]}]
+  },
+  "action": {"player": 1, "kind": "pass", "choices": ["card.gimpy.cents"]},
+  "expect": {
+    "allowed": true,
+    "after": [{"player": 0, "damage": 1, "cents": 2, "atk": 1, "hand": 0}]
+  }
+}

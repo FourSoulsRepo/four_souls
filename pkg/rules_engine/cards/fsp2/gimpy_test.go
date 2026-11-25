@@ -6,21 +6,6 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-func TestGimpy(t *testing.T) {
-	tb := table(t, seat("whore_of_babylon", "gimpy"), seat("cain"))
-	tb.G.DealDamageTo(engine.Target{Player: 0, IsPlayer: true}, 1, 1, 0)
-	tb.Settle("card.gimpy.cents")
-	if c := tb.G.Players[0].Cents; c != 2 {
-		t.Errorf("cents = %d, want 2", c)
-	}
-	tb2 := table(t, seat("whore_of_babylon", "gimpy"), seat("cain"))
-	tb2.G.DealDamageTo(engine.Target{Player: 0, IsPlayer: true}, 1, 1, 0)
-	tb2.Settle("card.gimpy.atk")
-	if atk := tb2.G.PlayerATK(0); atk != 3 {
-		t.Errorf("ATK = %d, want 1 + 2", atk)
-	}
-}
-
 // TestGimpySaveAtDiscard saves while Gimpy's nested discard question
 // waits and loads: the answer discards; it does not ask Gimpy's first
 // question again (19.143, 19.177).

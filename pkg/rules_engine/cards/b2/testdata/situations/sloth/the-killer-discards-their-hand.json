@@ -1,0 +1,21 @@
+{
+  "title": "Isaac, with A Dime!! and Bomb! in hand, kills Sloth: does he discard his whole hand, and still gain its 1¢?",
+  "source": ["card sloth", "card isaac", "R-ATK-12", "R-CARD-13", "R-DEATH-05", "R-DEATH-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["a_dime", "bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["sloth"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["sloth"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "sloth", "dead": true}],
+    "discards": {"loot": ["a_dime", "bomb"]},
+    "after": [{"player": 0, "hand_cards": [], "cents": 1, "soul_cards": ["sloth"]}]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "title": "Isaac's Jawbone is spent; he kills Psy Horf: is the Jawbone recharged?",
+  "source": ["card psy_horf", "card isaac", "R-ATK-12", "R-CARD-10", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["jawbone"], "deactivated": ["jawbone"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["psy_horf"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["psy_horf"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "psy_horf", "dead": true}],
+    "after": [{"player": 0, "deactivated": [], "hand": 1}]
+  }
+}

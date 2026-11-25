@@ -1,0 +1,22 @@
+{
+  "title": "Isaac declares an attack on Pride and chooses Cain: does Cain discard 2 loot cards before the first attack roll?",
+  "source": ["card pride", "card isaac", "R-ATK-06", "R-ATK-25", "R-ATK-12", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "hand": ["a_dime", "bomb"]}],
+    "active": 0,
+    "monsters": ["pride"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["pride", "player 2 (cain)", "a_dime", "bomb"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved": ["pride", "attack_roll"],
+    "monsters": [{"card": "pride", "dead": true}],
+    "discards": {"loot": ["a_dime", "bomb"]},
+    "after": [{"player": 0, "cents": 5, "soul_cards": ["pride"]}, {"player": 1, "hand_cards": []}]
+  }
+}

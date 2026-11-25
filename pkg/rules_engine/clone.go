@@ -12,7 +12,7 @@ import (
 // no slice, map or pointer with the game, so a change to one never shows
 // in the other. Only the card definitions are shared: they never change.
 // Like a save and a load, it leaves out the events of the last step and
-// the test dice (forcedRolls).
+// the test dice and picks (forcedRolls, forcedPicks).
 //
 // A new field of Game, or of a type inside it, needs a line here and in
 // CloneRules (enginetest/clone.go); TestCloneCoversEveryField fails until both
@@ -46,7 +46,11 @@ func (g *Game) clone(keepSaved bool) *Game {
 	c.Throw = clonePtr(g.Throw, func(t *Throw) Throw { return *t })
 	c.FirstRoll = clonePtr(g.FirstRoll, (*FirstRoll).clone)
 	c.Activating = clonePtr(g.Activating, (*Activation).clone)
-	c.PendingTriggers = slices.Clone(g.PendingTriggers)
+	c.PendingTriggers = cloneEach(g.PendingTriggers, func(t *PendingTrigger) PendingTrigger {
+		t2 := *t
+		t2.Targets = slices.Clone(t.Targets)
+		return t2
+	})
 	c.Boosts = slices.Clone(g.Boosts)
 	c.Shields = slices.Clone(g.Shields)
 	c.Lingering = slices.Clone(g.Lingering)
@@ -73,6 +77,7 @@ func (g *Game) clone(keepSaved bool) *Game {
 	c.maxHP = maps.Clone(g.maxHP)
 	c.events = nil
 	c.forcedRolls = nil
+	c.forcedPicks, c.pickCount, c.pickErr = nil, 0, nil
 	c.changes = nil // the event check's log (TakeSnapshot) stays with the game
 	return &c
 }
@@ -105,6 +110,7 @@ func clonePlayers(ps []Player) []Player {
 		c.Hand = slices.Clone(p.Hand)
 		c.InPlay = slices.Clone(p.InPlay)
 		c.Counters = slices.Clone(p.Counters)
+		c.SkipSources = slices.Clone(p.SkipSources)
 		return c
 	})
 }
@@ -204,6 +210,7 @@ func (s *StackItem) clone() StackItem {
 
 func (t Turn) clone() Turn {
 	t.NextHelpers = slices.Clone(t.NextHelpers)
+	t.MustAttackOneOfCards = slices.Clone(t.MustAttackOneOfCards)
 	t.NextShare = slices.Clone(t.NextShare)
 	t.LateRooms = slices.Clone(t.LateRooms)
 	return t

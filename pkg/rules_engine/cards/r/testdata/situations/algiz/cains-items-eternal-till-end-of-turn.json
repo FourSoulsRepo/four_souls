@@ -1,0 +1,23 @@
+{
+  "title": "Isaac plays Algiz on Cain, then Berkano on Cain's Mom's Purse: does the Purse stay, and on Cain's turn can his own Berkano destroy it?",
+  "source": ["card algiz", "card berkano", "R-ABIL-18", "Q-19", "R-TURN-13", "R-CARD-34"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["algiz", "berkano"]},
+      {"character": "cain", "items": ["moms_purse"], "hand": ["berkano"]}
+    ],
+    "active": 0,
+    "shop": ["spoon_bender", "sack_of_pennies"],
+    "loot_plays": 2
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "algiz", "choices": ["player 2 (cain)"]},
+    {"player": 0, "kind": "play", "card": "berkano", "choices": ["moms_purse"],
+     "expect": {"allowed": true, "discards": {"loot": ["algiz", "berkano"], "treasure": []}, "after": [{"player": 1, "items": ["moms_purse"]}]}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1}},
+    {"player": 1, "kind": "play", "card": "berkano", "choices": ["moms_purse", "spoon_bender"],
+     "expect": {"allowed": true, "discards": {"treasure": ["moms_purse"]}, "after": [{"player": 1, "items": ["spoon_bender"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

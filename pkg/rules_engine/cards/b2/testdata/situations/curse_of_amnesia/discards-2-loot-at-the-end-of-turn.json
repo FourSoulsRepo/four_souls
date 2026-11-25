@@ -1,0 +1,20 @@
+{
+  "title": "Isaac reveals Curse of Amnesia and gives it to Cain; at the end of Cain's turn he holds 3 loot cards: does he discard exactly 2?",
+  "source": ["card curse_of_amnesia", "R-ABIL-20", "R-TURN-04", "R-TURN-10", "R-MECH-25"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "hand": ["bomb", "a_dime"]}],
+    "active": 0,
+    "monsters": ["fly"],
+    "decks": {"loot": ["a_penny"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "curse_of_amnesia", "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "discards": {"monster": []}}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 1, "hand_cards": ["bomb", "a_dime", "a_penny"]}]}},
+    {"player": 1, "kind": "end_turn", "choices": ["bomb", "a_dime"],
+     "expect": {"allowed": true, "active": 0, "after": [{"player": 1, "hand_cards": ["a_penny"]}], "discards": {"loot": ["bomb", "a_dime"]}}}
+  ],
+  "expect": {"allowed": true}
+}

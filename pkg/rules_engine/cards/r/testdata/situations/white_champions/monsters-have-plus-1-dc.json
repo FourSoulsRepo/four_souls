@@ -1,0 +1,19 @@
+{
+  "title": "White Champions: at Isaac's attack target question the Fly has DC 3 and the Leech DC 5",
+  "source": ["card white_champions", "card fly", "card leech", "R-ATK-02"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["white_champions"]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0}, "monsters": [{"card": "fly", "evasion": 3}, {"card": "leech", "evasion": 5}]}}
+  ],
+  "expect": {"allowed": true}
+}

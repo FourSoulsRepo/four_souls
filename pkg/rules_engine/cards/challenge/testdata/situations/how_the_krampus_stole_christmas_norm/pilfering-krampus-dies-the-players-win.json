@@ -1,0 +1,21 @@
+{
+  "title": "Krampus challenge, Normal: the players hold 5 souls and Isaac kills Pilfering Krampus; who wins?",
+  "source": ["card how_the_krampus_stole_christmas_norm", "card pilfering_krampus_norm", "R-KRAMPUS-01", "R-KRAMPUS-03", "R-KRAMPUS-11", "R-CHAL-15", "R-COOP-10"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal"},
+    "players": [{"character": "isaac", "souls": ["fly", "fly", "fly", "fly", "fly"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "rolls": [6, 6, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["pilfering_krampus_norm"]}
+  ],
+  "expect": {"allowed": true,
+    "over": true,
+    "winners": [0, 1],
+    "resolved_rolls": [6, 6, 6, 6, 6],
+    "events": [{"kind": "challenge_won"}, {"kind": "challenge_lost", "none": true}],
+    "after": [{"player": 0, "damage": 0}]}
+}

@@ -1,0 +1,17 @@
+{
+  "title": "Isaac destroys Experimental Treatment and rolls a 1: does he die and lose his Spoon Bender to the death penalty?",
+  "source": ["card experimental_treatment", "R-DEATH-14", "R-DEATH-16"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["experimental_treatment", "spoon_bender"]}, {"character": "cain"}],
+    "active": 0,
+    "rolls": [1]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "experimental_treatment", "choices": ["spoon_bender"],
+     "expect": {"allowed": true, "resolved_rolls": [1], "events": [{"kind": "died", "player": 0}],
+       "discards": {"treasure": ["experimental_treatment", "spoon_bender"]},
+       "active": 1, "after": [{"player": 0, "items": []}]}}
+  ],
+  "expect": {"allowed": true}
+}

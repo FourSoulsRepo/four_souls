@@ -1,0 +1,23 @@
+{
+  "title": "Gold counters on Tech X and Bum-Bo!: Golden Trinket has Tech X's two abilities and nothing to use from Bum-Bo!; whose counter does Tech X's ↷ put, and may Isaac then remove 3?",
+  "source": ["card golden_trinket", "card tech_x", "card bum_bo", "R-ABIL-38", "R-ABIL-07", "R-ABIL-08"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["golden_trinket", "tech_x", "bum_bo"],
+       "counters": [{"card": "tech_x", "name": "gold", "count": 1}, {"card": "bum_bo", "name": "gold", "count": 1}]},
+      {"character": "cain", "cents": 5}
+    ],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "golden_trinket", "ability": 1,
+     "expect": {"allowed": true, "after": [{"player": 0, "deactivated": ["golden_trinket"],
+       "counters": [{"card": "golden_trinket", "count": 1}, {"card": "tech_x", "count": 0}, {"card": "bum_bo", "count": 0}]}]}},
+    {"player": 0, "kind": "activate", "card": "golden_trinket", "ability": 2, "choices": ["player 2 (cain)"],
+     "expect": {"allowed": false, "rule": "R-ABIL-07"}},
+    {"player": 0, "kind": "activate", "card": "golden_trinket", "ability": 3,
+     "expect": {"allowed": false, "rule": "R-ABIL-08"}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-07", "after": [{"player": 0, "counters": [{"card": "golden_trinket", "count": 1}]}, {"player": 1, "dead": false}]}
+}

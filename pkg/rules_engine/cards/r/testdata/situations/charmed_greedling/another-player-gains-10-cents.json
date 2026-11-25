@@ -1,0 +1,22 @@
+{
+  "title": "Charmed Greedling: Isaac kills it and gains 6¢, then Cain, the player he chooses, gains 10¢",
+  "source": ["card charmed_greedling", "card clotty", "R-DEATH-06", "R-DEATH-07", "R-DEATH-09"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["charmed_greedling", "fly"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["charmed_greedling", "player 2 (cain)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [{"player": 0, "cents": 6}, {"player": 1, "cents": 10}, {"player": 2, "cents": 0}],
+    "monsters": [{"card": "charmed_greedling", "dead": true}, {"slot": 1, "card": "clotty"}],
+    "discards": {"monster": ["charmed_greedling"]}
+  }
+}

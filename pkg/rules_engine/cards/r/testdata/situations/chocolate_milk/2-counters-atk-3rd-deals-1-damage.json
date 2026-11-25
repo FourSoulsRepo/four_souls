@@ -1,0 +1,21 @@
+{
+  "title": "Isaac's Chocolate Milk has 1 counter: on his turn, with 2, has he +1 ATK; on his next turn, at 3, are all removed and 1 damage dealt to Cain?",
+  "source": ["card chocolate_milk", "R-TURN-03"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "cain"},
+      {"character": "isaac", "items": ["chocolate_milk"], "counters": [{"card": "chocolate_milk", "count": 1}]}
+    ],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 1, "atk": 2, "counters": [{"card": "chocolate_milk", "count": 2}]}]}},
+    {"player": 1, "kind": "end_turn"},
+    {"player": 0, "kind": "end_turn", "choices": ["player 1 (cain)"],
+     "expect": {"allowed": true, "active": 1,
+                "after": [{"player": 1, "atk": 1, "counters": [{"card": "chocolate_milk", "count": 0}]}, {"player": 0, "damage": 1}]}}
+  ],
+  "expect": {"allowed": true}
+}

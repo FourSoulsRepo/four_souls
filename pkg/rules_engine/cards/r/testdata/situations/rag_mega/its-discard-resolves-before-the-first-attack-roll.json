@@ -1,0 +1,25 @@
+{
+  "title": "Rag Mega at 1 HP: Isaac declares his attack on it; does Cain's discard resolve before the first attack roll is thrown?",
+  "source": ["card rag_mega", "R-ATK-25", "R-ATK-02", "R-ABIL-37", "Q-29"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "hand": ["bomb"]}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["rag_mega"],
+    "monster_damage": {"rag_mega": 4},
+    "decks": {"monster": ["clotty"], "treasure": ["book_of_sin"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["rag_mega", "bomb"],
+     "expect": {"allowed": true, "resolved": ["rag_mega"], "resolved_rolls": [], "after": [{"player": 1, "hand": 0}], "discards": {"loot": ["bomb"]}}},
+    {"kind": "throw", "choices": ["player 3 (samson)", "ask.none"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "resolved": ["rag_mega", "attack_roll"],
+    "monsters": [{"card": "rag_mega", "dead": true}],
+    "after": [{"player": 0, "soul_cards": ["rag_mega"]}, {"player": 2, "dead": true}]
+  }
+}

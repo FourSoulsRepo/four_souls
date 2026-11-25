@@ -7,7 +7,11 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-func TestMutantSpider(t *testing.T) {
+// TestMutantSpiderShowsAllDice: the throw's event shows all 4 dice
+// (19.39) and the question says dice (15.83); event fields and prompt
+// text no situation check reads. The kill is in
+// testdata/situations/mutant_spider/.
+func TestMutantSpiderShowsAllDice(t *testing.T) {
 	tb := armed(t, items("mutant_spider"), "trite", "fatty")
 	tb.Activate(0, "mutant_spider", 0)
 	tb.G.ForceRolls(1, 2, 6, 3)
@@ -44,8 +48,5 @@ func TestMutantSpider(t *testing.T) {
 	tb.Settle()
 	if !slices.Equal(dice, []int{1, 2, 6, 3}) {
 		t.Errorf("the throw shows all 4 dice (19.39): %v", dice)
-	}
-	if top(tb, 0) == "trite" {
-		t.Error("the chosen 6 hits the trite (DC 5)")
 	}
 }

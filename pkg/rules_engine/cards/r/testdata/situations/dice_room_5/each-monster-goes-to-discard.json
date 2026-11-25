@@ -1,0 +1,26 @@
+{
+  "title": "Dice Room!!!!!: as it enters play the Fly and the Leech go to discard; the Dip and the Pooter refill the slots",
+  "source": ["card dice_room_5", "R-SHOP-06", "R-ZONE-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["dice_room_5"],
+    "decks": {"monster": ["dip", "pooter"]},
+    "stack": [{"kind": "trigger", "card": "dice_room_5", "owner": 0}]
+  },
+  "steps": [
+    {"player": 0, "kind": "pass"}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved": ["dice_room_5"],
+    "discards": {"monster": ["fly", "leech"]},
+    "monsters": [{"card": "dip", "damage": 0}, {"card": "pooter", "damage": 0}],
+    "after": [{"player": 0, "cents": 0, "hand": 0}]
+  }
+}

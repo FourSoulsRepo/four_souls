@@ -1,0 +1,21 @@
+{
+  "title": "Isaac kills the Pooter, then uses Book Of The Dead: does the Pooter come from the monster discard onto the Leech in slot 2?",
+  "source": ["card book_of_the_dead", "card pooter", "R-ZONE-10", "R-DEATH-09"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["book_of_the_dead"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["pooter", "leech"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["pooter"],
+     "expect": {"allowed": true, "discards": {"monster": ["pooter"]}, "monsters": [{"slot": 1, "card": "clotty"}]}},
+    {"player": 0, "kind": "activate", "card": "book_of_the_dead", "choices": ["pooter", "ask.slot_card 2 leech"],
+     "expect": {"allowed": true, "discards": {"monster": []},
+       "monsters": [{"slot": 1, "card": "clotty"}, {"slot": 2, "card": "pooter"}],
+       "after": [{"player": 0, "deactivated": ["book_of_the_dead"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

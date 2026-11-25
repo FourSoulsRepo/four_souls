@@ -1,0 +1,20 @@
+{
+  "title": "Key Master: Isaac discards A Penny! and rolls a 6; he gains a treasure",
+  "source": ["card key_master", "R-ABIL-07", "R-CARD-02", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["a_penny"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["key_master"],
+    "decks": {"treasure": ["book_of_sin"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "key_master", "choices": ["a_penny"]}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [6], "after": [{"player": 0, "items": ["book_of_sin"], "hand": 0, "cents": 0}], "discards": {"loot": ["a_penny"]}}
+}

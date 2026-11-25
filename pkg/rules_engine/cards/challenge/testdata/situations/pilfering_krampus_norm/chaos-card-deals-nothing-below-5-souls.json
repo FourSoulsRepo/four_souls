@@ -1,0 +1,19 @@
+{
+  "title": "Krampus challenge, Normal: the players hold 4 souls; Isaac's Chaos Card kills Pilfering Krampus outright; how much damage does it take?",
+  "source": ["card pilfering_krampus_norm", "card chaos_card", "R-KRAMPUS-11", "R-CHAL-05", "Q-30"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal"},
+    "players": [{"character": "isaac", "souls": ["fly", "fly", "fly", "fly"], "items": ["chaos_card"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "chaos_card", "choices": ["Kill a player or monster.", "pilfering_krampus_norm"]},
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "pilfering_krampus_norm", "damage": 0, "hp": 5}],
+    "discards": {"treasure": ["chaos_card"]},
+    "after": [{"player": 0, "items": []}],
+    "over": false
+  }
+}

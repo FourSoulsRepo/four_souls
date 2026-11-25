@@ -1,0 +1,21 @@
+{
+  "title": "Isaac with Breakfast (3 HP) misses Horf (1 ATK) with a 2: does he take 2 damage, then kill it with a 6?",
+  "source": ["card horf", "card isaac", "card breakfast", "R-ATK-12", "R-ATK-13", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["breakfast"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["horf"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [2, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["horf"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [2, 6],
+    "monsters": [{"card": "horf", "dead": true}],
+    "after": [{"player": 0, "damage": 2, "hp": 1, "cents": 3}]
+  }
+}

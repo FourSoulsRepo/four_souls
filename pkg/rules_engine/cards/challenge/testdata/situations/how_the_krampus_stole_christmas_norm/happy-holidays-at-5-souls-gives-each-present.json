@@ -1,0 +1,36 @@
+{
+  "title": "Krampus challenge, Normal: the players hold 4 souls and the loot present is destroyed; Isaac keeps a monster's soul; what happens to the presents, and again at 6 souls?",
+  "source": ["card how_the_krampus_stole_christmas_norm", "R-KRAMPUS-07", "R-KRAMPUS-10", "Q-30", "Q-33", "Q-40"],
+  "sets": ["b2", "challenge", "krampus_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal", "presents": [{"kind": "loot", "destroyed": true}]},
+    "players": [{"character": "isaac", "souls": ["fly", "fly", "fly"]}, {"character": "cain", "souls": ["fly"]}],
+    "active": 0,
+    "attacks": 2,
+    "monsters": ["leech", "fly"],
+    "decks": {"treasure": ["boomerang", "breakfast", "box", "blank_card"]},
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "mixed_bag",
+     "choices": ["ask.no", "ask.no", "player 2 (cain)", "player 1 (isaac)", "player 2 (cain)"],
+     "expect": {"allowed": true,
+       "events": [{"kind": "presents_flipped"}, {"kind": "present_given"}, {"kind": "forgone", "none": true}],
+       "presents": [
+         {"kind": "cents", "to": 1},
+         {"kind": "loot", "destroyed": true},
+         {"kind": "treasure", "to": 0},
+         {"kind": "soul", "to": 1}
+       ],
+       "after": [
+         {"player": 0, "cents": 2, "hand": 1, "souls": 4, "items": ["box"], "deactivated": [], "counters": [{"card": "box", "count": 0}]},
+         {"player": 1, "souls": 1, "items": ["boomerang", "blank_card"], "deactivated": [],
+          "counters": [{"card": "boomerang", "count": 0}, {"card": "blank_card", "count": 0}]}
+       ]}},
+    {"player": 0, "kind": "reveal", "card": "mixed_bag",
+     "expect": {"allowed": true,
+       "events": [{"kind": "presents_flipped", "none": true}, {"kind": "present_given", "none": true}, {"kind": "forgone", "none": true}],
+       "after": [{"player": 0, "cents": 4, "hand": 2, "souls": 5, "items": ["box"]}, {"player": 1, "items": ["boomerang", "blank_card"]}]}}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [6, 6], "attacks": 0}
+}

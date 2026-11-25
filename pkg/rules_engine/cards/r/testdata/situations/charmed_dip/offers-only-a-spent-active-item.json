@@ -1,0 +1,22 @@
+{
+  "title": "Charmed Dip: Cain has a spent Jawbone, a charged D6 and a spent passive Breakfast; which may he recharge?",
+  "source": ["card charmed_dip", "R-MECH-22", "R-MECH-54", "R-CARD-04", "R-ABIL-40"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["mystery_sack"]},
+      {"character": "cain", "items": ["jawbone", "the_d6", "breakfast"], "deactivated": ["jawbone", "breakfast"]}
+    ],
+    "active": 0,
+    "monsters": ["charmed_dip"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["charmed_dip", "player 2 (cain)"],
+     "expect": {"allowed": true, "prompt": {"player": 1, "options": ["jawbone"]}}},
+    {"kind": "choose", "choices": ["jawbone"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 2}, {"player": 1, "deactivated": ["breakfast"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

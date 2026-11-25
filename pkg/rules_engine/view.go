@@ -54,6 +54,9 @@ type CardView struct {
 	// MoreCopies are the cards it gained abilities from after Copy, in
 	// the order gained: Trick on Hard rolls twice (Q-46, 19.157).
 	MoreCopies []CardRef `json:"more_copies,omitempty"`
+	// Under are the cards put under this card, face up for everyone, as
+	// on a real table: Friendly Ball's monster (R-ZONE-13, 19.244).
+	Under []CardRef `json:"under,omitempty"`
 }
 
 // MonsterStats are a monster's stats now and as printed, so a client can
@@ -82,9 +85,10 @@ type RewardView struct {
 }
 
 // StatSourceView is one source of a stat change, so a client can show
-// why a stat changed (V-41). Stat is "hp", "atk", "dc", "roll",
-// "attack_roll", "attacked_dc" or "damage_taken"; Lasts is "in_play", "turn" or
-// "next_roll". Card is the source's card, "" when it is hidden.
+// why a stat changed (V-41). Stat is a statKeys value ("hp", "atk",
+// "damage_taken", "no_souls", ...), a shield key or a hidden effect key
+// (hiddenViews); Lasts is a lastsKeys value. Card is the source's card,
+// "" when it is hidden. A flag stat has Amount 1 (ADR 037).
 type StatSourceView struct {
 	Stat   string   `json:"stat,omitempty"`
 	Source ObjectID `json:"source,omitempty"`
@@ -92,6 +96,9 @@ type StatSourceView struct {
 	Amount int      `json:"amount,omitempty"`
 	Lasts  string   `json:"lasts,omitempty"`
 	When   Msg      `json:"when,omitzero"`
+	// Everyone: a game-wide effect, sent on the player who made it; it
+	// is for every player (ADR 037 item 3.18).
+	Everyone bool `json:"everyone,omitempty"`
 }
 
 // PlayerView is what a viewer sees of one player.
@@ -186,6 +193,11 @@ type GameView struct {
 	// active player does (15.30, V-21).
 	Attack *AttackView `json:"attack,omitempty"`
 	Buying bool        `json:"buying,omitempty"`
+	// RandomAttack: the active player owes an attack on a random
+	// monster a card names (Pilfering Krampus, Q-31, R-KRAMPUS-13); the
+	// turn can't end before it. Public, as the turn's other duties
+	// (18.35, ADR 037 item 7).
+	RandomAttack bool `json:"random_attack,omitempty"`
 	// FirstRoll is the first-player roll before turn 1: who still rolls
 	// and this round's dice so far. It is public (GS-06, 15.43).
 	FirstRoll *FirstRoll `json:"first_roll,omitempty"`
@@ -360,6 +372,9 @@ func (g *Game) ViewBase() ViewBase {
 		}
 	}
 	out.Buying = g.Purchase.On
+	if a := g.Turn.Active; !g.Over && a >= 0 && int(a) < len(g.Players) {
+		out.RandomAttack = g.randomAttackDue(a)
+	}
 	if fr := g.FirstRoll; fr != nil {
 		out.FirstRoll = &FirstRoll{Round: fr.Round, Players: slices.Clone(fr.Players), Rolls: slices.Clone(fr.Rolls)}
 	}
@@ -605,6 +620,9 @@ func (g *Game) cardView(id ObjectID) CardView {
 			cv.MoreCopies = append(cv.MoreCopies, gn.Card)
 		}
 	}
+	for _, u := range o.Under {
+		cv.Under = append(cv.Under, g.Object(u).Card)
+	}
 	if d := g.def(id); d.Dice != nil {
 		cv.Dice = d.Dice(g, id)
 	}
@@ -832,24 +850,97 @@ func digit(s string) int {
 	return int(s[0] - '0')
 }
 
-// statKeys name the stats a client shows sources for (V-41).
+// statKeys name the stats a client shows sources for (V-41, ADR 037):
+// every player stat but StatUsed, and the monster stats.
 var statKeys = map[Stat]string{
 	StatPlayerHP: "hp", StatPlayerATK: "atk", StatMonsterHP: "hp", StatMonsterDC: "dc", StatMonsterATK: "atk",
 	StatRoll: "roll", StatAttackRoll: "attack_roll", StatNextAttackRoll: "attack_roll", StatAttackedDC: "attacked_dc",
 	StatDamageTaken: "damage_taken",
+	// 18.30: every other player stat.
+	StatShopPrice: "shop_price", StatLootPlays: "loot_plays", StatAttacks: "attacks", StatPurchases: "purchases",
+	StatLootStep: "loot_step", StatLockOthers: "lock_others", StatLootDouble: "loot_double", StatDeathWard: "death_ward",
+	StatRechargeLimit: "recharge_limit", StatHandCap: "hand_cap", StatLockTurn: "lock_turn",
+	StatNoCharRecharge: "no_char_recharge", StatRevealHand: "reveal_hand", StatChooseAttack: "choose_attack",
+	StatNoForcedLoss: "no_forced_loss", StatPaidDiscount: "paid_discount", StatNoSouls: "no_souls",
+	StatPenaltyItemTo: "penalty_item_to", StatPlayerAttackDC: "player_attack_dc", StatOneAbility: "one_ability",
+	StatOneLoot: "one_loot", StatAttackTax: "attack_tax",
 }
 
-var lastsKeys = [...]string{LastsInPlay: "in_play", LastsTurn: "turn", LastsNextRoll: "next_roll"}
+// Shield keys: a shield on a player is an effect too (ADR 037 item 1.8).
+const (
+	shieldKey    = "shield"     // prevents Amount of the next damage; no amount: all of it
+	shieldCapKey = "shield_cap" // the next damage is at most Amount
+)
 
-// playerSources lists what changes a player's stats and rolls now, and
-// the damage they take (18.29, ADR 037).
+// notPlayerStats are the stats playerSources does not read by the
+// stat loop: the monster stats, engine bookkeeping (StatUsed), effects
+// on one object (StatEternal, ADR 037 item 1.7), game-wide effects
+// (rewards doubled and a roll of 2 or 3 becomes 1 go out by
+// hiddenViews; two dice lies on the table), and the stats it reads its
+// own way (HP, ATK, the next attack roll, the DC when attacked).
+var notPlayerStats = map[Stat]bool{
+	StatMonsterHP: true, StatMonsterDC: true, StatMonsterATK: true, StatUsed: true, StatEternal: true,
+	StatDoubleRewards: true, StatRollToOne: true, StatTwoDiceLeftChooses: true,
+	StatPlayerHP: true, StatPlayerATK: true, StatNextAttackRoll: true, StatPlayerAttackDC: true,
+}
+
+// flagStats are on or off: a source sends amount 1 (ADR 037 item 1.4).
+var flagStats = map[Stat]bool{
+	StatLockOthers: true, StatLootDouble: true, StatDeathWard: true, StatRechargeLimit: true, StatLockTurn: true,
+	StatNoCharRecharge: true, StatRevealHand: true, StatChooseAttack: true, StatNoForcedLoss: true,
+	StatNoSouls: true, StatPenaltyItemTo: true, StatOneAbility: true, StatOneLoot: true,
+}
+
+// numStats is the number of stats.
+var numStats = Stat(len(statNames))
+
+var lastsKeys = [...]string{
+	LastsInPlay: "in_play", LastsTurn: "turn", LastsNextRoll: "next_roll",
+	LastsNextTurn: "next_turn", LastsNextLoot: "next_loot",
+}
+
+// playerSources lists every effect on a player now (ADR 037 item 1):
+// each player stat's parts, the DC others attack them at, the next
+// attack roll's boosts, then the shields on them.
 func (g *Game) playerSources(p PlayerID) []StatSourceView {
 	parts := g.Parts(StatPlayerHP, p, 0)
 	parts = append(parts, g.atkGame().Parts(StatPlayerATK, p, 0)...)
-	for _, s := range []Stat{StatRoll, StatAttackRoll, StatAttackedDC, StatDamageTaken} {
-		parts = append(parts, g.Parts(s, p, 0)...)
+	for s := range numStats {
+		if notPlayerStats[s] {
+			continue
+		}
+		for _, pt := range g.Parts(s, p, 0) {
+			if flagStats[s] && pt.Amount > 0 {
+				pt.Amount = 1
+			}
+			parts = append(parts, pt)
+		}
 	}
-	return g.sourceViews(append(parts, g.nextAttackRollParts(p)...))
+	if pt, ok := g.playerAttackDCPart(p); ok {
+		parts = append(parts, pt)
+	}
+	out := append(g.sourceViews(append(parts, g.nextAttackRollParts(p)...)), g.shieldViews(p)...)
+	return append(out, g.hiddenViews(p)...)
+}
+
+// shieldViews are the shields on player p, one per shield; they last
+// till end of turn (R-MECH-46, ADR 037 item 1.8).
+func (g *Game) shieldViews(p PlayerID) []StatSourceView {
+	var out []StatSourceView
+	for _, s := range g.Shields {
+		if !s.Target.IsPlayer || s.Target.Player != p {
+			continue
+		}
+		sv := StatSourceView{Stat: shieldKey, Amount: s.Amount, Lasts: lastsKeys[LastsTurn]}
+		if s.Cap > 0 {
+			sv.Stat, sv.Amount = shieldCapKey, s.Cap
+		}
+		if card := g.publicCard(s.Source); card != "" {
+			sv.Source, sv.Card = s.Source, card
+		}
+		out = append(out, sv)
+	}
+	return out
 }
 
 // atkGame is the game the shown ATK reads (19.67). While the active
@@ -936,4 +1027,94 @@ func sumParts(parts []Part) int {
 		n += pt.Amount
 	}
 	return n
+}
+
+// Hidden effect keys: effects that are no stat parts and whose card does
+// not show them (ADR 037 items 3.17, 3.18).
+const (
+	skipTurnKey      = "skip_turn"      // skips their next Amount turns
+	extraTurnKey     = "extra_turn"     // takes another turn after this one
+	copyNextLootKey  = "copy_next_loot" // the next loot they play this turn is copied
+	lingeringKey     = "lingering"      // a lingering ability (Linger)
+	doubleRewardsKey = "double_rewards" // game-wide: rewards are doubled
+	rollToOneKey     = "roll_to_one"    // game-wide: a roll of 2 or 3 becomes 1
+	compostKey       = "compost"        // game-wide: the next loot comes from the discard
+	manyDiceKey      = "many_dice"      // game-wide: the next roll is Amount dice
+	// nextAttackHelperKey: they roll after each attack roll of the active
+	// player's next attack this turn, or the open one, and share its
+	// rewards (Sibling Rivalry, 18.38).
+	nextAttackHelperKey = "next_attack_helper"
+)
+
+// gameWideBoosts are the boosts for every player that hiddenViews sends;
+// a static one lies on the table (Blessing of the Sack, Cursed Lil Haunt).
+var gameWideBoosts = map[Stat]string{StatDoubleRewards: doubleRewardsKey, StatRollToOne: rollToOneKey}
+
+// hiddenViews are the hidden effects on player p that are no stat parts
+// (ADR 037 items 3.17, 3.18). A game-wide one goes to the player who
+// made it, the controller of its card or ability, with Everyone set.
+func (g *Game) hiddenViews(p PlayerID) []StatSourceView {
+	var out []StatSourceView
+	add := func(key string, source ObjectID, amount int, lasts Lasting, every bool) {
+		sv := StatSourceView{Stat: key, Amount: amount, Lasts: lastsKeys[lasts], Everyone: every}
+		if card := g.publicCard(source); card != "" {
+			sv.Source, sv.Card = source, card
+		}
+		out = append(out, sv)
+	}
+	pl := g.Players[p]
+	// Skips oldest first; one view per run of one source. A state from
+	// before 18.36 has fewer sources: its first skips have none.
+	srcs := slices.Concat(make([]ObjectID, max(pl.SkipTurns-len(pl.SkipSources), 0)), pl.SkipSources)
+	for i := 0; i < pl.SkipTurns; {
+		n := 1
+		for i+n < pl.SkipTurns && srcs[i+n] == srcs[i] {
+			n++
+		}
+		add(skipTurnKey, srcs[i], n, LastsNextTurn, false)
+		i += n
+	}
+	if g.ExtraTurn && g.Turn.Active == p {
+		add(extraTurnKey, g.ExtraTurnSource, 1, LastsTurn, false)
+	}
+	if pl.CopyNextLoot {
+		add(copyNextLootKey, pl.CopySource, 1, LastsTurn, false)
+	}
+	// Sibling Rivalry's chosen player, till that attack ends: then the
+	// attack's Share is cleared. Other helpers come from a monster on the
+	// table (Gus, Sisters Vis, Ultra Greed) and share no rewards.
+	if slices.Contains(g.Turn.NextHelpers, p) || slices.Contains(g.Attack.Share, p) {
+		add(nextAttackHelperKey, pl.HelpSource, 1, LastsTurn, false)
+	}
+	for _, l := range g.Lingering {
+		if on := g.ability(l.Ability).ShownOn; on != nil {
+			if q, every := on(g, l); q == p {
+				add(lingeringKey, l.Source, 1, LastsTurn, every)
+			}
+		}
+	}
+	for _, b := range g.Boosts {
+		if key := gameWideBoosts[b.Stat]; key != "" && b.Object == 0 && b.Player == NoPlayer && g.madeBy(b.Source) == p {
+			add(key, b.Source, 1, LastsTurn, true)
+		}
+	}
+	if g.Compost && g.madeBy(g.CompostSource) == p {
+		add(compostKey, g.CompostSource, 1, LastsNextLoot, true)
+	}
+	for _, md := range g.ManyDice {
+		if md.StackID == 0 && md.Chooser == p { // not yet bound to a roll
+			add(manyDiceKey, md.Source, md.Dice, LastsNextRoll, true)
+		}
+	}
+	return out
+}
+
+// madeBy is the player who made a game-wide effect: the controller of
+// its source, which a card that left play keeps; the active player when
+// the source is unknown (ADR 037 item 3.18).
+func (g *Game) madeBy(source ObjectID) PlayerID {
+	if source <= 0 || int(source) >= len(g.Objects) || g.Object(source).Controller == NoPlayer {
+		return g.Turn.Active
+	}
+	return g.Object(source).Controller
 }

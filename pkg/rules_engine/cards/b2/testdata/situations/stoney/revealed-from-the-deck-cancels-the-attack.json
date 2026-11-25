@@ -1,0 +1,21 @@
+{
+  "title": "Isaac attacks the monster deck and reveals Stoney: does it stay in the slot and the attack end with no roll, so he goes on with his turn?",
+  "source": ["card stoney", "card isaac", "R-ATK-08", "R-ATK-10", "R-CARD-12", "R-TURN-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "pooter"]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "stoney",
+     "expect": {"allowed": true,
+       "resolved_rolls": [],
+       "events": [{"kind": "attack_target", "none": true}],
+       "monsters": [{"slot": 1, "card": "stoney"}, {"slot": 2, "card": "pooter"}],
+       "attacks": 0,
+       "active": 0}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1}}
+  ],
+  "expect": {"allowed": true}
+}

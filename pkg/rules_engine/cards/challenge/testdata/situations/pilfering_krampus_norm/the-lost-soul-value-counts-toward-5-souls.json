@@ -1,0 +1,17 @@
+{
+  "title": "Krampus challenge, Normal: Isaac holds 4 souls and Cain plays The Lost, a character with a soul value; may Isaac attack Pilfering Krampus?",
+  "source": ["card pilfering_krampus_norm", "card the_lost", "R-KRAMPUS-11", "R-ATK-02", "Q-30"],
+  "sets": ["b2", "g2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal"},
+    "players": [{"character": "isaac", "souls": ["fly", "fly", "fly", "fly"]}, {"character": "the_lost"}],
+    "active": 0,
+    "monsters": ["leech", "fly"]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "expect": {"allowed": true, "after": [{"player": 0, "souls": 4}, {"player": 1, "souls": 1}], "prompt": {"player": 0, "options": ["leech", "fly", "pilfering_krampus_norm", "ask.deck.monster"]}}}
+  ],
+  "expect": {
+    "allowed": true
+  }
+}

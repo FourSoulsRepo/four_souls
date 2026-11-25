@@ -1,0 +1,22 @@
+{
+  "title": "Dressing Table refills the Fly's slot: Isaac rerolls his Spoon Bender, not his Jawbone; he gains a treasure for it",
+  "source": ["card dressing_table", "card fly", "card clotty", "R-MECH-48", "R-SHOP-08", "R-CARD-15"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["spoon_bender", "jawbone"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["dressing_table", "clotty"], "treasure": ["book_of_sin"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly", "spoon_bender", "ask.done"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [{"player": 0, "cents": 1, "items": ["jawbone", "book_of_sin"]}],
+    "monsters": [{"slot": 1, "card": "clotty"}],
+    "discards": {"monster": ["fly", "dressing_table"], "treasure": ["spoon_bender"]}
+  }
+}

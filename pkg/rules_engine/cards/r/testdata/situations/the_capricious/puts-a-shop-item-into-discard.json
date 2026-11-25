@@ -1,0 +1,12 @@
+{
+  "title": "The Capricious uses its ↷ and chooses to put the shop's Spoon Bender into discard: does it go to the treasure discard, with no extra loot play?",
+  "source": ["card the_capricious", "R-ABIL-10", "R-TURN-05", "R-ZONE-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "the_capricious"}, {"character": "cain"}],
+    "active": 0,
+    "shop": ["spoon_bender"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "the_capricious", "choices": ["Put a shop item into discard.", "spoon_bender"]},
+  "expect": {"allowed": true, "loot_plays": 1, "discards": {"treasure": ["spoon_bender"]}, "after": [{"player": 0, "deactivated": ["character"], "items": []}]}
+}

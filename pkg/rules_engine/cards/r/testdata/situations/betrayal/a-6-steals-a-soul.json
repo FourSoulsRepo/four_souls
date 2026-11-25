@@ -1,0 +1,25 @@
+{
+  "title": "Betrayal! refills the Fly's slot: Isaac chooses Cain and rolls 6, so he steals Cain's Monstro soul",
+  "source": ["card betrayal", "card fly", "card clotty", "R-ABIL-24", "R-MECH-38", "R-SHOP-08", "R-CARD-15"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "cents": 7, "souls": ["monstro"]}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["betrayal", "clotty"]},
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly", "player 2 (cain)", "monstro"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6],
+    "after": [
+      {"player": 0, "cents": 1, "souls": 1, "soul_cards": ["monstro"]},
+      {"player": 1, "cents": 7, "souls": 0, "soul_cards": []}
+    ],
+    "monsters": [{"card": "fly", "dead": true}, {"slot": 1, "card": "clotty"}],
+    "discards": {"monster": ["fly", "betrayal"]}
+  }
+}

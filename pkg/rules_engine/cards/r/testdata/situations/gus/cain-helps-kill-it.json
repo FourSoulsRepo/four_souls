@@ -1,0 +1,26 @@
+{
+  "title": "Gus at 2 HP: Isaac attacks it, Cain rolls 6 and joins; Isaac's hit and Cain's hit kill it, Isaac gains its soul and the slot refills",
+  "source": ["card gus", "R-MECH-04", "R-ATK-21", "R-DEATH-11", "R-CARD-14", "R-SHOP-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["gus"],
+    "monster_damage": {"gus": 7},
+    "decks": {"room": ["white_champions"]},
+    "rolls": [6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["gus"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 6],
+    "after": [{"player": 0, "souls": 1, "soul_cards": ["gus"]}, {"player": 1, "souls": 0, "damage": 0}],
+    "monsters": [{"card": "white_champions"}]
+  }
+}

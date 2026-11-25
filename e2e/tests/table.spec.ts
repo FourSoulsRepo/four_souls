@@ -444,7 +444,7 @@ test('a bonus soul shows its counters (19.29)', async ({ browser }) => {
   if (!page) {
     throw new Error('no pages');
   }
-  const soul = page.getByRole('group', { name: tr('host.bonus_souls') }).locator('.card').first();
+  const soul = page.getByRole('group', { name: tr('board.bonus_souls') }).locator('.card').first();
   await expect(soul).toBeVisible();
   await expect(soul.locator('.card-badge')).toHaveCount(0);
 

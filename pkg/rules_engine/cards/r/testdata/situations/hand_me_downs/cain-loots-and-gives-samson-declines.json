@@ -1,0 +1,18 @@
+{
+  "title": "Isaac uses Hand Me Downs: Cain loots the Bomb! and Samson declines; does Isaac get the Bomb! from Cain, and Samson loot nothing?",
+  "source": ["card hand_me_downs", "R-MECH-37"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["hand_me_downs"]}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "decks": {"loot": ["bomb"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "hand_me_downs", "choices": ["ask.yes", "ask.no", "bomb"]},
+  "expect": {"allowed": true,
+    "events": [{"kind": "looted", "player": 1}, {"kind": "looted", "player": 2, "none": true}],
+    "after": [
+      {"player": 0, "hand_cards": ["bomb"], "deactivated": ["hand_me_downs"]},
+      {"player": 1, "hand": 0},
+      {"player": 2, "hand": 0}
+    ]}
+}

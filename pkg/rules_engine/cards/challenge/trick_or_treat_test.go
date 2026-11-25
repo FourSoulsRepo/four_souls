@@ -58,27 +58,6 @@ func trickOn(t *testing.T, d string, s engine.SituationSetup) *enginetest.Table 
 	return tb
 }
 
-func tricks(tb *enginetest.Table) int {
-	return tb.G.Object(boss(tb)).CountersOf(challenge.TrickCounter)
-}
-
-// setTricks leaves n trick counters on the boss.
-func setTricks(tb *enginetest.Table, n int) {
-	tb.G.AddNamedCounters(boss(tb), challenge.TrickCounter, n-tricks(tb))
-}
-
-func fear(tb *enginetest.Table, p engine.PlayerID) int {
-	return tb.G.PlayerCounters(p, challenge.FearCounter)
-}
-
-// flipToTreat turns the rule card to Treat, as a yes would.
-func flipToTreat(tb *enginetest.Table) {
-	tb.T.Helper()
-	if !tb.G.Flip(tb.G.Challenge.Card) || tb.G.CardOf(tb.G.Challenge.Card) != treatCard {
-		tb.T.Fatal("the rule card did not flip to Treat")
-	}
-}
-
 // settle throws, passes and answers until the stack is empty: a
 // trigger order takes its first option; any other question takes the
 // next choice, or stays open when none is left.
@@ -146,33 +125,6 @@ func attackAsk(tb *enginetest.Table, monster engine.CardRef, rolls ...int) []eng
 		tb.T.Fatal(err)
 	}
 	return settle(tb, string(monster))
-}
-
-// hp gives player p n more HP this turn.
-func hp(tb *enginetest.Table, p engine.PlayerID, n int) {
-	tb.G.Boosts = append(tb.G.Boosts, engine.Boost{Stat: engine.StatPlayerHP, Player: p, Amount: n})
-}
-
-// damageTo is the damage instances player p took in events.
-func damageTo(ev []engine.Event, p engine.PlayerID) []int {
-	var out []int
-	for _, e := range ev {
-		if e.Kind == engine.EvDamaged && e.Player == p && e.Object == 0 {
-			out = append(out, e.Amount)
-		}
-	}
-	return out
-}
-
-// rollsOf counts the rolls the card's abilities put on the stack.
-func rollsOf(tb *enginetest.Table, ev []engine.Event, card engine.CardRef) int {
-	n := 0
-	for _, e := range ev {
-		if e.Kind == engine.EvStackAdded && e.Label.Key.String() == "event.roll" && tb.G.CardOf(e.Object) == card {
-			n++
-		}
-	}
-	return n
 }
 
 // R-TRICK-02 to R-TRICK-04, ADR 028: per difficulty the boss sits in a

@@ -1,0 +1,28 @@
+{
+  "title": "Soul of Envy: Isaac kills Chub for his 3rd soul; he chooses among the players with the fewest souls, only Cain, who gains Soul of Envy",
+  "source": ["card soul_of_envy", "card chub", "card clotty", "R-CARD-21", "R-CARD-23", "R-DEATH-08"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "souls": ["chub", "chub"]}, {"character": "cain"}, {"character": "samson", "souls": ["chub"]}],
+    "active": 0,
+    "monsters": ["chub", "leech"],
+    "monster_damage": {"chub": 3},
+    "bonus_souls": ["soul_of_envy"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["chub"], "expect": {"allowed": true, "prompt": {"player": 0, "options": ["player 2 (cain)"]}}},
+    {"kind": "choose", "choices": ["player 2 (cain)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [
+      {"player": 0, "cents": 7, "souls": 3, "soul_cards": ["chub", "chub", "chub"]},
+      {"player": 1, "souls": 1, "soul_cards": ["soul_of_envy"]},
+      {"player": 2, "souls": 1, "soul_cards": ["chub"]}
+    ],
+    "monsters": [{"card": "chub", "dead": true}, {"slot": 1, "card": "clotty"}]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "title": "Isaac reveals I Am Error! and rolls a 6: does he gain the top treasure?",
+  "source": ["card i_am_error", "R-ATK-09", "R-CARD-02"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fatty", "monstro"],
+    "decks": {"treasure": ["breakfast"]},
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "reveal", "card": "i_am_error"},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "discards": {"monster": ["i_am_error"]},
+    "after": [{"player": 0, "items": ["breakfast"], "hand": 0}]
+  }
+}

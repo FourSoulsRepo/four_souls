@@ -1,0 +1,16 @@
+{
+  "title": "Trick or Treat, Hard: Isaac's Bomb! hits Cain; how many fear counters does each player get?",
+  "source": ["card mischievous_the_haunt_hard", "card bomb", "R-TRICK-07", "Q-50"],
+  "sets": ["b2", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "hard"},
+    "players": [{"character": "isaac", "hand": ["bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "bomb", "choices": ["player 2 (cain)"]},
+  "expect": {
+    "allowed": true,
+    "after": [{"player": 0, "damage": 0, "counters": [{"card": "player", "name": "fear", "count": 0}]}, {"player": 1, "damage": 1, "counters": [{"card": "player", "name": "fear", "count": 1}]}]
+  }
+}

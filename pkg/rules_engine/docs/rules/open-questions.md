@@ -340,6 +340,8 @@ On 2026-10-09 the owner parked every open decision for later.
    1. (a) Only triggers, ↷ abilities and statics are gained; the engine does this now.
    2. (b) Replacements are gained too; the levels go on the trinket.
 4. Status: **Owner** (2026-10-29): the owner has not decided. Test: `TestGainCentsReplacementGained`, skipped.
+   1. The engine's (a): `cards/r` file `golden_trinket/a-dime-levels-bum-bo-not-it.json`.
+   2. Owner (2026-11-25): kept for later; the file waits for the answer.
 5. Basis: **House**: no ruling found.
 
 ### Q-28 Two gained ↷ abilities on one item
@@ -352,7 +354,9 @@ On 2026-10-09 the owner parked every open decision for later.
 3. Options:
    1. (a) One ↷ per turn for the item; the engine does this now.
    2. (b) Each gained ability has its own tap.
-4. Status: **Owner** (2026-10-29): the owner has not decided. Test: `TestGoldOnBumFriendAndTechX`.
+4. Status: **Owner** (2026-10-29): the owner has not decided.
+   1. Test: `cards/r` file `golden_trinket/bum-friend-and-tech-x-share-its-one-tap.json`.
+   2. Owner (2026-11-25): kept for later; the file waits for the answer.
 5. Basis: **House**: no ruling found.
 
 ### Q-29 The first attack roll and a target's trigger
@@ -367,7 +371,9 @@ On 2026-10-09 the owner parked every open decision for later.
 3. Options:
    1. (a) The trigger resolves first; then the first roll; the engine does this now.
    2. (b) The die is thrown at once, under the trigger (before 19.151).
-4. Status: **Owner** (2026-11-10): (a). Tests: `TestPrideResolvesBeforeTheAttackRoll` and three in `cards/r`.
+4. Status: **Owner** (2026-11-10): (a). Tests: the b2 file `pride/resolves-before-the-first-roll-is-thrown.json`.
+   1. In `cards/r`: `rag_mega/` and `dogma/` `its-discard-resolves-before-the-first-attack-roll.json`.
+   2. Also `angelic_intervention/cancels-an-attack-on-the-deck.json`.
 5. Basis: **Community**: S-RED and an S-YUG purchase ruling; no official one.
 
 ### Q-30 "Souls controlled by all players" in a challenge
@@ -774,6 +780,54 @@ On 2026-10-09 the owner parked every open decision for later.
    1. Otherwise anything could be played anytime, to no effect.
    2. That would confuse newcomers.
 5. Basis: **House**: no ruling found.
+6. An attack to cancel counts as a target (owner, 2026-11-23, 19.237).
+   1. E.g. Lord of the Pit with no attack going on: refused.
+   2. In progress: from the declaration till the attack ends (R-ATK-02, R-ATK-14).
+   3. "On a monster": once its target is a monster, a revealed one too (Q-24).
+7. A copied ability needs a valid target too (owner, 2026-11-23, 19.238).
+   1. ? Card offers only the ↷ abilities with one; with none it is refused.
+   2. So it matches Placebo, whose copy is checked as it is used.
+8. A copy keeps the limits its card states (owner, 2026-11-25, 19.243).
+   1. E.g. Red Key, "can't be activated during an attack": no copy then.
+   2. Refused by R-ABIL-08 when only such limits hold every copy back.
+   3. "This" in a copied limit is the ? Card (R-MECH-11).
+
+### Q-56 ? Card copies Friendly Ball's catch
+
+1. Question: where does the monster go when ? Card copies Friendly Ball's first ↷?
+   1. "Put a monster … under this": in a copy, "this" is the ? Card (R-MECH-11).
+   2. The ? Card then goes to the loot discard.
+   3. The monster stays outside the game, under nothing.
+2. Sources: no ruling found (2026-11-25).
+3. Options:
+   1. (a) Refuse the copy: a loot card can't hold a monster.
+   2. (b) Allow it: the monster leaves the game.
+   3. (c) The monster goes under Friendly Ball itself.
+4. Status: **Open** (owner, 2026-11-25).
+   1. Investigate later, or ask other players how they play it.
+   2. The engine now: (b), the monster is lost (19.242).
+
+### Q-57 The order of "each player rolls"
+
+1. Question: in what order do the rolls resolve when each player rolls?
+   1. E.g. Overflow!, The Beast!: one roll each.
+   2. It matters when a roll triggers something (Cursed Horf on a 2).
+2. Sources (2026-11-25)
+   1. R-MECH-27: "each player" acts in turn order from the active player.
+   2. R-DICE-02: a roll goes on the stack; the stack resolves top first.
+   3. R-MECH-28: "each player takes damage" goes on in reverse, to resolve in turn order.
+   4. That is said for damage and death only, not for rolls.
+   5. No ruling found in the rulebooks or a web search.
+3. Options:
+   1. (a) Rolls go on in turn order, so the last player's resolves first.
+   2. (b) As R-MECH-28: they resolve in turn order, active player first.
+4. Status: **Open** (owner, 2026-11-25): investigate, or ask other players.
+   1. The engine now: (a); Cain's roll resolves before Isaac's (24.24).
+   2. Files for these cards check the outcome, not `resolved_rolls`.
+5. Owner on Pills! "Roll 3 times!" (2026-11-25, 24.25)
+   1. Thrown 1, 3, 5; they resolve 5, 3, 1.
+   2. Owner: right; all three are on the stack, so it resolves backward.
+   3. "Each player rolls" itself stays open here.
 
 ## Old rulings re-checked (R-07)
 
@@ -809,7 +863,7 @@ Tests: FAQ row 1 is in `cards/b2/interactions_test.go`, with Yuggy's "above 6 co
 
 ## Card rulings from Yuggy (S-YUG)
 
-Searched 2026-10-12 (8.7): his r/FourSouls comments and tweets that name a Base Game card, 294 questions. Rulings on V1 wording that V2 changed (Placebo, Butter Bean, Evil Twin, Eve, Judas) are left out. Tests: `cards/b2/yuggy_test.go`.
+Searched 2026-10-12 (8.7): his r/FourSouls comments and tweets that name a Base Game card, 294 questions. Rulings on V1 wording that V2 changed (Placebo, Butter Bean, Evil Twin, Eve, Judas) are left out. Tests: situation files in `cards/b2/testdata/situations/` (24.18).
 
 Requiem searched 2026-10-19 (14.2): 96 of his posts and tweets name a Requiem card; rows 36 on. Tests come with the cards in 14.3.
 
@@ -957,6 +1011,8 @@ Every row of "Card rulings from Discord (S-DIS)" is Community too.
 | Q-48 | Trick/Treat | Reward changes apply in the order made | House |
 | Q-50 | Mischievous The Haunt | One fear counter per instance of damage | House |
 | Q-51 | Mischievous The Haunt, Trick/Treat | The active player picks who loses a fear counter | House |
-| Q-55 | Lil Battery, The D6, any targeted card | No valid target: it can't be played or used | House |
+| Q-55 | Lil Battery, The D6, Lord of the Pit, any targeted card | No valid target, or no attack to cancel: it can't be played or used | House |
 | Q-53 | Trick/Treat | Attack-start rolls after the target's triggers | House |
 | Q-54 | Trick/Treat | Every monster death counts; one removal per rewards gained | House |
+| Q-56 | ? Card, Friendly Ball | The copied catch puts the monster under ? Card; it is lost | House (open) |
+| Q-57 | Overflow!, The Beast!, any "each player rolls" | Rolls go on in turn order; the last player's resolves first | House (open) |

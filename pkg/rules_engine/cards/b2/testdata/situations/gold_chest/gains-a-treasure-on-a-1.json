@@ -1,0 +1,17 @@
+{
+  "title": "Isaac reveals Gold Chest and rolls a 1: does he gain the top treasure?",
+  "source": ["card gold_chest", "R-ATK-09", "R-CARD-02"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "decks": {"treasure": ["breakfast"]},
+    "rolls": [1]
+  },
+  "action": {"player": 0, "kind": "reveal", "card": "gold_chest"},
+  "expect": {"allowed": true,
+    "resolved_rolls": [1],
+    "discards": {"monster": ["gold_chest"]},
+    "after": [{"player": 0, "items": ["breakfast"], "cents": 0}]}
+}

@@ -1,0 +1,12 @@
+{
+  "title": "Mom! is in a slot and no attack is going on: does The Bible offer only \"Kill a monster named Mom!…\", not \"Cancel your attack.\"?",
+  "source": ["card the_bible", "R-ABIL-04", "R-ABIL-40"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_bible"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["mom", "fatty"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "the_bible"},
+  "expect": {"allowed": true, "prompt": {"player": 0, "options": ["Kill a monster named Mom!, Mom's Heart!, or It Lives!", "ask.cancel"]}}
+}

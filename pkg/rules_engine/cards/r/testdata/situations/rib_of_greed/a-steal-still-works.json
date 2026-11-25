@@ -1,0 +1,11 @@
+{
+  "title": "Cain has Rib Of Greed and 5¢; Isaac uses Jawbone on him: does Isaac still steal 3¢?",
+  "source": ["card rib_of_greed", "card jawbone", "Q-17", "R-MECH-35", "R-MECH-38"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["jawbone"]}, {"character": "cain", "items": ["rib_of_greed"], "cents": 5}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "jawbone", "choices": ["player 2 (cain)"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 3, "deactivated": ["jawbone"]}, {"player": 1, "cents": 2}]}
+}

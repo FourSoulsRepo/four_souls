@@ -5,6 +5,7 @@
 import b2 from '../../pkg/card_db/data/b2.json?raw';
 import requiem from '../../pkg/card_db/data/r.json?raw';
 import challenge from '../../pkg/card_db/data/challenge.json?raw';
+import fourSoulsPlus from '../../pkg/card_db/data/fsp2.json?raw';
 import type { RecordSeat } from './bridge';
 import { fakeStep, type FakeRecording } from './fakeReplay';
 import { protocolVersion } from './protocol';
@@ -234,6 +235,9 @@ const requiemData = JSON.parse(requiem) as DataSet;
 // The challenge cards (ADR 028): a challenge's boss and rule cards, as
 // Go's Assets.Cards lists them; never a playable set (14.25).
 const challengeData = JSON.parse(challenge) as DataSet;
+// Four Souls+ for its cards' names and art when a test adds the set
+// (Red Candle, 18.37); never dealt unless the host picks it.
+const fourSoulsPlusData = JSON.parse(fourSoulsPlus) as DataSet;
 
 // translated gives a card's names in every language, its translators
 // and artists, as Go's Assets.Cards does (16.5, 20.24); the cards above
@@ -245,7 +249,7 @@ function translated(ref: string, name: string): { names: Record<string, string>;
 }
 
 function realCards(): unknown[] {
-  return [b2Data, requiemData, challengeData].flatMap((data) =>
+  return [b2Data, requiemData, challengeData, fourSoulsPlusData].flatMap((data) =>
     data.cards
       .filter((c) => !c.reprint && !cards.some((s) => s.ref === c.id))
       .flatMap((c) => {

@@ -1,0 +1,23 @@
+{
+  "title": "Battle Royale!!!!!: Isaac attacks Cain; a 4 misses and Cain hits back, two 5s kill him",
+  "source": ["card battle_royale_3", "R-ATK-20", "R-ATK-12", "R-ATK-13"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["battle_royale_3"],
+    "rolls": [4, 5, 5]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["player 2 (cain)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [4, 5, 5],
+    "after": [{"player": 0, "damage": 1}, {"player": 1, "dead": true}]
+  }
+}

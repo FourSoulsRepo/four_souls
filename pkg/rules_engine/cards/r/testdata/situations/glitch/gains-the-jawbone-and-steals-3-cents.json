@@ -1,0 +1,18 @@
+{
+  "title": "As the Capricious's turn starts, Glitch gains the shop Jawbone's ability: does it steal 3¢ from Cain, and as her turn ends is Glitch recharged?",
+  "source": ["card glitch", "card jawbone", "R-ABIL-38", "R-MECH-38"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "cain", "cents": 5}, {"character": "the_capricious", "items": ["glitch"]}],
+    "active": 0,
+    "shop": ["jawbone", "spoon_bender"]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "choices": ["jawbone"]},
+    {"player": 1, "kind": "activate", "card": "glitch", "ability": 2, "choices": ["player 1 (cain)"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 2}, {"player": 1, "cents": 3, "deactivated": ["glitch"]}]}},
+    {"player": 1, "kind": "end_turn", "choices": ["spoon_bender"],
+     "expect": {"allowed": true, "active": 0, "after": [{"player": 1, "deactivated": [], "items": ["glitch"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

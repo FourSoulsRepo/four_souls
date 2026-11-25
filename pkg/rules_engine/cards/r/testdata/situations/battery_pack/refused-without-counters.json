@@ -1,0 +1,15 @@
+{
+  "title": "Isaac's Battery Pack has no counters: is its $ ability refused, and does it get a counter at the end of his turn?",
+  "source": ["card battery_pack", "R-ABIL-07", "R-TURN-10"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["battery_pack", "the_d6", "spoon_bender"], "deactivated": ["the_d6", "spoon_bender"]}, {"character": "cain"}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "battery_pack", "ability": 1, "expect": {"allowed": false, "rule": "R-ABIL-07"}},
+    {"player": 0, "kind": "end_turn", "choices": ["battery_pack: At the end of your turn, put a counter on this."],
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "counters": [{"card": "battery_pack", "count": 1}]}]}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-07"}
+}

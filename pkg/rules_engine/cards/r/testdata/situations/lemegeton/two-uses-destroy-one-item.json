@@ -1,0 +1,21 @@
+{
+  "title": "The Zealot uses Lemegeton, recharges it with Lil Battery and uses it again: 2 treasures; at her turn's end both destructions pick the Spoon Bender: is only it destroyed?",
+  "source": ["card lemegeton", "card lil_battery", "Q-15", "R-ABIL-06", "R-TURN-10"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "the_zealot", "items": ["lemegeton", "spoon_bender"], "hand": ["lil_battery"]}, {"character": "cain"}],
+    "active": 0,
+    "decks": {"treasure": ["breakfast", "dinner"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "lemegeton",
+     "expect": {"allowed": true, "after": [{"player": 0, "items": ["lemegeton", "spoon_bender", "breakfast"], "deactivated": ["lemegeton"]}]}},
+    {"player": 0, "kind": "play", "card": "lil_battery", "choices": ["lemegeton"],
+     "expect": {"allowed": true, "after": [{"player": 0, "deactivated": []}]}},
+    {"player": 0, "kind": "activate", "card": "lemegeton",
+     "expect": {"allowed": true, "after": [{"player": 0, "items": ["lemegeton", "spoon_bender", "breakfast", "dinner"]}]}},
+    {"player": 0, "kind": "end_turn", "choices": ["spoon_bender", "spoon_bender"],
+     "expect": {"allowed": true, "active": 1, "discards": {"treasure": ["spoon_bender"]}, "after": [{"player": 0, "items": ["lemegeton", "breakfast", "dinner"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

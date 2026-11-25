@@ -1,0 +1,19 @@
+{
+  "title": "The Siren in a slot: Isaac attacks Cain (DC 4) and misses with a 3; Cain deals him his 1 ATK; two 6s then kill Cain",
+  "source": ["card the_siren", "R-ATK-13", "R-ATK-20", "R-MECH-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["the_siren", "fly"],
+    "rolls": [3, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["player 2 (cain)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [3, 6, 6],
+    "after": [{"player": 0, "damage": 1}, {"player": 1, "dead": true}]
+  }
+}

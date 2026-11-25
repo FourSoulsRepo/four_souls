@@ -1,0 +1,16 @@
+{
+  "title": "The Lost uses ↷: does the turn have 2 loot plays, and is a second ↷ refused while the character is deactivated?",
+  "source": ["card the_lost", "R-TURN-05", "R-ABIL-07", "R-ABIL-10"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "the_lost"}, {"character": "cain"}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "the_lost",
+     "expect": {"allowed": true, "loot_plays": 2, "after": [{"player": 0, "deactivated": ["character"]}]}},
+    {"player": 0, "kind": "activate", "card": "the_lost",
+     "expect": {"allowed": false, "rule": "R-ABIL-07", "loot_plays": 2}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-07"}
+}

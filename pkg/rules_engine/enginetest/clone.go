@@ -28,16 +28,16 @@ var CloneRules = map[string]string{
 	"Game": "RNG Players* Objects* Decks* Discards* Shop* Monsters* Rooms* " +
 		"Bosses* Minions* Outside* BonusSouls* Queue* Attack* Purchase " +
 		"Chain Applied Choice* StartChoices* Throw* FirstRoll* Activating* " +
-		"FreeLoot PendingTriggers* Compost ExtraTurn Boosts* Shields* " +
+		"FreeLoot PendingTriggers* Compost CompostSource ExtraTurn ExtraTurnSource Boosts* Shields* " +
 		"Lingering* Markers* RewardChanges* ManyDice* Stack* StackSeq Turn* " +
 		"Priority Waiting* MaxHand WinSouls Over Winners* Challenge* Sets* " +
-		"Banned* AskSeq asks! saved* maxHP* cards! events! forcedRolls! changes!",
+		"Banned* AskSeq asks! saved* maxHP* cards! events! forcedRolls! forcedPicks! pickCount! pickErr! changes!",
 	"tracking":   "origin! since* cleanAt off",
 	"ReplayStep": "Intent* Apply",
 	"Intent":     "Player Kind Objects* Choice",
 	"RNG":        "State Inc",
-	"Player": "ID Character Cents Hand* InPlay* Damage Dead CopyNextLoot " +
-		"SkipTurns Activations LootPlayed TimesDamaged ExtraLootPlays Rolls " +
+	"Player": "ID Character Cents Hand* InPlay* Damage Dead CopyNextLoot CopySource " +
+		"HelpSource SkipTurns SkipSources* Activations LootPlayed TimesDamaged ExtraLootPlays Rolls " +
 		"LastRoll LastAttack KilledBy Counters*",
 	"Counter": "Name Count",
 	"Object": "ID Card Zone Role Controller Charged Damage Counters* Eternal " +
@@ -71,22 +71,22 @@ var CloneRules = map[string]string{
 	"FirstRoll":          "Round Players* Rolls*",
 	"Activation":         "Player Source Ability Loot Mode Chosen* Window",
 	"PendingTrigger": "Ability Source Controller On EventPlayer EventAmount EventStack " +
-		"EventObject EventSource EventBy",
+		"EventObject EventSource EventBy RollResult Mode Targets*",
 	"Boost":        "Stat Player Object Amount Source",
 	"Shield":       "Target Amount Cap Source",
 	"Target":       "Object Player IsPlayer",
 	"Lingering":    "Ability Source Controller",
 	"Marker":       "Object Kind From To",
 	"RewardChange": "Object Set Kind Amount",
-	"ManyDice":     "Chooser Dice Values* StackID",
+	"ManyDice":     "Chooser Dice Values* StackID Source",
 	"StackItem": "ID Kind Controller Source Card Roll Amount Label* Target Attack " +
 		"Ability Mode Targets* RollFor RollResult EventPlayer EventAmount " +
 		"EventStack EventObject EventSource EventBy Reward Checked Text " +
 		"SourceCard TargetCard Sources* Final",
-	"StatSourceView": "Stat Source Card Amount Lasts When*",
+	"StatSourceView": "Stat Source Card Amount Lasts When* Everyone",
 	"Turn": "Active Number Step LootPlays Attacks Purchases AttackRolls " +
 		"BonusLootUsed BonusAttacksUsed BonusPurchasesUsed MustAttack " +
-		"MustAttacks MustAttackDeck RandomAttackMade DeckAttacks ShopBought " +
+		"MustAttacks MustAttackDeck MustAttackOneOfCards* RandomAttackMade DeckAttacks ShopBought " +
 		"FreeShopItem EndDeclared DeathEnd NextHelpers* NextShare* " +
 		"MonsterDied RoomReplaced LateRooms* Entered",
 	"Priority": "Open Holder Passes Deferred",

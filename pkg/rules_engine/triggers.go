@@ -193,6 +193,11 @@ type PendingTrigger struct {
 	EventSource ObjectID `json:"event_source,omitempty"`
 	// EventBy is the player who dealt the damage, plus 1 (Event.By).
 	EventBy int `json:"event_by,omitempty"`
+	// RollResult, Mode and Targets: a Roll- ability's result trigger
+	// (R-ABIL-24), ordered with the roll's other triggers (R-ABIL-15).
+	RollResult int      `json:"roll_result,omitempty"`
+	Mode       int      `json:"mode,omitempty"`
+	Targets    []Chosen `json:"targets,omitempty"`
 }
 
 // collectTriggers finds triggered abilities that match an event. Objects
@@ -310,6 +315,9 @@ func triggerItem(t PendingTrigger) StackItem {
 	}
 	if t.On == EvRollWouldResolve {
 		it.Checked = t.EventAmount + 1 // R-DICE-07
+	}
+	if t.RollResult != 0 {
+		it.Mode, it.Targets, it.RollResult, it.Label = t.Mode, t.Targets, t.RollResult, eventRollResult.Msg()
 	}
 	return it
 }

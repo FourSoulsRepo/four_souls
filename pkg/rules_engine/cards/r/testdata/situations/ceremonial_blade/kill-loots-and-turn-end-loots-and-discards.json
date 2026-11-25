@@ -1,0 +1,19 @@
+{
+  "title": "The Deceiver kills the Fly with Ceremonial Blade: does she loot 1, and at the end of her turn loot 1 and discard a loot card?",
+  "source": ["card ceremonial_blade", "card fly", "R-TURN-10"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "the_deceiver", "items": ["ceremonial_blade"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "decks": {"loot": ["a_penny", "bomb"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "cents": 1, "hand_cards": ["a_penny"]}]}},
+    {"player": 0, "kind": "end_turn", "choices": ["bomb"],
+     "expect": {"allowed": true, "active": 1, "discards": {"loot": ["bomb"]}, "after": [{"player": 0, "hand_cards": ["a_penny"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

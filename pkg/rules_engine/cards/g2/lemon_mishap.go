@@ -17,8 +17,9 @@ var lemonMishap = engine.CardDef{
 		Effects: []engine.Effect{engine.Linger(0)},
 	}},
 	Lingering: []engine.Ability{{
-		Kind: engine.Triggered,
-		Text: "Each time a player rolls an attack roll of 1 or 2, deal 1 damage to each monster.",
+		Kind:    engine.Triggered,
+		Text:    "Each time a player rolls an attack roll of 1 or 2, deal 1 damage to each monster.",
+		ShownOn: engine.ShownForEveryone,
 		Trigger: engine.Trigger{On: engine.EvRollResolved, Match: func(_ *engine.Game, _ engine.ObjectID, e engine.Event) bool {
 			return e.Text == "attack" && (e.Amount == 1 || e.Amount == 2)
 		}},

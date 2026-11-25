@@ -1,0 +1,22 @@
+{
+  "title": "Shadow Of Famine: Isaac with 2 loot plays plays one A Penny! but not the second; he uses his character but then not his Sack Of Pennies",
+  "source": ["card shadow_of_famine", "card isaac", "card sack_of_pennies"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["sack_of_pennies"], "hand": ["a_penny", "a_penny"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "loot_plays": 2,
+    "rooms": ["shadow_of_famine"]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "a_penny", "expect": {"allowed": true, "after": [{"player": 0, "cents": 1, "hand": 1}]}},
+    {"player": 0, "kind": "play", "card": "a_penny", "expect": {"allowed": false, "rule": "R-ABIL-12"}},
+    {"player": 0, "kind": "activate", "card": "isaac", "expect": {"allowed": true, "after": [{"player": 0, "deactivated": ["character"]}]}},
+    {"player": 0, "kind": "activate", "card": "sack_of_pennies", "expect": {"allowed": false, "rule": "R-ABIL-12"}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-12", "after": [{"player": 0, "cents": 1, "hand": 1, "deactivated": ["character"]}]}
+}

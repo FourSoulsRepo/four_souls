@@ -12,7 +12,7 @@ func TestCrystalBallShowsTheGuess(t *testing.T) {
 		t.Errorf("view dice = %v, want [4]", d)
 	}
 	tb.G.ForceRolls(4)
-	tb.Activate(0, "mystery_sack", 0)
+	tb.Activate(0, "mystery_sack", 0, sackFirst)
 	if tb.G.Object(tb.Find(0, "crystal_ball")).Chosen != 0 {
 		t.Error("the guess was not used up")
 	}

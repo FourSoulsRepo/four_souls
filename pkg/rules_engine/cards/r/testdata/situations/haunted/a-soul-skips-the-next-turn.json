@@ -1,0 +1,23 @@
+{
+  "title": "Haunted!: Isaac gains Chub's soul, so after Cain's turn Isaac's turn is skipped and Cain goes again",
+  "source": ["card haunted", "card chub", "R-CARD-14", "R-TURN-12", "R-TURN-16"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["chub", "fly"],
+    "monster_damage": {"chub": 3},
+    "rooms": ["haunted"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["chub"], "expect": {"allowed": true, "after": [{"player": 0, "souls": 1, "soul_cards": ["chub"]}]}},
+    {"player": 0, "kind": "end_turn", "choices": ["ask.keep"], "expect": {"allowed": true, "active": 1}},
+    {"player": 1, "kind": "end_turn", "expect": {"allowed": true, "active": 1}}
+  ],
+  "expect": {"allowed": true}
+}

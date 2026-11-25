@@ -15,7 +15,7 @@ var compost = engine.CardDef{
 			Kind:    engine.Activated,
 			Text:    "↷: The next time a player would loot, they loot from the top of the loot discard instead.",
 			Costs:   []engine.Cost{engine.Tap()},
-			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) { c.G.Compost = true })},
+			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) { c.G.Compost, c.G.CompostSource = true, c.Source })},
 		},
 	},
 }

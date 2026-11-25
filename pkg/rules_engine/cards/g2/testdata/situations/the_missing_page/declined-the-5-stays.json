@@ -1,0 +1,12 @@
+{
+  "title": "Isaac rolls a 5 with The Butter Bean; Cain has The Missing Page and declines: does the 5 stay?",
+  "source": ["card the_missing_page", "card the_butter_bean", "R-DICE-05"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_butter_bean"]}, {"character": "cain", "items": ["the_missing_page"]}],
+    "active": 0,
+    "rolls": [5]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "the_butter_bean", "choices": ["ask.no"]},
+  "expect": {"allowed": true, "resolved_rolls": [5], "after": [{"player": 0, "deactivated": ["the_butter_bean"]}]}
+}

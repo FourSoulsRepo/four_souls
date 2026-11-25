@@ -6,18 +6,14 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-func TestTheClicker(t *testing.T) {
+// TestTheClickerCharacterIsSamson: the new character card is Samson, and
+// Samson is no longer outside the game. No situation check names a
+// character card; the rest is a file (the_clicker/).
+func TestTheClickerCharacterIsSamson(t *testing.T) {
 	tb := setup(t, engine.SituationSetup{Players: []engine.SituationPlayer{seat("isaac", "the_d6", "the_clicker"), seat("cain")}})
-	tb.G.Players[0].Damage = 1
 	tb.Activate(0, "the_clicker", 0, "samson")
-	if c := tb.G.Object(tb.G.Players[0].Character); c.Card != "samson" || !c.Charged {
-		t.Fatalf("character = %s (charged %v), want Samson, charged (Q-18)", c.Card, c.Charged)
-	}
-	if hasItem(tb.G, 0, "the_d6") || !hasItem(tb.G, 0, "blood_lust") {
-		t.Error("the D6 leaves; Samson's Blood Lust comes")
-	}
-	if tb.G.Players[0].Damage != 1 {
-		t.Error("damage stays with the player (R-MECH-19)")
+	if c := tb.G.Object(tb.G.Players[0].Character); c.Card != "samson" {
+		t.Fatalf("character = %s, want Samson", c.Card)
 	}
 	for _, ch := range tb.G.CharactersOutside() {
 		if ch == "samson" {

@@ -1,0 +1,18 @@
+{
+  "title": "Cain plays Bomb! on the Pooter; at the start of Isaac's turn, does Bobby Bomb put that Bomb! from the loot discard into his hand?",
+  "source": ["card bobby_bomb", "card bomb", "R-TURN-03", "R-TURN-04"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "cain", "hand": ["bomb"]}, {"character": "isaac", "items": ["bobby_bomb"]}],
+    "active": 0,
+    "monsters": ["leech", "pooter"],
+    "decks": {"loot": ["a_penny"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["pooter"],
+     "expect": {"allowed": true, "discards": {"loot": ["bomb"]}}},
+    {"player": 0, "kind": "end_turn", "choices": ["bomb"],
+     "expect": {"allowed": true, "active": 1, "discards": {"loot": []}, "after": [{"player": 1, "hand_cards": ["bomb", "a_penny"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

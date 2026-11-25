@@ -1,0 +1,18 @@
+{
+  "title": "Spoils Of War: Isaac's Bomb! kills Cain; Isaac loots 1",
+  "source": ["card spoils_of_war", "card bomb", "R-DEATH-13"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["bomb"]},
+      {"character": "cain", "damage": 1}
+    ],
+    "active": 0,
+    "rooms": ["spoils_of_war"],
+    "decks": {"loot": ["a_penny"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["player 2 (cain)"]}
+  ],
+  "expect": {"allowed": true, "events": [{"kind": "died", "player": 1}], "after": [{"player": 0, "hand_cards": ["a_penny"]}, {"player": 1, "dead": true, "hand": 0}]}
+}

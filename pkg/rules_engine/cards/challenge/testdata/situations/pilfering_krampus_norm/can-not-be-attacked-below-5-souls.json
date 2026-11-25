@@ -1,0 +1,28 @@
+{
+  "title": "Krampus challenge, Normal: the players hold 4 souls between them; may Isaac attack Pilfering Krampus?",
+  "source": ["card pilfering_krampus_norm", "R-KRAMPUS-04", "R-KRAMPUS-05", "R-KRAMPUS-11", "R-ATK-02", "Q-30"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal"},
+    "players": [
+      {"character": "isaac", "souls": ["monstro", "gemini", "chub"]},
+      {"character": "cain", "souls": ["carrion_queen"]}
+    ],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"treasure": ["boomerang", "breakfast", "box", "blank_card", "book_of_sin"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true,
+       "prompt": {"player": 0, "options": ["leech", "fly", "ask.deck.monster"]},
+       "presents": [
+         {"kind": "cents", "counters": 8},
+         {"kind": "loot", "counters": 2},
+         {"kind": "treasure", "counters": 3},
+         {"kind": "soul", "counters": 3}
+       ],
+       "decks": {"treasure": ["book_of_sin"]}}}
+  ],
+  "expect": {"allowed": true}
+}

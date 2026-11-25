@@ -1,0 +1,21 @@
+{
+  "title": "Isaac kills Mom's Heart! (2 souls) and ties Cain at 2 souls; he picks himself: does Isaac win alone?",
+  "source": ["card moms_heart", "R-WIN-03", "R-WIN-04", "R-CARD-14"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "souls": ["gurdy", "monstro"]}],
+    "active": 0,
+    "monsters": ["moms_heart", "fly"],
+    "monster_damage": {"moms_heart": 7},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["moms_heart", "player 1 (isaac)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "over": true,
+    "winners": [0],
+    "after": [{"player": 0, "souls": 2, "soul_cards": ["moms_heart"]}]
+  }
+}

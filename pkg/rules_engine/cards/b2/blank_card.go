@@ -12,10 +12,13 @@ var blankCard = engine.CardDef{
 	Tap:    true,
 	Abilities: []engine.Ability{
 		{
-			Kind:    engine.Activated,
-			Text:    "↷: The next time you play a non-trinket, non-ambush loot card this turn, copy it.",
-			Costs:   []engine.Cost{engine.Tap()},
-			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) { c.G.Players[c.Controller].CopyNextLoot = true })},
+			Kind:  engine.Activated,
+			Text:  "↷: The next time you play a non-trinket, non-ambush loot card this turn, copy it.",
+			Costs: []engine.Cost{engine.Tap()},
+			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
+				pl := &c.G.Players[c.Controller]
+				pl.CopyNextLoot, pl.CopySource = true, c.Source
+			})},
 		},
 	},
 }

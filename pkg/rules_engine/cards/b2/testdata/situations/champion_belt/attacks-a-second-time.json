@@ -13,5 +13,5 @@
     "rolls": [6]
   },
   "action": {"player": 0, "kind": "attack", "choices": ["fly"]},
-  "expect": {"allowed": true, "after": [{"player": 0, "cents": 1}]}
+  "expect": {"allowed": true, "attacks": 0, "after": [{"player": 0, "cents": 1}]}
 }

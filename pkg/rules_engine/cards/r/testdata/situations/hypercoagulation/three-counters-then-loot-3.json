@@ -1,0 +1,16 @@
+{
+  "title": "The Dauntless (1 HP) has Hypercoagulation with 2 counters: at her turn's start does the 3rd give her 4 HP, and at its end are they removed and does she loot 3?",
+  "source": ["card hypercoagulation", "R-TURN-03", "R-TURN-04", "R-TURN-10"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "cain"}, {"character": "the_dauntless", "items": ["hypercoagulation"], "counters": [{"card": "hypercoagulation", "count": 2}]}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 1, "hp": 4, "hand": 1, "counters": [{"card": "hypercoagulation", "count": 3}]}]}},
+    {"player": 1, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 0, "after": [{"player": 1, "hp": 1, "hand": 4, "counters": [{"card": "hypercoagulation", "count": 0}]}]}}
+  ],
+  "expect": {"allowed": true}
+}

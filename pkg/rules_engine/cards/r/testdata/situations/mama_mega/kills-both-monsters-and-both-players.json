@@ -1,0 +1,24 @@
+{
+  "title": "Isaac uses Mama Mega with the Pooter and the Fly in the slots: does it kill both monsters, then both players?",
+  "source": ["card mama_mega", "card pooter", "card fly", "R-MECH-30", "R-DEATH-06", "R-DEATH-09", "R-DEATH-14", "R-DEATH-16", "R-ZONE-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["mama_mega"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["pooter", "fly"],
+    "decks": {"monster": ["clotty", "clotty"], "loot": ["three_cents"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "mama_mega"},
+    {"kind": "choose", "choices": ["pooter"]},
+    {"kind": "choose", "choices": ["three_cents"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 1,
+    "events": [{"kind": "died", "player": 0}, {"kind": "died", "player": 1}],
+    "monsters": [{"card": "pooter", "dead": true}, {"card": "fly", "dead": true}, {"slot": 1, "card": "clotty"}, {"slot": 2, "card": "clotty"}],
+    "discards": {"treasure": ["mama_mega"], "monster": ["pooter", "fly"], "loot": ["three_cents"]},
+    "after": [{"player": 0, "items": [], "cents": 0, "hand": 0}, {"player": 1, "items": []}]
+  }
+}

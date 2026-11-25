@@ -1,0 +1,26 @@
+{
+  "title": "Isaac's attack roll of 6 on the Fly waits on the stack; he plays ? Card and copies Cain's Lord of the Pit: is the attack cancelled, the Fly unhurt, and may he attack again?",
+  "source": ["card questionmark_card", "card lord_of_the_pit", "card fly", "R-ATK-14", "R-ATK-15", "R-STACK-06"],
+  "sets": ["b2", "fsp2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["questionmark_card"]}, {"character": "cain", "items": ["lord_of_the_pit"]}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["dip"]},
+    "stack": [{"kind": "attack_roll", "dice_roll": 6, "card": "fly", "owner": 0}],
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "questionmark_card",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["lord_of_the_pit: ↷: Cancel an attack. That player may attack an additional time this turn.", "ask.cancel"]}}},
+    {"kind": "choose", "choices": ["lord_of_the_pit: ↷: Cancel an attack. That player may attack an additional time this turn."],
+     "expect": {"allowed": true, "resolved_rolls": [], "attacks": 1,
+                "monsters": [{"slot": 1, "card": "fly", "damage": 0}],
+                "discards": {"loot": ["questionmark_card"]},
+                "after": [{"player": 0, "hand": 0, "cents": 0}, {"player": 1, "deactivated": []}]}},
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "resolved_rolls": [6], "attacks": 0,
+                "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "cents": 1}]}}
+  ],
+  "expect": {"allowed": true}
+}

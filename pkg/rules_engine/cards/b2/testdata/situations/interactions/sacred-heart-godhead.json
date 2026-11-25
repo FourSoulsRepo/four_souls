@@ -1,0 +1,13 @@
+{
+  "title": "Isaac's roll of 6 is on the stack; Cain's Godhead makes it a 1: does Isaac's Sacred Heart turn it back into a 6?",
+  "source": ["card sacred_heart", "card godhead", "R-DICE-04", "R-DICE-05"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["sacred_heart"]}, {"character": "cain", "items": ["godhead"]}],
+    "active": 0,
+    "stack": [{"dice_roll": 6, "owner": 0}],
+    "priority": 1
+  },
+  "action": {"player": 1, "kind": "activate", "card": "godhead", "choices": ["ask.roll_of 6", "1", "ask.yes"]},
+  "expect": {"allowed": true, "resolved_rolls": [6], "after": [{"player": 1, "deactivated": ["godhead"]}]}
+}

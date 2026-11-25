@@ -1,0 +1,16 @@
+{
+  "title": "Isaac plays Magic Marker on Sack of Pennies and makes its \"Gain 1¢\" a 2: does its ↷ gain 2¢ this turn?",
+  "source": ["card magic_marker", "card sack_of_pennies", "R-ABIL-39", "Q-14"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["sack_of_pennies"], "hand": ["magic_marker"]}, {"character": "cain"}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "magic_marker", "choices": ["sack_of_pennies", "ask.number.cents 1", "ask.plus_one"],
+     "expect": {"allowed": true, "discards": {"loot": ["magic_marker"]}, "after": [{"player": 0, "cents": 0}]}},
+    {"player": 0, "kind": "activate", "card": "sack_of_pennies",
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 2, "deactivated": ["sack_of_pennies"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

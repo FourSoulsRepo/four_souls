@@ -28,9 +28,8 @@ var lustForBlood = engine.CardDef{
 				}
 				p := others[a[0]]
 				c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: engine.StatPlayerAttackDC, Player: p, Amount: 4})
-				c.G.ForceAttacks(1, false)
-				c.G.Turn.MustAttack = c.G.Players[p].Character
-				c.G.GivePenaltyItem(p, c.G.Turn.Active)
+				c.G.ForceAttackOn(c.G.Players[p].Character) // "an additional attack against them" (19.241)
+				c.G.GivePenaltyItem(p, c.G.Turn.Active, c.Source)
 			}, engine.Question{Text: lustForBloodWhichPlayerMust, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 				return playerLabels(c.G, othersInOrder(c))
 			}})},

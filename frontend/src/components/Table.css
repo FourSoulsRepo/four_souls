@@ -506,6 +506,52 @@
   overflow-x: auto;
 }
 
+/* A card in play and the cards under it (19.244). They lie behind it,
+   face up, each a band higher, so their top band shows above it: the
+   name and some art, as on a real table. They come first, so the card
+   itself lies on top of them, and keeps its place. A band may reach
+   onto the board, which comes later: the holder takes the under layer,
+   and so stacks its cards on its own. */
+.player-cards {
+  --band: 1.875rem;
+}
+
+.card-holder {
+  position: relative;
+  display: flex;
+  flex: none;
+}
+
+.card-holder.has-under {
+  z-index: var(--z-under);
+}
+
+.card-under {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.card-under-peek {
+  position: absolute;
+  top: calc(var(--band) * var(--under-place) * -1);
+  left: 0;
+  pointer-events: auto;
+}
+
+/* The row scrolls sideways, and so clips above it too: it reaches up
+   by its highest band and pads as far, so its cards stay in place.
+   That strip lets the pointer through; the cards and bands take it. */
+.player-cards.has-under {
+  margin-top: calc(var(--band) * var(--under-n) * -1);
+  padding-top: calc(0.25rem + var(--band) * var(--under-n));
+  pointer-events: none;
+}
+
+.player-cards.has-under > * {
+  pointer-events: auto;
+}
+
 /* Opponents (15.18): a small name with coins outside the
    board (F-07, H-21), the character with live stats, the items, and
    the hand as fanned backs with a count (F-08, H-17). */
@@ -751,9 +797,19 @@
 
 .player-left .player-cards,
 .player-right .player-cards {
+  --band: 1.375rem;
   flex-wrap: wrap;
   justify-content: center;
   overflow: visible;
+}
+
+/* The card right above a side row is the character: a band reaching up
+   would hide its stats. So the column makes room for the bands, above
+   the row and between its wrapped lines; the row moves down by them. */
+.player-left .player-cards.has-under,
+.player-right .player-cards.has-under {
+  row-gap: calc(0.375rem + var(--band) * var(--under-n));
+  margin-top: 0;
 }
 
 /* No room beside the character: the curses are a row above it, at the

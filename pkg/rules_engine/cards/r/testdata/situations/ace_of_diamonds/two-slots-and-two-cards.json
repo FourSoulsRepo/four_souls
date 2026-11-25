@@ -1,0 +1,12 @@
+{
+  "title": "Two monster slots, and Isaac holds Bomb! and A Nickel! besides Ace Of Diamonds: does he gain 4¢?",
+  "source": ["card ace_of_diamonds", "R-CARD-07"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["ace_of_diamonds", "bomb", "a_nickel"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "ace_of_diamonds"},
+  "expect": {"allowed": true, "discards": {"loot": ["ace_of_diamonds"]}, "after": [{"player": 0, "cents": 4, "hand_cards": ["bomb", "a_nickel"]}]}
+}

@@ -1,0 +1,21 @@
+{
+  "title": "Isaac kills Peep: is The Bloat searched out of the monster deck and put in a monster slot?",
+  "source": ["card peep", "card isaac", "R-ATK-12", "R-CARD-13", "R-DEATH-05", "R-DEATH-08"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["peep"],
+    "decks": {"treasure": ["breakfast"]},
+    "rolls": [6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["peep"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 6],
+    "monsters": [{"card": "peep", "dead": true}, {"slot": 1, "card": "the_bloat"}],
+    "after": [{"player": 0, "items": ["breakfast"], "soul_cards": ["peep"]}]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "title": "Isaac has The Dead Cat with 9 counters and Fanny Pack; he plays Bomb! on himself: the damage is prevented, so does Fanny Pack loot?",
+  "source": ["card the_dead_cat", "card fanny_pack", "card bomb", "R-MECH-46", "R-ABIL-30"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["the_dead_cat", "fanny_pack"], "hand": ["bomb"], "counters": [{"card": "the_dead_cat", "count": 9}]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "bomb", "choices": ["player 1 (isaac)"]},
+  "expect": {"allowed": true,
+    "events": [{"kind": "prevented", "player": 0}, {"kind": "looted", "player": 0, "none": true}],
+    "after": [{"player": 0, "damage": 0, "hand": 0, "counters": [{"card": "the_dead_cat", "count": 8}]}]}
+}

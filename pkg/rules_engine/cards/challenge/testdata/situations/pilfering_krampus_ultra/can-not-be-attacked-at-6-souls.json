@@ -1,0 +1,17 @@
+{
+  "title": "Krampus challenge, Ultra Hard: the players hold 6 souls between them; may Isaac attack Pilfering Krampus?",
+  "source": ["card pilfering_krampus_ultra", "R-KRAMPUS-11", "R-ATK-02", "Q-30"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "ultra"},
+    "players": [{"character": "isaac", "souls": ["fly", "fly", "fly", "fly", "fly", "fly"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "expect": {"allowed": true, "prompt": {"player": 0, "options": ["leech", "fly", "ask.deck.monster"]}}}
+  ],
+  "expect": {
+    "allowed": true
+  }
+}

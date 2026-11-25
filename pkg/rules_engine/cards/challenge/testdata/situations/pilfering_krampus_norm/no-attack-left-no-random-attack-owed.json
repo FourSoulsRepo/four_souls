@@ -1,0 +1,21 @@
+{
+  "title": "Krampus challenge, Normal: a minion is in play and Isaac has no attack left; may he end his turn?",
+  "source": ["card pilfering_krampus_norm", "R-KRAMPUS-13", "R-KRAMPUS-12", "R-TURN-07", "Q-31"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal"},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "attacks": 0,
+    "monsters": ["leech", "fly"],
+    "minions": ["pooter"],
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1, "monsters": [{"card": "pooter", "damage": 0}]}}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6]
+  }
+}

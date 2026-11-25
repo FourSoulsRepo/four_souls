@@ -1,0 +1,12 @@
+{
+  "title": "Isaac plays Berkano on Cain's eternal Sleight of Hand: does it stay, and does Cain steal nothing?",
+  "source": ["card berkano", "card sleight_of_hand", "R-ABIL-18", "Q-19"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["berkano"]}, {"character": "cain", "items": ["sleight_of_hand"]}],
+    "active": 0,
+    "shop": ["spoon_bender"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "berkano", "choices": ["sleight_of_hand"]},
+  "expect": {"allowed": true, "discards": {"loot": ["berkano"], "treasure": []}, "after": [{"player": 1, "items": ["sleight_of_hand"]}]}
+}

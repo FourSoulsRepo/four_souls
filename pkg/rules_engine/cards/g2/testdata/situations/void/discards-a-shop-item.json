@@ -1,0 +1,19 @@
+{
+  "title": "Apollyon uses Void on the shop's D6: does it go to the treasure discard and the shop slot refill?",
+  "source": ["card void", "R-CARD-34", "R-SHOP-06", "R-SHOP-02"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "apollyon", "items": ["void"], "hand": ["bomb", "bomb", "a_penny"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "shop": ["the_d6", "breakfast"],
+    "decks": {"treasure": ["dinner"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "void", "choices": ["Put a shop item into discard.", "the_d6"],
+     "expect": {"allowed": true, "discards": {"treasure": ["the_d6"]}, "after": [{"player": 0, "deactivated": ["void"]}]}},
+    {"player": 0, "kind": "purchase",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["dinner", "breakfast", "ask.deck.treasure"]}}}
+  ],
+  "expect": {"allowed": true}
+}

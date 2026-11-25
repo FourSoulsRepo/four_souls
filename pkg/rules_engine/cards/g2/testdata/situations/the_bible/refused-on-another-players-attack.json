@@ -1,0 +1,14 @@
+{
+  "title": "Isaac's attack roll on the Leech waits on the stack; Cain has The Bible, no curse, and no Mom! is in a slot: may he cancel Isaac's attack?",
+  "source": ["card the_bible", "R-ATK-01", "R-ABIL-40"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "items": ["the_bible"]}],
+    "active": 0,
+    "monsters": ["leech", "fatty"],
+    "stack": [{"kind": "attack_roll", "dice_roll": 1, "card": "leech", "owner": 0}],
+    "priority": 1
+  },
+  "action": {"player": 1, "kind": "activate", "card": "the_bible"},
+  "expect": {"allowed": false, "rule": "R-ABIL-40", "after": [{"player": 1, "deactivated": []}]}
+}

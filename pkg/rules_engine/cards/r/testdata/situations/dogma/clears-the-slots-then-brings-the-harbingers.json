@@ -1,0 +1,26 @@
+{
+  "title": "Dogma at 1 HP: Isaac declares his attack on it, so the Fly goes to discard; he kills it, and The Harbingers comes from outside the game into a new slot",
+  "source": ["card dogma", "card the_harbingers", "card clotty", "R-ATK-04", "R-ABIL-23", "R-CARD-40", "R-DEATH-05", "R-DEATH-06", "R-DEATH-08", "R-DEATH-09", "R-SHOP-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["dogma", "fly"],
+    "monster_damage": {"dogma": 3},
+    "decks": {"monster": ["clotty", "clotty"], "treasure": ["book_of_sin", "the_d6"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["dogma", "ask.slot 1"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [{"player": 0, "cents": 0, "souls": 0, "items": ["book_of_sin", "the_d6"]}],
+    "monsters": [
+      {"card": "dogma", "dead": true}, {"card": "fly", "dead": true},
+      {"slot": 1, "card": "clotty"}, {"slot": 2, "card": "clotty"}, {"slot": 3, "card": "the_harbingers"}
+    ],
+    "discards": {"monster": ["fly", "dogma"]}
+  }
+}

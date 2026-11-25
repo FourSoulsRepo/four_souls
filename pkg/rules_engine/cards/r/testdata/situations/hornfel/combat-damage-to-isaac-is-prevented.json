@@ -1,0 +1,23 @@
+{
+  "title": "Hornfel: Isaac misses with a 1; its combat damage to him is prevented, so it leaves the stack; two 6s kill it",
+  "source": ["card hornfel", "card clotty", "R-ATK-12", "R-ATK-13", "R-ABIL-29", "R-ABIL-30", "R-MECH-46", "R-DEATH-06", "R-DEATH-08"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["hornfel", "fly"],
+    "decks": {"monster": ["clotty"], "treasure": ["book_of_sin"]},
+    "rolls": [1, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["hornfel"]},
+    {"kind": "throw", "expect": {"allowed": true, "resolved": ["hornfel"], "events": [{"kind": "cancelled"}], "monsters": [{"card": "hornfel", "hp": 2}]}},
+    {"kind": "throw"}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 6, 6],
+    "after": [{"player": 0, "souls": 1, "soul_cards": ["hornfel"], "items": ["book_of_sin"]}],
+    "monsters": [{"card": "hornfel", "dead": true}, {"slot": 1, "card": "clotty"}]
+  }
+}

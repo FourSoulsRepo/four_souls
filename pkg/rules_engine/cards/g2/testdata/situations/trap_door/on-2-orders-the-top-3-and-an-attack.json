@@ -1,0 +1,21 @@
+{
+  "title": "Isaac reveals Trap Door! and rolls a 2: does he put the top 3 back in his order, and may he attack once more?",
+  "source": ["card trap_door", "R-ATK-09", "R-CARD-15"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fatty", "monstro"],
+    "decks": {"monster": ["trite", "leech", "fly"]},
+    "rolls": [2]
+  },
+  "action": {"player": 0, "kind": "reveal", "card": "trap_door", "choices": ["fly", "leech", "trite"]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [2],
+    "attacks": 1,
+    "decks": {"monster": ["fly", "leech", "trite"]},
+    "discards": {"monster": ["trap_door"]},
+    "after": [{"player": 0, "damage": 0}]
+  }
+}

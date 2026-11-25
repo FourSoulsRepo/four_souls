@@ -28,6 +28,61 @@ type Ability struct {
 	Modes []Mode
 	// Takes: whom it may take from with no target naming them (15.85).
 	Takes Takes
+	// Attack: the attack in progress it acts on, if any ("Cancel an
+	// attack."); with none it can't be played or used (R-ABIL-40).
+	Attack AttackNeed
+	// Needs are conditions for using it that are no cost (R-ABIL-07):
+	// a limit the card states (OnlyIf) or a thing it acts on that no
+	// TargetSpec names (ActsOn). See Need.
+	Needs []Need
+	// ShownOn, on a lingering ability, says which player's view shows
+	// it while it lasts (ADR 037 items 3.17, 3.18); every is true for a
+	// game-wide one. nil: no player's (Red Candle's die is on its card).
+	ShownOn func(g *Game, l Lingering) (p PlayerID, every bool)
+}
+
+// ShownOnController shows a lingering ability on its controller: "they
+// gain +1 treasure" (The Mirror).
+func ShownOnController(_ *Game, l Lingering) (PlayerID, bool) { return l.Controller, false }
+
+// ShownForEveryone shows a game-wide lingering ability on its controller,
+// for every player: "each time a player rolls …" (Lemon Mishap).
+func ShownForEveryone(_ *Game, l Lingering) (PlayerID, bool) { return l.Controller, true }
+
+// AttackNeed says which attack in progress an ability acts on, when the
+// attack is its target ("Cancel an attack.", R-ABIL-05). With no such
+// attack it has no valid target (R-ABIL-40, Q-55, 19.237).
+type AttackNeed int
+
+// The attacks an ability may act on.
+const (
+	NoAttackNeeded           AttackNeed = iota
+	NeedsAnAttack                       // "Cancel an attack."
+	NeedsYourAttack                     // "Cancel your attack."
+	NeedsAttackOnMonster                // "Cancel an attack on a monster."
+	NeedsYourAttackOnMonster            // "Cancel your attack on a monster."
+)
+
+// AttackFor reports whether an attack in progress fits n for player p.
+// An attack is in progress from its declaration (R-ATK-02, R-ATK-04)
+// till it ends (R-ATK-14); it is on a monster once its target is a
+// monster, a revealed one too (R-ATK-05, Q-24). Only the active player
+// attacks (R-ATK-01), so "your attack" is on p's turn.
+func (g *Game) AttackFor(n AttackNeed, p PlayerID) bool {
+	a := g.Attack
+	switch n {
+	case NoAttackNeeded:
+		return true
+	case NeedsAnAttack:
+		return a.On
+	case NeedsYourAttack:
+		return a.On && g.Turn.Active == p
+	case NeedsAttackOnMonster:
+		return a.On && a.Started && g.Object(a.Target).Role == RoleMonster
+	case NeedsYourAttackOnMonster:
+		return a.On && a.Started && g.Object(a.Target).Role == RoleMonster && g.Turn.Active == p
+	}
+	return false
 }
 
 // Takes says whom an ability may take loot cards, ¢, items or souls
@@ -43,11 +98,57 @@ const (
 	TakesEventPlayer              // the player of the event that triggered it
 )
 
+// Need is a condition an ability needs to be used that is no cost: its
+// text is not before the colon (R-ABIL-07, 19.242). OnlyIf is a limit
+// the card states, refused by R-ABIL-08 ("unless stated"); ActsOn is a
+// thing it acts on, a target with no TargetSpec (R-ABIL-05), refused by
+// R-ABIL-40 ("no valid target"), so ? Card's copies are checked too.
+type Need struct {
+	rule string
+	say  Key
+	ok   func(g *Game, p PlayerID, self ObjectID) bool
+}
+
+// OnlyIf is a condition the card states for using the ability: "This
+// can't be activated during an attack." (Red Key). say is why not, for
+// the player: "Not during an attack". While ok is false, activating it
+// is refused by R-ABIL-08, and ? Card does not copy it (19.243).
+func OnlyIf(say Key, ok func(g *Game, p PlayerID, self ObjectID) bool) Need {
+	return Need{rule: "R-ABIL-08", say: say, ok: ok}
+}
+
+// ActsOn is a thing the ability acts on that no TargetSpec names: "a
+// monster from under this" (Friendly Ball). While ok is false it has
+// no valid target (R-ABIL-40), as an attack it cancels (Attack).
+func ActsOn(ok func(g *Game, p PlayerID, self ObjectID) bool) Need {
+	return Need{rule: "R-ABIL-40", say: refuseNoTarget, ok: ok}
+}
+
+// unmet returns the refusal of a's first need with the rule that fails
+// for p and self, or nil.
+func (g *Game) unmet(a Ability, rule string, p PlayerID, self ObjectID) error {
+	for _, n := range a.Needs {
+		if n.rule == rule && !n.ok(g, p, self) {
+			return deny(rule, n.say.Msg(), "%s", n.reason())
+		}
+	}
+	return nil
+}
+
+// reason is the English reason of a failed need, for developers.
+func (n Need) reason() string {
+	if n.rule == "R-ABIL-40" {
+		return "no valid target"
+	}
+	return "the card forbids it now (" + n.say.String() + ")"
+}
+
 // Mode is one "choose one-" option.
 type Mode struct {
 	Text    string
 	Targets []TargetSpec
 	Effects []Effect
+	Attack  AttackNeed // as Ability.Attack
 }
 
 // Ctx is what an effect sees while it resolves.
@@ -703,7 +804,7 @@ func (sunEffect) apply(c *Ctx) {
 	g.Decks[LootDeck] = append([]ObjectID{nid}, g.Decks[LootDeck]...)
 	g.emit(Event{Kind: EvMovedToDeck, Player: c.Controller, Object: nid, Card: g.Object(nid).Card, Text: DeckText(LootDeck, DeckTextBottom)})
 	if c.Controller == g.Turn.Active {
-		g.ExtraTurn = true
+		g.ExtraTurn, g.ExtraTurnSource = true, c.Source
 	}
 }
 
@@ -958,23 +1059,6 @@ func PreventThisDeath() Effect {
 		}
 	})
 }
-
-type condCost struct {
-	say Key
-	ok  func(g *Game, p PlayerID, self ObjectID) bool
-}
-
-// If is a condition the ability needs to be activated, as a cost that
-// pays nothing: "if there are no cards under this" (Friendly Ball). say
-// is why it can't be used while the condition fails, for the player:
-// "Needs no cards under this".
-func If(say Key, ok func(g *Game, p PlayerID, self ObjectID) bool) Cost {
-	return condCost{say, ok}
-}
-
-func (c condCost) canPay(g *Game, p PlayerID, self ObjectID) bool { return c.ok(g, p, self) }
-func (condCost) pay(*Game, PlayerID, ObjectID)                    {}
-func (c condCost) label() string                                  { return c.say.String() }
 
 // KillPlayer kills p: their HP goes to 0 and their death goes on the
 // stack (R-MECH-23); by is the killer, or NoPlayer.

@@ -1,0 +1,19 @@
+{
+  "title": "Isaac kills Gaper with a 5 (after a 6): is there no additional attack, so he may end his turn?",
+  "source": ["card gaper", "R-TURN-07", "R-CARD-13"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["gaper", "fly"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [6, 5]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["gaper"],
+     "expect": {"allowed": true, "resolved_rolls": [6, 5], "attacks": 0,
+                "monsters": [{"card": "gaper", "dead": true}, {"slot": 1, "card": "dip"}], "after": [{"player": 0, "cents": 3}]}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1}}
+  ],
+  "expect": {"allowed": true}
+}

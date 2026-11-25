@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"io/fs"
 	"os"
+	"reflect"
 	"slices"
 	"strings"
 	"testing"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
 	"github.com/FourSoulsRepo/rules_engine/cards/b2"
+	"github.com/FourSoulsRepo/rules_engine/cards/challenge"
 )
 
 // readDump reads the recording of test name in this package's folder.
@@ -163,5 +165,137 @@ func TestDumpHandSetBeforeDirectApply(t *testing.T) {
 	}
 	if hasTodo(d, "not in setup") || hasTodo(d, "no setup field says it") {
 		t.Errorf("todo %q; want no hand-set state left out", d.Todo)
+	}
+}
+
+// Attack duties set by hand go to the setup's duty fields (19.235), so
+// they leave no todo.
+func TestDumpHandSetDuties(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv(DumpEnv, dir)
+	t.Run("duties", func(t *testing.T) {
+		tb := NewSetup(t, engine.SituationSetup{Players: []engine.SituationPlayer{Seat("isaac", "book_of_sin"), Seat("cain")}, Monsters: []engine.CardRef{"clotty", "fly"}}, b2.Set)
+		tb.G.ForceRolls(5)
+		tb.G.Turn.MustAttack = tb.G.Monsters[1].Cards[0] // as Monster Manual on the Fly
+		tb.G.Turn.MustAttacks, tb.G.Turn.MustAttackDeck = 2, 1
+		tb.Activate(0, "book_of_sin", 0)
+	})
+	d, _ := readDump(t, dir, "TestDumpHandSetDuties/duties")
+	if s := d.Setup; s.MustAttack != "fly" || s.MustAttacks != 2 || s.MustAttackDeck != 1 {
+		t.Errorf("setup must_attack %q, must_attacks %d, must_attack_deck %d; want fly, 2, 1", s.MustAttack, s.MustAttacks, s.MustAttackDeck)
+	}
+	if hasTodo(d, "no setup field says it") || hasTodo(d, "does not build") {
+		t.Errorf("todo %q; want the duties in the setup", d.Todo)
+	}
+}
+
+// Every random pick the test made goes to setup.random by its label, so
+// the file picks the same (24.30); a hidden card's pick has no label,
+// so it stays a todo.
+func TestDumpRecordsRandomPicks(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv(DumpEnv, dir)
+	var picked []string
+	t.Run("tooth", func(t *testing.T) {
+		tb := NewSetup(t, engine.SituationSetup{
+			Players: []engine.SituationPlayer{Seat("isaac", "monstros_tooth", "breakfast"), Seat("cain", "breakfast")}, Active: 1,
+		}, b2.Set)
+		for _, e := range tb.EndTurn("breakfast") {
+			if e.Kind == engine.EvRandomPick {
+				picked = append(picked, tb.G.Plain(e.Label))
+			}
+		}
+	})
+	d, _ := readDump(t, dir, "TestDumpRecordsRandomPicks/tooth")
+	if len(picked) != 1 || !slices.Equal(d.Setup.Random, picked) || !hasTodo(d, "setup.random are every random pick") {
+		t.Errorf("setup.random %q, todo %q; want the pick %q", d.Setup.Random, d.Todo, picked)
+	}
+	t.Run("boomerang", func(t *testing.T) {
+		tb := NewSetup(t, engine.SituationSetup{
+			Players: []engine.SituationPlayer{Seat("isaac", "boomerang"), {Character: "cain", Hand: []engine.CardRef{"bomb", "a_penny"}}},
+		}, b2.Set)
+		tb.Activate(0, "boomerang", 0, "player 2 (cain)")
+	})
+	d, _ = readDump(t, dir, "TestDumpRecordsRandomPicks/boomerang")
+	if d.Setup.Random != nil || !hasTodo(d, "random pick 1 has no label") {
+		t.Errorf("setup.random %q, todo %q; want none and a todo", d.Setup.Random, d.Todo)
+	}
+}
+
+// A response to an attack roll of a deck attack stays a todo, which
+// names the stacked attack roll with from_deck and its slot (24.33).
+func TestDumpNotesADeckAttackRoll(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv(DumpEnv, dir)
+	t.Run("deck", func(t *testing.T) {
+		tb := NewSetup(t, engine.SituationSetup{
+			Players:  []engine.SituationPlayer{Seat("isaac", "book_of_sin"), Seat("cain")},
+			Monsters: []engine.CardRef{"leech", "fly"},
+		}, b2.Set)
+		tb.G.PutOnDeck(engine.MonsterDeck, "pooter")
+		tb.G.ForceRolls(1, 5)
+		if _, err := tb.G.Apply(engine.Intent{Player: 0, Kind: engine.IntentAttack}); err != nil {
+			t.Fatal(err)
+		}
+		tb.Pass(0)
+		tb.Pass(1)
+		tb.Choose("ask.deck.monster")
+		tb.Choose("ask.slot_card 1 leech")
+		tb.ThrowPending() // the attack roll waits on the stack
+		tb.Activate(0, "book_of_sin", 0)
+	})
+	d, _ := readDump(t, dir, "TestDumpNotesADeckAttackRoll/deck")
+	want := `{"kind": "attack_roll", "dice_roll": 1, "card": "pooter", "owner": 0, "from_deck": true, "slot": 1}`
+	if !hasTodo(d, "responds to the stack") || !hasTodo(d, want) {
+		t.Errorf("todo %q; want a response note and %s", d.Todo, want)
+	}
+}
+
+// A challenge a Go test started is setup.game, with what the test
+// changed on it: presents, the rule card's side, the boss's counters
+// and fear on a player (24.34). The boss is no setup.bosses entry.
+func TestDumpRecordsAChallenge(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv(DumpEnv, dir)
+	sets := append([]engine.CardSet{b2.Set}, challenge.Set)
+	seats := []engine.SituationPlayer{Seat("isaac", "book_of_sin"), Seat("cain")}
+	t.Run("krampus", func(t *testing.T) {
+		tb := NewSetup(t, engine.SituationSetup{Players: seats, Monsters: []engine.CardRef{"leech", "fly"}}, sets...)
+		if err := tb.G.StartChallenge(&challenge.Krampus, engine.DifficultyNormal); err != nil {
+			t.Fatal(err)
+		}
+		tb.G.AddPresentCounters(engine.PresentLoot, -1, engine.NoPlayer)
+		tb.G.DestroyPresent(engine.PresentTreasure)
+		tb.G.AddPlayerCounters(1, challenge.FearCounter, 2)
+		tb.G.ForceRolls(5)
+		tb.Activate(0, "book_of_sin", 0)
+	})
+	d, _ := readDump(t, dir, "TestDumpRecordsAChallenge/krampus")
+	want := &engine.SituationGame{Type: "challenge", ID: "krampus", Difficulty: "normal", Presents: []engine.SituationPresent{
+		{Kind: "loot", Counters: 1}, {Kind: "treasure", Destroyed: true},
+	}}
+	fear := []engine.SituationCounter{{Card: "player", Name: "fear", Count: 2}}
+	if !reflect.DeepEqual(d.Setup.Game, want) || d.Setup.Bosses != nil || !reflect.DeepEqual(d.Setup.Players[1].Counters, fear) {
+		t.Errorf("game %+v, bosses %v, Cain's counters %v; want %+v, none, %v", d.Setup.Game, d.Setup.Bosses, d.Setup.Players[1].Counters, want, fear)
+	}
+	if hasTodo(d, "no setup field says it") {
+		t.Errorf("todo %q; want the challenge said in full", d.Todo)
+	}
+	t.Run("trick", func(t *testing.T) {
+		tb := NewSetup(t, engine.SituationSetup{Players: seats, Monsters: []engine.CardRef{"leech", "fly"}}, sets...)
+		if err := tb.G.StartChallenge(&challenge.TrickOrTreat, engine.DifficultyHard); err != nil {
+			t.Fatal(err)
+		}
+		tb.G.Flip(tb.G.Challenge.Card)
+		boss, _ := tb.G.Bosses[0].TopOf()
+		tb.G.AddNamedCounters(boss, challenge.TrickCounter, -10)
+		tb.G.ForceRolls(5)
+		tb.Activate(0, "book_of_sin", 0)
+	})
+	d, _ = readDump(t, dir, "TestDumpRecordsAChallenge/trick")
+	want = &engine.SituationGame{Type: "challenge", ID: "trick_or_treat", Difficulty: "hard", RuleCard: "treat_normhardultra"}
+	tricks := []engine.SituationCounter{{Card: "mischievous_the_haunt_hard", Name: "trick", Count: 4}}
+	if !reflect.DeepEqual(d.Setup.Game, want) || !reflect.DeepEqual(d.Setup.Counters, tricks) || hasTodo(d, "no setup field says it") {
+		t.Errorf("game %+v, counters %v, todo %q; want %+v and %v", d.Setup.Game, d.Setup.Counters, d.Todo, want, tricks)
 	}
 }

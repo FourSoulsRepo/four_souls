@@ -1,0 +1,19 @@
+{
+  "title": "Isaac plays Pills! and rolls a 3: does 1 damage kill the Fly he picks?",
+  "source": ["card pills_3_fsp2", "card fly", "R-CARD-13"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["pills_3_fsp2"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [3]
+  },
+  "action": {"player": 0, "kind": "play", "card": "pills_3_fsp2", "choices": ["fly"]},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [3],
+    "monsters": [{"card": "fly", "dead": true}, {"slot": 1, "card": "dip"}],
+    "after": [{"player": 0, "cents": 1, "damage": 0}]
+  }
+}

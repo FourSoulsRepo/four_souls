@@ -8,7 +8,7 @@ import (
 )
 
 func TestEden(t *testing.T) {
-	testExtraLoot(t, "eden")
+	testExtraLootOnAnotherTurn(t, "eden")
 	// Eden's choice comes before the first-player roll (R-SETUP-09).
 	g, _, err := engine.NewGame(engine.Setup{Seed: 7, Players: 2, Sets: []engine.CardSet{Set}, Characters: []engine.CardRef{"isaac", "eden"}})
 	if err != nil {

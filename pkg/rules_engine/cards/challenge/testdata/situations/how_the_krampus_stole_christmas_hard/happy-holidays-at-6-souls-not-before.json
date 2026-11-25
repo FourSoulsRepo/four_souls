@@ -1,0 +1,27 @@
+{
+  "title": "Krampus challenge, Hard: the players hold 4 souls; Isaac keeps a soul, then another; when does Happy Holidays! come?",
+  "source": ["card how_the_krampus_stole_christmas_hard", "R-KRAMPUS-07", "R-KRAMPUS-10", "Q-30", "Q-40"],
+  "sets": ["b2", "challenge", "krampus_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "hard"},
+    "players": [{"character": "isaac", "souls": ["fly", "fly", "fly", "fly"]}, {"character": "cain"}],
+    "active": 0,
+    "attacks": 2,
+    "monsters": ["leech", "fly"],
+    "decks": {"treasure": ["boomerang", "breakfast", "box", "blank_card"]},
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "mixed_bag", "choices": ["ask.no", "ask.no", "ask.no"],
+     "expect": {"allowed": true,
+       "events": [{"kind": "presents_flipped", "none": true}],
+       "after": [{"player": 0, "souls": 5}, {"player": 1, "items": []}]}},
+    {"player": 0, "kind": "reveal", "card": "mixed_bag",
+     "choices": ["ask.no", "ask.no", "ask.no", "player 2 (cain)", "player 2 (cain)", "player 2 (cain)", "player 2 (cain)"],
+     "expect": {"allowed": true,
+       "events": [{"kind": "presents_flipped"}, {"kind": "present_given"}],
+       "presents": [{"kind": "cents", "to": 1}, {"kind": "loot", "to": 1}, {"kind": "treasure", "to": 1}, {"kind": "soul", "to": 1}],
+       "after": [{"player": 0, "souls": 6, "items": []}, {"player": 1, "items": ["boomerang", "breakfast", "box", "blank_card"]}]}}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [6, 6]}
+}

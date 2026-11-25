@@ -1,0 +1,21 @@
+{
+  "title": "In Isaac's loot step the Lost uses Holy Mantle on herself; on her own next turn she misses the Fly: does she die?",
+  "source": ["card holy_mantle", "card fly", "R-TURN-04", "R-PRIO-02", "R-TURN-13", "R-ATK-13"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "the_lost", "items": ["holy_mantle"]}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "phase": "loot",
+    "priority": 1,
+    "decks": {"loot": ["a_penny"]},
+    "rolls": [1]
+  },
+  "steps": [
+    {"player": 1, "kind": "activate", "card": "holy_mantle", "choices": ["player 2 (the_lost)"]},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1}},
+    {"player": 1, "kind": "attack", "choices": ["fly", "a_penny", "holy_mantle: At the end of your turn, recharge this.", "ask.none"],
+     "expect": {"allowed": true, "resolved_rolls": [1], "events": [{"kind": "died", "player": 1}]}}
+  ],
+  "expect": {"allowed": true}
+}

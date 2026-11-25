@@ -1,0 +1,14 @@
+{
+  "title": "Isaac uses The D4 on Cain, who has Breakfast and Dinner: are both replaced by the top 2 treasure cards?",
+  "source": ["card the_d4", "R-MECH-03", "R-MECH-48"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_d4"]}, {"character": "cain", "items": ["breakfast", "dinner"]}],
+    "active": 0,
+    "decks": {"treasure": ["mystery_sack", "jawbone"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "the_d4", "choices": ["player 2 (cain)"]},
+  "expect": {"allowed": true,
+    "discards": {"treasure": ["the_d4", "breakfast", "dinner"]},
+    "after": [{"player": 0, "items": []}, {"player": 1, "items": ["mystery_sack", "jawbone"]}]}
+}

@@ -93,6 +93,8 @@ Use option 1.
    5. An `https://` link: a ruling outside the repo.
    6. The runner checks the form; a rule or question ID must exist.
    7. House and Community rulings keep their label in `open-questions.md`.
+   8. An open question may be cited only by a file whose title says it waits.
+   9. Such a file checks the engine's current answer (owner, 2026-11-25: Q-27, Q-28).
 10. Format compatibility
    1. Old payloads keep working; website links hold them (12.7).
    2. `action` stays; `steps` is added beside it (24.4).
@@ -116,6 +118,17 @@ Use option 1.
    20. `expect.deck_bottoms` names a deck's bottom cards, in any order (24.11).
    21. Any order: several cards go to the bottom at random (Q-22).
    22. `expect.resolved_rolls`: each roll's final value, in order (R-DICE-06).
+   23. A card in a slot sets no duty; the setup names it (owner, 2026-11-23).
+   24. `setup.must_attack`, `must_attacks`, `must_attack_deck`: this turn's duties (19.235).
+   25. `setup.must_attack_one_of`: an extra attack owed on one of these cards (19.241).
+   26. It names cards; a covered one counts once it comes up (19.241).
+   27. `setup.random`: the next random picks, by option label (24.30).
+   28. Picks after the list are random from `seed`, as dice after `rolls`.
+   29. `setup.game`: the game type; `regular` by default (24.34).
+   30. `challenge` starts one on the built table, as a game does.
+   31. `team` is refused until Q-03 is resolved.
+   32. `"card": "player"` in counters: counters on the player (R-MECH-13).
+   33. `expect.presents`: a challenge's presents.
 11. `expect` comes from the rules, never from a run (5.25).
    1. A tool may write `setup` and `steps`; never `expect` (24.7).
    2. `enginetest` dumps a Go test with `SITUATION_DUMP` (24.7).
@@ -132,6 +145,8 @@ Use option 1.
    7. A payload outside a tree is read as before.
    8. An unknown field's error names its line, path and nearest field.
    9. A mismatch names its step, or the end for the top `expect`.
+   10. `enginetest.RunInteractionSituations` runs the cross-set tree with every set (24.22).
+   11. A test file fails on rolls or picks left unused (24.32).
 13. A new card's simple tests are files from now on.
    1. `Adding-a-card.md` says how (24.9).
 

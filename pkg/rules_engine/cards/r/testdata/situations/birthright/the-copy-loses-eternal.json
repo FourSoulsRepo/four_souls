@@ -1,0 +1,22 @@
+{
+  "title": "Birthright copies Isaac's Keeper's Bargain; then the Leech kills him: does the death penalty destroy the copy, which lost eternal, and spare Keeper's Bargain?",
+  "source": ["card birthright", "card keepers_bargain", "card leech", "R-DEATH-14", "R-ATK-13"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["keepers_bargain", "birthright"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [1]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "birthright", "choices": ["keepers_bargain"], "expect": {"allowed": true}},
+    {"player": 0, "kind": "attack", "choices": ["leech"],
+     "expect": {"allowed": true, "resolved_rolls": [1], "events": [{"kind": "died", "player": 0}], "prompt": {"player": 0, "options": ["birthright"]}}},
+    {"kind": "choose", "choices": ["birthright"],
+     "expect": {"allowed": true,
+       "discards": {"treasure": ["birthright"]}, "active": 1,
+       "after": [{"player": 0, "items": ["keepers_bargain"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

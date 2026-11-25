@@ -1,0 +1,22 @@
+{
+  "title": "Isaac's attack roll of 1 on the Leech waits on the stack; Cain, with a loot play from his ↷, plays Emergency Contact: is the attack cancelled, with no damage to Isaac, and the Leech put on the bottom of the monster deck?",
+  "source": ["card emergency_contact", "card cain", "R-ATK-14", "R-ATK-15", "R-SHOP-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "hand": ["emergency_contact"], "deactivated": ["character"], "extra_loot_plays": 1}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"monster": ["dip"]},
+    "stack": [{"kind": "attack_roll", "dice_roll": 1, "card": "leech", "owner": 0}],
+    "priority": 1
+  },
+  "action": {"player": 1, "kind": "play", "card": "emergency_contact"},
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [],
+    "monsters": [{"slot": 1, "card": "dip"}, {"slot": 2, "card": "fly"}],
+    "deck_bottoms": {"monster": ["leech"]},
+    "discards": {"loot": ["emergency_contact"]},
+    "after": [{"player": 0, "damage": 0}, {"player": 1, "hand_cards": []}]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "title": "Isaac uses Birthright with Keeper's Bargain and a Spoon Bender: is only the eternal Keeper's Bargain offered, and does the copy cut his shop price by 3¢ more?",
+  "source": ["card birthright", "card keepers_bargain", "card breakfast", "R-MECH-08", "R-SHOP-03", "R-ABIL-04"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["keepers_bargain", "birthright", "spoon_bender"], "cents": 4}, {"character": "cain"}],
+    "active": 0,
+    "shop": ["breakfast"],
+    "decks": {"treasure": ["book_of_sin"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "birthright",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["keepers_bargain", "ask.cancel"]}}},
+    {"kind": "choose", "choices": ["keepers_bargain"], "expect": {"allowed": true, "after": [{"player": 0, "cents": 4}]}},
+    {"player": 0, "kind": "purchase", "choices": ["breakfast"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 0, "hp": 3}]}}
+  ],
+  "expect": {"allowed": true}
+}

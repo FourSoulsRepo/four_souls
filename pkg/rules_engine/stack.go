@@ -201,11 +201,12 @@ func (g *Game) resolveTop() {
 			g.enqueue(Action{Kind: r.action(), Player: it.Controller, Amount: it.Roll * max(it.Amount, 1), Reward: true})
 		}
 		if it.RollFor.Card != "" {
-			// The roll ability's result trigger goes on the stack (R-ABIL-24).
-			g.push(StackItem{
-				Kind: StackTrigger, Controller: it.Controller, Source: it.Source, Card: it.RollFor.Card,
-				Ability: it.RollFor, Mode: it.Mode, Targets: it.Targets, RollResult: it.Roll, Label: eventRollResult.Msg(),
+			// The roll ability's result trigger (R-ABIL-24) waits with the
+			// roll's other triggers, so their order is chosen (R-ABIL-15).
+			g.PendingTriggers = append(g.PendingTriggers, PendingTrigger{
+				Ability: it.RollFor, Source: it.Source, Controller: it.Controller, On: EvRollResolved,
 				EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject, EventSource: it.EventSource, EventBy: it.EventBy,
+				RollResult: it.Roll, Mode: it.Mode, Targets: it.Targets,
 			})
 		}
 	case StackDamage:

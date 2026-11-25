@@ -1,0 +1,19 @@
+{
+  "title": "Isaac's Undefined copies the shop's Breakfast: does he have 3 HP through Cain's turn, and 2 HP once his next turn starts and he puts the Spoon Bender into discard?",
+  "source": ["card undefined", "card breakfast", "R-MECH-08", "R-CARD-34", "R-TURN-03"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["undefined"]}, {"character": "cain"}],
+    "active": 0,
+    "shop": ["breakfast", "spoon_bender"],
+    "decks": {"treasure": ["book_of_sin"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "undefined", "choices": ["breakfast"],
+     "expect": {"allowed": true, "after": [{"player": 0, "hp": 3, "deactivated": []}]}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "hp": 3}]}},
+    {"player": 1, "kind": "end_turn", "choices": ["spoon_bender"],
+     "expect": {"allowed": true, "active": 0, "discards": {"treasure": ["spoon_bender"]}, "after": [{"player": 0, "hp": 2}]}}
+  ],
+  "expect": {"allowed": true}
+}

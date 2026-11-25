@@ -1,0 +1,14 @@
+{
+  "title": "Isaac uses Mom's Shovel on Cain, who has no soul: is the Shovel destroyed anyway, with nothing stolen?",
+  "source": ["card moms_shovel", "R-MECH-03"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["moms_shovel"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "moms_shovel", "choices": ["player 2 (cain)"]},
+  "expect": {"allowed": true,
+    "discards": {"treasure": ["moms_shovel"]},
+    "after": [{"player": 0, "items": [], "souls": 0, "soul_cards": []}, {"player": 1, "souls": 0}]}
+}

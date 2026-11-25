@@ -1,0 +1,16 @@
+{
+  "title": "Isaac (2 HP) has Lard; Cain's Bomb! hits him: is he at 3 of 4 HP, and does he discard his A Penny!?",
+  "source": ["card lard", "card bomb", "card isaac", "R-MECH-25"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["lard"], "hand": ["a_penny"]}, {"character": "cain"}],
+    "active": 0,
+    "stack": [{"kind": "play", "card": "bomb", "owner": 1, "choices": ["player 1 (isaac)"]}]
+  },
+  "action": {"player": 1, "kind": "pass", "choices": ["a_penny"]},
+  "expect": {
+    "allowed": true,
+    "discards": {"loot": ["bomb", "a_penny"]},
+    "after": [{"player": 0, "damage": 1, "hp": 3, "hand": 0}]
+  }
+}

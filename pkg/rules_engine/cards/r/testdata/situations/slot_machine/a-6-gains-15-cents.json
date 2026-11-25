@@ -1,0 +1,20 @@
+{
+  "title": "Slot Machine: Isaac pays 3¢ and rolls a 6; he gains 15¢, the room goes to discard and White Champions refills the slot",
+  "source": ["card slot_machine", "R-ABIL-24", "R-SHOP-06", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "cents": 3},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["slot_machine"],
+    "decks": {"room": ["white_champions"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "slot_machine"}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [6], "after": [{"player": 0, "cents": 15}], "discards": {"room": ["slot_machine"]}, "monsters": [{"card": "white_champions"}]}
+}

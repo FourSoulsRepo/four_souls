@@ -1,0 +1,19 @@
+{
+  "title": "Ultra Flesh Kid! has 11 counters; Isaac kills the Fly and ends his turn with 12: does it become his soul?",
+  "source": ["card ultra_flesh_kid", "card fly", "R-TURN-10", "R-CARD-18"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["ultra_flesh_kid"], "counters": [{"card": "ultra_flesh_kid", "count": 11}]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "counters": [{"card": "ultra_flesh_kid", "count": 12}]}]}},
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "souls": 1, "soul_cards": ["ultra_flesh_kid"], "items": []}]}}
+  ],
+  "expect": {"allowed": true}
+}

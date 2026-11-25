@@ -1,0 +1,21 @@
+{
+  "title": "Isaac (5¢) misses Greed and takes 1 damage: does each player lose 4¢, Cain his last 3¢, before Isaac kills it for 9¢?",
+  "source": ["card greed", "card isaac", "card breakfast", "R-ATK-12", "R-ATK-13", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["breakfast"], "cents": 5}, {"character": "cain", "cents": 3}],
+    "active": 0,
+    "monsters": ["greed"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [1, 6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["greed"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 6, 6, 6],
+    "monsters": [{"card": "greed", "dead": true}],
+    "after": [{"player": 0, "damage": 1, "cents": 10, "soul_cards": ["greed"]}, {"player": 1, "cents": 0}]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "title": "Gutted Fatty at 1 HP: Isaac kills it; monster slots expand by 1, and he must make one more attack before his turn can end",
+  "source": ["card gutted_fatty", "card clotty", "R-DEATH-05", "R-DEATH-09", "R-MECH-31", "R-SHOP-06", "R-ATK-03"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["gutted_fatty", "fly"],
+    "monster_damage": {"gutted_fatty": 4},
+    "decks": {"monster": ["clotty", "clotty"], "treasure": ["book_of_sin"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["gutted_fatty"],
+     "expect": {"allowed": true, "attacks": 1, "after": [{"player": 0, "items": ["book_of_sin"]}],
+       "monsters": [{"card": "gutted_fatty", "dead": true}, {"slot": 1, "card": "clotty"}, {"slot": 2, "card": "fly"}, {"slot": 3, "card": "clotty"}]}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": false, "rule": "R-ATK-03"}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ATK-03", "resolved_rolls": [6]}
+}

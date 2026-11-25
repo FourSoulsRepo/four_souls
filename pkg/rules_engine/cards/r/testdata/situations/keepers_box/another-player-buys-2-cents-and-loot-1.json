@@ -1,0 +1,12 @@
+{
+  "title": "Cain buys the shop's Spoon Bender: does Isaac's Keeper's Box give Isaac 2¢ and loot 1?",
+  "source": ["card keepers_box", "R-SHOP-03", "R-SHOP-04"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "cain", "cents": 10}, {"character": "isaac", "items": ["keepers_box"]}],
+    "active": 0,
+    "shop": ["spoon_bender"]
+  },
+  "action": {"player": 0, "kind": "purchase", "choices": ["spoon_bender"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 0, "items": ["spoon_bender"]}, {"player": 1, "cents": 2, "hand": 1}]}
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Isaac has Broken Remote and uses Sack of Pennies: may he put Spider Webs from its room slot into discard?",
+  "source": ["card broken_remote", "card sack_of_pennies", "R-ABIL-10"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["broken_remote", "sack_of_pennies"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["spider_webs"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "sack_of_pennies", "choices": ["spider_webs"]},
+  "expect": {"allowed": true, "discards": {"room": ["spider_webs"], "monster": []}, "after": [{"player": 0, "cents": 1, "deactivated": ["sack_of_pennies"]}]}
+}

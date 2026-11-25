@@ -1,0 +1,18 @@
+{
+  "title": "Two Lazaruses: the active one's ↷ waits on the stack, and the other Lazarus uses ↷ in response; does the active Lazarus have 2 loot plays, and is a second ↷ refused?",
+  "source": ["card lazarus", "R-MECH-01", "R-PRIO-01", "R-TURN-05", "R-ABIL-07", "R-ABIL-10"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "lazarus", "deactivated": ["character"]}, {"character": "lazarus"}],
+    "active": 0,
+    "stack": [{"kind": "activate", "card": "lazarus", "owner": 0}],
+    "priority": 1
+  },
+  "steps": [
+    {"player": 1, "kind": "activate", "card": "lazarus",
+     "expect": {"allowed": true, "resolved": ["lazarus", "lazarus"], "loot_plays": 2, "after": [{"player": 0, "deactivated": ["character"]}, {"player": 1, "deactivated": ["character"]}]}},
+    {"player": 0, "kind": "activate", "card": "lazarus",
+     "expect": {"allowed": false, "rule": "R-ABIL-07", "loot_plays": 2}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-07"}
+}

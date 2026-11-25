@@ -1,0 +1,14 @@
+{
+  "title": "At the end of Isaac's turn, does Fetal Haunt make him give Cain his Bomb!?",
+  "source": ["card fetal_haunt", "R-TURN-10", "R-MECH-37"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["fetal_haunt"], "hand": ["bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "decks": {"loot": ["a_penny"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "choices": ["bomb", "player 2 (cain)"]}
+  ],
+  "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "hand": 0}, {"player": 1, "hand_cards": ["bomb", "a_penny"]}]}
+}

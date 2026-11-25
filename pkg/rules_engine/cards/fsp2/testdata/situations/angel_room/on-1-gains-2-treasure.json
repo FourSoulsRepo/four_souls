@@ -1,0 +1,22 @@
+{
+  "title": "Isaac reveals Angel Room and rolls a 1: does he gain 2 treasure and loot nothing?",
+  "source": ["card angel_room", "R-CARD-02", "R-CARD-15", "R-ATK-09"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fatty", "monstro"],
+    "decks": {"treasure": ["breakfast", "dinner"]},
+    "rolls": [1]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "angel_room"}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1],
+    "monsters": [{"slot": 1, "card": "fatty"}],
+    "discards": {"monster": ["angel_room"]},
+    "after": [{"player": 0, "items": ["breakfast", "dinner"], "hand": 0}]
+  }
+}

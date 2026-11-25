@@ -1,0 +1,17 @@
+{
+  "title": "No ↷ item is in play: may Isaac play ? Card?",
+  "source": ["card questionmark_card", "R-ABIL-40"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["questionmark_card"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "questionmark_card"},
+  "expect": {
+    "allowed": false,
+    "rule": "R-ABIL-40",
+    "loot_plays": 1,
+    "after": [{"player": 0, "hand_cards": ["questionmark_card"]}]
+  }
+}

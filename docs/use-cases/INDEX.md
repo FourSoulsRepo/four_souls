@@ -50,3 +50,4 @@
 | UC-46 | See what the turn owes | `frontend` | Implemented | [app/uc-46-see-what-the-turn-owes.md](app/uc-46-see-what-the-turn-owes.md) |
 | UC-47 | Play with bots | `frontend`, `internal/server` | Implemented | [app/uc-47-play-with-bots.md](app/uc-47-play-with-bots.md) |
 | UC-48 | Run the diagnostics | `internal/diag`, `bindings/probe`, `frontend` | Implemented | [app/uc-48-run-the-diagnostics.md](app/uc-48-run-the-diagnostics.md) |
+| UC-49 | See a card under an item | `rules_engine`, `frontend` | Implemented | [app/uc-49-see-a-card-under-an-item.md](app/uc-49-see-a-card-under-an-item.md) |

@@ -1,0 +1,22 @@
+{
+  "title": "Trick or Treat, Normal: Mischievous The Haunt has 3 trick counters and the players hold 3 souls; may Isaac attack it?",
+  "source": ["card mischievous_the_haunt_norm", "R-TRICK-04", "R-TRICK-06", "R-ATK-02", "Q-30"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "normal"},
+    "players": [
+      {"character": "isaac", "souls": ["monstro", "gemini"]},
+      {"character": "cain", "souls": ["chub"]}
+    ],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "counters": [{"card": "mischievous_the_haunt_norm", "name": "trick", "count": 3}]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true,
+       "prompt": {"player": 0, "options": ["leech", "fly", "mischievous_the_haunt_norm", "ask.deck.monster"]},
+       "counters": [{"card": "mischievous_the_haunt_norm", "name": "trick", "count": 3}]}}
+  ],
+  "expect": {"allowed": true}
+}

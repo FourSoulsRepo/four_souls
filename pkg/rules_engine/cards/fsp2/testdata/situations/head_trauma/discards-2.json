@@ -1,0 +1,18 @@
+{
+  "title": "Isaac reveals Head Trauma with 3 loot cards: does he discard the 2 he picks?",
+  "source": ["card head_trauma", "R-MECH-25", "R-CARD-15"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["bomb", "two_cents", "four_cents"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fatty", "monstro"]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "head_trauma", "choices": ["bomb", "two_cents"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "discards": {"loot": ["bomb", "two_cents"], "monster": ["head_trauma"]},
+    "after": [{"player": 0, "hand_cards": ["four_cents"]}]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "title": "The Capricious dies on Cain's turn before Glitch gains an ability; then Glitch gains the shop Jawbone's ↷ and she uses it: is Glitch deactivated only once it has a ↷, and does Lil Battery offer it?",
+  "source": ["card glitch", "card jawbone", "card lil_battery", "card bomb", "R-ABIL-38", "R-DEATH-14", "R-DEATH-19", "R-MECH-54", "R-TURN-02", "R-TURN-04"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "cain", "cents": 5, "hand": ["bomb"]},
+      {"character": "the_capricious", "items": ["glitch"], "damage": 1}
+    ],
+    "active": 0,
+    "shop": ["jawbone", "spoon_bender"],
+    "decks": {"loot": ["lil_battery"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["player 2 (the_capricious)"],
+     "expect": {"allowed": true, "events": [{"kind": "died", "player": 1}], "after": [{"player": 1, "dead": true, "items": ["glitch"], "deactivated": ["character"]}]}},
+    {"player": 0, "kind": "end_turn", "choices": ["jawbone"],
+     "expect": {"allowed": true, "active": 1, "after": [{"player": 1, "dead": false, "deactivated": [], "hand_cards": ["lil_battery"]}]}},
+    {"player": 1, "kind": "activate", "card": "glitch", "ability": 2, "choices": ["player 1 (cain)"],
+     "expect": {"allowed": true, "after": [{"player": 0, "cents": 2}, {"player": 1, "cents": 3, "deactivated": ["glitch"]}]}},
+    {"player": 1, "kind": "play", "card": "lil_battery",
+     "expect": {"allowed": true, "prompt": {"player": 1, "options": ["glitch", "ask.cancel"]}}},
+    {"kind": "choose", "choices": ["glitch"]}
+  ],
+  "expect": {"allowed": true, "discards": {"loot": ["bomb", "lil_battery"]}, "after": [{"player": 1, "deactivated": [], "items": ["glitch"]}]}
+}

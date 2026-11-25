@@ -1,0 +1,26 @@
+{
+  "title": "The Harbingers with 3 counters at 1 HP: Isaac's 6 gives it the 4th; it flips to The Beast!, everyone rolls, and Isaac's 2 under Cain's 5 kills him",
+  "source": ["card the_harbingers", "R-ABIL-29", "R-MECH-27", "R-MECH-33", "R-CARD-39", "R-MECH-53", "R-DEATH-12", "R-DEATH-14"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech", "the_harbingers"],
+    "monster_damage": {"the_harbingers": 3},
+    "counters": [{"card": "the_harbingers", "count": 3}],
+    "decks": {"treasure": ["book_of_sin"]},
+    "rolls": [6, 2, 5]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["the_harbingers", "book_of_sin"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 1,
+    "after": [{"player": 0, "souls": 0, "items": []}],
+    "events": [{"kind": "died", "player": 0}, {"kind": "died", "player": 1, "none": true}],
+    "monsters": [{"slot": 3, "card": "the_harbingers", "hp": 6, "atk": 2, "evasion": 4}],
+    "counters": [{"card": "the_harbingers", "count": 4}],
+    "discards": {"treasure": ["book_of_sin"]}
+  }
+}

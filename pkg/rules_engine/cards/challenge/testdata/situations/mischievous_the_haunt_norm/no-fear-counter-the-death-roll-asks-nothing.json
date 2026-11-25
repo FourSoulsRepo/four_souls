@@ -1,0 +1,22 @@
+{
+  "title": "Trick or Treat, Normal: no player has a fear counter; Isaac kills the Fly and the death roll is a 6; is anyone asked to remove a fear counter?",
+  "source": ["card mischievous_the_haunt_norm", "R-TRICK-10", "Q-51"],
+  "sets": ["b2", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "normal"},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"monster": ["bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob"]},
+    "rolls": [6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly", "mischievous_the_haunt_norm: Each time a monster dies, the active player rolls- 4-6: Remove a fear counter from a player."]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6, 6],
+    "monsters": [{"card": "fly", "dead": true}],
+    "after": [{"player": 0, "cents": 1, "counters": [{"card": "player", "name": "fear", "count": 0}]}, {"player": 1, "counters": [{"card": "player", "name": "fear", "count": 0}]}]
+  }
+}

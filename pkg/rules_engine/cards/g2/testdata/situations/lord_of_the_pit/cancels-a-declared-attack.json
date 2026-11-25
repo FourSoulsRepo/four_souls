@@ -1,0 +1,13 @@
+{
+  "title": "Azazel declared an attack and has not picked the target; he cancels it with Lord of the Pit: does he get the attack back?",
+  "source": ["card lord_of_the_pit", "R-ATK-02", "R-ATK-04", "R-ATK-14", "R-TURN-07", "R-ABIL-40"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "azazel", "items": ["lord_of_the_pit"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "declared": "attack"
+  },
+  "action": {"player": 0, "kind": "activate", "card": "lord_of_the_pit"},
+  "expect": {"allowed": true, "attacks": 1, "after": [{"player": 0, "deactivated": ["lord_of_the_pit"]}]}
+}

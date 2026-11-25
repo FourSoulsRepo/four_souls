@@ -1,0 +1,21 @@
+{
+  "title": "Isaac misses Rage Creep (1 ATK) with a 1: is its 1 damage to him also dealt to Cain, the player to his left?",
+  "source": ["card rage_creep", "card isaac", "R-ATK-12", "R-ATK-13", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["rage_creep"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [1, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["rage_creep"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 6],
+    "monsters": [{"card": "rage_creep", "dead": true}],
+    "after": [{"player": 0, "damage": 1, "hand": 2}, {"player": 1, "damage": 1}]
+  }
+}

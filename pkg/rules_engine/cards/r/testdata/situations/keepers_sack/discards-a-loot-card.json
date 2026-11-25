@@ -1,0 +1,15 @@
+{
+  "title": "Isaac ends his turn with Keeper's Sack and a Bomb! in hand: does he discard it and take no damage?",
+  "source": ["card keepers_sack", "R-TURN-10"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["keepers_sack"], "hand": ["bomb"]}, {"character": "cain"}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "choices": ["bomb"],
+     "expect": {"allowed": true, "active": 1, "discards": {"loot": ["bomb"]}, "events": [{"kind": "damaged", "player": 0, "none": true}],
+       "after": [{"player": 0, "hand": 0}]}}
+  ],
+  "expect": {"allowed": true}
+}

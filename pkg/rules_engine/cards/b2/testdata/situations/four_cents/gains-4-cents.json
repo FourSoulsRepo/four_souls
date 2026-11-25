@@ -1,0 +1,12 @@
+{
+  "title": "Isaac plays 4 Cents!: does he gain 4¢, and is the card in the loot discard?",
+  "source": ["card four_cents", "R-CARD-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["four_cents"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "four_cents"},
+  "expect": {"allowed": true, "discards": {"loot": ["four_cents"]}, "after": [{"player": 0, "cents": 4, "hand": 0}, {"player": 1, "cents": 0}]}
+}

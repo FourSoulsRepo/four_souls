@@ -1,0 +1,22 @@
+{
+  "title": "Isaac uses R Key: are his Monstro and Cain's Gurdy destroyed, and does each player discard their hand and loot 3?",
+  "source": ["card r_key", "card monstro", "card gurdy", "R-ZONE-06", "R-ABIL-10"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["r_key"], "souls": ["monstro"], "hand": ["bomb"]},
+      {"character": "cain", "souls": ["gurdy"]}
+    ],
+    "active": 0,
+    "decks": {"loot": ["a_penny", "a_penny", "a_penny", "a_penny", "a_penny", "a_penny"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "r_key"},
+  "expect": {
+    "allowed": true,
+    "discards": {"treasure": ["r_key"], "monster": ["monstro", "gurdy"], "loot": ["bomb"]},
+    "after": [
+      {"player": 0, "souls": 0, "soul_cards": [], "items": [], "hand_cards": ["a_penny", "a_penny", "a_penny"]},
+      {"player": 1, "souls": 0, "soul_cards": [], "hand_cards": ["a_penny", "a_penny", "a_penny"]}
+    ]
+  }
+}

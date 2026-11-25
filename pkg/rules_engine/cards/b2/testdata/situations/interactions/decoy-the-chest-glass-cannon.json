@@ -1,0 +1,22 @@
+{
+  "title": "Isaac's Glass Cannon targets his The Chest; Cain swaps it away with Decoy: is The Chest still destroyed, and whose soul does it become?",
+  "source": ["card glass_cannon", "card decoy", "card the_chest", "R-ABIL-34"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["glass_cannon", "the_chest"], "deactivated": ["glass_cannon"]},
+      {"character": "cain", "items": ["decoy"]}
+    ],
+    "active": 0,
+    "stack": [{"kind": "activate", "card": "glass_cannon", "owner": 0, "choices": ["the_chest"]}],
+    "priority": 1,
+    "rolls": [6]
+  },
+  "action": {"player": 1, "kind": "activate", "card": "decoy", "choices": ["the_chest"]},
+  "expect": {"allowed": true,
+    "resolved_rolls": [6],
+    "after": [
+      {"player": 0, "items": ["glass_cannon", "decoy"], "souls": 0, "soul_cards": []},
+      {"player": 1, "items": [], "souls": 1, "soul_cards": ["the_chest"]}
+    ]}
+}

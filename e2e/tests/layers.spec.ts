@@ -281,3 +281,33 @@ test('a zoomed card shows above the replay bar (10.2)', async ({ page }) => {
   await shot(page, 'layers-replay-zoom');
   expect(await onTop(zoom, bar)).toBe(true);
 });
+
+test('the band of a card under an item shows over the board; the item over its band (19.244)', async ({ browser }) => {
+  const [page] = await startGame(browser, ['Vic', 'Wes'], { url: fast() });
+  if (!page) {
+    throw new Error('no pages');
+  }
+  // Fly under the viewer's first item, as the server sends Friendly
+  // Ball's catch. Only the screen changes; nobody acts on it.
+  await page.evaluate(() => {
+    interface S {
+      game: { view: { players: { id: number; in_play: { under?: string[] }[] | null }[] } } | null;
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } }).fourSouls;
+    const { game } = store.getState();
+    if (!game) {
+      throw new Error('no game');
+    }
+    const you = Number(document.querySelector('.player-bottom')?.getAttribute('data-zone')?.replace('player-', ''));
+    const players = game.view.players.map((p) => (p.id === you ? { ...p, in_play: (p.in_play ?? []).map((c, i) => (i === 0 ? { ...c, under: ['fly'] } : c)) } : p));
+    store.setState({ game: { ...game, view: { ...game.view, players } } });
+  });
+  const holder = page.getByRole('group', { name: tr('table.your_items') }).locator('.card-holder.has-under');
+  const band = holder.locator('.card-under-peek');
+  await expect(band).toBeVisible();
+  // The band rises over the board's rim: it is drawn there.
+  expect(await onTop(band, page.locator('.board'))).toBe(true);
+  // The item lies on its own band.
+  expect(await onTop(holder.locator(':scope > .card'), band)).toBe(true);
+  await shot(page, 'layers-under-board');
+});

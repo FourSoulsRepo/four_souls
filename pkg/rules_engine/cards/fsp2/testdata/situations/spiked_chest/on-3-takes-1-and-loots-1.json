@@ -1,0 +1,21 @@
+{
+  "title": "Isaac reveals Spiked Chest and rolls a 3: does he take 1 damage and loot 1?",
+  "source": ["card spiked_chest", "R-MECH-18", "R-CARD-06"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fatty", "monstro"],
+    "decks": {"loot": ["a_penny"]},
+    "rolls": [3]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "spiked_chest"}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [3],
+    "discards": {"monster": ["spiked_chest"]},
+    "after": [{"player": 0, "damage": 1, "hand_cards": ["a_penny"], "items": []}]
+  }
+}

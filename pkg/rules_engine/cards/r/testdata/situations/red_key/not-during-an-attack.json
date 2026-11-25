@@ -1,0 +1,13 @@
+{
+  "title": "Isaac has declared an attack: may he use Red Key?",
+  "source": ["card red_key", "R-ATK-02", "R-ABIL-08"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["red_key"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "declared": "attack"
+  },
+  "action": {"player": 0, "kind": "activate", "card": "red_key"},
+  "expect": {"allowed": false, "rule": "R-ABIL-08"}
+}

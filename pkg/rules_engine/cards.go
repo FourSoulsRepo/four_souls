@@ -179,6 +179,10 @@ type CardSet struct {
 	Reprints []Reprint
 	// Groups are the cards' deck ratio groups (R-SETUP-17).
 	Groups map[CardRef]RatioGroup
+	// Challenges are the challenges whose cards this set holds
+	// (ChallengeDef.Set), so a situation's setup.game finds one by its
+	// ID (24.34).
+	Challenges []*ChallengeDef
 }
 
 // Reprint is a set's copies of a card that an older set defines: the Gold

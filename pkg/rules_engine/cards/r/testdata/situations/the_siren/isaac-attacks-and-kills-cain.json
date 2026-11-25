@@ -1,0 +1,23 @@
+{
+  "title": "The Siren in a slot: may Isaac attack Cain? He does; Cain has DC 4, two 4s kill him (2 HP) and end the attack",
+  "source": ["card the_siren", "R-ATK-02", "R-ATK-20", "R-MECH-06", "R-ATK-14"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["the_siren", "fly"],
+    "rolls": [4, 4]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["the_siren", "fly", "player 2 (cain)", "ask.deck.monster"]}}},
+    {"kind": "choose", "choices": ["player 2 (cain)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [4, 4],
+    "after": [{"player": 0, "damage": 0}, {"player": 1, "dead": true}],
+    "events": [{"kind": "died", "player": 1}],
+    "monsters": [{"slot": 1, "card": "the_siren", "damage": 0}, {"slot": 2, "card": "fly", "damage": 0}]
+  }
+}

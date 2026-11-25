@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -53,6 +54,10 @@ type SituationSetup struct {
 	Purchases *int `json:"purchases,omitempty"`
 	// Rolls are the next dice results, in order (as Game.ForceRolls).
 	Rolls []int `json:"rolls,omitempty"`
+	// Random names the next random picks, in order, each by its option
+	// label as in choices: "player 2 (cain)" (24.30). Picks after them
+	// are random from the seed, as dice after Rolls.
+	Random []string `json:"random,omitempty"`
 	// Decks puts cards on top of decks by name ("loot", "treasure",
 	// "monster", "room"), top first, above the shuffled set cards.
 	Decks map[string][]CardRef `json:"decks,omitempty"`
@@ -78,6 +83,24 @@ type SituationSetup struct {
 	// (R-ATK-02, R-SHOP-02). Stack holds the responses to it; they
 	// resolve before the choice.
 	Declared string `json:"declared,omitempty"`
+	// MustAttack, MustAttacks and MustAttackDeck are the attack duties
+	// in force this turn, as the Turn fields of those names hold them
+	// (19.235). A card in a slot does not set its duty: a player may
+	// have stopped it, so the setup says which hold. MustAttack names
+	// what the active player must attack; MustAttacks is how many more
+	// attacks they must make; MustAttackDeck how many of their next
+	// attacks must go to the monster deck.
+	MustAttack     CardRef `json:"must_attack,omitempty"`
+	MustAttacks    int     `json:"must_attacks,omitempty"`
+	MustAttackDeck int     `json:"must_attack_deck,omitempty"`
+	// MustAttackOneOf names the cards the active player must make an
+	// additional attack on one of (Boss Rush!, Friendly Ball, Lust for
+	// Blood!; 19.241): Turn.MustAttackOneOfCards. Each is a card they can
+	// attack now. It adds no attack: `attacks` says how many.
+	MustAttackOneOf []CardRef `json:"must_attack_one_of,omitempty"`
+	// Game is the game type (24.34): none or "regular" is a regular
+	// game; "challenge" starts a challenge on the table.
+	Game *SituationGame `json:"game,omitempty"`
 }
 
 // SituationPlayer is one seat.
@@ -123,7 +146,8 @@ type SituationStep struct {
 
 // Expectation is what should happen (LR-04). A field left out is not
 // checked. A list of cards names every card there, in any order; an
-// empty list expects none (24.5).
+// empty list expects none (24.5). A list or map of checks that is there
+// but empty is a mismatch: it would check nothing (19.234).
 type Expectation struct {
 	Allowed bool             `json:"allowed"`
 	Rule    string           `json:"rule,omitempty"` // the refusal's rule, when not allowed
@@ -134,13 +158,16 @@ type Expectation struct {
 	// of 0 expects none.
 	Counters []SituationCounter `json:"counters,omitempty"`
 	// Decks are the cards on top of decks by name, top first, as
-	// setup.decks; Discards the whole discard piles, any order.
+	// setup.decks, [] an empty deck; Discards the whole discard piles,
+	// any order.
 	Decks    map[string][]CardRef `json:"decks,omitempty"`
 	Discards map[string][]CardRef `json:"discards,omitempty"`
 	// DeckBottoms are the cards at the bottom of decks by name, in any
-	// order: several cards go to the bottom in random order (Q-22).
+	// order: several cards go to the bottom in random order (Q-22);
+	// [] expects an empty deck.
 	DeckBottoms map[string][]CardRef `json:"deck_bottoms,omitempty"`
-	// Active, LootPlays and Attacks check the turn, as in setup.
+	// Active checks the turn's player; LootPlays and Attacks what that
+	// player can still use, bonus ones too, unlike setup (24.28).
 	Active    *int `json:"active,omitempty"`
 	LootPlays *int `json:"loot_plays,omitempty"`
 	Attacks   *int `json:"attacks,omitempty"`
@@ -159,6 +186,8 @@ type Expectation struct {
 	// ResolvedRolls are the values every roll resolved as, in order:
 	// the final result after changes (R-DICE-06); [] expects none (24.11).
 	ResolvedRolls []int `json:"resolved_rolls,omitempty"`
+	// Presents check a challenge's presents, by kind (24.34).
+	Presents []ExpectedPresent `json:"presents,omitempty"`
 }
 
 // ExpectedPlayer checks one player after everything resolved. Hand and
@@ -195,6 +224,11 @@ type Answer struct {
 	// Matches is set when the situation has an expectation.
 	Matches  *bool    `json:"matches,omitempty"`
 	Mismatch []string `json:"mismatch,omitempty"`
+	// Unused names the setup.rolls and setup.random entries still
+	// unused when the run ended (24.32). A test file fails on them
+	// (enginetest.CheckSituation); a payload is only being explored,
+	// so the website and sandbox never see them.
+	Unused []string `json:"-"`
 }
 
 // RunSituation builds the table, runs the action or each step, resolves
@@ -230,6 +264,9 @@ func RunSituation(data []byte, sets ...CardSet) (Answer, error) {
 		}
 		label := fmt.Sprintf("step %d (%s)", i+1, st.label())
 		res, err := g.runStep(st.SituationAction, stop, multi)
+		if perr := g.takePickErr(); perr != nil {
+			err = perr // a bad named pick comes first: the run went astray there
+		}
 		if err != nil {
 			if multi {
 				return Answer{}, fmt.Errorf("situation: %s: %s", label, strings.TrimPrefix(err.Error(), "situation: "))
@@ -266,7 +303,32 @@ func RunSituation(data []byte, sets ...CardSet) (Answer, error) {
 		ok := len(mismatch) == 0
 		ans.Matches, ans.Mismatch = &ok, mismatch
 	}
+	ans.Unused = g.unusedSetup()
 	return ans, nil
+}
+
+// unusedSetup names the forced dice and picks no step used (24.32):
+// one line per field, e.g. "setup.rolls: 2 left unused: [4, 1]".
+// Listed but unused, the setup is likely wrong: a roll that was
+// meant to happen did not.
+func (g *Game) unusedSetup() []string {
+	var out []string
+	left := func(field string, vals []string) {
+		if len(vals) > 0 {
+			out = append(out, fmt.Sprintf("setup.%s: %d left unused: [%s]", field, len(vals), strings.Join(vals, ", ")))
+		}
+	}
+	rolls := make([]string, len(g.forcedRolls))
+	for i, r := range g.forcedRolls {
+		rolls[i] = strconv.Itoa(r)
+	}
+	left("rolls", rolls)
+	picks := make([]string, len(g.forcedPicks))
+	for i, p := range g.forcedPicks {
+		picks[i] = strconv.Quote(p)
+	}
+	left("random", picks)
+	return out
 }
 
 // stepList is the action as one step, or the steps; a situation has
@@ -515,6 +577,9 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 		}
 		g.BonusSouls = append(g.BonusSouls, g.newObject(ref, Zone{Kind: ZoneOutside}, NoPlayer))
 	}
+	if err := g.setUpGame(s.Setup, sets); err != nil {
+		return nil, err
+	}
 	if err := g.setUpSlots(s.Setup); err != nil {
 		return nil, err
 	}
@@ -529,12 +594,22 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 	if err := g.setUpRolls(s.Setup.Rolls); err != nil {
 		return nil, err
 	}
+	if err := g.setUpRandom(s.Setup.Random); err != nil {
+		return nil, err
+	}
 	holder, stackErr := g.stackUp(s.Setup.Stack, active)
 	if stackErr != nil {
 		return nil, stackErr
 	}
+	if err := g.setUpDuties(s.Setup); err != nil {
+		return nil, err
+	}
+	g.startRound()
 	g.events = nil
-	return g, g.openSetupWindow(s.Setup.Priority, holder)
+	if err := g.openSetupWindow(s.Setup.Priority, holder); err != nil {
+		return g, err
+	}
+	return g, g.takePickErr()
 }
 
 // intent turns an action into an engine intent.
@@ -656,6 +731,14 @@ func (g *Game) mismatches(allowed bool, rule string, events []Event, e Expectati
 		out = append(out, fmt.Sprintf("refused by %s, expected %s", rule, e.Rule))
 	}
 	c := checks(out)
+	emptyChecks(&c, "after", len(e.After), e.After != nil)
+	emptyChecks(&c, "monsters", len(e.Monsters), e.Monsters != nil)
+	emptyChecks(&c, "counters", len(e.Counters), e.Counters != nil)
+	emptyChecks(&c, "decks", len(e.Decks), e.Decks != nil)
+	emptyChecks(&c, "discards", len(e.Discards), e.Discards != nil)
+	emptyChecks(&c, "deck_bottoms", len(e.DeckBottoms), e.DeckBottoms != nil)
+	emptyChecks(&c, "events", len(e.Events), e.Events != nil)
+	emptyChecks(&c, "presents", len(e.Presents), e.Presents != nil)
 	for _, x := range e.After {
 		g.checkPlayer(&c, x)
 	}
@@ -664,10 +747,11 @@ func (g *Game) mismatches(allowed bool, rule string, events []Event, e Expectati
 	}
 	g.checkDecks(&c, e.Decks, e.Discards)
 	g.checkBottoms(&c, e.DeckBottoms)
+	g.checkPresents(&c, e.Presents)
 	g.checkGame(&c, e)
 	g.checkPrompt(&c, e.Prompt)
 	g.checkResolved(&c, e.Resolved, events)
-	checkEvents(&c, e.Events, events)
+	checkEvents(&c, e.Events, events, len(g.Players))
 	checkRolls(&c, e.ResolvedRolls, events)
 	return c
 }

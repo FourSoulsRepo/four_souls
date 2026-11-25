@@ -45,6 +45,7 @@ A choice shows its options over the dimmed board:
 | `strip` | The history strip at the board's left edge (20.21). | It stays bright over the board's dim while the pointer is on it. Every window and the hand cover it. | `components/InfoPanels.css` |
 | `strip-dim` | The board's light dim while the pointer is on the history strip (20.21, ADR 027 "History"). | It covers the board's cards and their local layers, so the hovered tile's popout stands out. It never catches the pointer. | `components/InfoPanels.css` |
 | `action-bar` | The status, timer and skip buttons, bottom right. | Over the table, under every window. | `components/Actions.css` |
+| `under` | An item or curse with cards under it, and their bands above it (19.244). | A band rises above its row and may reach onto the board, which is drawn later. The holder stacks its own cards: the item on top of its bands. Every window, a raised hand card and the strip cover it. | `components/Table.css` |
 | `sky` | The drifting night sky behind the menu screens (15.42). | Nothing: it is under everything, even the screen's own plain blocks. It is not drawn on the game table. | `components/Sky.css` |
 
 ## Adding a layer

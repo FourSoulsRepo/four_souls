@@ -1,0 +1,20 @@
+{
+  "title": "The Siren lets Isaac attack Cain (DC 4), who has Halo Of Flies: does his 6 deal no damage, and do his two 4s kill Cain?",
+  "source": ["card halo_of_flies", "card the_siren", "R-ATK-24", "R-ATK-20", "R-DEATH-14"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "items": ["halo_of_flies"]}],
+    "active": 0,
+    "monsters": ["the_siren", "fly"],
+    "rolls": [6, 4, 4]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["player 2 (cain)"]},
+    {"kind": "throw", "expect": {"allowed": true, "resolved_rolls": [6], "after": [{"player": 1, "damage": 0}]}},
+    {"kind": "throw", "expect": {"allowed": true, "resolved_rolls": [4], "after": [{"player": 1, "damage": 1}]}},
+    {"kind": "throw", "choices": ["halo_of_flies"],
+     "expect": {"allowed": true, "resolved_rolls": [4], "events": [{"kind": "died", "player": 1}],
+                "discards": {"treasure": ["halo_of_flies"]}, "after": [{"player": 1, "items": []}, {"player": 0, "damage": 0}]}}
+  ],
+  "expect": {"allowed": true}
+}

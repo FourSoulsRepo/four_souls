@@ -537,6 +537,13 @@
     "text": "Kept dice: {n}",
     "note": "Tooltip of a die a card keeps on its art. n: the number."
   },
+  "badge.more_effects": {
+    "text": {
+      "one": "{n} more effect",
+      "other": "{n} more effects"
+    },
+    "note": "The '⋯ K' pill after a character's first 4 effect icons: its name and tooltip. Hover shows the character's zoom. n: the hidden icons."
+  },
   "badge.must_attack": {
     "text": "Must be attacked this turn",
     "note": "Card zoom, a line under a card the active player must attack this turn (Monster Manual)."
@@ -585,6 +592,10 @@
     "text": "play a card",
     "note": "Prompt banner, a part of the list under Your turn, lower case: 'Play a card, attack, or end the turn'."
   },
+  "banner.either": {
+    "text": "{a} or {b}",
+    "note": "Prompt banner and the attack button's tooltip: two targets, either will do, in You must attack: {target} (Boss Rush!: Monstro or Widow). a, b: a monster or a player; a may itself be a list joined this way."
+  },
   "banner.idle": {
     "text": "Nothing left to do: end the turn",
     "note": "Prompt banner, small line under Your turn, when only ending the turn is left."
@@ -624,6 +635,10 @@
   "banner.pick_table": {
     "text": "Click a glowing card",
     "note": "Prompt banner, small line under Choose what to attack, Choose what to buy, or Choose a slot for the monster: the player picks on the table."
+  },
+  "banner.random_minion": {
+    "text": "a random minion",
+    "note": "Prompt banner and the attack button's tooltip: the target in You must attack: {target}, when a card makes the player attack a random minion (Pilfering Krampus). Lower case."
   },
   "banner.respond": {
     "text": "Respond, or pass",
@@ -796,10 +811,6 @@
   "card.finger.swap_which_of_your_items": {
     "text": "Swap which of your items?",
     "note": "Card question while Finger! resolves."
-  },
-  "card.friendly_ball.needs_card": {
-    "text": "Needs a card under this",
-    "note": "Why Friendly Ball's second ability can't be used: no card is under it."
   },
   "card.friendly_ball.needs_none": {
     "text": "Needs no cards under this",
@@ -4516,6 +4527,10 @@
     "text": "Start of game",
     "note": "Screen-reader name of the \"is choosing\" banner on the board."
   },
+  "stats.active_player": {
+    "text": "the active player",
+    "note": "Stands for the active player's name in stats.effect.next_attack_helper when it is not known."
+  },
   "stats.always_hits": {
     "text": "Always hits",
     "note": "Stack panel, an open attack's fight line: every die face hits."
@@ -4544,9 +4559,36 @@
     "text": "{amount} to attack rolls",
     "note": "Tooltip of an effect icon on a character. amount: '+1' or '−1'."
   },
+  "stats.effect.attack_tax": {
+    "text": "Pays {n}¢ to each other player to attack",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Tax for the Mighty. n: cents."
+  },
   "stats.effect.attacked_dc": {
     "text": "{amount} DC of monsters you attack",
     "note": "Tooltip of an effect icon on a character. amount: '+1' or '−1'."
+  },
+  "stats.effect.attacks": {
+    "text": {
+      "one": "{amount} attack",
+      "other": "{amount} attacks"
+    },
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). amount: '+1'; n: the number without its sign."
+  },
+  "stats.effect.attacks_any": {
+    "text": "May attack any number of times",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Skeleton Key, Bum-Bo!."
+  },
+  "stats.effect.choose_attack": {
+    "text": "You choose which monster others attack",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Mom's Eye Shadow."
+  },
+  "stats.effect.compost": {
+    "text": "The next loot comes from the loot discard",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Compost: whoever loots next takes the top card of the loot discard instead."
+  },
+  "stats.effect.copy_next_loot": {
+    "text": "The next loot card you play is copied",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Blank Card. 'this turn' is added after it."
   },
   "stats.effect.damage_taken": {
     "text": "{amount} damage taken",
@@ -4556,17 +4598,150 @@
     "text": "{amount} DC",
     "note": "Tooltip of an effect icon on a monster. amount: '+1' or '−1'."
   },
+  "stats.effect.death_ward": {
+    "text": "Your next death is prevented",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Holy Mantle and the like."
+  },
+  "stats.effect.double_rewards": {
+    "text": "Rewards are doubled",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). A Lucky Penny!: monster rewards count twice. Shown inside stats.for_everyone; 'this turn' is added after it."
+  },
+  "stats.effect.extra_turn": {
+    "text": "Takes an extra turn after this one",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). XIX. The Sun. No 'this turn' is added."
+  },
+  "stats.effect.hand_cap": {
+    "text": "Max hand size {n}",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). n: the most loot cards the player may hold (Curse of Tiny Hands)."
+  },
   "stats.effect.hp": {
     "text": "{amount} max HP",
     "note": "Tooltip of an effect icon on a card. amount: '+1' or '−1'."
+  },
+  "stats.effect.lingering": {
+    "text": "Its card's effect lasts",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). A card's till-end-of-turn effect that waits for something, e.g. Black Heart's 'when that player dies'. Hovering shows the card's text. 'this turn' is added after it."
+  },
+  "stats.effect.lock_others": {
+    "text": "Others can't play loot cards or activate items",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Trinity Shield, Get Out of Jail Card. 'on your turn' or 'this turn' is added after it."
+  },
+  "stats.effect.loot_double": {
+    "text": "Loots double the cards",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Two of Clubs: each loot gives twice as many cards."
+  },
+  "stats.effect.loot_plays": {
+    "text": {
+      "one": "{amount} loot play",
+      "other": "{amount} loot plays"
+    },
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). amount: '+1'; n: the number without its sign."
+  },
+  "stats.effect.loot_step": {
+    "text": "{amount} loot in your loot step",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). amount: '+1'; n: the number without its sign."
+  },
+  "stats.effect.many_dice": {
+    "text": "The next roll is {n} dice; you choose the result",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Mutant Spider: the next roll by any player is n dice. 'you': this character's player. Shown inside stats.for_everyone."
+  },
+  "stats.effect.next_attack_helper": {
+    "text": "Rolls with {player}'s next attack; shares its rewards",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Sibling Rivalry: this player makes an attack roll after each attack roll of the active player's next attack this turn, and also gains its rewards if the monster dies. player: the active player's name, or stats.active_player."
   },
   "stats.effect.next_attack_roll": {
     "text": "{amount} to the next attack roll",
     "note": "Tooltip of an effect icon with a small die on a character. amount: '+1' or '−1'."
   },
+  "stats.effect.no_char_recharge": {
+    "text": "Your character doesn't recharge in the recharge step",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Mama Haunt."
+  },
+  "stats.effect.no_forced_loss": {
+    "text": "Abilities and the death penalty can't make you discard loot or lose ¢",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Rib of Greed."
+  },
+  "stats.effect.no_souls": {
+    "text": "Can't gain souls",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Curse of the Soulless, All Hallows' Eve."
+  },
+  "stats.effect.one_ability": {
+    "text": "At most one ability each turn",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Shadow of Famine."
+  },
+  "stats.effect.one_loot": {
+    "text": "At most one loot card each turn",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Shadow of Famine."
+  },
+  "stats.effect.paid_discount": {
+    "text": "$ abilities of your items cost {n}¢ less",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Trick Penny. n: cents."
+  },
+  "stats.effect.penalty_item_to": {
+    "text": "Your death-penalty item goes to the active player",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Lust for Blood: the item the player would destroy when they die."
+  },
+  "stats.effect.player_attack_dc": {
+    "text": "Can be attacked, at DC {n}",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Backstabber, Lust for Blood. n: the dice the attacker needs."
+  },
+  "stats.effect.purchases": {
+    "text": {
+      "one": "{amount} purchase",
+      "other": "{amount} purchases"
+    },
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). amount: '+1'; n: the number without its sign."
+  },
+  "stats.effect.recharge_limit": {
+    "text": "Recharges at most 1 item in the recharge step",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Curse of Fatigue, Heavy Is the Head."
+  },
+  "stats.effect.reveal_hand": {
+    "text": "Your hand is revealed to everyone",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Guppy's Eye."
+  },
   "stats.effect.roll": {
     "text": "{amount} to rolls",
     "note": "Tooltip of an effect icon on a character. amount: '+1' or '−1'."
+  },
+  "stats.effect.roll_to_one": {
+    "text": "A roll of 2 or 3 becomes 1",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Eternal D6. Shown inside stats.for_everyone; 'this turn' is added after it."
+  },
+  "stats.effect.shield": {
+    "text": "Prevents the next {n} damage",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). A shield, e.g. Soul Heart's. n: how much damage it prevents."
+  },
+  "stats.effect.shield_all": {
+    "text": "Prevents the next damage",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). A shield of all of the next damage, e.g. The Poop's."
+  },
+  "stats.effect.shield_cap": {
+    "text": "The next damage is at most {n}",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). A shield that lowers the next damage to n."
+  },
+  "stats.effect.shop_free": {
+    "text": "May buy a shop item for 0¢",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Pity for the Poor."
+  },
+  "stats.effect.shop_price": {
+    "text": "{amount}¢ to shop prices",
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). amount: '−5' or '+1'."
+  },
+  "stats.effect.skip_turn": {
+    "text": {
+      "one": "Skips the next turn",
+      "other": "Skips the next {n} turns"
+    },
+    "note": "Tooltip of an effect icon on a character, one line each (ADR 037). Famine, Haunted!, Overflow!: the player skips their next turn(s). n: turns."
+  },
+  "stats.effect_from": {
+    "text": "{effect} — {card}",
+    "note": "Zoomed character, one line of its effect list (ADR 037 item 4): what it does, then the source card. effect: '−5¢ to shop prices'; card: 'Steamy Sale!' or 'a hidden card'."
+  },
+  "stats.for_everyone": {
+    "text": "For every player: {effect}",
+    "note": "Tooltip line of a game-wide effect, shown on the character of the player who made it (ADR 037 item 3.18). effect: 'Rewards are doubled'."
   },
   "stats.hidden_card": {
     "text": "a hidden card",
@@ -4633,6 +4808,13 @@
   "stats.rolls": {
     "text": "Rolls: {list}",
     "note": "Zoomed card, under it: changes to all its player's rolls. list: '+1 Meat!, −2 Round Worm (next roll)'."
+  },
+  "stats.shields": {
+    "text": {
+      "one": "{n} shield",
+      "other": "{n} shields"
+    },
+    "note": "Name of the one effect icon all of a player's shields share (ADR 037 item 3.15), before its lines. n: how many shields; each blocks one damage."
   },
   "stats.sum_atk": {
     "text": "ATK {n} = {base} printed {terms}",
@@ -4776,6 +4958,10 @@
       "other": "Souls: {souls} of {n}"
     },
     "note": "Game table: tooltip of a player's soul crystals. souls: souls gained; n: souls needed to win."
+  },
+  "table.under": {
+    "text": "Under {card}",
+    "note": "Game table: screen-reader name of the cards peeking out from under a card in play, e.g. Friendly Ball's monster. card: the card on top."
   },
   "table.your_curses": {
     "text": "Your curses",
@@ -5037,6 +5223,29 @@
     "text": "Counters",
     "note": "Zoomed card: screen-reader name of the counter list under it, one line a kind."
   },
+  "zoom.effects_later": {
+    "text": "Until used",
+    "note": "Zoomed character's effect list: heading of the effects that end when they happen, maybe after this turn: a skipped turn, the next loot, the next roll."
+  },
+  "zoom.effects_more": {
+    "text": {
+      "one": "{n} more effect",
+      "other": "{n} more effects"
+    },
+    "note": "Zoomed character's effect list: last line when the list is cut. n: the effects not shown."
+  },
+  "zoom.effects_on": {
+    "text": "Effects on {player}",
+    "note": "Zoomed character of another player: title of the list of every effect on them (ADR 037 item 4). player: their name."
+  },
+  "zoom.effects_turn": {
+    "text": "This turn",
+    "note": "Zoomed character's effect list: heading of the effects that end with the turn."
+  },
+  "zoom.effects_you": {
+    "text": "Effects on you",
+    "note": "Zoomed own character: title of the list of every effect on the player (ADR 037 item 4)."
+  },
   "zoom.keywords": {
     "text": "Keywords",
     "note": "Zoomed card: screen-reader name of the keyword notes beside it."
@@ -5067,5 +5276,9 @@
   "zoom.translators": {
     "text": "Translation: {names}",
     "note": "Under a zoomed card, when its name is translated. names: the translators, joined by commas."
+  },
+  "zoom.under": {
+    "text": "Under it",
+    "note": "Under the small card beside a zoomed card: a card that lies under the zoomed one, e.g. Friendly Ball's monster."
   }
 }

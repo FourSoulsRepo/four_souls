@@ -1,0 +1,19 @@
+{
+  "title": "Isaac buys Mom's Bottle of Pills from the treasure deck; the top 10 loot cards hold two Pills!: do both go to his hand and the other 8 to the bottom?",
+  "source": ["card moms_bottle_of_pills", "card pills", "card pills_r", "R-CARD-37", "R-SHOP-03"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "cents": 10}, {"character": "cain"}],
+    "active": 0,
+    "decks": {
+      "loot": ["pills_r", "bomb", "pills", "a_penny", "two_cents", "three_cents", "four_cents", "a_dime", "butter_bean", "soul_heart"],
+      "treasure": ["moms_bottle_of_pills"]
+    }
+  },
+  "action": {"player": 0, "kind": "purchase", "choices": ["ask.deck.treasure"]},
+  "expect": {
+    "allowed": true,
+    "deck_bottoms": {"loot": ["bomb", "a_penny", "two_cents", "three_cents", "four_cents", "a_dime", "butter_bean", "soul_heart"]},
+    "after": [{"player": 0, "cents": 0, "items": ["moms_bottle_of_pills"], "hand_cards": ["pills", "pills_r"]}]
+  }
+}

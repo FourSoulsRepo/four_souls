@@ -3,18 +3,24 @@ package rulesengine
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"slices"
 )
 
 // SituationCounter is a number of counters on one card (24.3). Card is
-// the card's ref, or "character" for a player's character; Name names
-// the counters ("gold", a level), empty for plain counters.
+// the card's ref, or "character" for a player's character, or "player"
+// (PlayerCounters) for counters on the player (24.34); Name names the
+// counters ("gold", a level, "fear"), empty for plain counters.
 type SituationCounter struct {
 	Card  CardRef `json:"card"`
 	Name  string  `json:"name,omitempty"`
 	Count int     `json:"count"`
 }
+
+// PlayerCounters is the Card of a SituationCounter on the player
+// itself, not a card (R-MECH-13): Trick or Treat's fear (R-TRICK-08).
+const PlayerCounters = "player"
 
 // UnmarshalJSON rejects unknown fields, so a misspelt field is an error,
 // not a counter of 0.
@@ -57,6 +63,14 @@ func (g *Game) setUpPlayer(pl *Player, seat int, sp SituationPlayer) error {
 		g.Object(id).Eternal = true
 	}
 	for _, c := range sp.Counters {
+		if c.Card == PlayerCounters {
+			// On the player, not a card (R-MECH-13): fear (R-TRICK-08).
+			if c.Count < 1 {
+				return fmt.Errorf("situation: player %d counters: %q count %d is below 1", seat, c.Card, c.Count)
+			}
+			pl.Counters = addCount(pl.Counters, c.Name, c.Count)
+			continue
+		}
 		id, err := find("counters", c.Card, 0)
 		if err != nil {
 			return err
@@ -125,6 +139,13 @@ func (g *Game) setUpSlots(s SituationSetup) error {
 		i := slices.Index(refs, c.Card)
 		if i < 0 {
 			return fmt.Errorf("situation: counters: %q is in no slot and no bonus soul, options %v", c.Card, refs)
+		}
+		if o := g.Object(ids[i]); g.Challenge != nil && o.CountersOf(c.Name) > 0 && c.Count >= 0 {
+			// Only a challenge's setup puts counters out before this,
+			// as the trick counters on its boss (R-TRICK-04): the setup
+			// says how many are left, 0 for none.
+			o.addCounters(c.Name, c.Count-o.CountersOf(c.Name))
+			continue
 		}
 		if err := putCounters(g.Object(ids[i]), c); err != nil {
 			return fmt.Errorf("situation: counters: %w", err)
@@ -209,6 +230,26 @@ func (g *Game) setUpRolls(rolls []int) error {
 	return nil
 }
 
+// setUpRandom names the next random picks (24.30). Each is checked
+// against the options when its pick comes (Game.randomPick).
+func (g *Game) setUpRandom(picks []string) error {
+	for i, p := range picks {
+		if p == "" {
+			return fmt.Errorf("situation: random: pick %d is empty; name an option, e.g. \"player 2 (cain)\"", i+1)
+		}
+	}
+	g.forcedPicks = slices.Clone(picks)
+	return nil
+}
+
+// takePickErr returns and clears the first named pick that was no
+// option of its pick.
+func (g *Game) takePickErr() error {
+	err := g.pickErr
+	g.pickErr = nil
+	return err
+}
+
 // setUpDeclared declares the setup's attack or purchase, as the active
 // player does in the action phase with an empty stack (R-ATK-01,
 // R-SHOP-01): it uses one up, and priority passes before the target or
@@ -249,6 +290,70 @@ func (g *Game) setUpDeclared(s SituationSetup) error {
 		g.spendPurchase()
 		g.Purchase = PurchaseState{On: true}
 	}
+	return nil
+}
+
+// setUpDuties sets the attack duties in force this turn (19.235), as
+// the turn holds them once the setup's window is open, so after a
+// declared attack or a stacked attack roll has counted (R-TURN-07). A card in a slot sets no
+// duty (owner, 2026-11-23): a player may have stopped it, so the setup
+// names the duties that hold. They hold from the start phase, where the
+// start-of-turn triggers have set them (R-TURN-03); in the end phase
+// the turn's end is declared, which R-ATK-03 refuses while one is owed.
+func (g *Game) setUpDuties(s SituationSetup) error {
+	for _, n := range []struct {
+		name string
+		n    int
+	}{{"must_attacks", s.MustAttacks}, {"must_attack_deck", s.MustAttackDeck}} {
+		if n.n < 0 {
+			return fmt.Errorf("situation: %s %d is below 0", n.name, n.n)
+		}
+	}
+	if s.MustAttack == "" && s.MustAttacks == 0 && s.MustAttackDeck == 0 && len(s.MustAttackOneOf) == 0 {
+		return nil
+	}
+	if g.Turn.Step == StepEndTriggers {
+		return errors.New("situation: phase end: the turn's end is declared, which R-ATK-03 refuses while an attack is owed; " +
+			"leave out must_attack, must_attacks, must_attack_deck and must_attack_one_of")
+	}
+	targets := g.attackTargets()
+	refs := make([]CardRef, len(targets))
+	for i, id := range targets {
+		refs[i] = g.Object(id).Card
+	}
+	// target finds the first card named ref the active player may
+	// attack now.
+	target := func(field string, ref CardRef) (ObjectID, error) {
+		for i, r := range refs {
+			if r == ref {
+				if g.Attack.Started && g.Attack.Target == targets[i] {
+					return 0, fmt.Errorf("situation: %s: the attack roll on the stack attacks %q, so the duty is met (R-ATK-22); leave it out", field, ref)
+				}
+				return targets[i], nil
+			}
+		}
+		return 0, fmt.Errorf("situation: %s: the active player can't attack %q, options %v", field, ref, refs)
+	}
+	if s.MustAttack != "" {
+		id, err := target("must_attack", s.MustAttack)
+		if err != nil {
+			return err
+		}
+		g.Turn.MustAttack = id
+	}
+	// must_attack_one_of names cards, not objects (19.241); a setup
+	// covers a card only under a deck attack's revealed one (24.33),
+	// so each is one the active player can attack now.
+	for _, ref := range s.MustAttackOneOf {
+		if slices.Contains(g.Turn.MustAttackOneOfCards, ref) {
+			return fmt.Errorf("situation: must_attack_one_of: %q is named twice", ref)
+		}
+		if _, err := target("must_attack_one_of", ref); err != nil {
+			return err
+		}
+		g.Turn.MustAttackOneOfCards = append(g.Turn.MustAttackOneOfCards, ref)
+	}
+	g.Turn.MustAttacks, g.Turn.MustAttackDeck = s.MustAttacks, s.MustAttackDeck
 	return nil
 }
 

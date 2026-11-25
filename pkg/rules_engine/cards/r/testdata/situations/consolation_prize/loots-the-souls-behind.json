@@ -1,0 +1,13 @@
+{
+  "title": "Cain has 2 souls and Isaac none: at the start of Isaac's turn, does Consolation Prize loot him 2, before his loot step's 1?",
+  "source": ["card consolation_prize", "R-TURN-03", "R-TURN-04", "R-CARD-21"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "cain", "souls": ["monstro", "gurdy"]}, {"character": "isaac", "items": ["consolation_prize"]}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {"allowed": true, "active": 1, "after": [{"player": 1, "hand": 3}, {"player": 0, "hand": 0}]}
+}

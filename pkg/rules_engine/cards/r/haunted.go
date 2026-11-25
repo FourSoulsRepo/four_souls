@@ -13,6 +13,6 @@ var haunted = engine.CardDef{
 		Kind:    engine.Triggered,
 		Text:    "Each time a player gains a soul, they skip their next turn.",
 		Trigger: engine.Trigger{On: engine.EvGainedSoul, Match: anyPlayer},
-		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) { c.G.Players[c.EventPlayer].SkipTurns++ })},
+		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) { c.G.SkipNextTurn(c.EventPlayer, c.Source) })},
 	}},
 }

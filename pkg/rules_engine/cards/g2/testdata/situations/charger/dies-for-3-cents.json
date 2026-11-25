@@ -1,0 +1,23 @@
+{
+  "title": "Charger (1 HP, DC 5, 1 ATK): does Isaac's 4 miss for 1 damage, and a 5 kill it for 3¢?",
+  "source": ["card charger", "R-ATK-12", "R-ATK-13", "R-CARD-13", "R-DEATH-09"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["charger", "fly"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [4, 5]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack",
+     "expect": {"allowed": true, "prompt": {"player": 0}, "monsters": [{"slot": 1, "card": "charger", "hp": 1, "evasion": 5, "atk": 1}]}},
+    {"kind": "choose", "choices": ["charger"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [4, 5],
+    "monsters": [{"card": "charger", "dead": true}, {"slot": 1, "card": "dip"}],
+    "after": [{"player": 0, "damage": 1, "cents": 3, "hand": 0, "souls": 0}]
+  }
+}

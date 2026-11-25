@@ -1,0 +1,17 @@
+{
+  "title": "Isaac uses Smart Fly to discard the Dip from the monster deck, then his own Bomb! hits him: may he recharge Smart Fly?",
+  "source": ["card smart_fly", "card bomb", "R-MECH-22"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["smart_fly"], "hand": ["bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "decks": {"monster": ["dip"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "smart_fly", "choices": ["ask.deck.monster", "ask.put_into_discard dip"],
+     "expect": {"allowed": true, "discards": {"monster": ["dip"]}, "after": [{"player": 0, "deactivated": ["smart_fly"]}]}},
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["player 1 (isaac)", "ask.yes"],
+     "expect": {"allowed": true, "after": [{"player": 0, "damage": 1, "deactivated": []}]}}
+  ],
+  "expect": {"allowed": true}
+}

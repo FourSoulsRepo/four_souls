@@ -1,0 +1,21 @@
+{
+  "title": "Isaac has Cancer and plays Pills! twice, rolling 2 and 2: does only the first become a 3 (-1 DC), and the second recharge The D6?",
+  "source": ["card cancer", "card pills_g2", "R-DICE-06"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "items": ["cancer", "the_d6"], "deactivated": ["the_d6"], "hand": ["pills_g2", "pills_g2"]},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "loot_plays": 2,
+    "rolls": [2, 2]
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "pills_g2",
+     "expect": {"allowed": true, "resolved_rolls": [3], "after": [{"player": 0, "deactivated": ["the_d6"]}]}},
+    {"player": 0, "kind": "play", "card": "pills_g2",
+     "expect": {"allowed": true, "resolved_rolls": [2], "after": [{"player": 0, "deactivated": []}]}}
+  ],
+  "expect": {"allowed": true, "discards": {"loot": ["pills_g2", "pills_g2"]}}
+}

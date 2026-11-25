@@ -1,0 +1,26 @@
+{
+  "title": "Angelic Intervention: Isaac attacks the monster deck, the Leech covers the Fly, and he cancels the attack: is it cancelled before any attack roll is thrown?",
+  "source": ["card angelic_intervention", "R-ATK-08", "R-ATK-11", "R-ZONE-10", "R-ATK-25", "Q-29"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "pooter"],
+    "rooms": ["angelic_intervention"],
+    "decks": {"monster": ["leech"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["ask.deck.monster", "ask.slot_card 1 fly", "ask.yes"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [],
+    "events": [{"kind": "dice_rolled", "player": 0, "none": true}],
+    "monsters": [{"slot": 1, "card": "leech", "damage": 0}, {"slot": 2, "card": "pooter"}],
+    "attacks": 0,
+    "after": [{"player": 0, "damage": 0, "cents": 0, "hand": 0}]
+  }
+}

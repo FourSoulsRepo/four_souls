@@ -1,0 +1,15 @@
+{
+  "title": "Isaac removes both counters from Jar Of Flies: does he loot 1, as 2 is fewer than 3?",
+  "source": ["card jar_of_flies", "R-ABIL-07"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["jar_of_flies"], "counters": [{"card": "jar_of_flies", "count": 2}]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"loot": ["a_penny"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "jar_of_flies", "ability": 1, "choices": ["2"]},
+  "expect": {"allowed": true, "monsters": [{"slot": 1, "card": "fly", "damage": 0}], "after": [
+    {"player": 0, "hand_cards": ["a_penny"], "deactivated": ["jar_of_flies"], "counters": [{"card": "jar_of_flies", "count": 0}]}
+  ]}
+}

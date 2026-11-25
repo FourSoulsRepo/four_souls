@@ -75,6 +75,14 @@
        2. Never edit the file by hand; `TestValuesFile` fails while a card is missing.
    28. `FourSouls --diagnose`: webview report and frame rates (ADR 035).
        1. Details: `docs/wiki/Diagnostics.md`.
+   29. Situation files: card tests as JSON (ADR 034).
+       1. Run from `pkg/rules_engine`.
+       2. One set: `go test ./cards/r -run TestSituations`.
+       3. One card: `-run 'TestSituations/^ibs$/'`.
+       4. One file: `-run 'TestSituations/^ibs$/^<case>$'`.
+       5. Cross-set: `./cards`; rule topics: `.`; same test name.
+       6. Draft from a Go test: `SITUATION_DUMP=.cache/situations go test …`.
+       7. Details: `docs/wiki/Situation-payload.md`, `docs/wiki/Adding-a-card.md`.
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.

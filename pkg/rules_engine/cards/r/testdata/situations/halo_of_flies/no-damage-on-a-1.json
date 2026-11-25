@@ -1,0 +1,17 @@
+{
+  "title": "Isaac with Halo Of Flies rolls a 1 against the Leech: does he take no combat damage, then kill it with a 6?",
+  "source": ["card halo_of_flies", "card leech", "R-ATK-13", "R-ATK-12"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["halo_of_flies"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech"],
+    "rolls": [1, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["leech"]},
+    {"kind": "throw", "expect": {"allowed": true, "resolved_rolls": [1], "after": [{"player": 0, "damage": 0}]}},
+    {"kind": "throw"}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [1, 6], "monsters": [{"card": "leech", "dead": true}], "events": [{"kind": "damaged", "player": 0, "none": true}], "after": [{"player": 0, "damage": 0, "hand": 1}]}
+}

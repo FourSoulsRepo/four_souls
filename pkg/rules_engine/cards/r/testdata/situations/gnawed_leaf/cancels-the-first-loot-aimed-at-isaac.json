@@ -1,0 +1,23 @@
+{
+  "title": "Cain plays Two Of Spades on Isaac twice in a turn; Isaac's Gnawed Leaf cancels the first: does only the second loot Cain 1, for Isaac's 1 card?",
+  "source": ["card gnawed_leaf", "card two_of_spades", "R-MECH-07", "R-CARD-07"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "cain", "hand": ["two_of_spades", "two_of_spades"]},
+      {"character": "isaac", "items": ["gnawed_leaf"], "hand": ["bomb"]},
+      {"character": "samson"}
+    ],
+    "active": 0,
+    "loot_plays": 2,
+    "decks": {"loot": ["a_penny"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "play", "card": "two_of_spades", "choices": ["player 2 (isaac)", "ask.yes"],
+     "expect": {"allowed": true, "discards": {"loot": ["two_of_spades"]}, "after": [{"player": 0, "hand_cards": ["two_of_spades"]}]}},
+    {"player": 0, "kind": "play", "card": "two_of_spades", "choices": ["player 2 (isaac)"],
+     "expect": {"allowed": true, "loot_plays": 0, "discards": {"loot": ["two_of_spades", "two_of_spades"]},
+                "after": [{"player": 0, "hand_cards": ["a_penny"]}, {"player": 1, "hand_cards": ["bomb"]}]}}
+  ],
+  "expect": {"allowed": true}
+}

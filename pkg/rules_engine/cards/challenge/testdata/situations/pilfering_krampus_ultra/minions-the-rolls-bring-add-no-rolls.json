@@ -1,0 +1,25 @@
+{
+  "title": "Krampus challenge, Ultra Hard: no minion is in play and the soul present has 1 counter; Cain's turn-start roll is a 6 and 4 minions come; does Cain roll again for them?",
+  "source": ["card pilfering_krampus_ultra", "card how_the_krampus_stole_christmas_ultra", "R-KRAMPUS-08", "R-KRAMPUS-12", "Q-41"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "ultra", "presents": [{"kind": "soul", "counters": 1}]},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"treasure": ["boomerang", "breakfast", "box", "blank_card"], "monster": ["pooter", "dip", "squirt", "spider", "clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 1,
+    "resolved_rolls": [6],
+    "monsters": [{"card": "pooter"}, {"card": "dip"}, {"card": "squirt"}, {"card": "spider"}],
+    "decks": {"monster": ["clotty"]},
+    "discards": {"treasure": ["blank_card"]},
+    "presents": [{"kind": "cents", "counters": 16}, {"kind": "loot", "counters": 4}, {"kind": "treasure", "counters": 3}, {"kind": "soul", "counters": 0, "destroyed": true}]
+  }
+}

@@ -1,6 +1,6 @@
 {
   "title": "Isaac has Mom's Box and rolls a 4 with Mystery Sack: is he asked yes or no, in words, not card refs (19.42)?",
-  "source": ["card moms_box", "card mystery_sack", "R-ABIL-16"],
+  "source": ["R-ABIL-15", "card moms_box", "card mystery_sack", "R-ABIL-16"],
   "sets": ["b2"],
   "setup": {
     "players": [{"character": "isaac", "items": ["moms_box", "mystery_sack"], "hand": ["a_dime"]}, {"character": "cain"}],
@@ -8,6 +8,6 @@
     "monsters": ["fly", "leech"],
     "rolls": [4]
   },
-  "action": {"player": 0, "kind": "activate", "card": "mystery_sack"},
+  "action": {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢."]},
   "expect": {"allowed": true, "prompt": {"player": 0, "options": ["ask.yes", "ask.no"]}}
 }

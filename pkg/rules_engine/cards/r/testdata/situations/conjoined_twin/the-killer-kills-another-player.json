@@ -1,0 +1,25 @@
+{
+  "title": "Conjoined Twin: Isaac kills the Fly, so he kills another player: he picks Samson; Cain lives",
+  "source": ["card conjoined_twin", "card fly", "R-MECH-24"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"},
+      {"character": "samson"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["conjoined_twin"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly", "player 3 (samson)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "events": [{"kind": "died", "player": 2}, {"kind": "died", "player": 1, "none": true}, {"kind": "died", "player": 0, "none": true}],
+    "after": [{"player": 0, "cents": 1, "dead": false}, {"player": 1, "dead": false}, {"player": 2, "dead": true}]
+  }
+}

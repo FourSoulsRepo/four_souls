@@ -1,0 +1,25 @@
+{
+  "title": "Isaac uses Red Candle on 3, then rolls a 3 with Mystery Sack: does he deal 1 damage to the Fly, and does Cain's 3 on the next turn deal nothing?",
+  "source": ["card red_candle", "card mystery_sack", "card fly", "R-ABIL-27", "R-TURN-13", "R-ABIL-15"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["red_candle", "mystery_sack"]}, {"character": "cain", "items": ["mystery_sack"]}],
+    "active": 0,
+    "monsters": ["fly", "fatty"],
+    "decks": {"monster": ["dip"]},
+    "rolls": [3, 3]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "red_candle", "choices": ["3"],
+     "expect": {"allowed": true, "after": [{"player": 0, "deactivated": ["red_candle"]}]}},
+    {"player": 0, "kind": "activate", "card": "mystery_sack", "choices": ["mystery_sack: ↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢.", "fly"],
+     "expect": {"allowed": true, "resolved_rolls": [3], "monsters": [{"card": "fly", "dead": true}, {"slot": 1, "card": "dip"}],
+       "after": [{"player": 0, "cents": 5}]}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1}},
+    {"player": 1, "kind": "activate", "card": "mystery_sack",
+     "expect": {"allowed": true, "resolved_rolls": [3], "events": [{"kind": "damaged", "none": true}],
+       "monsters": [{"slot": 1, "card": "dip", "damage": 0}, {"slot": 2, "card": "fatty", "damage": 0}],
+       "after": [{"player": 1, "cents": 4, "damage": 0}]}}
+  ],
+  "expect": {"allowed": true}
+}

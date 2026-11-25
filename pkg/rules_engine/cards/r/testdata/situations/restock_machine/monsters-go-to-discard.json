@@ -1,0 +1,25 @@
+{
+  "title": "Restock Machine: Isaac pays 2¢ and picks the monsters; the Fly and the Leech go to discard, the shop stays",
+  "source": ["card restock_machine", "R-SHOP-06", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "cents": 2},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "shop": ["jawbone", "spoon_bender"],
+    "rooms": ["restock_machine"],
+    "decks": {"monster": ["dip", "pooter"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "restock_machine", "choices": ["card.restock_machine.monsters"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "after": [{"player": 0, "cents": 0}],
+    "discards": {"monster": ["fly", "leech"], "treasure": []},
+    "monsters": [{"card": "dip"}, {"card": "pooter"}]
+  }
+}

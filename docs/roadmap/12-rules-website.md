@@ -4,7 +4,7 @@ Goal: check rules in the browser, in English and Russian; no server.
 
 Ideas: A-03, LR-08, LR-09, LR-10.
 
-Order: 12.7, 12.1, 12.2, 12.3, 12.5, 12.4, 12.6, 12.10, 12.8, 12.11, 12.9.
+Order: 12.7, 12.1, 12.2, 12.3, 12.5, 12.4, 12.6, 12.10, 12.12, 12.8, 12.11, 12.9.
 
 Moved before step 18 (owner, 2026-11-06).
 12.5 and 12.6 came from step 11 (11.8, 11.7).
@@ -201,7 +201,7 @@ Rules of this step (owner, 2026-11-06):
 3. Done when:
    1. One payload answers in both languages, with working rule links.
 
-### [ ] 12.10 Russian glossary
+### [x] 12.10 Russian glossary
 
 1. Goal: one Russian word per game term, before any translation.
 2. Tasks:
@@ -210,6 +210,30 @@ Rules of this step (owner, 2026-11-06):
    3. Where they disagree, list both; the **Owner** picks.
 3. Done when:
    1. Every English glossary term has a Russian word.
+4. Result: `glossary/ru.json`, all 24 terms.
+   1. Card data (16.5) has Russian names only, no effect texts.
+   2. So most words come from the S-RU rules pages.
+   3. Second source: card types of the foursouls.ru site database.
+   4. Words match the card names where they meet.
+      1. «4 цента!», «Душа Гордыни», «Комната ангела», «Проклятие …».
+      2. «Улучшение магазина!», «Двойное сокровище!».
+   5. **Owner**: `eternal`, picked «вечный».
+      1. «вечный»: the S-RU keyword; «не-вечный предмет» in effects.
+      2. «стартовый предмет»: S-RU setup (15 uses) and the site card type.
+      3. Picked the keyword; the starting item is a separate idea.
+   6. **Owner**: `monster`, picked «монстр».
+      1. «монстр»: S-RU (171 uses), site type «Карта монстра».
+      2. «противник»: site subtypes («обычный противник»), S-RU 7 uses.
+      3. Picked the far more common word.
+   7. **Owner**: `recharge`, picked «перезарядить» (verb).
+      1. S-RU key term «Перезарядить»; noun «перезарядка» in its section.
+      2. No disagreement on the word; only verb or noun.
+   8. Not in any source: «лут» for loot, «счётчик» for counter.
+      1. S-RU uses «добыча» and «жетон» throughout.
+   9. Dice: S-RU says «кубик»; «Комната игральной кости!» says «игральная кость».
+      1. Not a glossary term; `roll` is «бросок» in both.
+   10. Owner kept all three picks of items 5–7 (2026-11-24).
+5. Owner marks 12.10 solved (2026-11-24).
 
 ### [ ] 12.11 Russian app interface
 
@@ -225,3 +249,40 @@ Rules of this step (owner, 2026-11-06):
    1. `make i18n LOCALE=ru` reports no missing key.
    2. A full game plays in Russian.
    3. **Owner** checks the screenshots.
+
+### [x] 12.12 Russian menus first
+
+Added by the owner (2026-11-24): a partial Russian interface ships before 12.11.
+
+1. Goal: main menu, settings and host setup in Russian; the rest stays English.
+2. Tasks:
+   1. Start `frontend/src/locales/ru.json`; fill it with `make i18n LOCALE=ru AREA=…`.
+   2. Areas: `menu`, `settings`, `host`.
+   3. Plus the keys these screens borrow from other areas:
+      1. `app.title`, `lobby.nickname`, `lobby.back`.
+      2. `set.*`, `mat.*`, `challenge.name.*`, `challenge.difficulty.*`.
+      3. Any other key these screens show; list them in the result.
+   4. Game terms from the glossary (12.10).
+   5. Every other key stays missing; English fills it (LO-06, LO-09).
+   6. `make screenshots LOCALE=ru`: the three screens, no cut text.
+   7. ADR 021: drop "interface ships in English only" (12.11 task 5).
+   8. Update the use case "change the language" (UC-32).
+3. Done when:
+   1. The three screens show no English text in Russian.
+   2. `make lint` and `make frontend e2e` pass with the partial file.
+   3. **Owner** checks the screenshots.
+4. 12.11 then fills the remaining areas.
+5. Result: `ru.json` with 122 keys; the rest falls back to English.
+   1. Areas in full: `menu` 14, `settings` 21, `host` 37.
+   2. Borrowed: `app.title`, `lobby.nickname`, `lobby.back`.
+   3. Borrowed: `set.*` 4, `mat.*` 4, `challenge.name.*` 2, `challenge.difficulty.*` 3.
+   4. Borrowed: `dice.rolled` (settings dice preview).
+   5. Borrowed: `refuse.deck_ratios`, `refuse.ratio.*` 27 (deck ratios tooltip).
+   6. Borrowed errors: `nickname_length`, `setting_value`, `hosting`, `unknown`, `deck_ratios`.
+   7. Kept English: `app.title` «Four Souls», `set.four_souls_plus`.
+   8. e2e reads every language file, as the app does (`locale.ts`).
+   9. Tests that found a key by another screen's same English now use their own key.
+      1. `history.mode_god`, not `host.rollback_god`.
+      2. `board.bonus_souls`, not `host.bonus_souls`.
+6. Owner marks 12.12 solved (2026-11-24).
+   1. Two Russian test bugs found here: 19.239, 19.240.

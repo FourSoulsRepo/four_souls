@@ -130,7 +130,7 @@ func (g *Game) noLootSay(p PlayerID) Msg {
 
 // costSay is why a cost can't be paid, for the player.
 func costSay(c Cost) Msg {
-	switch c := c.(type) {
+	switch c.(type) {
 	case tapCost:
 		return refuseCostUsed.Msg()
 	case centsCost:
@@ -143,8 +143,6 @@ func costSay(c Cost) Msg {
 		return refuseCostCounters.Msg()
 	case discardChosenCost:
 		return refuseCostDiscard.Msg()
-	case condCost:
-		return c.say.Msg() // "Not during an attack"
 	default:
 		return refuseNotUsable.Msg()
 	}

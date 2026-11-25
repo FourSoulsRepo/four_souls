@@ -1,0 +1,12 @@
+{
+  "title": "Isaac plays Key and chooses the additional attack: does he have 2 attacks this turn?",
+  "source": ["card key", "R-TURN-07"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["key"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "key", "choices": ["The active player may attack an additional time this turn."]},
+  "expect": {"allowed": true, "attacks": 2, "discards": {"loot": ["key"]}}
+}

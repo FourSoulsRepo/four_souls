@@ -1,0 +1,20 @@
+{
+  "title": "Isaac reveals Holy Chest and rolls a 6: does it become his soul?",
+  "source": ["card holy_chest", "R-CARD-18"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fatty", "monstro"],
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "reveal", "card": "holy_chest"}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "discards": {"monster": []},
+    "after": [{"player": 0, "souls": 1, "soul_cards": ["holy_chest"], "cents": 0}]
+  }
+}

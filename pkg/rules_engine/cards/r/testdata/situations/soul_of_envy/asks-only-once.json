@@ -1,0 +1,24 @@
+{
+  "title": "Soul of Envy: Isaac kills Chub for his 3rd soul and gives it to Cain, who had 2; Cain's 3rd soul is Soul of Envy itself, so it asks no second time",
+  "source": ["card soul_of_envy", "card chub", "R-CARD-23", "R-CARD-11", "R-DEATH-08"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "souls": ["chub", "chub"]}, {"character": "cain", "souls": ["chub", "chub"]}],
+    "active": 0,
+    "monsters": ["chub", "leech"],
+    "monster_damage": {"chub": 3},
+    "bonus_souls": ["soul_of_envy"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["chub", "player 2 (cain)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "after": [
+      {"player": 0, "souls": 3, "soul_cards": ["chub", "chub", "chub"]},
+      {"player": 1, "souls": 3, "soul_cards": ["chub", "chub", "soul_of_envy"]}
+    ]
+  }
+}

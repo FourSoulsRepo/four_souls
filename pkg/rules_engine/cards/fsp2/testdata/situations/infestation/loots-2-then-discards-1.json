@@ -1,0 +1,16 @@
+{
+  "title": "Guppy uses Infestation holding Bomb!: does he loot 2, then discard Bomb!?",
+  "source": ["card infestation", "R-CARD-06", "R-MECH-25", "R-MECH-02"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "guppy", "items": ["infestation"], "hand": ["bomb"]}, {"character": "cain"}],
+    "active": 0,
+    "decks": {"loot": ["a_penny", "two_cents"]}
+  },
+  "action": {"player": 0, "kind": "activate", "card": "infestation", "choices": ["bomb"]},
+  "expect": {
+    "allowed": true,
+    "discards": {"loot": ["bomb"]},
+    "after": [{"player": 0, "hand_cards": ["a_penny", "two_cents"], "deactivated": ["infestation"]}]
+  }
+}

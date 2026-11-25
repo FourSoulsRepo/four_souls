@@ -1,0 +1,19 @@
+{
+  "title": "Isaac's Mystery Sack is spent; at the end of his turn AAA Battery rolls a 5: is the Sack recharged?",
+  "source": ["card aaa_battery", "R-TURN-10", "R-MECH-22"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["aaa_battery", "mystery_sack"], "deactivated": ["mystery_sack"]}, {"character": "cain"}],
+    "active": 0,
+    "rolls": [5]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "choices": ["mystery_sack"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [5],
+    "active": 1,
+    "after": [{"player": 0, "deactivated": []}]
+  }
+}

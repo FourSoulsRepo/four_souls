@@ -1,0 +1,22 @@
+{
+  "title": "The Mirror: at the start of his turn Cain pays HP down to 1; he kills the Fly and gains a treasure",
+  "source": ["card the_mirror", "card fly", "R-TURN-03", "R-MECH-44", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["the_mirror"],
+    "decks": {"monster": ["clotty"], "treasure": ["book_of_sin"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "choices": ["ask.yes"], "expect": {"allowed": true, "active": 1, "after": [{"player": 1, "hp": 1, "items": []}]}},
+    {"player": 1, "kind": "attack", "choices": ["fly"],
+     "expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 1, "items": ["book_of_sin"], "cents": 1, "hp": 1}]}}
+  ],
+  "expect": {"allowed": true}
+}

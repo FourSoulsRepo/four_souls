@@ -15,7 +15,7 @@ var mutantSpider = engine.CardDef{
 		Text:  "↷: The next time a player would roll a dice, they instead roll 4 dice. You choose one of the rolls as the result.",
 		Costs: []engine.Cost{engine.Tap()},
 		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
-			c.G.ManyDice = append(c.G.ManyDice, engine.ManyDice{Chooser: c.Controller, Dice: 4}) // R-DICE-11
+			c.G.ManyDice = append(c.G.ManyDice, engine.ManyDice{Chooser: c.Controller, Dice: 4, Source: c.Source}) // R-DICE-11
 		})},
 	}},
 }

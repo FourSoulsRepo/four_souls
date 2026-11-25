@@ -1,6 +1,9 @@
 package rulesengine
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // PromptKind is what the engine waits for.
 type PromptKind int
@@ -166,8 +169,12 @@ func (g *Game) check(in Intent) error {
 		if w.Kind != PromptPriority || !g.inOpenActionPhase() || in.Player != g.Turn.Active {
 			return refuse("R-TURN-06", "only the active player can end the turn, in the action phase, with an empty stack")
 		}
-		if m := g.Turn.MustAttack; m != 0 && g.canAttack(in.Player) && g.Object(m).Zone.Kind == ZoneInPlay && g.CanBeAttacked(m) {
-			return deny("R-ATK-03", refuseMustAttack.Msg(), "this turn you must attack %s first", g.Object(m).Card)
+		if owed := g.owedTargets(); len(owed) > 0 && g.canAttack(in.Player) {
+			refs := make([]string, len(owed))
+			for i, id := range owed {
+				refs[i] = string(g.Object(id).Card)
+			}
+			return deny("R-ATK-03", refuseMustAttack.Msg(), "this turn you must attack %s first", strings.Join(refs, " or "))
 		}
 		if g.Turn.MustAttacks > 0 && g.canAttack(in.Player) {
 			return deny("R-ATK-03", refuseMustAttack.Msg(), "you must make %d more attacks this turn", g.Turn.MustAttacks)
@@ -294,7 +301,7 @@ func (g *Game) apply(in Intent) {
 		g.Waiting = Prompt{}
 	case IntentPlayLoot:
 		if g.def(in.Objects[0]).CopiesTapOnPlay {
-			refs := g.tapAbilitiesInPlay(in.Objects[0])
+			refs := g.copyableTapAbilities(in.Player, in.Objects[0])
 			labels := make([]Msg, 0, len(refs)+1)
 			for _, r := range refs {
 				labels = append(labels, g.abilityOption(r))
@@ -346,8 +353,10 @@ func (g *Game) lootPlayable(p PlayerID, id ObjectID) error {
 	if g.locked(p) {
 		return deny("R-ABIL-12", refuseLootForbidden.Msg(), "the active player's card forbids playing loot on their turn")
 	}
-	if g.def(id).CopiesTapOnPlay && len(g.tapAbilitiesInPlay(id)) == 0 {
-		return deny("R-ABIL-04", refuseNothingToCopy.Msg(), "no item in play has a ↷ ability to copy")
+	if g.def(id).CopiesTapOnPlay {
+		if err := g.nothingToCopy(p, id); err != nil {
+			return err
+		}
 	}
 	if ab, ok := g.lootAbility(id); ok {
 		return g.targetsAvailable(ab, p, id)

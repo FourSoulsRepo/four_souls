@@ -86,7 +86,7 @@ test('in Godmode each Undo undoes one move, by the author or another player (17.
   for (const page of pages) {
     await openHistory(page);
   }
-  await expect(history(active).getByText(tr('host.rollback_god'))).toBeVisible();
+  await expect(history(active).getByText(tr('history.mode_god'), { exact: true })).toBeVisible();
   // The latest move is the target pick; the tooltip names it.
   await expect(undo(active)).toHaveText(new RegExp(`${trRe('history.undo.undo').source}$`));
   await expect(undo(active)).toHaveAttribute('title', new RegExp(`^${lineRe(tr('history.undo.title', { move: tr('history.attack.you') })).source}$`));
@@ -139,7 +139,7 @@ test('a game without a rollback mode has no Undo button (ADR 020)', async ({ bro
   await openHistory(active);
   await expect(history(active).getByRole('listitem').filter({ hasText: tr('history.attack_declared.you') })).toBeVisible();
   await expect(history(active).getByRole('button', { name: new RegExp(`${trRe('history.undo.undo').source}|${trRe('history.undo.ask').source}`, 'i') })).toHaveCount(0);
-  await expect(history(active).getByText(tr('host.rollback_god'))).toHaveCount(0);
+  await expect(history(active).getByText(tr('history.mode_god'), { exact: true })).toHaveCount(0);
 });
 
 // pickSoft picks the Soft mode in the host's Detailed setup (17.4): the

@@ -333,6 +333,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    3. Damage taken: a badge on the character, as HP and ATK.
    4. Others: icons by source; the zoom lists them all.
    5. Decision: ADR 037; planned in 18.28–18.32.
+   6. Owner review (2026-11-24): only effects the table hides; 18.33–18.37.
 
 ## Rules
 

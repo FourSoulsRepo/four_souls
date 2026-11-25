@@ -1,0 +1,27 @@
+{
+  "title": "MOTHER! at 2 HP, DC 1: Isaac's 1 hits, so it has DC 2; his 2 kills it; monster slots expand by 2 and every empty slot refills",
+  "source": ["card mother", "card clotty", "R-ATK-12", "R-ABIL-27", "R-DEATH-05", "R-DEATH-06", "R-DEATH-08", "R-DEATH-09", "R-MECH-31"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["mother", "fly"],
+    "monster_damage": {"mother": 6},
+    "decks": {"monster": ["clotty", "clotty", "clotty"], "treasure": ["book_of_sin"]},
+    "rolls": [1, 2]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["mother"]},
+    {"kind": "throw", "expect": {"allowed": true, "monsters": [{"card": "mother", "hp": 1, "evasion": 2}]}},
+    {"kind": "throw"}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 2],
+    "after": [{"player": 0, "souls": 2, "soul_cards": ["mother"], "items": ["book_of_sin"]}],
+    "monsters": [
+      {"card": "mother", "dead": true},
+      {"slot": 1, "card": "clotty"}, {"slot": 2, "card": "fly"}, {"slot": 3, "card": "clotty"}, {"slot": 4, "card": "clotty"}
+    ]
+  }
+}

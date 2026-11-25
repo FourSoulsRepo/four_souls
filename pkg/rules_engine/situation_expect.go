@@ -8,9 +8,10 @@ import (
 
 // ExpectedMonster checks one card in a slot (24.5). Card names it, as
 // a setup ref does: the first such card in slot order (monster, final
-// boss, minion, room slots). With Slot (from 1), Card must be on top of
-// that monster slot. Dead true: no slot holds the card, and it is in a
-// discard or a player's souls.
+// boss, minion, room slots). Without Dead true, Card must be on top of
+// a slot, even with no other field (19.234); with Slot (from 1), on top
+// of that monster slot. Dead true: no slot holds the card, and it is in
+// a discard or a player's souls.
 type ExpectedMonster struct {
 	Slot    int     `json:"slot,omitempty"`
 	Card    CardRef `json:"card"`
@@ -89,6 +90,15 @@ func (c *checks) counters(who string, want []SituationCounter, refs []CardRef, i
 	}
 }
 
+// emptyChecks flags a list or map of checks that is there but empty:
+// it would check nothing (19.234). n is its length, set whether it is
+// there at all.
+func emptyChecks(c *checks, name string, n int, set bool) {
+	if set && n == 0 {
+		c.add("%s is empty: it checks nothing", name)
+	}
+}
+
 // refList prints refs as a list, [] when empty.
 func refList(refs []CardRef) string {
 	s := make([]string, len(refs))
@@ -106,6 +116,13 @@ func (g *Game) checkPlayer(c *checks, x ExpectedPlayer) {
 	}
 	pl := g.Players[x.Player]
 	who := fmt.Sprintf("player %d ", x.Player)
+	if x.Cents == nil && x.Hand == nil && x.Damage == nil && x.Souls == nil && x.Dead == nil &&
+		x.HP == nil && x.ATK == nil && x.Items == nil && x.HandCards == nil && x.SoulCards == nil &&
+		x.Deactivated == nil && x.Counters == nil {
+		c.add("%schecks nothing: name a field to check", who)
+		return
+	}
+	emptyChecks(c, who+"counters", len(x.Counters), x.Counters != nil)
 	c.int(who+"cents", x.Cents, pl.Cents)
 	c.int(who+"hand", x.Hand, len(pl.Hand))
 	c.int(who+"damage", x.Damage, pl.Damage)
@@ -138,7 +155,21 @@ func (g *Game) checkPlayer(c *checks, x ExpectedPlayer) {
 	c.cards(who+"hand_cards", x.HandCards, hand)
 	c.cards(who+"soul_cards", x.SoulCards, souls)
 	c.cards(who+"deactivated", x.Deactivated, off)
-	c.counters(who, x.Counters, refs, ids, g)
+	var onCards []SituationCounter
+	for _, w := range x.Counters {
+		if w.Card != PlayerCounters {
+			onCards = append(onCards, w)
+			continue
+		}
+		label := "counters"
+		if w.Name != "" {
+			label = w.Name + " counters"
+		}
+		if got := countOf(pl.Counters, w.Name); got != w.Count {
+			c.add("%s%s on the player are %d, expected %d", who, label, got, w.Count)
+		}
+	}
+	c.counters(who, onCards, refs, ids, g)
 }
 
 // checkMonster compares one card in a slot with x.
@@ -171,13 +202,13 @@ func (g *Game) checkMonster(c *checks, x ExpectedMonster) {
 	} else if i := slices.Index(refs, x.Card); i >= 0 {
 		id, found = ids[i], true
 	}
-	if x.Dead != nil {
-		dead := !found && g.leftPlay(x.Card)
-		c.bool(name+" dead", x.Dead, dead)
+	if x.Dead != nil && *x.Dead {
+		c.bool(name+" dead", x.Dead, !found && g.leftPlay(x.Card))
+		if x.Damage == nil && x.HP == nil && x.ATK == nil && x.Evasion == nil {
+			return
+		}
 	}
-	if x.Damage == nil && x.HP == nil && x.ATK == nil && x.Evasion == nil {
-		return
-	}
+	// Any other check, dead false or none, needs the card in a slot.
 	if !found {
 		c.add("%s is in no slot, options %v", name, refList(refs))
 		return
@@ -219,8 +250,12 @@ func (g *Game) checkDecks(c *checks, decks, discards map[string][]CardRef) {
 	}
 	for d := range deckCount {
 		if want, ok := decks[d.String()]; ok {
+			n := len(want)
+			if n == 0 {
+				n = 1 // [] expects an empty deck (19.234)
+			}
 			var got []CardRef
-			for _, id := range g.DeckTop(d, len(want)) {
+			for _, id := range g.DeckTop(d, n) {
 				got = append(got, g.Object(id).Card)
 			}
 			if !slices.Equal(got, want) {
@@ -252,8 +287,12 @@ func (g *Game) checkBottoms(c *checks, bottoms map[string][]CardRef) {
 			continue
 		}
 		deck := g.Decks[d]
+		n := len(want)
+		if n == 0 {
+			n = 1 // [] expects an empty deck (19.234)
+		}
 		got := []CardRef{}
-		for _, id := range deck[:min(len(want), len(deck))] {
+		for _, id := range deck[:min(n, len(deck))] {
 			got = append(got, g.Object(id).Card)
 		}
 		slices.Reverse(got) // bottom last, as the top is top first
@@ -283,11 +322,13 @@ func checkRolls(c *checks, want []int, events []Event) {
 	}
 }
 
-// checkGame compares the turn and the game's end.
+// checkGame compares the turn and the game's end. LootPlays and Attacks
+// are what the active player can still do, bonus ones too (24.28): the
+// engine's own counts, lootPlaysFor and attacksLeft.
 func (g *Game) checkGame(c *checks, e Expectation) {
 	c.int("active", e.Active, int(g.Turn.Active))
-	c.int("loot_plays", e.LootPlays, g.Turn.LootPlays)
-	c.int("attacks", e.Attacks, g.Turn.Attacks)
+	c.int("loot_plays", e.LootPlays, g.lootPlaysFor(g.Turn.Active))
+	c.int("attacks", e.Attacks, g.attacksLeft())
 	c.bool("over", e.Over, g.Over)
 	if e.Winners != nil {
 		got := make([]int, len(g.Winners))
@@ -425,8 +466,9 @@ func eventKinds() []string {
 }
 
 // checkEvents checks that each expected kind happened (for its player,
-// when set), or with None that it did not.
-func checkEvents(c *checks, want []ExpectedEvent, events []Event) {
+// when set), or with None that it did not; seats is how many players
+// there are.
+func checkEvents(c *checks, want []ExpectedEvent, events []Event, seats int) {
 	for _, x := range want {
 		if _, ok := barrierKinds[x.Kind]; !ok {
 			c.add("events: %q is no event kind, options %v", x.Kind, eventKinds())
@@ -434,6 +476,10 @@ func checkEvents(c *checks, want []ExpectedEvent, events []Event) {
 		}
 		who := ""
 		if x.Player != nil {
+			if *x.Player < 0 || *x.Player >= seats {
+				c.add("events: no player %d", *x.Player) // none would always pass (19.234)
+				continue
+			}
 			who = fmt.Sprintf(" for player %d", *x.Player)
 		}
 		n := 0

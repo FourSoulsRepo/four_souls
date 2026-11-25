@@ -1,0 +1,23 @@
+{
+  "title": "Isaac kills Death: may he choose any player, and does Cain, whom he chooses, die?",
+  "source": ["card death", "card isaac", "R-ATK-12", "R-CARD-13", "R-DEATH-05", "R-DEATH-15"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["death"],
+    "decks": {"monster": ["pooter"], "treasure": ["breakfast"]},
+    "rolls": [6, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["death"],
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["player 1 (isaac)", "player 2 (cain)"]}}},
+    {"kind": "choose", "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "events": [{"kind": "died", "player": 1}, {"kind": "died", "player": 0, "none": true}]}}
+  ],
+  "expect": {
+    "allowed": true,
+    "monsters": [{"card": "death", "dead": true}, {"slot": 1, "card": "pooter"}],
+    "after": [{"player": 0, "dead": false, "items": ["breakfast"], "soul_cards": ["death"]}, {"player": 1, "dead": true}]
+  }
+}

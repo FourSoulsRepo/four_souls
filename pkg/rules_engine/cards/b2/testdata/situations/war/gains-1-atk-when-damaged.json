@@ -1,0 +1,21 @@
+{
+  "title": "Isaac (3 HP) hits War (3 HP, DC 3, 1 ATK) with a 6, then rolls a 1: does it have 2 ATK after taking damage, so the miss deals 2 damage?",
+  "source": ["card war", "card isaac", "card breakfast", "R-ATK-12", "R-ATK-13", "R-CARD-13"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["breakfast"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["war"],
+    "decks": {"monster": ["pooter"]},
+    "rolls": [6, 1, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["war"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 1, 6, 6],
+    "monsters": [{"card": "war", "dead": true}],
+    "after": [{"player": 0, "damage": 2, "dead": false, "cents": 8, "soul_cards": ["war"]}]
+  }
+}

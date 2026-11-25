@@ -27,7 +27,7 @@ import { matLook } from '../mats';
 import type { Block, Update } from '../protocol';
 import { seatOf, useApp } from '../store';
 import { PickScreen } from './PickScreen';
-import { activity, askedSeat, myMove, picking, promptBanner, stackPrompt, tablePick } from '../prompt';
+import { activity, askedSeat, mustAttackTip, myMove, picking, promptBanner, stackPrompt, tablePick } from '../prompt';
 import { beforeStart, helpLine, seatNames, waitTurn, type Names } from '../stack';
 import { seatPositions } from '../table';
 import '../components/Table.css';
@@ -241,6 +241,7 @@ function Table({ game, you, replaying }: { game: Update; you: number; replaying:
                     waiting={view.waiting}
                     you={you}
                     left={view.turn.active === you ? { buy: p.purchases, attack: p.attacks } : undefined}
+                    must={mustAttackTip(view, you, names)}
                   />
                 ) : undefined
               }

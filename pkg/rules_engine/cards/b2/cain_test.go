@@ -28,7 +28,7 @@ func TestCainGoesFirstWithoutARoll(t *testing.T) {
 }
 
 func TestCain(t *testing.T) {
-	testExtraLoot(t, "cain")
+	testExtraLootOnAnotherTurn(t, "cain")
 	for _, chars := range [][]engine.CardRef{{"isaac", "cain"}, {"cain", "eve", "maggy"}} {
 		g := newGame(t, chars...)
 		want := engine.PlayerID(0)

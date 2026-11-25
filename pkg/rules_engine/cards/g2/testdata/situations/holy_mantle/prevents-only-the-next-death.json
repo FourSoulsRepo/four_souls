@@ -1,0 +1,22 @@
+{
+  "title": "In Isaac's loot step the Lost uses Holy Mantle on herself; Isaac bombs her twice: is only the first death prevented?",
+  "source": ["card holy_mantle", "card bomb", "card isaac", "R-TURN-04", "R-PRIO-02"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["bomb", "bomb"]}, {"character": "the_lost", "items": ["holy_mantle"]}],
+    "active": 0,
+    "phase": "loot",
+    "priority": 1
+  },
+  "steps": [
+    {"player": 1, "kind": "activate", "card": "holy_mantle", "choices": ["player 2 (the_lost)"],
+     "expect": {"allowed": true, "after": [{"player": 1, "deactivated": ["holy_mantle"]}]}},
+    {"player": 0, "kind": "activate", "card": "isaac", "expect": {"allowed": true, "loot_plays": 2}},
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["player 2 (the_lost)"],
+     "expect": {"allowed": true, "active": 0,
+                "events": [{"kind": "died", "player": 1, "none": true}, {"kind": "turn_ended_early", "none": true}]}},
+    {"player": 0, "kind": "play", "card": "bomb", "choices": ["player 2 (the_lost)"],
+     "expect": {"allowed": true, "events": [{"kind": "died", "player": 1}]}}
+  ],
+  "expect": {"allowed": true}
+}

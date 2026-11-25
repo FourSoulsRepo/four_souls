@@ -1,0 +1,18 @@
+{
+  "title": "Blessing Of Greed: Isaac ends his turn; at the start of Cain's turn Cain gains 3¢",
+  "source": ["card blessing_of_greed", "R-TURN-03", "R-CARD-36"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "isaac"},
+      {"character": "cain"}
+    ],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "rooms": ["blessing_of_greed"]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {"allowed": true, "active": 1, "after": [{"player": 0, "cents": 0}, {"player": 1, "cents": 3}]}
+}

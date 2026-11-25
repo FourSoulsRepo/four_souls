@@ -212,28 +212,36 @@ export function fighters(view: GameView): number[] {
 }
 
 // Forced is an attack the active player still owes this turn (19.180 –
-// 19.182): on a monster (Monster Manual, Friendly Ball), on the monster
-// deck (Ambush, I Am Error), or on anything (Envy); left is how many
-// attacks they owe, deck ones too.
+// 19.182): on a monster (Monster Manual), on one of a few (Boss Rush!'s
+// bosses, Friendly Ball's monster; 19.241), on the monster deck (Ambush,
+// I Am Error), or on anything (Envy); left is how many attacks they
+// owe, deck ones too. random: an attack on a random minion (Pilfering
+// Krampus, Q-31, 18.35).
 export interface Forced {
-  target: number;
+  targets: number[];
   deck: boolean;
   left: number;
+  random: boolean;
 }
 
-// forcedAttack is what the turn owes, or null. A named monster counts
-// only while it is on the table: once it leaves, the duty is gone, as
-// the engine says (R-ABIL-12).
+// forcedAttack is what the turn owes, or null. A named card counts only
+// while it is on the table, on top of its slot: once it leaves or lies
+// covered (R-ZONE-10), it is no target, as the engine says (19.241).
+// must_attack_one_of_cards names cards, so a boss that comes up from
+// under a dead one counts (owner, 2026-11-24); older records name
+// objects in must_attack_one_of. With none of them left, that duty is
+// gone.
 export function forcedAttack(view: GameView): Forced | null {
   if (view.over || beforeStart(view)) {
     return null;
   }
   const { turn } = view;
-  const m = turn.must_attack ?? 0;
-  const target = m !== 0 && onTable(view, m) ? m : 0;
+  const named = [turn.must_attack ?? 0, ...(turn.must_attack_one_of ?? []), ...cardsOnTable(view, turn.must_attack_one_of_cards ?? [])];
+  const targets = named.filter((id, i) => id !== 0 && named.indexOf(id) === i && onTable(view, id));
   const deck = (turn.must_attack_deck ?? 0) > 0;
   const left = turn.must_attacks ?? 0;
-  return target !== 0 || deck || left > 0 ? { target, deck, left } : null;
+  const random = view.random_attack ?? false;
+  return targets.length > 0 || deck || left > 0 || random ? { targets, deck, left, random } : null;
 }
 
 // onTable: an object is a monster in a slot or a player's character,
@@ -242,14 +250,24 @@ function onTable(view: GameView, id: number): boolean {
   return monsterRows(view).some((s) => s.top?.id === id) || view.players.some((p) => p.character.id === id);
 }
 
+// cardsOnTable are the objects on the table, as onTable, whose card is
+// one of cards: the monsters on top of their slots, then the characters.
+function cardsOnTable(view: GameView, cards: string[]): number[] {
+  if (cards.length === 0) {
+    return [];
+  }
+  const on = [...monsterRows(view).map((s) => s.top), ...view.players.map((p) => p.character)];
+  return on.flatMap((c) => (c && cards.includes(c.card) ? [c.id] : []));
+}
+
 // mustTargets are the cards marked as owed an attack, for everyone.
 export function mustTargets(view: GameView): number[] {
-  const f = forcedAttack(view);
-  return f && f.target !== 0 ? [f.target] : [];
+  return forcedAttack(view)?.targets ?? [];
 }
 
 // mustAttackLine is the turn banner's line for a forced attack: "You
-// must attack: Gaper (2 left)". The deck comes first, as the engine
+// must attack: Gaper (2 left)", or "Monstro or Widow" when one of a few
+// will do (Boss Rush!, 19.241). The deck comes first, as the engine
 // asks for it first. None while an attack is open: its target is
 // being picked or fought.
 export function mustAttackLine(view: GameView, n: Names): string | undefined {
@@ -257,9 +275,18 @@ export function mustAttackLine(view: GameView, n: Names): string | undefined {
   if (!f || view.attack) {
     return undefined;
   }
-  const target = f.deck ? t('banner.monster_deck') : f.target !== 0 ? attackTarget(view, f.target, n).text : '';
+  const named = () => f.targets.map((id) => attackTarget(view, id, n).text).reduce((a, b) => t('banner.either', { a, b }));
+  const target = f.deck ? t('banner.monster_deck') : f.targets.length > 0 ? named() : f.random ? t('banner.random_minion') : '';
   if (!target) {
     return t('banner.must_attack_any', { n: f.left });
   }
   return f.left > 0 ? t('banner.must_attack_left', { target, n: f.left }) : t('banner.must_attack', { target });
+}
+
+// mustAttackTip is the attack button's line while the viewer owes an
+// attack (18.35, ADR 037 item 7): the banner's line, so it names the
+// same target: a monster, a player, the monster deck, or a random
+// minion. The button turns red while there is one; only on own turn.
+export function mustAttackTip(view: GameView, you: number, n: Names): string | undefined {
+  return view.turn.active === you ? mustAttackLine(view, n) : undefined;
 }

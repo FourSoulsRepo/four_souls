@@ -1,0 +1,24 @@
+{
+  "title": "Mother's Shadow! refills the Fly's slot: Cain and Samson tie for the most items, so both die and Isaac lives; it goes 6 cards down the monster deck",
+  "source": ["card mothers_shadow", "card fly", "R-SHOP-08", "R-CARD-15", "R-DEATH-14", "R-DEATH-09"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "items": ["spoon_bender"]}, {"character": "samson", "items": ["jawbone"]}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"monster": ["mothers_shadow", "clotty", "dip", "pooter", "spider", "fatty", "chub"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly", "spoon_bender", "jawbone"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [{"player": 0, "dead": false, "cents": 1}, {"player": 1, "dead": true, "items": []}, {"player": 2, "dead": true, "items": []}],
+    "events": [{"kind": "died", "player": 1}, {"kind": "died", "player": 2}, {"kind": "died", "player": 0, "none": true}],
+    "monsters": [{"slot": 1, "card": "clotty"}],
+    "decks": {"monster": ["dip", "pooter", "spider", "fatty", "chub", "mothers_shadow"]},
+    "discards": {"treasure": ["spoon_bender", "jawbone"], "monster": ["fly"]}
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "title": "Cain (1 HP left) dies to Dark Judas's Bomb!: does Dark Judas loot 1 for Dark Arts?",
+  "source": ["card dark_arts", "card bomb", "R-DEATH-13", "R-CARD-06"],
+  "sets": ["b2", "fsp2"],
+  "setup": {
+    "players": [{"character": "dark_judas", "items": ["dark_arts"], "hand": ["bomb"]}, {"character": "cain", "damage": 1}],
+    "active": 0,
+    "decks": {"loot": ["a_penny"]}
+  },
+  "action": {"player": 0, "kind": "play", "card": "bomb", "choices": ["player 2 (cain)"]},
+  "expect": {
+    "allowed": true,
+    "events": [{"kind": "died", "player": 1}, {"kind": "died", "player": 0, "none": true}],
+    "after": [{"player": 0, "hand_cards": ["a_penny"]}]
+  }
+}

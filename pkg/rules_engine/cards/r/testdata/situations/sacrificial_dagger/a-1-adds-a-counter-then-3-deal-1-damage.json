@@ -1,0 +1,20 @@
+{
+  "title": "Isaac's Sacrificial Dagger has 2 counters; he misses the Pooter on a 1, then kills it: does removing 3 counters deal 1 damage to Cain?",
+  "source": ["card sacrificial_dagger", "card pooter", "R-ATK-13", "R-ABIL-07"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["sacrificial_dagger"], "counters": [{"card": "sacrificial_dagger", "count": 2}]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["pooter", "fly"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [1, 6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["pooter"],
+     "expect": {"allowed": true, "resolved_rolls": [1, 6, 6], "monsters": [{"card": "pooter", "dead": true}],
+       "after": [{"player": 0, "damage": 1, "counters": [{"card": "sacrificial_dagger", "count": 3}]}]}},
+    {"player": 0, "kind": "activate", "card": "sacrificial_dagger", "ability": 1, "choices": ["player 2 (cain)"],
+     "expect": {"allowed": true, "after": [{"player": 0, "counters": [{"card": "sacrificial_dagger", "count": 0}], "deactivated": []}, {"player": 1, "damage": 1}]}}
+  ],
+  "expect": {"allowed": true}
+}

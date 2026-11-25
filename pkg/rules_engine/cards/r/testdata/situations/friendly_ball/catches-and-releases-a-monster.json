@@ -1,0 +1,30 @@
+{
+  "title": "Isaac catches the Leech in Friendly Ball, and on his next turn puts it on the Fly in slot 2: must he attack the Leech before his turn can end?",
+  "source": ["card friendly_ball", "card leech", "R-ABIL-05", "R-ABIL-08", "R-ABIL-40", "R-ATK-03", "R-ZONE-10", "R-ZONE-11", "R-TURN-02", "R-DEATH-09"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["friendly_ball"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "friendly_ball", "ability": 1, "expect": {"allowed": false, "rule": "R-ABIL-40"}},
+    {"player": 0, "kind": "activate", "card": "friendly_ball", "choices": ["leech"],
+     "expect": {"allowed": true, "monsters": [{"slot": 1, "card": "clotty"}, {"slot": 2, "card": "fly"}],
+       "after": [{"player": 0, "deactivated": ["friendly_ball"]}]}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1}},
+    {"player": 1, "kind": "end_turn", "expect": {"allowed": true, "active": 0, "after": [{"player": 0, "deactivated": []}]}},
+    {"player": 0, "kind": "activate", "card": "friendly_ball", "expect": {"allowed": false, "rule": "R-ABIL-08"}},
+    {"player": 0, "kind": "activate", "card": "friendly_ball", "ability": 1, "choices": ["ask.slot 2"],
+     "expect": {"allowed": true, "attacks": 2, "monsters": [{"slot": 1, "card": "clotty"}, {"slot": 2, "card": "leech"}],
+       "after": [{"player": 0, "deactivated": ["friendly_ball"]}]}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": false, "rule": "R-ATK-03"}},
+    {"player": 0, "kind": "attack", "expect": {"allowed": true, "prompt": {"player": 0, "options": ["leech"]}}},
+    {"kind": "choose", "choices": ["leech"],
+     "expect": {"allowed": true, "attacks": 1, "monsters": [{"card": "leech", "dead": true}, {"slot": 2, "card": "fly"}]}},
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1}}
+  ],
+  "expect": {"allowed": false, "rule": "R-ABIL-40"}
+}

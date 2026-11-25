@@ -1,0 +1,21 @@
+{
+  "title": "Krampus challenge, Normal: no minion is in play and the ¢ present has 1 counter; Isaac ends his turn and Cain's turn-start roll is a 1; may Cain end his turn without attacking?",
+  "source": ["card pilfering_krampus_norm", "card how_the_krampus_stole_christmas_norm", "R-KRAMPUS-08", "R-KRAMPUS-12", "R-KRAMPUS-13", "Q-31"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal", "presents": [{"kind": "cents", "counters": 1}]},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"monster": ["squirt", "dip", "pooter"]},
+    "rolls": [1]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn", "expect": {"allowed": true, "active": 1, "monsters": [{"card": "squirt"}, {"card": "dip"}, {"card": "pooter"}]}},
+    {"player": 1, "kind": "end_turn", "expect": {"rule": "R-KRAMPUS-13", "active": 1, "attacks": 1}}
+  ],
+  "expect": {
+    "rule": "R-KRAMPUS-13",
+    "resolved_rolls": [1]
+  }
+}

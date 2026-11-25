@@ -1,0 +1,24 @@
+{
+  "title": "Trick or Treat, Normal: Boom Fly is on top of the monster deck; Isaac rolls 3 for Ghostly Trickery and kills the Fly; what happens?",
+  "source": ["card trick_treat_normhardultra", "card boom_fly", "card fly", "R-TRICK-07", "R-TRICK-13", "Q-47", "Q-50", "R-ABIL-15"],
+  "sets": ["b2", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "normal"},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"monster": ["boom_fly", "bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob"]},
+    "rolls": [3, 6, 1]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly", "mischievous_the_haunt_norm: Each time a monster dies, the active player rolls- 4-6: Remove a fear counter from a player.", "trick_treat_normhardultra: Each time you kill a monster, remove a trick counter from the final boss."]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [3, 6, 1],
+    "events": [{"kind": "abilities_gained"}],
+    "monsters": [{"card": "fly", "dead": true}, {"slot": 2, "card": "bare_mob"}],
+    "deck_bottoms": {"monster": ["boom_fly"]},
+    "after": [{"player": 0, "cents": 1, "damage": 1, "counters": [{"card": "player", "name": "fear", "count": 1}]}, {"player": 1, "damage": 1, "counters": [{"card": "player", "name": "fear", "count": 1}]}]
+  }
+}

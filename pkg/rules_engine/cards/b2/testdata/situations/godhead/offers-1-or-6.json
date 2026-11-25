@@ -1,0 +1,16 @@
+{
+  "title": "Isaac's roll of 3 is on the stack and he uses Godhead on it: is he offered exactly 1 and 6, and does a 1 resolve as 1?",
+  "source": ["card godhead", "R-DICE-04", "R-DICE-06"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["godhead"]}, {"character": "cain"}],
+    "active": 0,
+    "stack": [{"dice_roll": 3, "owner": 0}]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "godhead", "choices": ["ask.roll_of 3"],
+     "expect": {"allowed": true, "prompt": {"player": 0, "options": ["1", "6"]}}},
+    {"kind": "choose", "choices": ["1"], "expect": {"allowed": true, "resolved_rolls": [1]}}
+  ],
+  "expect": {"allowed": true, "after": [{"player": 0, "deactivated": ["godhead"]}]}
+}

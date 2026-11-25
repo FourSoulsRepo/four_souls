@@ -1,0 +1,20 @@
+{
+  "title": "Cain's Mega Bomb! kills the Baleful, who has Soulbond: does Isaac die too, and does she keep her 3¢ and her Bomb!?",
+  "source": ["card soulbond", "card mega_bomb", "R-DEATH-14", "R-DEATH-13"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [
+      {"character": "cain", "hand": ["mega_bomb"]},
+      {"character": "the_baleful", "items": ["soulbond"], "hand": ["bomb"], "cents": 3},
+      {"character": "isaac"}
+    ],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "mega_bomb", "choices": ["player 2 (the_baleful)", "player 3 (isaac)"]},
+  "expect": {
+    "allowed": true,
+    "events": [{"kind": "died", "player": 1}, {"kind": "died", "player": 2}, {"kind": "died", "player": 0, "none": true}],
+    "discards": {"loot": ["mega_bomb"]},
+    "after": [{"player": 1, "cents": 3, "hand_cards": ["bomb"], "items": ["soulbond"]}]
+  }
+}

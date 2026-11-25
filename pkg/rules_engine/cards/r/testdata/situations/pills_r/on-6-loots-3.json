@@ -1,0 +1,14 @@
+{
+  "title": "Isaac plays Pills! and rolls a 6: does he loot 3 and keep them?",
+  "source": ["card pills_r", "R-CARD-06"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["pills_r"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"loot": ["a_penny", "two_cents", "three_cents", "four_cents"]},
+    "rolls": [6]
+  },
+  "action": {"player": 0, "kind": "play", "card": "pills_r"},
+  "expect": {"allowed": true, "resolved_rolls": [6], "decks": {"loot": ["four_cents"]}, "discards": {"loot": ["pills_r"]}, "after": [{"player": 0, "hand_cards": ["a_penny", "two_cents", "three_cents"]}]}
+}

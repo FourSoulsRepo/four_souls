@@ -1,0 +1,17 @@
+{
+  "title": "The Fettered with Dead Weight rolls a 1 against the Leech: does she take no combat damage, then kill it with a 6?",
+  "source": ["card dead_weight", "card leech", "R-ATK-13", "R-ATK-12"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "the_fettered", "items": ["dead_weight"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "rolls": [1, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["leech"]},
+    {"kind": "throw", "expect": {"allowed": true, "resolved_rolls": [1], "after": [{"player": 0, "damage": 0}]}},
+    {"kind": "throw"}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [1, 6], "monsters": [{"card": "leech", "dead": true}], "events": [{"kind": "damaged", "player": 0, "none": true}], "after": [{"player": 0, "damage": 0, "hand": 1}]}
+}

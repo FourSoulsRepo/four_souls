@@ -1,0 +1,11 @@
+{
+  "title": "Isaac uses Marbles on his Jar Of Flies with 1 counter and adds one: does it have 2?",
+  "source": ["card marbles", "R-MECH-12"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["marbles", "jar_of_flies"], "counters": [{"card": "jar_of_flies", "count": 1}]}, {"character": "cain"}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "marbles", "choices": ["jar_of_flies", "ask.counter.add"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "deactivated": ["marbles"], "counters": [{"card": "jar_of_flies", "count": 2}]}]}
+}

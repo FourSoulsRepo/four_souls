@@ -1,0 +1,22 @@
+{
+  "title": "Trick or Treat, Hard: Isaac rolls 5 and 6 for Ghostly Trickery and kills Conjoined Fatty (loot 2); what does he gain?",
+  "source": ["card trick_treat_normhardultra", "card conjoined_fatty", "R-TRICK-13", "Q-46", "Q-48"],
+  "sets": ["b2", "challenge", "trick_trial"],
+  "setup": {
+    "game": {"type": "challenge", "id": "trick_or_treat", "difficulty": "hard"},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["conjoined_fatty", "dinga"],
+    "decks": {"monster": ["bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob", "bare_mob"]},
+    "rolls": [5, 6, 6, 6, 6, 6, 1]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["conjoined_fatty", "mischievous_the_haunt_hard: Each time a monster dies, the active player rolls- 4-6: Remove a fear counter from a player."]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 5, 6, 6, 6, 6, 1],
+    "monsters": [{"card": "conjoined_fatty", "dead": true}],
+    "after": [{"player": 0, "cents": 1, "hand": 0}]
+  }
+}

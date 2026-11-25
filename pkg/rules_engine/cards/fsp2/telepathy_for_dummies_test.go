@@ -6,7 +6,10 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-func TestTelepathyForDummies(t *testing.T) {
+// TestTelepathyForDummiesShowsTheRoll: the view shows the stored roll
+// until it is used (15.67). The changed attack roll is in
+// testdata/situations/telepathy_for_dummies/.
+func TestTelepathyForDummiesShowsTheRoll(t *testing.T) {
 	tb := setup(t, engine.SituationSetup{
 		Players:  []engine.SituationPlayer{seat("cain"), {Character: "isaac", Items: items("telepathy_for_dummies")}},
 		Monsters: items("trite", "fatty"),
@@ -18,12 +21,6 @@ func TestTelepathyForDummies(t *testing.T) {
 	}
 	tb.G.ForceRolls(1, 6)
 	tb.Do(attackIntent(tb), "trite", "ask.yes") // the 1 becomes the stored 6
-	if top(tb, 0) == "trite" {
-		t.Error("the attack roll should become a 6 and kill the trite")
-	}
-	if d := tb.G.Players[1].Damage; d != 0 {
-		t.Errorf("damage = %d, want 0", d)
-	}
 	if d := viewDice(tb, 1, "telepathy_for_dummies"); d != nil {
 		t.Errorf("view dice = %v after the roll, want none", d)
 	}

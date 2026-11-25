@@ -1,0 +1,11 @@
+{
+  "title": "Isaac uses Library Card: does the turn have 2 loot plays?",
+  "source": ["card library_card", "R-TURN-05", "R-ABIL-10"],
+  "sets": ["b2", "g2"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["library_card"]}, {"character": "cain"}],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "activate", "card": "library_card"},
+  "expect": {"allowed": true, "loot_plays": 2, "after": [{"player": 0, "deactivated": ["library_card"]}]}
+}

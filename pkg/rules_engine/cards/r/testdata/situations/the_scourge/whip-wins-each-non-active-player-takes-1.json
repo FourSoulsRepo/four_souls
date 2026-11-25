@@ -1,0 +1,19 @@
+{
+  "title": "The Scourge: Isaac's 6 would hurt it; Isaac and Cain vote whip, Samson whiff, so the damage is prevented and Cain and Samson take 1 each",
+  "source": ["card the_scourge", "R-MECH-49", "R-ABIL-29", "R-ABIL-30", "R-ATK-13"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["the_scourge", "fly"],
+    "rolls": [6, 1, 1]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["the_scourge"]},
+    {"kind": "throw", "choices": ["card.the_scourge.whip", "card.the_scourge.whip", "card.the_scourge.whiff"],
+     "expect": {"allowed": true, "monsters": [{"card": "the_scourge", "hp": 3}],
+       "after": [{"player": 0, "damage": 0, "hand": 0}, {"player": 1, "damage": 1}, {"player": 2, "damage": 1}]}},
+    {"kind": "throw"}
+  ],
+  "expect": {"allowed": true, "resolved_rolls": [6, 1, 1], "events": [{"kind": "died", "player": 0}]}
+}

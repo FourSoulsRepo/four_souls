@@ -1,0 +1,14 @@
+{
+  "title": "Isaac plays Pills! (loot 1, loot 3 or discard) and rolls a 3: does he loot 3 and keep A Dime!!?",
+  "source": ["card pills", "R-CARD-06", "R-CARD-07"],
+  "sets": ["b2"],
+  "setup": {
+    "players": [{"character": "isaac", "hand": ["pills", "a_dime"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "decks": {"loot": ["bomb", "a_penny", "two_cents"]},
+    "rolls": [3]
+  },
+  "action": {"player": 0, "kind": "play", "card": "pills"},
+  "expect": {"allowed": true, "resolved_rolls": [3], "discards": {"loot": ["pills"]}, "after": [{"player": 0, "hand": 4, "hand_cards": ["a_dime", "bomb", "a_penny", "two_cents"]}]}
+}

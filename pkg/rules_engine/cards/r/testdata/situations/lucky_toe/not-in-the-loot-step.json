@@ -1,0 +1,12 @@
+{
+  "title": "Cain ends his turn; in Isaac's loot step, does Isaac with Lucky Toe loot only 1?",
+  "source": ["card lucky_toe", "R-TURN-04", "R-TURN-13"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "cain"}, {"character": "isaac", "items": ["lucky_toe"]}],
+    "active": 0,
+    "decks": {"loot": ["a_penny", "two_cents"]}
+  },
+  "steps": [{"player": 0, "kind": "end_turn"}],
+  "expect": {"allowed": true, "active": 1, "decks": {"loot": ["two_cents"]}, "after": [{"player": 1, "hand": 1, "hand_cards": ["a_penny"]}]}
+}

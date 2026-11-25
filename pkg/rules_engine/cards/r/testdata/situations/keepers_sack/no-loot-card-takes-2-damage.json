@@ -1,0 +1,15 @@
+{
+  "title": "Isaac ends his turn with Keeper's Sack and no loot card: does he take 2 damage and die, keeping the eternal Sack?",
+  "source": ["card keepers_sack", "card isaac", "R-TURN-10", "R-DEATH-14"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["keepers_sack"]}, {"character": "cain"}],
+    "active": 0
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn",
+     "expect": {"allowed": true, "active": 1, "events": [{"kind": "damaged", "player": 0}, {"kind": "died", "player": 0}],
+       "after": [{"player": 0, "items": ["keepers_sack"]}]}}
+  ],
+  "expect": {"allowed": true}
+}
