@@ -1949,3 +1949,32 @@ Ideas: TS-13, LR-04, R-03.
 15. ADR 034: no drift.
 16. No rules bug found.
 17. `cardgen -report` unchanged.
+
+### [ ] 24.34 Setup: the game type, a challenge first
+
+1. Why (owner, 2026-11-25, after 24.27)
+   1. 46 challenge tests need a setup that starts a challenge (24.27).
+   2. Owner: one field for the game type, open for future types.
+2. Field `game`
+   1. `"game": {"type": "regular"}` is the default; leaving it out is the same.
+   2. `"game": {"type": "challenge", "id": "krampus", "difficulty": "normal"}`.
+   3. A challenge starts on the built table as a real game (`StartChallenge`).
+   4. Boss, rule card, presents, timer as the game places them.
+   5. Exactly 2 players (R-COOP-01); `bosses` must not name the boss again.
+   6. Presents come from the treasure deck top, so `decks` can name them.
+   7. An unknown type or id is an error listing the options.
+   8. Team games are not in the engine (Q-03, parked): `"team"` is refused as not yet.
+   9. Fields that fit one type only are errors with another type.
+3. Smaller fields (24.27 report)
+   1. Present counters: a check (16 tests) and a setup field (8).
+   2. Present state in setup: destroyed, Happy Holidays done (8).
+   3. Player counters (fear): setup and check (8).
+   4. The rule card's side up (Treat), in setup (3).
+   5. Each only if tests need it; name the tests.
+4. Dump
+   1. The dump writes `game` when a Go test started a challenge.
+5. Tests and docs
+   1. Go: each type set up; each error.
+   2. Wiki `Situation-payload.md`: the field and its options, with examples.
+   3. ADR 034: drift edited in place, if any.
+   4. 24.27 resumes after this, in its own agent.
