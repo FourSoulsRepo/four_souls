@@ -93,6 +93,8 @@ Use option 1.
    5. An `https://` link: a ruling outside the repo.
    6. The runner checks the form; a rule or question ID must exist.
    7. House and Community rulings keep their label in `open-questions.md`.
+   8. An open question may be cited only by a file whose title says it waits.
+   9. Such a file checks the engine's current answer (owner, 2026-11-25: Q-27, Q-28).
 10. Format compatibility
    1. Old payloads keep working; website links hold them (12.7).
    2. `action` stays; `steps` is added beside it (24.4).

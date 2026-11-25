@@ -1,5 +1,5 @@
 {
-  "title": "Golden Trinket with gold counters on Bum Friend and Tech X: Isaac uses Bum Friend's ↷ from the Trinket; may he then use Tech X's ↷ from it the same turn?",
+  "title": "Golden Trinket with gold counters on Bum Friend and Tech X: Isaac uses Bum Friend's ↷ from the Trinket; may he then use Tech X's ↷ from it the same turn? (waits for Q-28, still open: checks the engine's current answer, (a))",
   "source": ["card golden_trinket", "card bum_friend", "card tech_x", "R-ABIL-38", "R-ABIL-10", "R-ABIL-07", "R-ABIL-08", "Q-28"],
   "sets": ["b2", "r"],
   "setup": {

@@ -341,6 +341,7 @@ On 2026-10-09 the owner parked every open decision for later.
    2. (b) Replacements are gained too; the levels go on the trinket.
 4. Status: **Owner** (2026-10-29): the owner has not decided. Test: `TestGainCentsReplacementGained`, skipped.
    1. The engine's (a): `cards/r` file `golden_trinket/a-dime-levels-bum-bo-not-it.json`.
+   2. Owner (2026-11-25): kept for later; the file waits for the answer.
 5. Basis: **House**: no ruling found.
 
 ### Q-28 Two gained ↷ abilities on one item
@@ -355,6 +356,7 @@ On 2026-10-09 the owner parked every open decision for later.
    2. (b) Each gained ability has its own tap.
 4. Status: **Owner** (2026-10-29): the owner has not decided.
    1. Test: `cards/r` file `golden_trinket/bum-friend-and-tech-x-share-its-one-tap.json`.
+   2. Owner (2026-11-25): kept for later; the file waits for the answer.
 5. Basis: **House**: no ruling found.
 
 ### Q-29 The first attack roll and a target's trigger

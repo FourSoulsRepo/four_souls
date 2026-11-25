@@ -1,5 +1,5 @@
 {
-  "title": "Gold on Bum-Bo!: Isaac plays A Dime!!; do the 10¢ level up Bum-Bo!, or Golden Trinket, or go to Isaac?",
+  "title": "Gold on Bum-Bo!: Isaac plays A Dime!!; do the 10¢ level up Bum-Bo!, or Golden Trinket, or go to Isaac? (waits for Q-27, still open: checks the engine's current answer, (a))",
   "source": ["card bum_bo", "card a_dime", "card golden_trinket", "R-ABIL-38", "Q-27"],
   "sets": ["b2", "r"],
   "setup": {
