@@ -124,6 +124,11 @@ Use option 1.
    26. It names cards; a covered one counts once it comes up (19.241).
    27. `setup.random`: the next random picks, by option label (24.30).
    28. Picks after the list are random from `seed`, as dice after `rolls`.
+   29. `setup.game`: the game type; `regular` by default (24.34).
+   30. `challenge` starts one on the built table, as a game does.
+   31. `team` is refused until Q-03 is resolved.
+   32. `"card": "player"` in counters: counters on the player (R-MECH-13).
+   33. `expect.presents`: a challenge's presents.
 11. `expect` comes from the rules, never from a run (5.25).
    1. A tool may write `setup` and `steps`; never `expect` (24.7).
    2. `enginetest` dumps a Go test with `SITUATION_DUMP` (24.7).

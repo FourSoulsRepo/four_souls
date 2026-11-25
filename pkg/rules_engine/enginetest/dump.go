@@ -346,6 +346,7 @@ func (r *recorder) fillSetup(g *engine.Game) {
 		}
 		r.setup.Decks[name] = append(top, r.setup.Decks[name]...)
 	}
+	r.pruneChallenge()
 	rebuilt, err := engine.BuildTable(r.setup, r.sets...)
 	if err != nil {
 		r.note("setup: the dumped setup does not build: %v", err)
@@ -377,6 +378,7 @@ func observe(g *engine.Game) engine.SituationSetup {
 			Character: ch.Card, Cents: pl.Cents, Damage: pl.Damage, Dead: pl.Dead,
 			ExtraLootPlays: pl.ExtraLootPlays, Counters: counters("character", ch.Counters),
 		}
+		sp.Counters = append(sp.Counters, counters(engine.PlayerCounters, pl.Counters)...)
 		if !ch.Charged {
 			sp.Deactivated = append(sp.Deactivated, "character")
 		}
@@ -428,6 +430,9 @@ func observe(g *engine.Game) engine.SituationSetup {
 		s.BonusSouls = append(s.BonusSouls, o.Card)
 		s.Counters = append(s.Counters, counters(o.Card, o.Counters)...)
 	}
+	if g.Challenge != nil {
+		s.Game, s.Bosses = observeChallenge(g), nil // the challenge puts its boss out
+	}
 	loot, attacks, purchases := g.Turn.LootPlays, g.Turn.Attacks, g.Turn.Purchases
 	s.LootPlays, s.Attacks, s.Purchases = &loot, &attacks, &purchases
 	s.MustAttack = mustAttack(g)
@@ -438,6 +443,71 @@ func observe(g *engine.Game) engine.SituationSetup {
 		}
 	}
 	return s
+}
+
+// observeChallenge reads a challenge as setup.game (24.34): every
+// present as it is now; pruneChallenge drops what its start says.
+func observeChallenge(g *engine.Game) *engine.SituationGame {
+	c := g.Challenge
+	gm := &engine.SituationGame{Type: engine.GameChallenge, ID: c.ID, Difficulty: c.Difficulty, Holidays: c.Holidays}
+	if g.Object(c.Card).Flipped {
+		gm.RuleCard = g.CardOf(c.Card)
+	}
+	for _, p := range c.Presents {
+		sp := engine.SituationPresent{Kind: p.Kind, Destroyed: p.Destroyed}
+		o := g.Object(p.Object)
+		switch {
+		case p.Destroyed:
+		case p.Flipped && o.Zone.Kind == engine.ZoneInPlay:
+			to := int(o.Controller)
+			sp.To = &to
+		case p.Flipped: // flipped, nobody gained it yet: no setup says it; the diff shows it
+			continue
+		default:
+			sp.Counters = o.CountersOf("")
+		}
+		gm.Presents = append(gm.Presents, sp)
+	}
+	return gm
+}
+
+// pruneChallenge drops from setup.game's presents, and from the
+// counters on its final boss, what the challenge's start puts there
+// anyway, so the dump names only what the test changed.
+func (r *recorder) pruneChallenge() {
+	s := &r.setup
+	if s.Game == nil || s.Game.Type != engine.GameChallenge {
+		return
+	}
+	plain := cloneSetup(r.tb.T, *s)
+	plain.Game.Presents, plain.Game.Holidays, plain.Counters = nil, false, nil
+	g, err := engine.BuildTable(plain, r.sets...)
+	if err != nil {
+		return // the rebuild in fillSetup reports it
+	}
+	start := observeChallenge(g)
+	if !s.Game.Holidays { // after Happy Holidays! every present is named
+		s.Game.Presents = slices.DeleteFunc(s.Game.Presents, func(p engine.SituationPresent) bool {
+			return slices.ContainsFunc(start.Presents, func(q engine.SituationPresent) bool { return reflect.DeepEqual(p, q) })
+		})
+	}
+	if len(s.Game.Presents) == 0 {
+		s.Game.Presents = nil
+	}
+	if len(g.Bosses) == 0 {
+		return
+	}
+	id, ok := g.Bosses[0].TopOf()
+	if !ok {
+		return
+	}
+	boss := g.Object(id)
+	s.Counters = slices.DeleteFunc(s.Counters, func(c engine.SituationCounter) bool {
+		return c.Card == boss.Card && c.Count == boss.CountersOf(c.Name)
+	})
+	if len(s.Counters) == 0 {
+		s.Counters = nil
+	}
 }
 
 // mustAttack is the ref of the card the active player must attack this
@@ -599,6 +669,15 @@ func flatten(g *engine.Game) map[string]string {
 		sf := v.Type().Field(i)
 		if sf.IsExported() && sf.Name != "RNG" && sf.Name != "Objects" {
 			f.walk(v.Field(i), sf.Name, 0)
+		}
+	}
+	// A challenge's TurnFrom and RoundFrom mark where a turn's objects
+	// start (R-COOP-11). A setup makes every object before the first
+	// turn; a test that adds objects after StartChallenge moves the mark,
+	// which no file needs to say.
+	for k := range f.out {
+		if strings.HasPrefix(k, "Challenge.TurnFrom") || strings.HasPrefix(k, "Challenge.RoundFrom") {
+			delete(f.out, k)
 		}
 	}
 	return f.out

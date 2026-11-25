@@ -37,7 +37,8 @@ A situation is a small JSON document: a table position, one action or several [s
 * `setup.decks` — cards put on top of decks, by deck name (`treasure`, `loot`, `monster`, `room`), top first: `{"monster": ["chest_2"], "loot": ["bomb", "a_penny"]}`. Each card must belong to that deck. The rest of the deck is every card of the sets, shuffled with `seed`.
 * `setup.rolls` — the next dice results, in order, each 1–6: `[6, 1]`. Any die rolled after them is random (from `seed`). In a test file every listed roll must be used: a roll left over at the end is an error (24.32); see [Leftover rolls and picks](#leftover-rolls-and-picks).
 * `setup.random` — the next random picks, in order, each named by its option label as in `choices`: `["player 2 (cain)"]`. Any pick after them is random (from `seed`). In a test file every listed pick must be used, as `rolls` (24.32). See [Random picks](#random-picks).
-* `setup.bosses`, `setup.minions` — a challenge's final boss and minion slots, one card each (R-CHAL-02, R-CHAL-07).
+* `setup.bosses`, `setup.minions` — final boss and minion slots, one card each (R-CHAL-02, R-CHAL-07). In a regular game `bosses` is only a slot; a challenge (`setup.game`) puts its own boss out, so `bosses` is then an error.
+* `setup.game` — the game type (24.34): `{"type": "regular"}`, the default, or a challenge started on the table, `{"type": "challenge", "id": "krampus", "difficulty": "normal"}`. See [Game type](#game-type).
 * `setup.stack` — items already on the stack, bottom first: dice rolls, loot cards, abilities, triggers and attack rolls; see [Stacked items](#stacked-items).
 * `setup.priority` — the seat that holds priority at the start, from 0: `1`. See [Priority](#priority).
 * `setup.phase` — the turn's window the situation starts in: `start`, `loot`, `action` (the default) or `end` (24.10). See [Windows](#windows).
@@ -48,6 +49,51 @@ A situation is a small JSON document: a table position, one action or several [s
 * `steps` — several actions in a row, each with its own `choices` and an optional `expect`; a situation has `action` or `steps`, never both. See [Steps](#steps).
 * `expect` — optional: `allowed`, the refusal `rule`, `after` checks per player, and checks of monsters, decks, the turn, the game's end, the open question, the resolve order and events; see [Checks](#checks). `allowed` is a plain boolean: leaving it out expects a refusal.
 * `source` — optional for a payload, required in a test file: a list of what the `expect` values come from (ADR 034, CLAUDE.md 5.25); see [As tests](#as-tests). The engine does not read it.
+
+## Game type
+
+`setup.game` says what kind of game the table is (24.34). Leaving it out is a regular game, the same as `{"type": "regular"}`.
+
+| `type` | Game | Fields |
+|---|---|---|
+| `regular` | a regular game (the default) | none |
+| `challenge` | a challenge, started on the built table as a real game starts it (R-CHAL-01) | `id`, `difficulty`; for its state: `presents`, `holidays`, `rule_card` |
+| `team` | refused: team games are not in the engine yet (Q-03, parked) | — |
+
+```json
+{
+  "title": "Krampus challenge, Normal: the players hold 4 souls between them; may Isaac attack Pilfering Krampus?",
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal"},
+    "players": [{"character": "isaac", "souls": ["monstro", "gemini", "chub"]}, {"character": "cain", "souls": ["carrion_queen"]}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"treasure": ["boomerang", "breakfast", "box", "blank_card", "book_of_sin"]}
+  },
+  "steps": [{"player": 0, "kind": "attack", "expect": {"allowed": true, "prompt": {"player": 0, "options": ["leech", "fly", "ask.deck.monster"]}}}],
+  "expect": {"allowed": true}
+}
+```
+
+A challenge starts after the table is built, as `Game.StartChallenge` does: the timer at 8 (R-COOP-02), the rule card of the difficulty outside the game, then the challenge's own setup. Rounds count from the active player (R-TURN-15).
+
+* `id`: `krampus` (How the Krampus Stole Christmas) or `trick_or_treat`; `difficulty`: `normal`, `hard` or `ultra`. Each is an error that lists the options. The challenges come with the card set `challenge` (`CardSet.Challenges`), so `sets` names it.
+* Krampus: Pilfering Krampus of the difficulty in a final boss slot (R-KRAMPUS-04); the top 4 treasure cards become the ¢, loot, treasure and soul presents, in that order, with their counters (R-KRAMPUS-05). Name them with `setup.decks`: `{"treasure": ["boomerang", "breakfast", "box", "blank_card"]}`.
+* Trick or Treat: Mischievous The Haunt of the difficulty in a final boss slot with its trick counters; the Trick/Treat card Trick side up (R-TRICK-04).
+* Exactly 2 players (R-COOP-01). No `bosses` (the challenge puts its boss out, R-CHAL-02) and no `bonus_souls` (R-COOP-02).
+* `setup.counters` on the final boss sets the counters it has left, in place of its start: `{"card": "mischievous_the_haunt_norm", "name": "trick", "count": 3}`; `count` 0 leaves none.
+* A field of one type only is an error with another: `id fits only type challenge, not regular`.
+
+The challenge's state, when the test needs it:
+
+| Field | Says | Example |
+|---|---|---|
+| `presents` | a present by `kind` (`cents`, `loot`, `treasure`, `soul`): `counters` left (1 or more), `destroyed` (in the treasure discard, R-KRAMPUS-08), or `to`, the seat that gained it at Happy Holidays! (R-KRAMPUS-10). A present not named keeps its start | `[{"kind": "cents", "counters": 2}, {"kind": "loot", "destroyed": true}]` |
+| `holidays` | Happy Holidays! has happened (R-KRAMPUS-10): each present not destroyed is a charged item of the player its `to` names, so every one is named | `true` |
+| `rule_card` | the rule card's side up, by ref: `treat_normhardultra` is the Trick/Treat card flipped (R-TRICK-11) | `"treat_normhardultra"` |
+
+Nothing triggers as the state is set up, as with every setup field. A Krampus challenge has presents and Trick or Treat none, so `presents` and `holidays` there are errors.
 
 ## Random picks
 
@@ -93,6 +139,8 @@ razor_blade/hits-cain.json, end: setup.random: 1 left unused: ["player 2 (cain)"
 
 A counter entry is `{"card": …, "name": …, "count": …}`; `count` is 1 or more and `name` is optional. A ref names the first such card: in seat order for a player's cards, then in slot order (monster, final boss, minion, room slots) and the bonus souls for `setup.counters`. An unknown field, a card the player has not in play, or a card in no slot is an error that lists the options.
 
+In `setup.players[].counters` and `after[].counters`, `"card": "player"` puts the counters on the player, not a card (R-MECH-13): Trick or Treat's fear, `{"card": "player", "name": "fear", "count": 2}` (R-TRICK-08). They stay when the character changes or dies.
+
 ## Checks
 
 `expect` checks what is true once the action, or the step it sits on, has settled (24.5). A field left out is not checked, so old payloads keep their meaning. Names follow `setup`, so a setup and an expect read alike.
@@ -106,7 +154,7 @@ A counter entry is `{"card": …, "name": …, "count": …}`; `count` is 1 or m
 | `after[].hand_cards` | every card in hand | `{"player": 0, "hand_cards": ["bomb"]}` |
 | `after[].soul_cards` | every soul card in play | `{"player": 0, "soul_cards": ["soul_of_wrath"]}` |
 | `after[].deactivated` | every deactivated item, and `"character"` | `{"player": 0, "deactivated": ["jawbone"]}` |
-| `after[].counters` | counters on the player's cards, as in setup | `{"player": 0, "counters": [{"card": "sumptorium", "count": 0}]}` |
+| `after[].counters` | counters on the player's cards, as in setup; `"card": "player"` on the player | `{"player": 0, "counters": [{"card": "sumptorium", "count": 0}]}` |
 | `monsters[]` | a card in a slot: `card`, and `slot`, `damage`, `hp`, `atk`, `evasion`, `dead` | `{"slot": 1, "card": "fly", "damage": 1, "hp": 1}` |
 | `counters` | counters on cards no player controls, as `setup.counters` | `[{"card": "gaper", "name": "level", "count": 1}]` |
 | `decks` | the cards on top of a deck, top first, as `setup.decks` | `{"monster": ["fly"]}` |
@@ -118,6 +166,7 @@ A counter entry is `{"card": …, "name": …, "count": …}`; `count` is 1 or m
 | `resolved` | stack items in the order they resolved; others may come between | `["lucky_foot", "bomb", "dice_roll"]` |
 | `events` | event kinds that happened, with `player`; `none: true` that did not | `[{"kind": "damaged", "player": 1}, {"kind": "died", "none": true}]` |
 | `resolved_rolls` | the value each roll resolved as, in order | `[5]` |
+| `presents` | a challenge's presents by `kind`: `counters` (0 once gone), `destroyed`, `to` (the seat that has it as an item) | `[{"kind": "cents", "counters": 9}, {"kind": "loot", "destroyed": true}]` |
 
 * A list of cards (`items`, `hand_cards`, `soul_cards`, `deactivated`, `discards`, `winners`) names every card there, in any order: a card more or less is a mismatch, and `[]` expects none. The deck in `decks` is the exception: it holds the rest of the sets, so only its top cards are compared, in order.
 * `hand` and `souls` stay counts, as before 24.5; the cards are `hand_cards` and `soul_cards`.
@@ -490,7 +539,7 @@ func TestSituations(t *testing.T) {
 }
 ```
 
-`go:embed` fails on a folder with no files, so a package adds this test with its first file, not before. A cross-set file in `cards/testdata/situations/` passes every set (`cards.Sets()` and the challenge set) through `enginetest.RunInteractionSituations`; that tree holds only `interactions/`, so a card's own files stay in its set's tree.
+`go:embed` fails on a folder with no files, so a package adds this test with its first file, not before. The challenge set's runner (`cards/challenge/situations_test.go`) passes every set and the Go-only test sets `krampus_trial` (Mixed Bag: 2¢ and a loot, no real monster has both) and `trick_trial` (a bare mob: no rewards); a file there that needs them names them in `sets`. A cross-set file in `cards/testdata/situations/` passes every set (`cards.Sets()` and the challenge set) through `enginetest.RunInteractionSituations`; that tree holds only `interactions/`, so a card's own files stay in its set's tree.
 
 ## Dump a Go test
 
@@ -521,6 +570,7 @@ What it records:
 * `title` from the test name, `sets` by code, and the setup the test built (`NewSetup`, `New` and the set helpers on them).
 * State the test set by hand before its first step, where a setup field says it: cents, damage, items, hand, souls, deactivated cards, counters, `eternal`, `extra_loot_plays`, slot cards, `monster_damage`, slot `counters`, `loot_plays`, `attacks`, `purchases`, the attack duties (`must_attack`, `must_attacks`, `must_attack_deck`, 19.235; `must_attack_one_of`, 19.241), and cards put on top of a deck (`G.PutOnDeck`) as `decks`. A `must_attack` card the active player can't attack has no ref the setup takes, so it stays a `todo`.
 * `rolls`: every die the test threw, in order, forced (`G.ForceRolls`, `Attack`'s rolls) or random, so the file throws the same dice.
+* `game`: a challenge the test started (`G.StartChallenge`), with what it changed: presents, Happy Holidays!, the rule card's side, the boss's counters; a present or counter as the start leaves it is left out. The boss is no `bosses` entry. Fear and other player counters go to `counters` with `"card": "player"`.
 * `random`: every random pick the test made, in order, by its option label, so the file picks the same (24.30). A pick with no label (a hidden card) leaves `random` out and adds a `todo` line instead.
 * A step per outermost helper, with its choices as the plain labels the test gave: `Activate`, `Start` and `Refused` are `activate`, `Play` is `play`, `Attack` and `Do` with an attack are `attack`, `EndTurn` is `end_turn`, `Pass` is `pass`, `Choose` is `choose`, `RevealFromDeck` is `reveal`, and `ThrowPending` a `throw` per die. `Settle`'s choices go to the step before it. `UntilChoose` adds nothing: the step before it stops at the question when a `choose` follows.
 * Intents the test applied itself (`tb.G.Apply`, `tb.G.Settle`) become steps too, read from the game's applied-intent log; passes and throws after a step are left out, since the runner settles each step.

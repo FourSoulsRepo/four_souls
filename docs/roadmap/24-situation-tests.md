@@ -1950,7 +1950,7 @@ Ideas: TS-13, LR-04, R-03.
 16. No rules bug found.
 17. `cardgen -report` unchanged.
 
-### [ ] 24.34 Setup: the game type, a challenge first
+### [x] 24.34 Setup: the game type, a challenge first
 
 1. Why (owner, 2026-11-25, after 24.27)
    1. 46 challenge tests need a setup that starts a challenge (24.27).
@@ -1978,3 +1978,76 @@ Ideas: TS-13, LR-04, R-03.
    2. Wiki `Situation-payload.md`: the field and its options, with examples.
    3. ADR 034: drift edited in place, if any.
    4. 24.27 resumes after this, in its own agent.
+6. Done (2026-11-25): `setup.game`
+   1. `SituationGame` (`situation_game.go`): `type`, `id`, `difficulty`.
+   2. No `game`, or `"type": "regular"`: a regular game, the same table.
+   3. `challenge`: `startChallenge` on the built table, before slot counters.
+   4. The round starts last (`startRound`): Starter and `turnTaken`, as `StartChallenge`.
+   5. So boss, rule card, presents, timer 8 as a real start (R-COOP-02).
+   6. Presents: the treasure deck top after `setup.decks`, in kind order.
+   7. A Go test compares the state with `StartChallenge`: equal.
+7. Where the challenges come from
+   1. `CardSet.Challenges`: the set that holds their cards lists them.
+   2. `challenge.Set` gets Krampus and Trick or Treat in an `init`.
+   3. `set_gen.go` is generated; the defs name `Set`, so not in its literal.
+   4. The engine imports no card package; the sets passed carry them.
+8. Errors, each with the options
+   1. No type; an unknown type: `options [regular challenge]`.
+   2. `team`: not in the game yet (Q-03, parked).
+   3. Regular with `id`, `difficulty`, `presents`, `holidays`, `rule_card`.
+   4. No or unknown `id` (`[krampus trick_or_treat]`); no or bad `difficulty`.
+   5. A challenge whose set is not loaded: "in none of the sets".
+   6. Not 2 players (R-COOP-01); `bosses` (R-CHAL-02); `bonus_souls` (R-COOP-02).
+9. Smaller fields (24.27 item 7), all added
+   1. `game.presents`: `counters` left, `destroyed`, `to` (a seat).
+   2. Need it: TestForgoCents, TestWhatsInTheBox (and Hard, Ultra), TestAllPresentsLost.
+   3. Also TestKrampusExtraRollsUltra (soul present at 1, `setCounters`).
+   4. `game.holidays`: Happy Holidays! done; every live present names `to`.
+   5. Need it: TestNoForgoAfterHolidays (`FlipPresents`, Q-33).
+   6. `game.rule_card`: the side up by ref, `treat_normhardultra`.
+   7. Need it: TestYouDontScareMe, TestHallowsEveBounty, TestTrickGoal (`flipToTreat`).
+   8. `"card": "player"` in counters: on the player (R-MECH-13).
+   9. Need it: TestTrickFearStays, TestTrickFearEvasion, TestTrickDeathRoll, TestYouDontScareMe.
+   10. `expect.presents`: `counters`, `destroyed`, `to` per kind.
+   11. `after[].counters` with `"card": "player"` checks fear.
+10. Boss counters in a challenge
+   1. `setup.counters` on the boss sets those left, not more on top.
+   2. `count` 0 leaves none; only in a challenge, only counters it put out.
+   3. So `setTricks(tb, n)` is `counters` with the count n.
+11. Not added: the timer
+   1. No Go test of the 46 sets or checks it by hand.
+12. Runner: `cards/challenge/situations_test.go`
+   1. Passes `trickSets()`: every set, `challenge`, `krampus_trial`, `trick_trial`.
+   2. Two new files (no Go test moved or deleted):
+   3. `pilfering_krampus_norm/can-not-be-attacked-below-5-souls.json`.
+   4. `mischievous_the_haunt_norm/can-be-attacked-at-as-many-souls-as-trick-counters.json`.
+   5. Each failed with its souls or counters changed, then passed.
+13. Test sets `krampus_trial`, `trick_trial`
+   1. The runner passes them; a file names them in `sets`.
+   2. No real card replaces Mixed Bag: no monster has ¢ and loot rewards.
+   3. None replaces the bare mob: Mom's Heart (fsp2) has no reward but 8 HP.
+   4. `trickOn`'s 6 bare mobs on the monster deck: `setup.decks.monster`.
+   5. Test: TestTrialSetsReachFiles.
+14. Dump
+   1. A started challenge is `setup.game`; its boss is no `bosses` entry.
+   2. Presents, holidays, rule card side, boss counters: only what changed.
+   3. Player counters as `"card": "player"`.
+   4. `Challenge.TurnFrom`, `RoundFrom` are left out of the diff.
+   5. They mark the turn's first object (R-COOP-11); a helper's `PutOnDeck` moves it.
+   6. Test: TestDumpRecordsAChallenge.
+15. Tests (`cards/challenge/situation_game_test.go`)
+   1. TestGameRegularIsTheDefault: same save as no game.
+   2. TestGameKrampusStarts: each difficulty, from R-KRAMPUS-04, 05 and R-COOP-02.
+   3. TestGameTrickStarts: R-TRICK-03, 04.
+   4. TestGameErrors: every error above, and the present field errors.
+   5. TestGamePresentsSetUp, TestGameHolidaysSetUp, TestGameRuleCardSide.
+   6. TestGameBossCountersAndFear, TestGameChecks.
+16. Live games unchanged
+   1. Only the setup builds it; `startChallenge` is the game's own.
+   2. No version bump; no `make e2e`.
+   3. `make site` run: the payload format got fields (rule 6); 2.33 MB gzip.
+17. Docs
+   1. Wiki `Situation-payload.md`: "Game type", counters on the player, checks, runner, dump.
+   2. ADR 034: items 10.29 to 10.33 appended.
+18. No rules bug found; `cardgen -report` unchanged.
+19. 24.27 can resume: every field its item 7 lists exists.

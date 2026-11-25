@@ -155,7 +155,21 @@ func (g *Game) checkPlayer(c *checks, x ExpectedPlayer) {
 	c.cards(who+"hand_cards", x.HandCards, hand)
 	c.cards(who+"soul_cards", x.SoulCards, souls)
 	c.cards(who+"deactivated", x.Deactivated, off)
-	c.counters(who, x.Counters, refs, ids, g)
+	var onCards []SituationCounter
+	for _, w := range x.Counters {
+		if w.Card != PlayerCounters {
+			onCards = append(onCards, w)
+			continue
+		}
+		label := "counters"
+		if w.Name != "" {
+			label = w.Name + " counters"
+		}
+		if got := countOf(pl.Counters, w.Name); got != w.Count {
+			c.add("%s%s on the player are %d, expected %d", who, label, got, w.Count)
+		}
+	}
+	c.counters(who, onCards, refs, ids, g)
 }
 
 // checkMonster compares one card in a slot with x.

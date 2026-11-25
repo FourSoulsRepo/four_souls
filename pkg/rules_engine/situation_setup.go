@@ -9,13 +9,18 @@ import (
 )
 
 // SituationCounter is a number of counters on one card (24.3). Card is
-// the card's ref, or "character" for a player's character; Name names
-// the counters ("gold", a level), empty for plain counters.
+// the card's ref, or "character" for a player's character, or "player"
+// (PlayerCounters) for counters on the player (24.34); Name names the
+// counters ("gold", a level, "fear"), empty for plain counters.
 type SituationCounter struct {
 	Card  CardRef `json:"card"`
 	Name  string  `json:"name,omitempty"`
 	Count int     `json:"count"`
 }
+
+// PlayerCounters is the Card of a SituationCounter on the player
+// itself, not a card (R-MECH-13): Trick or Treat's fear (R-TRICK-08).
+const PlayerCounters = "player"
 
 // UnmarshalJSON rejects unknown fields, so a misspelt field is an error,
 // not a counter of 0.
@@ -58,6 +63,14 @@ func (g *Game) setUpPlayer(pl *Player, seat int, sp SituationPlayer) error {
 		g.Object(id).Eternal = true
 	}
 	for _, c := range sp.Counters {
+		if c.Card == PlayerCounters {
+			// On the player, not a card (R-MECH-13): fear (R-TRICK-08).
+			if c.Count < 1 {
+				return fmt.Errorf("situation: player %d counters: %q count %d is below 1", seat, c.Card, c.Count)
+			}
+			pl.Counters = addCount(pl.Counters, c.Name, c.Count)
+			continue
+		}
 		id, err := find("counters", c.Card, 0)
 		if err != nil {
 			return err
@@ -126,6 +139,13 @@ func (g *Game) setUpSlots(s SituationSetup) error {
 		i := slices.Index(refs, c.Card)
 		if i < 0 {
 			return fmt.Errorf("situation: counters: %q is in no slot and no bonus soul, options %v", c.Card, refs)
+		}
+		if o := g.Object(ids[i]); g.Challenge != nil && o.CountersOf(c.Name) > 0 && c.Count >= 0 {
+			// Only a challenge's setup puts counters out before this,
+			// as the trick counters on its boss (R-TRICK-04): the setup
+			// says how many are left, 0 for none.
+			o.addCounters(c.Name, c.Count-o.CountersOf(c.Name))
+			continue
 		}
 		if err := putCounters(g.Object(ids[i]), c); err != nil {
 			return fmt.Errorf("situation: counters: %w", err)

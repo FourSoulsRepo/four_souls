@@ -98,6 +98,9 @@ type SituationSetup struct {
 	// Blood!; 19.241): Turn.MustAttackOneOfCards. Each is a card they can
 	// attack now. It adds no attack: `attacks` says how many.
 	MustAttackOneOf []CardRef `json:"must_attack_one_of,omitempty"`
+	// Game is the game type (24.34): none or "regular" is a regular
+	// game; "challenge" starts a challenge on the table.
+	Game *SituationGame `json:"game,omitempty"`
 }
 
 // SituationPlayer is one seat.
@@ -183,6 +186,8 @@ type Expectation struct {
 	// ResolvedRolls are the values every roll resolved as, in order:
 	// the final result after changes (R-DICE-06); [] expects none (24.11).
 	ResolvedRolls []int `json:"resolved_rolls,omitempty"`
+	// Presents check a challenge's presents, by kind (24.34).
+	Presents []ExpectedPresent `json:"presents,omitempty"`
 }
 
 // ExpectedPlayer checks one player after everything resolved. Hand and
@@ -572,6 +577,9 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 		}
 		g.BonusSouls = append(g.BonusSouls, g.newObject(ref, Zone{Kind: ZoneOutside}, NoPlayer))
 	}
+	if err := g.setUpGame(s.Setup, sets); err != nil {
+		return nil, err
+	}
 	if err := g.setUpSlots(s.Setup); err != nil {
 		return nil, err
 	}
@@ -596,6 +604,7 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 	if err := g.setUpDuties(s.Setup); err != nil {
 		return nil, err
 	}
+	g.startRound()
 	g.events = nil
 	if err := g.openSetupWindow(s.Setup.Priority, holder); err != nil {
 		return g, err
@@ -729,6 +738,7 @@ func (g *Game) mismatches(allowed bool, rule string, events []Event, e Expectati
 	emptyChecks(&c, "discards", len(e.Discards), e.Discards != nil)
 	emptyChecks(&c, "deck_bottoms", len(e.DeckBottoms), e.DeckBottoms != nil)
 	emptyChecks(&c, "events", len(e.Events), e.Events != nil)
+	emptyChecks(&c, "presents", len(e.Presents), e.Presents != nil)
 	for _, x := range e.After {
 		g.checkPlayer(&c, x)
 	}
@@ -737,6 +747,7 @@ func (g *Game) mismatches(allowed bool, rule string, events []Event, e Expectati
 	}
 	g.checkDecks(&c, e.Decks, e.Discards)
 	g.checkBottoms(&c, e.DeckBottoms)
+	g.checkPresents(&c, e.Presents)
 	g.checkGame(&c, e)
 	g.checkPrompt(&c, e.Prompt)
 	g.checkResolved(&c, e.Resolved, events)
