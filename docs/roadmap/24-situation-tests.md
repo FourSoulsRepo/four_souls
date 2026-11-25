@@ -1738,3 +1738,25 @@ Ideas: TS-13, LR-04, R-03.
    4. `TestPayloadLeftoversDoNotFail`: matches, `Unused` set, not in the JSON.
 10. Wiki `Situation-payload.md`: both fields, a "Leftover rolls and picks" part, the runner.
 11. ADR 034: no drift.
+
+### [ ] 24.33 Setup: an attack roll from a deck attack
+
+1. Why (owner, 2026-11-25: two tests need it)
+   1. TestIBSCancelsDeckAttack (24.22 item 18).
+   2. TestEmergencyContactDeckAttack (24.25).
+   3. Each answers an attack roll that waits during a deck attack.
+   4. A step can't answer mid-stack (owner answer 7).
+   5. `setup.stack` can't say the monster came from the monster deck.
+2. Change
+   1. A stacked `attack_roll` may say its monster was revealed from the deck.
+   2. The revealed card covers a slot's card, as a real deck attack (R-ATK-05).
+   3. It counts as a monster (Q-24) and spends an attack as the game (24.29).
+   4. If the turn has deck attacks, say how the stacked roll counts (24.29 item 6).
+   5. Errors name what is wrong, as other setup fields.
+3. Files
+   1. Both Go tests become files; delete them when a file says the same or more.
+   2. Values from the card text and rules (5.25).
+4. Tests and docs
+   1. Go: a deck-attack roll set up; a wrong one refused.
+   2. Wiki `Situation-payload.md`: the field, with an example.
+   3. ADR 034: drift edited in place, if any.

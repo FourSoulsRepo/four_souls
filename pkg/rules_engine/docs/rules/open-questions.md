@@ -818,6 +818,10 @@ On 2026-10-09 the owner parked every open decision for later.
 4. Status: **Open** (owner, 2026-11-25): investigate, or ask other players.
    1. The engine now: (a); Cain's roll resolves before Isaac's (24.24).
    2. Files for these cards check the outcome, not `resolved_rolls`.
+5. Owner on Pills! "Roll 3 times!" (2026-11-25, 24.25)
+   1. Thrown 1, 3, 5; they resolve 5, 3, 1.
+   2. Owner: right; all three are on the stack, so it resolves backward.
+   3. "Each player rolls" itself stays open here.
 
 ## Old rulings re-checked (R-07)
 
