@@ -1328,9 +1328,103 @@ Ideas: TS-13, LR-04, R-03.
 14. Helpers: none removed; each is still used.
 15. `cardgen -report` unchanged.
 
-### [ ] 24.24 Bulk: r monsters, bosses, events, souls
+### [x] 24.24 Bulk: r monsters, bosses, events, souls
 
 1. Goal: monsters, bosses, events, Bonus Soul, Curse (about 49 tests).
+2. Counts (2026-11-25): 65 tests in 58 `_test.go` files of the family.
+   1. 40 Monster card files: Basic, Cursed, Holy/Charmed, Boss, Epic Boss, The Harbingers.
+   2. 13 Event files, 4 of them Curse; 5 Bonus Soul files.
+   3. Mega Satan!, Soul of Wrath: files since 24.5 and 24.3; one Go test each was left.
+3. Moved: 63 tests, as 63 files; 56 `_test.go` files are gone.
+   1. Charmed: Bony, Clotty, Dip (2), Fat Bat, Fatty, Globin, Greedling, Keeper, Monstro.
+   2. Holy: Brain, Greedling (2), Portal, Psy Horf.
+   3. Cursed: Dople, Lil Haunt, Mulligan.
+   4. Basic: Corny, Gutted Fatty, Mushroom, Null, Peeping Fatty, Red Ghost, Whipper.
+   5. Bosses: Baby Plum, Brownie, Clog, Mama Gurdy, MOTHER!, Turdlings.
+   6. Also Dogma, Mega Satan! (Indomitable), Rag Mega, Sisters Vis, Ultra Greed!.
+   7. Also The Harbingers (2), The Rainmaker, The Scourge (2), The Siren (2).
+   8. Events: Betrayal!, Double Treasure!, Dressing Table, Golden Troll Bomb!.
+   9. Also Lust for Blood!, Mother's Shadow!, Overflow!, Pitfall!, TNT Barrel!.
+   10. Curses: Empathy, the Hollow, the Hunted, the Soulless (2).
+   11. Bonus souls: Envy (2), Lust, Pride, Sloth, Wrath.
+4. Split: 1. TestHornfel.
+   1. The file checks the prevented combat damage and the kill.
+   2. The random player stays Go: TestHornfelHurtsOnePlayerAtRandom.
+5. Stayed Go whole: 1. TestCursedMulliboom: needs a format change.
+   1. 3 damage to a player chosen at random; no file can name the player.
+   2. An `events` entry without `player` also counts a monster's events.
+   3. So `died` without `player` passes on the Fly's own death.
+   4. Change: an `events` entry for any player, not a monster.
+   5. Hornfel's Go part needs the same; 2 tests.
+6. Needed a format change: 1 whole test (5); the split keeps the same check.
+7. Engine state or API in Go, said by a game action in the file:
+   1. `GiveCurseFromDeck`: a `reveal` step on the curse, as 24.16.
+   2. A later attack gets `setup.attacks` 2.
+   3. `PlaceFromOutside` (The Harbingers): the card in slot 3 of the setup.
+   4. Dogma's file brings it into a new slot by Indomitable.
+   5. `AddCountersTo`: `setup.counters`.
+   6. `DealDamageTo` (Soul of Wrath): Cain is active; his Bomb! kills Isaac.
+   7. `SkipTurns` (Overflow!): two `end_turn` steps; Isaac is active again.
+   8. `MustAttacks` (Gutted Fatty): `attacks` 1, an end of turn refused by R-ATK-03.
+   9. `len(Monsters)` (Cursed Mulligan, Gutted Fatty, MOTHER!, Mega Satan!): each new slot's card.
+   10. `AttackRolls`, `Attack.On`: `resolved_rolls`; throw steps check the HP between rolls.
+   11. `MonsterATK` (Curse of the Hunted): the slots' `atk` on Isaac's and Cain's turn.
+   12. `EndDeclared` (Pitfall!): `active` 1.
+   13. `CardOf` (The Beast!): the slot's `hp` 6, `atk` 2; see item 12.
+8. Drafts: 38 of 64 files kept the dumped setup and steps.
+   1. The `setup` helper's 6 Clotty and 6 Book Of Sin: only named tops kept.
+   2. Deck tops in `setup.decks`, so refills, loot and treasure are named.
+   3. Curses: a `reveal` step; Curse of the Hollow, the Hunted: monster slots added.
+   4. A prompt check splits a step: Charmed Dip, Cursed Lil Haunt, Red Ghost.
+   5. Also The Siren, Lust for Blood!, Soul of Envy.
+   6. Throw steps added: Charmed Globin, Brownie, Holy Brain, Null, MOTHER!.
+   7. Also Cursed Dople, Hornfel, The Scourge.
+   8. Steps added: Holy Portal, Gutted Fatty, Lust for Blood!, Overflow!.
+   9. Also The Rainmaker, Curse of the Hunted, Curse of the Soulless passed on.
+9. Setups changed to prove the card text:
+   1. Baby Plum at 3 HP; two of Isaac's 1s killed him (2 HP) in the Go test.
+   2. Its last two dice are 1 and 1: no rule orders its roll and the reward roll.
+   3. Corny with 2 players: Cain is the only non-active player, so he dies.
+   4. Curse of the Soulless passed on: Samson kills Monstro on his turn.
+   5. Soul of Wrath: Cain's turn from the setup.
+10. Checks added from the card text (owner answer 8):
+   1. Every kill: the monster died, its reward, its soul, the refill.
+   2. Every event: it is in the monster discard, the slot refilled.
+   3. Charmed: both players' rewards; Charmed Fat Bat, Monstro: the treasures named.
+   4. Charmed Globin: 2 HP after the miss; Holy Brain: the Fly's DC 1 too.
+   5. Holy Greedling: Holy Dinga refills slot 1; Holy Portal: a second attack.
+   6. Brownie: DC 4, then 3; Null: HP after each roll; MOTHER!: four slots.
+   7. Clog: Isaac's hand is Cain's card and his 3 loot; Peeping Fatty: the deck order.
+   8. Red Ghost: the other players offered; Rag Mega: Cain lives.
+   9. The Siren: Cain offered as a target; Ultra Greed!: Isaac and Cain gain nothing.
+   10. The Rainmaker: the Fly uncovered; ATK 2 on Cain's turn (his curse).
+   11. Golden Troll Bomb!, Mother's Shadow!: their place in the monster deck.
+   12. Dressing Table: the Spoon Bender in the treasure discard, a new treasure.
+   13. Lust for Blood!: end refused by R-ATK-03; only Cain offered.
+   14. Curse of Empathy: Isaac's cents after the reveal and after the kill.
+   15. Curse of the Hunted: ATK back to normal on Cain's turn.
+   16. Bonus souls: the soul cards; Soul of Sloth: no change on the 5th item.
+11. Values the rules gave, not the first guess:
+   1. A gained bonus soul has no counters: R-CARD-22, R-ZONE-01.
+   2. Soul of Lust, Pride, Wrath check `count` 0 on the gained soul.
+   3. Sisters Vis: Samson's treasure before Isaac's reward (R-DEATH-05).
+12. Runner notes, no change here:
+   1. A `monsters` or `counters` check names a card by its ref, not its face.
+   2. The Beast! is `the_harbingers` there; its stats show the flip.
+   3. Prevented combat damage shows as `cancelled`, not `prevented` (Hornfel).
+   4. "Each player rolls": no rule orders the rolls' resolution.
+   5. The Beast!, Overflow!: no `resolved_rolls`; the deaths and skips show the dice.
+13. Go tests that did not check what they claimed: 0.
+   1. Weak, not wrong: Mega Satan! (slot 1 "not the Fly"), Cursed Mulligan (3 slots).
+   2. The files name each slot's card.
+14. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 1058 changes.
+   2. Only changes that say another true thing passed (27).
+   3. E.g. a player index to another player with the same values.
+15. No rules bug found.
+16. Helpers removed, no use left: `charmedGift`, `sirenTable`, `giveCurse`.
+   1. `harbingersTable`, `bonusTable`, `bonusCounters` went with their files.
+17. `cardgen -report` unchanged.
 
 ### [ ] 24.25 Bulk: r loot and characters
 
