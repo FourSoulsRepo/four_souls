@@ -1612,3 +1612,33 @@ Ideas: TS-13, LR-04, R-03.
    3. That changes live prompt labels, so it waits for the owner.
 14. Helper removed, no use left: `fight` (cards/r).
 15. Gates: `make lint test`, `make site` (2.31 MB gzip), `make e2e` (670 passed).
+
+### [ ] 24.31 Setup: name a random pick from a hidden hand
+
+1. Owner (2026-11-25): logged, not done now; wait for the owner.
+2. Why (24.30 item 15)
+   1. Boomerang, Ring of Flies pick a hidden hand card at random.
+   2. Its label is empty, so `setup.random` can't name it.
+3. Plan
+   1. Name the pick by card ref: `"random": ["a_penny"]`.
+   2. The engine labels hidden options inside; players still see no name.
+   3. Live prompts and events stay as they are.
+4. Files
+   1. Boomerang and Ring of Flies name their picks.
+   2. `monstros_tooth/a-random-player-destroys-an-item.json` names its player.
+
+### [ ] 24.32 Setup: an unused roll or pick is an error
+
+1. Why (owner, 2026-11-25)
+   1. `rolls` or `random` left over at the end: the setup is likely wrong.
+   2. E.g. a roll that never happened.
+2. Change
+   1. A file whose listed rolls or picks are not all used fails.
+   2. The error names the field and what was left.
+   3. One shared check for both fields.
+3. Files
+   1. Every file the check now fails: fix it from the card text (5.25).
+   2. A leftover that hid a wrong test: say so in the report.
+4. Tests and docs
+   1. Go: a leftover roll fails; a leftover pick fails; all used passes.
+   2. Wiki `Situation-payload.md`: both fields.
