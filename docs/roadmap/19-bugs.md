@@ -7377,7 +7377,7 @@ Totals by system (234 items):
    4. A room test; no ? Card or Red Key; unrelated.
    5. It passed alone on the first rerun, the same seed; no new item.
 
-### [ ] 19.244 A card under an item is not shown
+### [x] 19.244 A card under an item is not shown
 
 1. Goal: players see the card under an item, as on a real table.
 2. Report (owner, 2026-11-25, 19.242)
@@ -7503,3 +7503,7 @@ Totals by system (234 items):
    4. Fixed by new names in `under.spec.ts`; both passed alone.
    5. aim 20.6 drag tilt (roll 4.39 < 5): timing; passed alone.
    6. `wails build -m -tags embed` built; `wailsjs` churn reverted.
+20. Owner notes (2026-11-25)
+   1. Side columns: the items row moves down by the band; keep it.
+   2. A row with a card under: scrollbar drag may not work; keep it.
+   3. Owner marks 19.244 solved.
