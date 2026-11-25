@@ -1,0 +1,26 @@
+{
+  "title": "Ultra Greed! at 1 HP: Isaac misses, Cain rolls after him and misses, Samson rolls after him and kills it; Samson gains the 40¢ and its soul",
+  "source": ["card ultra_greed", "card clotty", "R-ATK-13", "R-ATK-21", "R-DEATH-08", "R-DEATH-09"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["ultra_greed"],
+    "monster_damage": {"ultra_greed": 7},
+    "decks": {"monster": ["clotty"]},
+    "rolls": [1, 1, 5]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["ultra_greed"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 1, 5],
+    "after": [
+      {"player": 0, "damage": 1, "cents": 0, "souls": 0},
+      {"player": 1, "damage": 1, "cents": 0, "souls": 0},
+      {"player": 2, "damage": 0, "cents": 40, "souls": 1, "soul_cards": ["ultra_greed"]}
+    ],
+    "monsters": [{"card": "ultra_greed", "dead": true}, {"slot": 1, "card": "clotty"}]
+  }
+}

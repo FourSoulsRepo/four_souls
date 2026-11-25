@@ -1,0 +1,26 @@
+{
+  "title": "Sisters Vis at 2 HP: Isaac chooses Samson to roll after him; Isaac hits, Samson hits and kills it; Isaac gains its soul and reward, Samson a treasure",
+  "source": ["card sisters_vis", "card clotty", "R-ATK-04", "R-ATK-21", "R-DEATH-05", "R-DEATH-06", "R-DEATH-08", "R-DEATH-09", "R-CARD-13"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["sisters_vis"],
+    "monster_damage": {"sisters_vis": 4},
+    "decks": {"monster": ["clotty"], "treasure": ["book_of_sin", "the_d6"]},
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["sisters_vis", "player 3 (samson)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6, 6],
+    "after": [
+      {"player": 0, "souls": 1, "soul_cards": ["sisters_vis"], "items": ["the_d6"]},
+      {"player": 1, "souls": 0, "items": []},
+      {"player": 2, "souls": 0, "items": ["book_of_sin"]}
+    ],
+    "monsters": [{"card": "sisters_vis", "dead": true}, {"slot": 1, "card": "clotty"}]
+  }
+}

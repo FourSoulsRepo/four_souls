@@ -1,0 +1,28 @@
+{
+  "title": "Rag Mega at 1 HP: Isaac declares his attack on it, so Cain discards his Bomb!; Isaac kills it and then kills only Samson",
+  "source": ["card rag_mega", "card clotty", "R-ATK-04", "R-ABIL-37", "R-DEATH-05", "R-DEATH-06", "R-DEATH-08", "R-DEATH-09"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain", "hand": ["bomb"]}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["rag_mega"],
+    "monster_damage": {"rag_mega": 4},
+    "decks": {"monster": ["clotty"], "treasure": ["book_of_sin"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["rag_mega", "bomb", "player 3 (samson)", "ask.none"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [
+      {"player": 0, "dead": false, "souls": 1, "soul_cards": ["rag_mega"], "items": ["book_of_sin"]},
+      {"player": 1, "dead": false, "hand": 0},
+      {"player": 2, "dead": true}
+    ],
+    "events": [{"kind": "died", "player": 2}, {"kind": "died", "player": 1, "none": true}],
+    "monsters": [{"card": "rag_mega", "dead": true}, {"slot": 1, "card": "clotty"}],
+    "discards": {"loot": ["bomb"]}
+  }
+}

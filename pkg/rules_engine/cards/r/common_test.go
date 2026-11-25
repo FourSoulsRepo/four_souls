@@ -107,17 +107,6 @@ func settleAny(tb *enginetest.Table) {
 	tb.T.Fatal("settleAny: the stack never emptied")
 }
 
-// Attacks on players, attackable items and helpers (R-ATK-20, R-ATK-21,
-// R-MECH-04), through the cards that allow them.
-
-func sirenTable(t *testing.T, isaacItems, cainItems []engine.CardRef) *enginetest.Table {
-	t.Helper()
-	return setup(t, engine.SituationSetup{
-		Players:  []engine.SituationPlayer{seat("isaac", isaacItems...), seat("cain", cainItems...)},
-		Monsters: []engine.CardRef{"the_siren", "fly"},
-	})
-}
-
 // fight: Isaac (active), Cain and Samson; the monster in slot 1, a fly
 
 // in slot 2.
