@@ -1426,9 +1426,77 @@ Ideas: TS-13, LR-04, R-03.
    1. `harbingersTable`, `bonusTable`, `bonusCounters` went with their files.
 17. `cardgen -report` unchanged.
 
-### [ ] 24.25 Bulk: r loot and characters
+### [x] 24.25 Bulk: r loot and characters
 
 1. Goal: loot cards, Outside, Character (about 50 tests).
+2. Counts (2026-11-25): 61 tests in 43 `_test.go` files of the family.
+   1. 38 loot tests in 23 files; 23 Character tests in 20 files.
+   2. Outside: only The Harbingers; moved in 24.24.
+3. Moved: 38 tests, as 40 files; 21 `_test.go` files are gone.
+   1. TestALuckyPenny, TestALuckyPennyDoublesOnce, TestAceOfDiamonds, TestAlgiz.
+   2. TestBagLunch, TestBerkano, TestBerkanoShopItem, TestBerkanoEternalNoSteal.
+   3. TestBlackHeartPreventsOne, TestBlackHeartWhenThatPlayerDies, TestBrokenRemote.
+   4. TestCallusStopsNonCombat, TestCallusAllowsCombat, TestDadsNote, TestGoldenTrinket.
+   5. TestHagalaz, TestKeyAttackAgain, TestKeyDeckTopToSlot, TestLuckyToe.
+   6. TestLuckyToeNotInLootStep, TestMagicMarker, TestMagicMarkerRollResult, TestMegaBomb.
+   7. TestPillsRollThreeTimes, TestPillsLootThree, TestPillsPutOneBack, TestPillsPutThreeBack.
+   8. TestRibOfGreedDeathPenalty, TestRibOfGreedAllowsSteals, TestRibOfGreedAbilityDiscard.
+   9. TestStickyNickelGain, TestStickyNickelSticks, TestTick, TestTwoOfSpades, TestWishbone.
+   10. TestEmergencyContact: `emergency_contact/cain-cancels-it-in-response.json`.
+   11. TestTheBalefulATK: 3 files, 0, 1 and 3 souls (owner answer 11).
+   12. TestTheCapriciousShopItem.
+4. Split: 20, a file each: every character's `testCharacter`.
+   1. File: `<character>/plays-an-additional-loot-card.json`.
+   2. It checks 2 loot plays, two A Penny! played, a second ↷ refused (R-ABIL-07).
+   3. Also the starting HP and ATK from the card: The Baleful, The Dauntless 1 HP.
+   4. Stays Go: the starting item, from a real game start (`testStartingItem`).
+   5. The Go tests are now `Test<Character>StartingItem`.
+5. Stayed Go whole: 3.
+   1. TestMagicMarkerIsLeftOut: game starts over 20 seeds (ADR 034 1.7).
+   2. TestTheEnigma: game start, characters outside the game.
+   3. TestEmergencyContactDeckAttack: needs a format change.
+   4. Cain responds to the roll of a deck attack; a step can't (owner answer 7).
+   5. `setup.stack` has no deck attack: a revealed card covering a slot card.
+6. Needed a format change: 1 whole test (5.3).
+   1. Change: a stacked attack roll of a deck attack (24.29 item 6).
+7. Engine state set in Go, said by a game action in the file:
+   1. `MillTop` (Dad's Note): Isaac attacks the deck; Pooter, Dip, Chest go to discard.
+   2. `G.Eternal` (Algiz): on his turn Cain's own Berkano destroys the Purse.
+   3. `PlayerHP` before a step (Bag Lunch): an A Penny! step first; Cain 2 HP.
+   4. `soulOf` (The Baleful): `souls` in setup; Fat Bat (3 HP) dies in 3, 2 or 1 hits.
+   5. `ExtraLootPlays`, a mid-stack play (Emergency Contact): `setup.stack`, `priority` 1.
+   6. `Cents` set between steps (Magic Marker): 3¢ from the setup.
+8. Drafts: 33 of 60 files kept the dumped setup and steps.
+   1. The `setup` helper's 6 Clotty and 6 Book Of Sin: only named tops kept.
+   2. Loot and treasure tops named, so hands and gains name their cards.
+   3. Characters: steps added; Dad's Note, Algiz, Bag Lunch: see item 7.
+   4. A prompt check splits a step: Dad's Note.
+9. Checks added from the card text (owner answer 8):
+   1. Every loot card: the loot discard; a trinket destroyed goes there too (R-ZONE-06).
+   2. A Lucky Penny!: the Fly dies and Clotty refills; Black Heart: Samson (2 HP) dies too.
+   3. Callus: no `damaged` event; a 6 after the miss kills the Fly.
+   4. Dad's Note: the Chest is not offered; the Dip covers the Pooter; only the Chest left.
+   5. Golden Trinket: it is spent; Hagalaz: the slot's Clotty and the deck order.
+   6. Key: the next deck card; Lucky Toe, Pills!, Two Of Spades: the looted cards.
+   7. Pills! on 1: all three put back, in order; Rib Of Greed: the penalty's item and ↷.
+   8. Sticky Nickel: not in the discard; Tick: one attack left after the first kill.
+   9. Wishbone: the named treasure; Bag Lunch: Cain steals once it is destroyed.
+   10. Emergency Contact: no roll resolved; Berkano, Algiz: the treasure discard.
+10. Values the rules gave, not the first guess:
+   1. Pills! (roll 3 times): the three rolls resolve as `[5, 3, 1]`, not `[1, 3, 5]`.
+   2. The dice are rolled together, then stacked (R-DICE-02); no rule says their order.
+   3. The file checks the outcomes, not `resolved_rolls`; all 3 dice are used (24.32).
+11. Go tests that did not check what they claimed: 0.
+   1. Weak, not wrong: Wishbone counted 2 items; the file names them.
+   2. Algiz, Bag Lunch passed a steal answer never asked; the files leave it out.
+12. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 918 changes.
+   2. Only changes that drop a check entry or say another true thing passed.
+   3. E.g. a player index to another player with the same values.
+13. No rules bug found.
+14. Helpers removed, no use left: `lootTable`, `useRoom`, `soulOf`.
+   1. `lootRoomTable` folded into `roomTable`; `testCharacter` is `testStartingItem`.
+15. `cardgen -report` unchanged.
 
 ### [ ] 24.26 Bulk: r other
 
