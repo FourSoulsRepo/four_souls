@@ -1,0 +1,21 @@
+{
+  "title": "Krampus challenge, Normal: Isaac kills Mom with Chaos Card, keeps her treasure and forgoes her soul; how many counters does the soul present get?",
+  "source": ["card how_the_krampus_stole_christmas_norm", "card chaos_card", "card mom", "R-KRAMPUS-07", "Q-32"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal"},
+    "players": [{"character": "isaac", "items": ["chaos_card"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["mom", "fly"],
+    "decks": {"treasure": ["boomerang", "breakfast", "box", "blank_card", "dinner"], "monster": ["pooter", "dip"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "chaos_card",
+     "choices": ["Kill a player or monster.", "mom", "ask.no", "ask.yes"]}
+  ],
+  "expect": {"allowed": true,
+    "monsters": [{"card": "mom", "dead": true}, {"card": "pooter"}, {"card": "dip"}, {"card": "fly"}],
+    "discards": {"monster": ["mom"], "treasure": ["chaos_card"]},
+    "after": [{"player": 0, "items": ["dinner"], "souls": 0, "soul_cards": []}],
+    "presents": [{"kind": "cents", "counters": 8}, {"kind": "loot", "counters": 2}, {"kind": "treasure", "counters": 3}, {"kind": "soul", "counters": 5}]}
+}

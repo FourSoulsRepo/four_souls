@@ -162,7 +162,7 @@ func TestGameErrors(t *testing.T) {
 		}, nil, "is for 2 players, not 3 (R-COOP-01)"},
 		{"bosses", func(s *engine.SituationSetup) {
 			s.Game = kr(func(*engine.SituationGame) {})
-			s.Bosses = []engine.CardRef{normBoss}
+			s.Bosses = []engine.CardRef{"pilfering_krampus_norm"}
 		}, nil, "puts its own final boss out (R-CHAL-02); leave bosses out"},
 		{"bonus souls", func(s *engine.SituationSetup) {
 			s.Game = kr(func(*engine.SituationGame) {})

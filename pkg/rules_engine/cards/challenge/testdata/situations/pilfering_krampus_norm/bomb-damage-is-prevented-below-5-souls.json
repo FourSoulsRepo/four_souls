@@ -1,0 +1,18 @@
+{
+  "title": "Krampus challenge, Normal: the players hold 4 souls; Isaac's Bomb! hits Pilfering Krampus; does it take the damage?",
+  "source": ["card pilfering_krampus_norm", "card bomb", "R-KRAMPUS-11", "Q-30"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal"},
+    "players": [{"character": "isaac", "souls": ["fly", "fly", "fly"], "hand": ["bomb"]}, {"character": "cain", "souls": ["fly"]}],
+    "active": 0,
+    "monsters": ["leech", "fly"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "bomb", "choices": ["pilfering_krampus_norm"]},
+  "expect": {
+    "allowed": true,
+    "events": [{"kind": "prevented"}],
+    "monsters": [{"card": "pilfering_krampus_norm", "damage": 0, "hp": 5}],
+    "discards": {"loot": ["bomb"]}
+  }
+}

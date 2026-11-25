@@ -1,0 +1,21 @@
+{
+  "title": "Krampus challenge, Normal: Isaac ends his turn and Cain's turn-start roll is a 4; how many counters does each present have?",
+  "source": ["card pilfering_krampus_norm", "R-KRAMPUS-05", "R-KRAMPUS-12", "R-TURN-03"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal"},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "rolls": [4]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 1,
+    "resolved_rolls": [4],
+    "presents": [{"kind": "cents", "counters": 8}, {"kind": "loot", "counters": 1}, {"kind": "treasure", "counters": 3}, {"kind": "soul", "counters": 3}]
+  }
+}

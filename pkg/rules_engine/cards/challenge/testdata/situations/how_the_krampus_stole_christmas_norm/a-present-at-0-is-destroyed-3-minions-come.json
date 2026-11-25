@@ -1,0 +1,24 @@
+{
+  "title": "Krampus challenge, Normal: the ¢ present has 2 counters and Cain's turn-start roll is a 1; what happens to the present and the monster deck?",
+  "source": ["card how_the_krampus_stole_christmas_norm", "card pilfering_krampus_norm", "R-KRAMPUS-08", "R-KRAMPUS-09", "R-KRAMPUS-12", "R-CHAL-09"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal", "presents": [{"kind": "cents", "counters": 2}]},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"treasure": ["boomerang", "breakfast", "box", "blank_card"], "monster": ["squirt", "dip", "pooter", "fly"]},
+    "rolls": [1]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {"allowed": true,
+    "active": 1,
+    "resolved_rolls": [1],
+    "events": [{"kind": "present_destroyed"}],
+    "monsters": [{"card": "squirt"}, {"card": "dip"}, {"card": "pooter"}, {"slot": 1, "card": "leech"}, {"slot": 2, "card": "fly"}],
+    "decks": {"monster": ["fly"]},
+    "discards": {"treasure": ["boomerang"]},
+    "presents": [{"kind": "cents", "destroyed": true, "counters": 0}, {"kind": "loot", "counters": 2}, {"kind": "treasure", "counters": 3}, {"kind": "soul", "counters": 3}]}
+}

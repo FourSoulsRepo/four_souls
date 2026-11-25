@@ -1,0 +1,25 @@
+{
+  "title": "Krampus challenge, Normal: three presents are destroyed and the soul present has 1 counter; Cain's turn-start roll is a 6; is the challenge lost, and do minions come?",
+  "source": ["card how_the_krampus_stole_christmas_norm", "card pilfering_krampus_norm", "R-KRAMPUS-01", "R-KRAMPUS-09", "R-KRAMPUS-12", "R-CHAL-15", "R-COOP-10"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal",
+             "presents": [{"kind": "cents", "destroyed": true}, {"kind": "loot", "destroyed": true}, {"kind": "treasure", "destroyed": true}, {"kind": "soul", "counters": 1}]},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"treasure": ["boomerang", "breakfast", "box", "blank_card"], "monster": ["squirt", "dip", "pooter"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {"allowed": true,
+    "over": true,
+    "winners": [],
+    "resolved_rolls": [6],
+    "events": [{"kind": "present_destroyed"}, {"kind": "challenge_lost"}, {"kind": "challenge_won", "none": true}],
+    "decks": {"monster": ["squirt", "dip", "pooter"]},
+    "discards": {"treasure": ["boomerang", "breakfast", "box", "blank_card"]},
+    "presents": [{"kind": "soul", "destroyed": true, "counters": 0}]}
+}

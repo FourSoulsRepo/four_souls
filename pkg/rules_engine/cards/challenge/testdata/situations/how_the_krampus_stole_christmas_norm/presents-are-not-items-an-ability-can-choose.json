@@ -1,0 +1,25 @@
+{
+  "title": "Krampus challenge, Normal: Isaac uses The D20; may he choose a present to reroll?",
+  "source": ["card the_d20", "R-KRAMPUS-05", "R-KRAMPUS-06", "Q-40", "R-ABIL-04"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal"},
+    "players": [{"character": "isaac", "items": ["the_d20"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"treasure": ["boomerang", "breakfast", "box", "blank_card"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "the_d20",
+     "expect": {"allowed": true,
+       "prompt": {"player": 0, "options": ["the_d20", "ask.cancel"]},
+       "after": [{"player": 0, "items": ["the_d20"]}, {"player": 1, "items": []}],
+       "presents": [
+         {"kind": "cents", "counters": 8},
+         {"kind": "loot", "counters": 2},
+         {"kind": "treasure", "counters": 3},
+         {"kind": "soul", "counters": 3}
+       ]}}
+  ],
+  "expect": {"allowed": true}
+}

@@ -1,0 +1,25 @@
+{
+  "title": "Krampus challenge, Normal: Isaac has 2 attacks, must attack the Leech this turn, and a minion is in play; what may his attack go to, and after the random attack, may he end his turn?",
+  "source": ["card pilfering_krampus_norm", "R-KRAMPUS-13", "R-ATK-03", "R-ATK-22", "Q-31", "Q-36"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal"},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "attacks": 2,
+    "monsters": ["leech", "fly"],
+    "minions": ["pooter"],
+    "must_attack": "leech",
+    "rolls": [6, 6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "expect": {"allowed": true, "prompt": {"player": 0, "options": ["leech", "ask.attack_random"]}}},
+    {"kind": "choose", "choices": ["ask.attack_random"], "expect": {"allowed": true, "attacks": 1, "monsters": [{"card": "pooter", "dead": true}, {"slot": 1, "card": "leech", "damage": 0}]}},
+    {"player": 0, "kind": "end_turn", "expect": {"rule": "R-ATK-03", "active": 0}},
+    {"player": 0, "kind": "attack", "expect": {"allowed": true, "prompt": {"player": 0, "options": ["leech"]}}}
+  ],
+  "expect": {
+    "rule": "R-ATK-03",
+    "resolved_rolls": [6, 6]
+  }
+}

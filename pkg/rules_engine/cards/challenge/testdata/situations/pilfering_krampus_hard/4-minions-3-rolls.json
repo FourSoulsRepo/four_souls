@@ -1,0 +1,22 @@
+{
+  "title": "Krampus challenge, Hard: 4 minions in play; Isaac ends his turn; how many times does Cain roll as his turn starts, and what do the rolls remove?",
+  "source": ["card pilfering_krampus_hard", "R-KRAMPUS-12", "R-KRAMPUS-13", "R-STACK-02", "Q-41"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "hard"},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "minions": ["pooter", "dip", "squirt", "fly"],
+    "rolls": [6, 5, 4]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {
+    "allowed": true,
+    "active": 1,
+    "resolved_rolls": [4, 5, 6],
+    "presents": [{"kind": "cents", "counters": 12}, {"kind": "loot", "counters": 2}, {"kind": "treasure", "counters": 2}, {"kind": "soul", "counters": 2}]
+  }
+}

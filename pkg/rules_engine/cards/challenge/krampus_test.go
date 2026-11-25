@@ -177,26 +177,6 @@ func TestKrampusSetup(t *testing.T) {
 	}
 }
 
-// R-KRAMPUS-06, Q-40: presents are not in play; no ability can choose
-// them. A "destroy an item" choice lists the players' items only.
-func TestPresentsNotInPlay(t *testing.T) {
-	tb := krampus(t, engine.DifficultyNormal, engine.SituationPlayer{Items: []engine.CardRef{"the_d20"}}, engine.SituationPlayer{})
-	for _, p := range tb.G.Challenge.Presents {
-		if slices.Contains(tb.G.Players[0].InPlay, p.Object) || slices.Contains(tb.G.Players[1].InPlay, p.Object) {
-			t.Fatal("a present is in a play area")
-		}
-	}
-	if _, err := tb.G.Apply(engine.Intent{Player: 0, Kind: engine.IntentActivate, Objects: []engine.ObjectID{tb.Find(0, "the_d20")}}); err == nil {
-		for _, o := range tb.Options() {
-			for _, p := range tb.G.Challenge.Presents {
-				if o == string(tb.G.Object(p.Object).Card) {
-					t.Errorf("an ability offers the present %s", o)
-				}
-			}
-		}
-	}
-}
-
 // R-KRAMPUS-15, Q-36: the regular Krampus stays in the monster deck.
 func TestRegularKrampusStays(t *testing.T) {
 	s := engine.Setup{Seed: 1, Players: 2, Sets: append(cards.Sets(), challenge.Set), Challenge: &challenge.Krampus, Difficulty: engine.DifficultyNormal}

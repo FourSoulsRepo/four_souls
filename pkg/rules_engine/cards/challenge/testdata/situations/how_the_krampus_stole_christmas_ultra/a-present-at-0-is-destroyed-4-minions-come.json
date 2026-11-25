@@ -1,0 +1,24 @@
+{
+  "title": "Krampus challenge, Ultra Hard: the treasure present has 1 counter and Cain's turn-start roll is a 5; what happens to the present and the monster deck?",
+  "source": ["card how_the_krampus_stole_christmas_ultra", "card pilfering_krampus_ultra", "R-KRAMPUS-08", "R-KRAMPUS-12", "R-CHAL-09", "Q-41"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "ultra", "presents": [{"kind": "treasure", "counters": 1}]},
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "decks": {"treasure": ["boomerang", "breakfast", "box", "blank_card"], "monster": ["squirt", "dip", "pooter", "spider", "clotty"]},
+    "rolls": [5]
+  },
+  "steps": [
+    {"player": 0, "kind": "end_turn"}
+  ],
+  "expect": {"allowed": true,
+    "active": 1,
+    "resolved_rolls": [5],
+    "events": [{"kind": "present_destroyed"}],
+    "monsters": [{"card": "squirt"}, {"card": "dip"}, {"card": "pooter"}, {"card": "spider"}, {"slot": 1, "card": "leech"}, {"slot": 2, "card": "fly"}],
+    "decks": {"monster": ["clotty"]},
+    "discards": {"treasure": ["box"]},
+    "presents": [{"kind": "treasure", "destroyed": true, "counters": 0}, {"kind": "soul", "counters": 3}]}
+}

@@ -1,0 +1,23 @@
+{
+  "title": "Krampus challenge, Normal: Isaac kills the minion Gurdy with Chaos Card, then kills the Leech in a monster slot and keeps its loot; what does he gain from each?",
+  "source": ["card pilfering_krampus_norm", "card chaos_card", "card gurdy", "card leech", "R-KRAMPUS-14", "R-KRAMPUS-07", "R-CHAL-11"],
+  "sets": ["b2", "challenge"],
+  "setup": {
+    "game": {"type": "challenge", "id": "krampus", "difficulty": "normal"},
+    "players": [{"character": "isaac", "items": ["chaos_card"]}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["leech", "fly"],
+    "minions": ["gurdy"],
+    "decks": {"monster": ["pooter"], "loot": ["a_penny"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "activate", "card": "chaos_card", "choices": ["Kill a player or monster.", "gurdy"], "expect": {"allowed": true, "events": [{"kind": "forgone", "none": true}], "monsters": [{"card": "gurdy", "dead": true}], "discards": {"monster": ["gurdy"], "treasure": ["chaos_card"]}, "decks": {"monster": ["pooter"]}, "after": [{"player": 0, "cents": 0, "hand": 0, "souls": 0, "soul_cards": []}]}},
+    {"player": 0, "kind": "attack", "choices": ["leech", "ask.no"], "expect": {"allowed": true, "monsters": [{"card": "leech", "dead": true}, {"slot": 1, "card": "pooter"}], "after": [{"player": 0, "hand_cards": ["a_penny"], "souls": 0}]}}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "presents": [{"kind": "cents", "counters": 8}, {"kind": "loot", "counters": 2}, {"kind": "treasure", "counters": 3}, {"kind": "soul", "counters": 3}]
+  }
+}
