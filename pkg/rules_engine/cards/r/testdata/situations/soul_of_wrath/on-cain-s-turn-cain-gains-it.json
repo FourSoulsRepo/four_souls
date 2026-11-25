@@ -1,0 +1,23 @@
+{
+  "title": "Soul of Wrath with 5 counters, Cain's turn: Cain's Bomb! kills Isaac; the 6th counter goes on it, and Cain, the active player, gains it as a new object with no counters",
+  "source": ["card soul_of_wrath", "card bomb", "R-CARD-23", "R-CARD-22", "R-ZONE-01"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "damage": 1}, {"character": "cain", "hand": ["bomb"]}],
+    "active": 1,
+    "monsters": ["fly", "leech"],
+    "bonus_souls": ["soul_of_wrath"],
+    "counters": [{"card": "soul_of_wrath", "count": 5}]
+  },
+  "steps": [
+    {"player": 1, "kind": "play", "card": "bomb", "choices": ["player 1 (isaac)"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "after": [
+      {"player": 0, "dead": true, "souls": 0},
+      {"player": 1, "souls": 1, "soul_cards": ["soul_of_wrath"], "counters": [{"card": "soul_of_wrath", "count": 0}]}
+    ],
+    "events": [{"kind": "died", "player": 0}]
+  }
+}

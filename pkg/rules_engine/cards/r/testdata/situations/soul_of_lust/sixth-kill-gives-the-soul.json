@@ -1,0 +1,26 @@
+{
+  "title": "Soul of Lust with 5 counters: Isaac kills the Fly; the 6th counter goes on it, and Isaac, the active player, gains it as a new object with no counters",
+  "source": ["card soul_of_lust", "card fly", "card clotty", "R-CARD-23", "R-CARD-22", "R-ZONE-01"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}],
+    "active": 0,
+    "monsters": ["fly", "leech"],
+    "bonus_souls": ["soul_of_lust"],
+    "counters": [{"card": "soul_of_lust", "count": 5}],
+    "decks": {"monster": ["clotty"]},
+    "rolls": [6]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["fly"]}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [6],
+    "after": [
+      {"player": 0, "cents": 1, "souls": 1, "soul_cards": ["soul_of_lust"], "counters": [{"card": "soul_of_lust", "count": 0}]},
+      {"player": 1, "souls": 0}
+    ],
+    "monsters": [{"card": "fly", "dead": true}, {"slot": 1, "card": "clotty"}]
+  }
+}

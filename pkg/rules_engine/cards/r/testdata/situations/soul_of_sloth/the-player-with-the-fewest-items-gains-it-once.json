@@ -1,0 +1,21 @@
+{
+  "title": "Soul of Sloth: Isaac buys his 4th item; he chooses Cain, with the fewest items, who gains it; Isaac's 5th item changes nothing",
+  "source": ["card soul_of_sloth", "R-CARD-23", "R-CARD-24", "R-SHOP-03", "R-SHOP-04"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac", "items": ["the_d6", "jawbone", "spoon_bender"], "cents": 20}, {"character": "cain"}],
+    "active": 0,
+    "purchases": 2,
+    "bonus_souls": ["soul_of_sloth"],
+    "decks": {"treasure": ["book_of_sin", "breakfast"]}
+  },
+  "steps": [
+    {"player": 0, "kind": "purchase", "choices": ["ask.deck.treasure", "player 2 (cain)"],
+     "expect": {"allowed": true, "after": [{"player": 0, "souls": 0, "cents": 10}, {"player": 1, "souls": 1, "soul_cards": ["soul_of_sloth"]}]}},
+    {"player": 0, "kind": "purchase", "choices": ["ask.deck.treasure"],
+     "expect": {"allowed": true,
+       "after": [{"player": 0, "souls": 0, "cents": 0, "items": ["the_d6", "jawbone", "spoon_bender", "book_of_sin", "breakfast"]},
+         {"player": 1, "souls": 1, "soul_cards": ["soul_of_sloth"]}]}}
+  ],
+  "expect": {"allowed": true}
+}
