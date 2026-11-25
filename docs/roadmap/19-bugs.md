@@ -7436,3 +7436,10 @@ Totals by system (234 items):
    1. `make lint test` and `make site` passed; site: engine 0.5.12.
    2. `make frontend`: 794 Vitest passed; `make e2e`: 666 passed.
    3. `wails build -m -tags embed` (no `cardimages`) built.
+12. Owner design change (2026-11-25)
+   1. The item stays in its place, in line with the other items.
+   2. The card under it lies a little higher, behind the item.
+   3. Its top part shows above the item: the name and some art.
+   4. The rest of it is hidden by the item, as on a real table.
+   5. The side peek is replaced.
+   6. The row's sideways scroll must not clip the raised part.
