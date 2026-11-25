@@ -31,7 +31,7 @@ var CloneRules = map[string]string{
 		"FreeLoot PendingTriggers* Compost CompostSource ExtraTurn ExtraTurnSource Boosts* Shields* " +
 		"Lingering* Markers* RewardChanges* ManyDice* Stack* StackSeq Turn* " +
 		"Priority Waiting* MaxHand WinSouls Over Winners* Challenge* Sets* " +
-		"Banned* AskSeq asks! saved* maxHP* cards! events! forcedRolls! changes!",
+		"Banned* AskSeq asks! saved* maxHP* cards! events! forcedRolls! forcedPicks! pickCount! pickErr! changes!",
 	"tracking":   "origin! since* cleanAt off",
 	"ReplayStep": "Intent* Apply",
 	"Intent":     "Player Kind Objects* Choice",

@@ -210,6 +210,26 @@ func (g *Game) setUpRolls(rolls []int) error {
 	return nil
 }
 
+// setUpRandom names the next random picks (24.30). Each is checked
+// against the options when its pick comes (Game.randomPick).
+func (g *Game) setUpRandom(picks []string) error {
+	for i, p := range picks {
+		if p == "" {
+			return fmt.Errorf("situation: random: pick %d is empty; name an option, e.g. \"player 2 (cain)\"", i+1)
+		}
+	}
+	g.forcedPicks = slices.Clone(picks)
+	return nil
+}
+
+// takePickErr returns and clears the first named pick that was no
+// option of its pick.
+func (g *Game) takePickErr() error {
+	err := g.pickErr
+	g.pickErr = nil
+	return err
+}
+
 // setUpDeclared declares the setup's attack or purchase, as the active
 // player does in the action phase with an empty stack (R-ATK-01,
 // R-SHOP-01): it uses one up, and priority passes before the target or

@@ -383,6 +383,12 @@ type Game struct {
 	events []Event
 	// forcedRolls lets tests decide dice results; never set in games.
 	forcedRolls []int
+	// forcedPicks name the next random picks by option label (24.30):
+	// only a situation's setup.random sets them, never a game. pickErr
+	// is the first forced pick that was no option; the runner reports it.
+	forcedPicks []string
+	pickCount   int
+	pickErr     error
 	// changes logs each move and shuffle since TakeSnapshot, for
 	// CheckEvents; nil (off) in games.
 	changes *changeLog

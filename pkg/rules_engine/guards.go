@@ -99,8 +99,12 @@ func (g *Game) attackRandom(ids []ObjectID) {
 		g.askAttackTarget() // none left to attack: the usual choice
 		return
 	}
-	i := g.RNG.Intn(len(ids))
-	g.emit(Event{Kind: EvRandomPick, Player: g.Turn.Active, Amount: i, Label: CardOption(g.Object(ids[i]).Card), Object: ids[i]})
+	opts := make([]Msg, len(ids))
+	for j, id := range ids {
+		opts[j] = CardOption(g.Object(id).Card)
+	}
+	i := g.randomPick(opts)
+	g.emit(Event{Kind: EvRandomPick, Player: g.Turn.Active, Amount: i, Label: opts[i], Object: ids[i]})
 	g.attackChosen(ids[i])
 }
 

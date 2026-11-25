@@ -1539,7 +1539,7 @@ Ideas: TS-13, LR-04, R-03.
 11. ADR 034: no drift.
 12. No rules bug found.
 
-### [ ] 24.30 Setup: random picks named like dice
+### [x] 24.30 Setup: random picks named like dice
 
 1. Why (owner, 2026-11-25, after 24.24)
    1. "A player chosen at random": at a real table everyone sees who.
@@ -1564,3 +1564,51 @@ Ideas: TS-13, LR-04, R-03.
    1. Go: a named pick used; a bad pick refused; picks after the list.
    2. Wiki `Situation-payload.md`: the field, with an example.
    3. ADR 034: drift edited in place, if any.
+6. Done: `setup.random`
+   1. `SituationSetup.Random`: the next picks, by plain option label.
+   2. One place reads it: `Game.randomPick` (`ask.go`).
+   3. Only `setup.random` sets it (`forcedPicks`, unexported, not saved).
+   4. A bad pick: the run fails naming the pick and the options.
+   5. An empty pick: a setup error.
+   6. Picks after the list: `RNG.Intn`, as before.
+7. Random picks found (every `RNG` use in the engine)
+   1. `Question.Random` in `continueAsk`: now `randomPick`.
+   2. Its cards: Monstro's Tooth, Ring of Flies, Boomerang (b2).
+   3. Also Betrayal, and `randomPlayerTakes`: Corny, Cursed Mulliboom, Hornfel (r).
+   4. `attackRandom` (Pilfering Krampus, Q-31): now `randomPick`.
+   5. No picks: `ShuffleDeck`, `ToBottomRandom` (Q-22), deck ratios.
+   6. No picks: the character deal and bonus souls at game setup.
+   7. No pick: the first-player roll (`RNG.D6`, a die, setup only).
+   8. No pick: `Imagine` (bots), its own RNG on a copy.
+8. Live games unchanged
+   1. No forced picks: the same `RNG.Intn(n)` call, same `n`.
+   2. Records and engine replay tests pass unchanged.
+   3. No version bump: no game behaviour changed.
+   4. `make site` and `make e2e` run, as the call path is live code.
+9. Dump
+   1. Every `random_pick` a test made goes to `setup.random`.
+   2. A pick with an empty label (a hidden card): no `random`, a todo.
+10. Files moved
+   1. `cursed_mulliboom/a-monster-dies-3-damage-to-the-picked-player.json`.
+   2. `hornfel/its-1-damage-goes-to-the-player-picked-at-random.json`.
+   3. Deleted: `TestCursedMulliboom`, `TestHornfelHurtsOnePlayerAtRandom`.
+   4. Their files name Cain and check each player's damage.
+   5. Mulliboom: Cain has damage 2, HP 0, not 3 (R-MECH-16).
+   6. Also the Fly's reward, the refill, and Cain's ↷ deactivated (R-DEATH-14).
+   7. Each failed with each `expect` leaf changed (49 changes), then passed.
+11. Tests added
+   1. `situation_random_test.go`: named picks; a bad and an empty pick.
+   2. Picks after the list random over 20 seeds; a random attack's target.
+   3. `TestDumpRecordsRandomPicks`: Monstro's Tooth named, Boomerang a todo.
+12. Later bulk steps
+   1. No other Go test in `cards/` checks a random pick.
+   2. Krampus challenge tests: a challenge can't start from a setup.
+   3. Files that could name their pick: b2 `monstros_tooth`.
+   4. b2 `boomerang`, `ring_of_flies`: hidden cards, no label to name.
+   5. r `corny`: one option only; Betrayal 3-4: no test yet.
+13. Open question
+   1. Hidden-card picks have empty labels (Boomerang, Ring of Flies).
+   2. Betrayal labels them "card N"; the same would make them nameable.
+   3. That changes live prompt labels, so it waits for the owner.
+14. Helper removed, no use left: `fight` (cards/r).
+15. Gates: `make lint test`, `make site` (2.31 MB gzip), `make e2e` (670 passed).

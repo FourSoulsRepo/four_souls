@@ -36,6 +36,7 @@ A situation is a small JSON document: a table position, one action or several [s
 * `setup.counters` — counters on a card no player controls: a card in a slot or an active bonus soul, in the same form as a player's: `[{"card": "soul_of_wrath", "count": 5}]`.
 * `setup.decks` — cards put on top of decks, by deck name (`treasure`, `loot`, `monster`, `room`), top first: `{"monster": ["chest_2"], "loot": ["bomb", "a_penny"]}`. Each card must belong to that deck. The rest of the deck is every card of the sets, shuffled with `seed`.
 * `setup.rolls` — the next dice results, in order, each 1–6: `[6, 1]`. Any die rolled after them is random (from `seed`).
+* `setup.random` — the next random picks, in order, each named by its option label as in `choices`: `["player 2 (cain)"]`. Any pick after them is random (from `seed`). See [Random picks](#random-picks).
 * `setup.bosses`, `setup.minions` — a challenge's final boss and minion slots, one card each (R-CHAL-02, R-CHAL-07).
 * `setup.stack` — items already on the stack, bottom first: dice rolls, loot cards, abilities, triggers and attack rolls; see [Stacked items](#stacked-items).
 * `setup.priority` — the seat that holds priority at the start, from 0: `1`. See [Priority](#priority).
@@ -47,6 +48,32 @@ A situation is a small JSON document: a table position, one action or several [s
 * `steps` — several actions in a row, each with its own `choices` and an optional `expect`; a situation has `action` or `steps`, never both. See [Steps](#steps).
 * `expect` — optional: `allowed`, the refusal `rule`, `after` checks per player, and checks of monsters, decks, the turn, the game's end, the open question, the resolve order and events; see [Checks](#checks). `allowed` is a plain boolean: leaving it out expects a refusal.
 * `source` — optional for a payload, required in a test file: a list of what the `expect` values come from (ADR 034, CLAUDE.md 5.25); see [As tests](#as-tests). The engine does not read it.
+
+## Random picks
+
+"A player chosen at random" is a pick everyone at a table sees, so a file names it, as `rolls` names the dice (24.30). `setup.random` lists the next picks in order; each is the plain label of the picked option, the form `choices` uses (`"player 3 (samson)"`, a card's ref for a random attack's target).
+
+```json
+{
+  "title": "Cursed Mulliboom in a slot: Isaac kills the Fly; the player chosen at random is Cain",
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["cursed_mulliboom", "fly"],
+    "rolls": [6],
+    "random": ["player 2 (cain)"]
+  },
+  "steps": [{"player": 0, "kind": "attack", "choices": ["fly"]}],
+  "expect": {"allowed": true, "after": [{"player": 1, "dead": true}, {"player": 2, "damage": 0}]}
+}
+```
+
+* Every random pick of the engine reads the list, in one place (`Game.randomPick`): a question that picks at random (`Question.Random`: Monstro's Tooth, Ring of Flies, Boomerang, Betrayal, Corny, Cursed Mulliboom, Hornfel) and a random attack's target (Pilfering Krampus, Q-31).
+* A pick that is no option fails the run with the options: `situation: step 1 (attack fly): random: pick 1 "player 4 (eden)" is not an option of ["player 1 (isaac)" "player 2 (cain)" "player 3 (samson)"]`. An empty pick is a setup error.
+* A pick of a hidden card (Boomerang, Ring of Flies: "steal a loot card at random") has an empty label, so the list can't name it; it stays random from `seed`.
+* Shuffles and random deck order are no picks: decks come from `seed` and `setup.decks`, cards put on the bottom "in random order" are checked with `deck_bottoms` (Q-22).
+* Only a setup names picks; a game never does, so it draws every pick from its RNG as before.
 
 ## Counters
 
@@ -450,6 +477,7 @@ What it records:
 * `title` from the test name, `sets` by code, and the setup the test built (`NewSetup`, `New` and the set helpers on them).
 * State the test set by hand before its first step, where a setup field says it: cents, damage, items, hand, souls, deactivated cards, counters, `eternal`, `extra_loot_plays`, slot cards, `monster_damage`, slot `counters`, `loot_plays`, `attacks`, `purchases`, the attack duties (`must_attack`, `must_attacks`, `must_attack_deck`, 19.235; `must_attack_one_of`, 19.241), and cards put on top of a deck (`G.PutOnDeck`) as `decks`. A `must_attack` card the active player can't attack has no ref the setup takes, so it stays a `todo`.
 * `rolls`: every die the test threw, in order, forced (`G.ForceRolls`, `Attack`'s rolls) or random, so the file throws the same dice.
+* `random`: every random pick the test made, in order, by its option label, so the file picks the same (24.30). A pick with no label (a hidden card) leaves `random` out and adds a `todo` line instead.
 * A step per outermost helper, with its choices as the plain labels the test gave: `Activate`, `Start` and `Refused` are `activate`, `Play` is `play`, `Attack` and `Do` with an attack are `attack`, `EndTurn` is `end_turn`, `Pass` is `pass`, `Choose` is `choose`, `RevealFromDeck` is `reveal`, and `ThrowPending` a `throw` per die. `Settle`'s choices go to the step before it. `UntilChoose` adds nothing: the step before it stops at the question when a `choose` follows.
 * Intents the test applied itself (`tb.G.Apply`, `tb.G.Settle`) become steps too, read from the game's applied-intent log; passes and throws after a step are left out, since the runner settles each step.
 * State set by hand before a direct `tb.G.Apply` that is the test's first step (24.11): the engine keeps the game as it was just before its first applied intent (its save origin, 19.177), and the recorder reads the setup from that state, so `tb.G.Object(…).Eternal = true` before the first `G.Apply` lands in `eternal`. Should that state be missing (a `Save` moved it), a `todo` line says so.

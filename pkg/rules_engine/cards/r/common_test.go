@@ -107,18 +107,6 @@ func settleAny(tb *enginetest.Table) {
 	tb.T.Fatal("settleAny: the stack never emptied")
 }
 
-// fight: Isaac (active), Cain and Samson; the monster in slot 1, a fly
-
-// in slot 2.
-
-func fight(t *testing.T, monster engine.CardRef, isaacItems ...engine.CardRef) *enginetest.Table {
-	t.Helper()
-	return setup(t, engine.SituationSetup{
-		Players:  []engine.SituationPlayer{seat("isaac", isaacItems...), seat("cain"), seat("samson")},
-		Monsters: []engine.CardRef{monster, "fly"},
-	})
-}
-
 // hurt leaves the monster in slot i with n HP.
 
 func hurt(tb *enginetest.Table, i, n int) {

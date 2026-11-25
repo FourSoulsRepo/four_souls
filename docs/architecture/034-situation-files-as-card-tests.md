@@ -120,6 +120,8 @@ Use option 1.
    24. `setup.must_attack`, `must_attacks`, `must_attack_deck`: this turn's duties (19.235).
    25. `setup.must_attack_one_of`: an extra attack owed on one of these cards (19.241).
    26. It names cards; a covered one counts once it comes up (19.241).
+   27. `setup.random`: the next random picks, by option label (24.30).
+   28. Picks after the list are random from `seed`, as dice after `rolls`.
 11. `expect` comes from the rules, never from a run (5.25).
    1. A tool may write `setup` and `steps`; never `expect` (24.7).
    2. `enginetest` dumps a Go test with `SITUATION_DUMP` (24.7).

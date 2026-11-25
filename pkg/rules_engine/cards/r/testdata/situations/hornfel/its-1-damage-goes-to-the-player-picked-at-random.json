@@ -1,0 +1,24 @@
+{
+  "title": "Hornfel: Isaac misses with a 1; its combat damage to him is prevented, and the player chosen at random, Cain, takes 1 damage instead",
+  "source": ["card hornfel", "card clotty", "R-ATK-13", "R-ABIL-29", "R-ABIL-30", "R-DEATH-06", "R-DEATH-08"],
+  "sets": ["b2", "r"],
+  "setup": {
+    "players": [{"character": "isaac"}, {"character": "cain"}, {"character": "samson"}],
+    "active": 0,
+    "monsters": ["hornfel", "fly"],
+    "decks": {"monster": ["clotty"], "treasure": ["book_of_sin"]},
+    "rolls": [1, 6, 6],
+    "random": ["player 2 (cain)"]
+  },
+  "steps": [
+    {"player": 0, "kind": "attack", "choices": ["hornfel"]},
+    {"kind": "throw", "expect": {"allowed": true, "after": [{"player": 0, "damage": 0}, {"player": 1, "damage": 1}, {"player": 2, "damage": 0}]}},
+    {"kind": "throw"}
+  ],
+  "expect": {
+    "allowed": true,
+    "resolved_rolls": [1, 6, 6],
+    "after": [{"player": 0, "damage": 0, "souls": 1}, {"player": 1, "damage": 1, "dead": false}, {"player": 2, "damage": 0}],
+    "monsters": [{"card": "hornfel", "dead": true}, {"slot": 1, "card": "clotty"}]
+  }
+}

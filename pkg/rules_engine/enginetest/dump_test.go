@@ -186,3 +186,36 @@ func TestDumpHandSetDuties(t *testing.T) {
 		t.Errorf("todo %q; want the duties in the setup", d.Todo)
 	}
 }
+
+// Every random pick the test made goes to setup.random by its label, so
+// the file picks the same (24.30); a hidden card's pick has no label,
+// so it stays a todo.
+func TestDumpRecordsRandomPicks(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv(DumpEnv, dir)
+	var picked []string
+	t.Run("tooth", func(t *testing.T) {
+		tb := NewSetup(t, engine.SituationSetup{
+			Players: []engine.SituationPlayer{Seat("isaac", "monstros_tooth", "breakfast"), Seat("cain", "breakfast")}, Active: 1,
+		}, b2.Set)
+		for _, e := range tb.EndTurn("breakfast") {
+			if e.Kind == engine.EvRandomPick {
+				picked = append(picked, tb.G.Plain(e.Label))
+			}
+		}
+	})
+	d, _ := readDump(t, dir, "TestDumpRecordsRandomPicks/tooth")
+	if len(picked) != 1 || !slices.Equal(d.Setup.Random, picked) || !hasTodo(d, "setup.random are every random pick") {
+		t.Errorf("setup.random %q, todo %q; want the pick %q", d.Setup.Random, d.Todo, picked)
+	}
+	t.Run("boomerang", func(t *testing.T) {
+		tb := NewSetup(t, engine.SituationSetup{
+			Players: []engine.SituationPlayer{Seat("isaac", "boomerang"), {Character: "cain", Hand: []engine.CardRef{"bomb", "a_penny"}}},
+		}, b2.Set)
+		tb.Activate(0, "boomerang", 0, "player 2 (cain)")
+	})
+	d, _ = readDump(t, dir, "TestDumpRecordsRandomPicks/boomerang")
+	if d.Setup.Random != nil || !hasTodo(d, "random pick 1 has no label") {
+		t.Errorf("setup.random %q, todo %q; want none and a todo", d.Setup.Random, d.Todo)
+	}
+}

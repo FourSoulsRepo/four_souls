@@ -60,6 +60,8 @@ type recorder struct {
 	decks [][]engine.CardRef
 	steps []DumpStep
 	rolls []int
+	// picks are the plain labels of the random picks made (24.30).
+	picks []string
 	todo  []string
 	depth int
 	// dropped counts passes left out since the last step, thrown dice
@@ -109,13 +111,16 @@ func (tb *Table) enter(record func(r *recorder)) func() {
 	}
 }
 
-// saw notes the dice in events: every die thrown becomes setup.rolls.
+// saw notes the dice in events: every die thrown becomes setup.rolls,
+// and every random pick setup.random.
 func (tb *Table) saw(events []engine.Event) {
 	if tb.rec == nil {
 		return
 	}
 	for _, e := range events {
 		switch {
+		case e.Kind == engine.EvRandomPick:
+			tb.rec.picks = append(tb.rec.picks, tb.G.Plain(e.Label))
 		case e.Kind != engine.EvDiceRolled || e.Text == "first":
 		case len(e.Dice) > 0: // many dice: all of them (R-DICE-11)
 			tb.rec.rolls = append(tb.rec.rolls, e.Dice...)
@@ -305,7 +310,7 @@ func (r *recorder) direct(log []engine.Intent) {
 func (r *recorder) fillSetup(g *engine.Game) {
 	cur := observe(g)
 	changed(reflect.ValueOf(&r.setup).Elem(), reflect.ValueOf(r.base), reflect.ValueOf(cur),
-		"Players", "Decks", "Stack", "Priority", "Phase", "Declared", "Rolls")
+		"Players", "Decks", "Stack", "Priority", "Phase", "Declared", "Rolls", "Random")
 	for i := range min(len(r.setup.Players), len(cur.Players)) {
 		changed(reflect.ValueOf(&r.setup.Players[i]).Elem(), reflect.ValueOf(r.base.Players[i]), reflect.ValueOf(cur.Players[i]))
 	}
@@ -705,11 +710,21 @@ func (r *recorder) write() {
 	if len(r.rolls) > 0 {
 		d.Setup.Rolls = r.rolls
 	}
+	unnamed := slices.Index(r.picks, "")
+	if len(r.picks) > 0 && unnamed < 0 {
+		d.Setup.Random = r.picks
+	}
 	d.Todo = append(d.Todo,
 		"a draft of "+r.name+" (24.7): write title as a question, fill source, and write expect from the Go test's checks "+
 			"and their sources, never from a run (CLAUDE.md 5.25); then remove todo and save it under testdata/situations")
 	if len(r.rolls) > 0 {
 		d.Todo = append(d.Todo, "setup.rolls are every die the test threw, forced or not")
+	}
+	switch {
+	case unnamed >= 0:
+		d.Todo = append(d.Todo, fmt.Sprintf("random pick %d has no label (a hidden card), so setup.random can't name it; the file's picks come from seed", unnamed+1))
+	case len(r.picks) > 0:
+		d.Todo = append(d.Todo, "setup.random are every random pick the test made, by option label")
 	}
 	if len(r.steps) == 0 {
 		d.Todo = append(d.Todo, "no step was recorded: the runner needs at least one")

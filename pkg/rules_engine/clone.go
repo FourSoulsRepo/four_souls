@@ -12,7 +12,7 @@ import (
 // no slice, map or pointer with the game, so a change to one never shows
 // in the other. Only the card definitions are shared: they never change.
 // Like a save and a load, it leaves out the events of the last step and
-// the test dice (forcedRolls).
+// the test dice and picks (forcedRolls, forcedPicks).
 //
 // A new field of Game, or of a type inside it, needs a line here and in
 // CloneRules (enginetest/clone.go); TestCloneCoversEveryField fails until both
@@ -77,6 +77,7 @@ func (g *Game) clone(keepSaved bool) *Game {
 	c.maxHP = maps.Clone(g.maxHP)
 	c.events = nil
 	c.forcedRolls = nil
+	c.forcedPicks, c.pickCount, c.pickErr = nil, 0, nil
 	c.changes = nil // the event check's log (TakeSnapshot) stays with the game
 	return &c
 }

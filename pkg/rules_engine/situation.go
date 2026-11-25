@@ -53,6 +53,10 @@ type SituationSetup struct {
 	Purchases *int `json:"purchases,omitempty"`
 	// Rolls are the next dice results, in order (as Game.ForceRolls).
 	Rolls []int `json:"rolls,omitempty"`
+	// Random names the next random picks, in order, each by its option
+	// label as in choices: "player 2 (cain)" (24.30). Picks after them
+	// are random from the seed, as dice after Rolls.
+	Random []string `json:"random,omitempty"`
 	// Decks puts cards on top of decks by name ("loot", "treasure",
 	// "monster", "room"), top first, above the shuffled set cards.
 	Decks map[string][]CardRef `json:"decks,omitempty"`
@@ -249,6 +253,9 @@ func RunSituation(data []byte, sets ...CardSet) (Answer, error) {
 		}
 		label := fmt.Sprintf("step %d (%s)", i+1, st.label())
 		res, err := g.runStep(st.SituationAction, stop, multi)
+		if perr := g.takePickErr(); perr != nil {
+			err = perr // a bad named pick comes first: the run went astray there
+		}
 		if err != nil {
 			if multi {
 				return Answer{}, fmt.Errorf("situation: %s: %s", label, strings.TrimPrefix(err.Error(), "situation: "))
@@ -548,6 +555,9 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 	if err := g.setUpRolls(s.Setup.Rolls); err != nil {
 		return nil, err
 	}
+	if err := g.setUpRandom(s.Setup.Random); err != nil {
+		return nil, err
+	}
 	holder, stackErr := g.stackUp(s.Setup.Stack, active)
 	if stackErr != nil {
 		return nil, stackErr
@@ -556,7 +566,10 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 		return nil, err
 	}
 	g.events = nil
-	return g, g.openSetupWindow(s.Setup.Priority, holder)
+	if err := g.openSetupWindow(s.Setup.Priority, holder); err != nil {
+		return g, err
+	}
+	return g, g.takePickErr()
 }
 
 // intent turns an action into an engine intent.
