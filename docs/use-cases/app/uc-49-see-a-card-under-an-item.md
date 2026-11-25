@@ -10,24 +10,28 @@
 
 1. Ann uses Friendly Ball's first ↷ on Fly.
 2. Fly leaves its slot and goes under the ball (R-ZONE-13).
-3. Fly peeks out from under the ball, face up (19.244).
-   1. On the ball's right, a little turned, as on a real table.
+3. Fly lies behind the ball, face up, a little higher (19.244).
+   1. Its top band shows above the ball: the name and a little art.
    2. Every player sees it, and so does a spectator.
-   3. The ball lies on top; the items row keeps room for Fly.
-4. A hover on the peeking part of Fly zooms Fly.
+   3. The ball lies on top and keeps its place in the items row.
+   4. The band may reach onto the board; it shows over it.
+   5. In a side column the ball moves down by the band.
+   6. So the band never hides the character's stats.
+4. A hover on Fly's band zooms Fly.
 5. A hover on the ball zooms the ball.
    1. Fly stands beside the zoom, smaller, captioned "Under it".
 6. Ann uses the second ↷: Fly goes back to a monster slot.
-7. Nothing peeks out from under the ball any more.
+7. No band shows above the ball any more.
 
 ## Alternative scenarios and errors
 
-* **3a. Several cards under one card:** each peeks out a step further.
-  * The first one put under lies lowest, furthest out.
-* **3b. Text cards, without the private images:** the same peek.
-  * The peek shows the right part of Fly's drawn face.
-* **4a. Touch:** a long press on the peek zooms Fly; on the ball, the ball and Fly.
-* **3c. A record or replay:** the peek shows as it did in the game.
+* **3a. Several cards under one card:** each lies a band higher.
+  * The first one put under lies lowest, at the top.
+* **3b. Text cards, without the private images:** the same band.
+  * The band shows the top of Fly's drawn face: its name.
+* **4a. Touch:** a long press on the band zooms Fly; on the ball, the ball and Fly.
+* **3c. A record or replay:** the band shows as it did in the game.
+* **3d. A full items row:** it still scrolls sideways; no band is clipped.
 
 ## Postconditions
 

@@ -67,6 +67,7 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
   const pick = ui.player(player.id);
   const spent = useSpent();
   const { character } = player;
+  const items = (player.in_play ?? []).filter((c) => !isSoul(c) && !isCurse(c));
   return (
     <section
       className={`player player-${position} opponent${active ? ' active' : ''}${player.dead ? ' dead' : ''}${kicked ? ' kicked' : ''}${pick.highlight ? ` hl-${pick.highlight}` : ''}`}
@@ -125,12 +126,10 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
           {...ui.character(player.id, character.id)}
         />
       </div>
-      <div className="player-cards opp-items" role="group" aria-label={t('table.items_of', { player: name })}>
-        {(player.in_play ?? [])
-          .filter((c) => !isSoul(c) && !isCurse(c))
-          .map((c) => (
-            <PlayCard key={c.id} card={c} owner={player.id} size={size} ui={ui} />
-          ))}
+      <div {...cardsRow('opp-items', items)} role="group" aria-label={t('table.items_of', { player: name })}>
+        {items.map((c) => (
+          <PlayCard key={c.id} card={c} owner={player.id} size={size} ui={ui} />
+        ))}
       </div>
     </section>
   );
@@ -195,6 +194,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools, watched, de
   const backs = player.hand ? 0 : player.hand_size;
   const spent = useSpent();
   const { character } = player;
+  const items = (player.in_play ?? []).filter((c) => !isSoul(c) && !isCurse(c));
   const handRef = useRef<HTMLDivElement>(null);
   useHandGap(handRef, hand.map((c) => c.id).join(','));
   return (
@@ -247,12 +247,10 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools, watched, de
           {...ui.character(player.id, character.id)}
         />
       </div>
-      <div className="player-cards own-items" role="group" aria-label={t('table.your_items')}>
-        {(player.in_play ?? [])
-          .filter((c) => !isSoul(c) && !isCurse(c))
-          .map((c) => (
-            <PlayCard key={c.id} card={c} owner={player.id} size="table" ui={ui} />
-          ))}
+      <div {...cardsRow('own-items', items)} role="group" aria-label={t('table.your_items')}>
+        {items.map((c) => (
+          <PlayCard key={c.id} card={c} owner={player.id} size="table" ui={ui} />
+        ))}
       </div>
       <div
         ref={handRef}
@@ -358,7 +356,7 @@ function Curses({ player, label, size, ui }: { player: PlayerView; label: string
     return null;
   }
   return (
-    <div className="player-cards curses" role="group" aria-label={label}>
+    <div {...cardsRow('curses', curses)} role="group" aria-label={label}>
       {curses.map((c) => (
         <PlayCard key={c.id} card={c} owner={player.id} size={size} ui={ui} />
       ))}
@@ -409,17 +407,33 @@ function statsOf(player: PlayerView, effectsOn: string) {
 // not new each render.
 const NO_UNDER: string[] = [];
 
+// cardsRow is the class and style of a row of cards in play. A card
+// under one of them shows its top band above it (19.244), which the
+// row's scroll would clip: the row then reaches up by the highest
+// band, padded as far, so every card keeps its place. That strip lets
+// the pointer through to what lies under it; the cards take it.
+function cardsRow(kind: string, cards: CardView[]): { className: string; style?: CSSProperties } {
+  const n = Math.max(0, ...cards.map((c) => c.under?.length ?? 0));
+  if (n === 0) {
+    return { className: `player-cards ${kind}` };
+  }
+  return { className: `player-cards ${kind} has-under`, style: { '--under-n': n } as CSSProperties };
+}
+
 // PlayCard is a character or item in play; owner's dice look draws the
-// numbers it keeps (15.67). The cards under it peek out from under it,
-// face up, as on a real table; hovering one zooms it, and the card's
-// own zoom shows them beside it (19.244). The holder stays when none
-// are under it, so a card caught or let go never pops the item in again.
+// numbers it keeps (15.67). The cards under it lie behind it, face up
+// and a little higher, so their top band shows above it, as on a real
+// table: each one a band higher, the first put under at the top.
+// Hovering a band zooms that card, and the card's own zoom shows them
+// beside it (19.244). The holder stays when none are under it, so a
+// card caught or let go never pops the item in again; with cards under
+// it, it takes the `under` layer, so a band over the board shows.
 function PlayCard({ card, owner, size, ui }: { card: CardView; owner: number; size: CardSize; ui: Interact }) {
   const spent = useSpent();
   const under = card.under ?? NO_UNDER;
   const name = useApp((s) => s.cards.get(card.card)?.name ?? card.card);
   return (
-    <div className={`card-holder size-${size}${under.length > 0 ? ' has-under' : ''}`} style={{ '--under-n': under.length } as CSSProperties}>
+    <div className={`card-holder${under.length > 0 ? ' has-under' : ''}`}>
       {under.length > 0 && (
         <div className="card-under" role="group" aria-label={t('table.under', { card: name })}>
           {under.map((c, i) => (

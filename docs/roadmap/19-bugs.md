@@ -7443,3 +7443,63 @@ Totals by system (234 items):
    4. The rest of it is hidden by the item, as on a real table.
    5. The side peek is replaced.
    6. The row's sideways scroll must not clip the raised part.
+13. Done (design change, 2026-11-25)
+   1. The side peek is gone: no `--peek`, no turn, no right padding.
+   2. A card under an item lies behind it, raised by `--band`.
+   3. `--band`: 1.875rem (table), 1.375rem (side column).
+   4. Only its top band shows: the name and a little art.
+   5. The item keeps its place, in line with the row.
+   6. Several under one card: each a band higher; first put under on top.
+   7. Today only Friendly Ball holds one card.
+   8. Hover on a band zooms that card; the item zoom is unchanged.
+   9. Long press and right click as before (`useZoom`).
+   10. Text cards: the band shows the drawn name, readable.
+14. Clipping fix
+   1. `overflow-x: auto` on `.player-cards` clips above the row too.
+   2. `cardsRow` marks a row `has-under`; `--under-n` is its most under one card.
+   3. Such a row has `margin-top: -band·n` and `padding-top` as far.
+   4. So its cards keep their place; the row reaches up over the band.
+   5. The row takes `pointer-events: none`; its cards and bands take `auto`.
+   6. So the strip never blocks what lies under it.
+   7. The row still scrolls sideways (wheel and swipe over its cards).
+   8. Side columns do not clip (`overflow: visible`).
+   9. There the card above the row is the character: a band hid its stats.
+   10. So a side row makes room: no negative margin, bigger `row-gap`.
+   11. A side row moves down by the band while a card is under one.
+15. Layers (ADR 015)
+   1. The own row's band reaches onto the board, drawn later; it was hidden.
+   2. New layer `under` (5): a holder with cards under it.
+   3. Between `action-bar` and `sky`; every window covers it.
+   4. The holder is a stacking context: the item lies on its bands.
+   5. Row in `Layers.md`; pair in `layers.spec.ts`: band over the board.
+   6. Animations: none added or changed (ADR 012).
+16. Checked (5.26)
+   1. Own items row: the band over the board's rim; the ball unmoved.
+   2. Top opponent: the band in the hand row's free room; under no window.
+   3. Side opponents: under the character, its stats in view.
+   4. Curses rows use `PlayCard` and `cardsRow` too.
+   5. Full own row: scrolls; the last card's band shows once scrolled.
+   6. Windows 1024×600, 1280×720, 1920×1080: `expectFits`, bands shown.
+   7. Playback and records draw `PlayerArea`: covered.
+17. Tests
+   1. `under.spec.ts`: Friendly Ball catch, band for both players.
+   2. The ball's box is the same before, during and after the catch.
+   3. Hover on the band zooms Fly; the ball zoom shows "Under it".
+   4. The band takes the pointer at its middle (not covered, not clipped).
+   5. Second test: every seat, a full row, three window sizes.
+   6. Its names changed to Nim, Pel: Ivo, Jun clashed in the saves list.
+   7. `layers.spec.ts`: band over the board; the item over its band.
+18. Screenshots (not tracked): `.cache/screenshots/19.244/after-2/`.
+   1. `screen-under-band.png`, `screen-under-band-other.png`.
+   2. `screen-under-band-zoom.png`, `screen-under-ball-zoom.png`.
+   3. `screen-under-released.png`, `screen-under-before.png`.
+   4. `screen-under-seats.png` (full row), `-small`, `-large`, `-zoom`.
+   5. `screen-under-band-text.png`, `-other-text.png`: text cards.
+   6. `screen-layers-under-board.png`.
+19. Gates (2026-11-25)
+   1. `make lint test` passed; `make frontend`: 794 Vitest passed.
+   2. `make e2e`: 667 passed, 3 failed; evidence in `.cache/e2e-evidence/19.244-2/`.
+   3. two-sided and under: both continued a save named "Ivo, Jun".
+   4. Fixed by new names in `under.spec.ts`; both passed alone.
+   5. aim 20.6 drag tilt (roll 4.39 < 5): timing; passed alone.
+   6. `wails build -m -tags embed` built; `wailsjs` churn reverted.
