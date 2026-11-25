@@ -1592,7 +1592,7 @@ Ideas: TS-13, LR-04, R-03.
    1. Also `room`, `sackFirst`.
 17. `cardgen -report` unchanged.
 
-### [ ] 24.27 Bulk: challenge
+### [x] 24.27 Bulk: challenge
 
 1. Goal: Challenge and Challenge Boss (about 50 tests).
 2. Counts (2026-11-25): 51 tests in 12 `_test.go` files of `cards/challenge`.
@@ -1640,6 +1640,79 @@ Ideas: TS-13, LR-04, R-03.
 11. No rules bug found; no 19.N item.
 12. `cardgen -report` unchanged: challenge 10 of 14 tested.
 13. Stays open: waits for the owner on item 6.
+14. Resumed after 24.34 (2026-11-25): the 46 tests of item 5.
+   1. Every field item 7 lists came with 24.34 (`setup.game` and the rest).
+   2. Two commits: Krampus, then Trick or Treat.
+15. Moved: 38 tests, as 91 new files; 7 `_test.go` files are gone.
+   1. Krampus rule card: TestPresentsNotInPlay, TestForgoMixed, TestForgoRolledReward.
+   2. Also TestForgoSoulValue, TestForgoDoubledAndOther, TestNoForgoAfterHolidays.
+   3. Also TestKrampusGoal, TestForgoWithLuckyToe (2 files, one per order).
+   4. Also TestWhatsInTheBoxHard, TestWhatsInTheBoxUltra, TestHappyHolidaysHard, TestHappyHolidaysUltra.
+   5. Pilfering Krampus: TestKrampusGuarded (3 files and 24.34's), TestKrampusChaosCard (2).
+   6. Also TestKrampusRollNormal, TestKrampusRollHard, TestKrampusRollUltra: 6 files each, one per roll.
+   7. Also TestKrampusExtraRollsHard (4), TestKrampusExtraRollsUltra (2).
+   8. Also TestKrampusGuardedHard, TestKrampusGuardedUltra (2 each).
+   9. Also TestKrampusForcedAttackLater (3), TestKrampusMinionSpoils.
+   10. The Haunt: TestTrickGuard (4 files and 24.34's), TestTrickGuardOutrightKill (2).
+   11. Also TestTrickFear, TestTrickFearStays, TestTrickFearEvasion (2), TestTrickDeathRoll (2).
+   12. Also TestHauntHard (2), TestHauntUltraFear.
+   13. Trick/Treat: TestNobodysFool, TestGhostlyTrickeryRolls (3, one per difficulty).
+   14. Also TestGhostlyTrickeryDamage (2), TestGhostlyTrickeryCents (3).
+   15. Also TestYouDontScareMe, TestHallowsEveBounty (3), TestTrickGoal (2).
+16. Split: 7; files say the rest, the parts below stay Go.
+   1. TestForgoCents: 2 files; the save and load mid-question and the text key stay Go.
+   2. Go: TestForgoCentsSaveMidQuestion.
+   3. TestWhatsInTheBox: 2 files; the minion slot order and the view stay Go.
+   4. Go: TestWhatsInTheBoxOrderAndView; no check names a minion slot.
+   5. TestAllPresentsLost: the file; the loss reason (`Challenge.Reason`) stays Go.
+   6. Go: TestAllPresentsLostReason.
+   7. TestHappyHolidays: the file; the view stays Go (TestHappyHolidaysView).
+   8. TestKrampusForcedAttack: the file; the view stays Go (TestKrampusForcedAttackView).
+   9. TestTrickFlip: 3 files; the question's text key stays Go (TestTrickFlipQuestionText).
+   10. TestGhostlyTrickeryGain: the file; the event's `Text`, `Card` stay Go.
+   11. Go: TestGhostlyTrickeryGainEvent.
+17. Stayed Go whole: 1, and the 5 of item 4.
+   1. Views: TestGhostlyTrickeryView (ADR 034 1.5).
+18. Needed a format change: 0.
+19. Engine calls in Go, said by a game action in the file:
+   1. `Boosts` ATK: more 6s in `rolls`; the targets have 1 HP, Krampus 5, The Haunt 4.
+   2. `Boosts` HP: Breakfast and Dinner give Isaac 4 HP.
+   3. `DealDamageTo`: a Bomb! on the boss or on Cain.
+   4. `KillPlayer`: Chaos Card kills Cain.
+   5. `AddPresentCounters`, `DestroyPresent`, `FlipPresents`: `game.presents`, `holidays`, a turn-start roll.
+   6. `AddPlayerCounters`: `"card": "player"`; `setTricks`: `setup.counters` on the boss.
+   7. `flipToTreat`: `game.rule_card`; `MinionFromDeck`: a destroyed present at a turn start.
+   8. `Turn.RandomAttackMade`: the random attack made first, with `setup.random`.
+   9. `Turn.MustAttack`: `setup.must_attack`; `Turn.Attacks`: `setup.attacks`.
+   10. Below 0 (`AddNamedCounters -10`): a kill with no trick counters left.
+   11. A destroyed present takes no counters: a turn-start roll on it.
+   12. `trickOn`'s 6 bare mobs: `setup.decks.monster`.
+20. Drafts: few kept; most setups were written from the Go helpers.
+   1. The dump wrote `game` and presents; boosts and hand settles were todos.
+   2. Roll tables: one file per case, written by a script; `expect` from R-KRAMPUS-12.
+   3. Trigger order (R-ABIL-15): named in `choices` where several trigger at once.
+   4. The first named goes on the stack first, so it resolves last.
+   5. The win trigger goes last, so it resolves first; no death roll then (R-CHAL-15).
+21. Checks added from the card text (owner answer 8):
+   1. Every forgo: all four presents' counters, the `forgone` event, the refill.
+   2. Destroyed presents: in the treasure discard; minions in slots, the next deck top.
+   3. Happy Holidays!: each present an item, charged, no counters; once only.
+   4. Rolls: `resolved_rolls`; Krampus's extra rolls resolve last thrown first (R-STACK-02).
+   5. Fear: on both players in every file; trick counters after each kill.
+   6. Evasion: the Leech and The Haunt too, the cap at 6 (R-ATK-18).
+   7. Ghostly Trickery: its rolls before the attack roll, by value (5s, then the 6).
+   8. Goals: `over`, `winners` [0, 1], `challenge_won`, no `challenge_lost`.
+   9. A lost challenge: `winners` [], no minions for the fourth present.
+22. Go tests that did not check what they claimed: 0 found.
+23. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: about 2600 changes.
+   2. Only changes that drop a check entry or say another true thing passed.
+   3. E.g. a fear count 0 under another counter name; a slot dropped from a check.
+24. Helpers removed, no use left: `kill`, `blocked`, `attackOptions`, `boss`.
+   1. Also `tricks`, `setTricks`, `fear`, `flipToTreat`, `hp`, `damageTo`, `rollsOf`.
+25. No rules bug found; no 19.N item.
+26. `cardgen -report` unchanged: challenge 10 of 14 tested.
+   1. The 4 not started are the competitive cards (`_comp`, R-KRAMPUS-16, R-TRICK-17).
 
 ### [x] 24.28 Turn checks count every attack and loot play left
 
