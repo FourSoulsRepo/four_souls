@@ -2051,3 +2051,6 @@ Ideas: TS-13, LR-04, R-03.
    2. ADR 034: items 10.29 to 10.33 appended.
 18. No rules bug found; `cardgen -report` unchanged.
 19. 24.27 can resume: every field its item 7 lists exists.
+20. Owner (2026-11-25)
+   1. Boss counters in a challenge set the count left: confirmed.
+   2. Fear as counters on card `player`: confirmed.
