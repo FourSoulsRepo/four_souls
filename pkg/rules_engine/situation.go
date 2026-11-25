@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 )
 
@@ -218,6 +219,11 @@ type Answer struct {
 	// Matches is set when the situation has an expectation.
 	Matches  *bool    `json:"matches,omitempty"`
 	Mismatch []string `json:"mismatch,omitempty"`
+	// Unused names the setup.rolls and setup.random entries still
+	// unused when the run ended (24.32). A test file fails on them
+	// (enginetest.CheckSituation); a payload is only being explored,
+	// so the website and sandbox never see them.
+	Unused []string `json:"-"`
 }
 
 // RunSituation builds the table, runs the action or each step, resolves
@@ -292,7 +298,32 @@ func RunSituation(data []byte, sets ...CardSet) (Answer, error) {
 		ok := len(mismatch) == 0
 		ans.Matches, ans.Mismatch = &ok, mismatch
 	}
+	ans.Unused = g.unusedSetup()
 	return ans, nil
+}
+
+// unusedSetup names the forced dice and picks no step used (24.32):
+// one line per field, e.g. "setup.rolls: 2 left unused: [4, 1]".
+// Listed but unused, the setup is likely wrong: a roll that was
+// meant to happen did not.
+func (g *Game) unusedSetup() []string {
+	var out []string
+	left := func(field string, vals []string) {
+		if len(vals) > 0 {
+			out = append(out, fmt.Sprintf("setup.%s: %d left unused: [%s]", field, len(vals), strings.Join(vals, ", ")))
+		}
+	}
+	rolls := make([]string, len(g.forcedRolls))
+	for i, r := range g.forcedRolls {
+		rolls[i] = strconv.Itoa(r)
+	}
+	left("rolls", rolls)
+	picks := make([]string, len(g.forcedPicks))
+	for i, p := range g.forcedPicks {
+		picks[i] = strconv.Quote(p)
+	}
+	left("random", picks)
+	return out
 }
 
 // stepList is the action as one step, or the steps; a situation has

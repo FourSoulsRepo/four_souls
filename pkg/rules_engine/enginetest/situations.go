@@ -146,14 +146,19 @@ func CheckSituation(tree Tree, files fs.FS, path string, sets ...engine.CardSet)
 		for _, m := range ans.Mismatch {
 			out = append(out, path+", "+m)
 		}
-		return out
+	} else {
+		step := strings.TrimSpace(fmt.Sprintf("step 1 (%s %s", s.Action.Kind, s.Action.Card)) + ")"
+		if ans.Rule != "" {
+			step += fmt.Sprintf(", refused by %s: %s", ans.Rule, ans.Reason)
+		}
+		for _, m := range ans.Mismatch {
+			out = append(out, fmt.Sprintf("%s, %s: %s", path, step, m))
+		}
 	}
-	step := strings.TrimSpace(fmt.Sprintf("step 1 (%s %s", s.Action.Kind, s.Action.Card)) + ")"
-	if ans.Rule != "" {
-		step += fmt.Sprintf(", refused by %s: %s", ans.Rule, ans.Reason)
-	}
-	for _, m := range ans.Mismatch {
-		out = append(out, fmt.Sprintf("%s, %s: %s", path, step, m))
+	// A test file uses every roll and pick it lists (24.32); a payload
+	// may leave some, so only this runner reads Unused.
+	for _, u := range ans.Unused {
+		out = append(out, path+", end: "+u)
 	}
 	return out
 }

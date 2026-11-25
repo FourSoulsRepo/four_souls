@@ -1,10 +1,13 @@
 package enginetest_test
 
 import (
+	"encoding/json"
+	"slices"
 	"strings"
 	"testing"
 	"testing/fstest"
 
+	engine "github.com/FourSoulsRepo/rules_engine"
 	"github.com/FourSoulsRepo/rules_engine/cards/b2"
 	"github.com/FourSoulsRepo/rules_engine/enginetest"
 )
@@ -287,5 +290,87 @@ func TestCheckSituationBottomAndRollsUnknownField(t *testing.T) {
 		if !strings.HasSuffix(got[i], w) {
 			t.Errorf("problem %q; want it to end with %q", got[i], w)
 		}
+	}
+}
+
+// flyFile is a b2 test file: Isaac attacks the Fly (1 HP, reward 1¢)
+// with the dice rolls given; the first, a 6, kills it.
+func flyFile(rolls string) string {
+	return `{
+		"title": "Isaac kills the Fly",
+		"source": ["card fly", "R-ATK-12"],
+		"sets": ["b2"],
+		"setup": {"players": [{"character": "isaac"}, {"character": "cain"}], "active": 0, "monsters": ["fly"], "rolls": [` + rolls + `]},
+		"action": {"player": 0, "kind": "attack", "choices": ["fly"]},
+		"expect": {"allowed": true, "monsters": [{"card": "fly", "dead": true}], "after": [{"player": 0, "cents": 1}]}
+	}`
+}
+
+// toothFile is a b2 test file: Monstro's Tooth ("At the start of your
+// turn, choose a player at random. That player destroys an item they
+// control.") picks Cain, who destroys his only item, a Breakfast.
+const toothFile = `{
+	"title": "Monstro's Tooth picks Cain",
+	"source": ["card monstros_tooth", "R-TURN-03"],
+	"sets": ["b2"],
+	"setup": {"players": [{"character": "isaac", "items": ["monstros_tooth", "breakfast"]}, {"character": "cain", "items": ["breakfast"]}],
+		"active": 1, "random": ["player 2 (cain)"]},
+	"steps": [{"player": 1, "kind": "end_turn", "choices": ["breakfast"]}],
+	"expect": {"allowed": true, "active": 0, "after": [{"player": 0, "items": ["monstros_tooth", "breakfast"]}, {"player": 1, "items": []}]}
+}`
+
+// Every listed roll and pick used: the file passes (24.32).
+func TestCheckSituationAllRollsAndPicksUsed(t *testing.T) {
+	if got := check(enginetest.CardTree, "fly/dies-to-a-6.json", flyFile("6")); len(got) != 0 {
+		t.Errorf("fly: problems %q; want none", got)
+	}
+	if got := check(enginetest.CardTree, "monstros_tooth/picks-cain.json", toothFile); len(got) != 0 {
+		t.Errorf("tooth: problems %q; want none", got)
+	}
+}
+
+// A roll no step used fails the file, naming the field and the rolls
+// left; the checks still pass, so it is the only problem (24.32).
+func TestCheckSituationLeftoverRoll(t *testing.T) {
+	got := check(enginetest.CardTree, "fly/dies-to-a-6.json", flyFile("6, 4, 1"))
+	want := []string{"fly/dies-to-a-6.json, end: setup.rolls: 2 left unused: [4, 1]"}
+	if !slices.Equal(got, want) {
+		t.Errorf("problems %q; want %q", got, want)
+	}
+}
+
+// A pick no step used fails the file the same way (24.32): Razor
+// Blade picks nothing at random.
+func TestCheckSituationLeftoverPick(t *testing.T) {
+	file := strings.Replace(razorFile(cardSource, rightExpect), `"active": 0}`, `"active": 0, "random": ["player 2 (cain)"], "rolls": [3]}`, 1)
+	got := check(enginetest.CardTree, "razor_blade/hits-cain.json", file)
+	want := []string{
+		"razor_blade/hits-cain.json, end: setup.rolls: 1 left unused: [3]",
+		`razor_blade/hits-cain.json, end: setup.random: 1 left unused: ["player 2 (cain)"]`,
+	}
+	if !slices.Equal(got, want) {
+		t.Errorf("problems %q; want %q", got, want)
+	}
+}
+
+// A payload may leave rolls and picks: it is only being explored, so
+// it still matches, and the answer it sends names none (24.32).
+func TestPayloadLeftoversDoNotFail(t *testing.T) {
+	ans, err := engine.RunSituation([]byte(flyFile("6, 4, 1")), b2.Set)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ans.Matches == nil || !*ans.Matches {
+		t.Errorf("matches %v, mismatch %q; want a match", ans.Matches, ans.Mismatch)
+	}
+	if want := []string{"setup.rolls: 2 left unused: [4, 1]"}; !slices.Equal(ans.Unused, want) {
+		t.Errorf("unused %q; want %q", ans.Unused, want)
+	}
+	data, err := json.Marshal(ans)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(data), "unused") {
+		t.Errorf("answer %s; want no unused field sent", data)
 	}
 }

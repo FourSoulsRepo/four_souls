@@ -35,8 +35,8 @@ A situation is a small JSON document: a table position, one action or several [s
 * `setup.bonus_souls` — the active bonus souls, by ref (R-SETUP-06): `["soul_of_greed"]`. They start with no owner; `setup.counters` and `expect.counters` name them after the slot cards.
 * `setup.counters` — counters on a card no player controls: a card in a slot or an active bonus soul, in the same form as a player's: `[{"card": "soul_of_wrath", "count": 5}]`.
 * `setup.decks` — cards put on top of decks, by deck name (`treasure`, `loot`, `monster`, `room`), top first: `{"monster": ["chest_2"], "loot": ["bomb", "a_penny"]}`. Each card must belong to that deck. The rest of the deck is every card of the sets, shuffled with `seed`.
-* `setup.rolls` — the next dice results, in order, each 1–6: `[6, 1]`. Any die rolled after them is random (from `seed`).
-* `setup.random` — the next random picks, in order, each named by its option label as in `choices`: `["player 2 (cain)"]`. Any pick after them is random (from `seed`). See [Random picks](#random-picks).
+* `setup.rolls` — the next dice results, in order, each 1–6: `[6, 1]`. Any die rolled after them is random (from `seed`). In a test file every listed roll must be used: a roll left over at the end is an error (24.32); see [Leftover rolls and picks](#leftover-rolls-and-picks).
+* `setup.random` — the next random picks, in order, each named by its option label as in `choices`: `["player 2 (cain)"]`. Any pick after them is random (from `seed`). In a test file every listed pick must be used, as `rolls` (24.32). See [Random picks](#random-picks).
 * `setup.bosses`, `setup.minions` — a challenge's final boss and minion slots, one card each (R-CHAL-02, R-CHAL-07).
 * `setup.stack` — items already on the stack, bottom first: dice rolls, loot cards, abilities, triggers and attack rolls; see [Stacked items](#stacked-items).
 * `setup.priority` — the seat that holds priority at the start, from 0: `1`. See [Priority](#priority).
@@ -74,6 +74,20 @@ A situation is a small JSON document: a table position, one action or several [s
 * A pick of a hidden card (Boomerang, Ring of Flies: "steal a loot card at random") has an empty label, so the list can't name it; it stays random from `seed`.
 * Shuffles and random deck order are no picks: decks come from `seed` and `setup.decks`, cards put on the bottom "in random order" are checked with `deck_bottoms` (Q-22).
 * Only a setup names picks; a game never does, so it draws every pick from its RNG as before.
+
+## Leftover rolls and picks
+
+A roll or pick listed in the setup but never used means the setup is likely wrong: a roll that was meant to happen did not (24.32). So a test file fails when, after its last step, `setup.rolls` or `setup.random` still holds entries. One check covers both fields and names each with what was left:
+
+```
+conjoined_fatty/kills-isaac-and-ends-the-attack.json, end: setup.rolls: 4 left unused: [6, 6, 6, 6]
+razor_blade/hits-cain.json, end: setup.random: 1 left unused: ["player 2 (cain)"]
+```
+
+* It fires once, at the end, after every step and the top-level `expect`; it comes after the mismatches and does not stop them.
+* A refused or stopped step uses no dice, so a roll it would have needed is left over too: list only what the run throws.
+* To show a roll does *not* happen (an attack that ends), list only the rolls that do and check their count with `resolved_rolls`.
+* Only the test runner (`enginetest.CheckSituation`) fails on leftovers, as it alone reads a file strictly. A payload from the sandbox or the website is only being explored, so leftovers are no error there: the engine keeps them in `Answer.Unused`, which is never sent (`json:"-"`).
 
 ## Counters
 
@@ -423,7 +437,7 @@ Any other form fails with the list of forms. The `expect` values come from these
 
 ### The runner
 
-`enginetest.RunSituations(t, files, sets...)` runs a card tree; `enginetest.RunRuleSituations` the engine's topic tree (`situation_files_test.go`). For each file it checks the layout, then reads it strictly (an unknown field fails with its line, its path and the nearest field name, e.g. `line 7, setup: unknown field "rols"; did you mean "rolls"?`; a payload outside a tree is read as before), then checks that the file has `expect` and `source` and that each source exists, then runs it with `engine.RunSituation`. A mismatch names the file, the step and every failed check; with `steps`, a check of the top-level `expect` names the end:
+`enginetest.RunSituations(t, files, sets...)` runs a card tree; `enginetest.RunRuleSituations` the engine's topic tree (`situation_files_test.go`). For each file it checks the layout, then reads it strictly (an unknown field fails with its line, its path and the nearest field name, e.g. `line 7, setup: unknown field "rols"; did you mean "rolls"?`; a payload outside a tree is read as before), then checks that the file has `expect` and `source` and that each source exists, then runs it with `engine.RunSituation` and fails on rolls or picks left unused ([Leftover rolls and picks](#leftover-rolls-and-picks)). A mismatch names the file, the step and every failed check; with `steps`, a check of the top-level `expect` names the end:
 
 ```
 razor_blade/hits-cain.json, step 1 (activate razor_blade): player 1 damage is 1, expected 2

@@ -1627,7 +1627,7 @@ Ideas: TS-13, LR-04, R-03.
    1. Boomerang and Ring of Flies name their picks.
    2. `monstros_tooth/a-random-player-destroys-an-item.json` names its player.
 
-### [ ] 24.32 Setup: an unused roll or pick is an error
+### [x] 24.32 Setup: an unused roll or pick is an error
 
 1. Why (owner, 2026-11-25)
    1. `rolls` or `random` left over at the end: the setup is likely wrong.
@@ -1642,3 +1642,31 @@ Ideas: TS-13, LR-04, R-03.
 4. Tests and docs
    1. Go: a leftover roll fails; a leftover pick fails; all used passes.
    2. Wiki `Situation-payload.md`: both fields.
+5. Done (2026-11-25): the check
+   1. `Game.unusedSetup` (`situation.go`): one check for both fields.
+   2. It reads what is left of `forcedRolls` and `forcedPicks`.
+   3. One line per field: `setup.rolls: 2 left unused: [4, 1]`.
+   4. Picks are quoted: `setup.random: 1 left unused: ["player 2 (cain)"]`.
+   5. `RunSituation` fills `Answer.Unused` once, after the last step and the top `expect`.
+6. Where it applies
+   1. Test files only: `enginetest.CheckSituation` adds each line as `<file>, end: …`.
+   2. It comes after the mismatches; both are reported.
+   3. Payloads (sandbox, website): no error; they are only explored.
+   4. As the strict reading: test files strict, payloads as before (rule 2).
+   5. `Answer.Unused` is `json:"-"`: the answer sent is unchanged.
+   6. No engine game code changed; no version bump; no `make site`, `make e2e`.
+7. Files: every tree run; one file failed.
+   1. `conjoined_fatty/kills-isaac-and-ends-the-attack.json`: rolls `[1, 6, 6, 6, 6]`.
+   2. Only the 1 is thrown: Isaac (2 HP) dies to the Fatty's 2 ATK.
+   3. His attack is cancelled (R-DEATH-12), so no more rolls.
+   4. The four 6s were a guard: had the attack gone on, they kill the Fatty.
+   5. Now `rolls` `[1]`, and the end checks `resolved_rolls` `[1]`: one roll only.
+   6. Not a hidden wrong test: the guard was right, just silent.
+8. No hidden wrong test found; no rules bug; no 19.N item.
+9. Tests (`enginetest/situations_test.go`)
+   1. `TestCheckSituationAllRollsAndPicksUsed`: a Fly roll, a Monstro's Tooth pick.
+   2. `TestCheckSituationLeftoverRoll`: `[6, 4, 1]` on the Fly.
+   3. `TestCheckSituationLeftoverPick`: Razor Blade picks nothing; a pick and a roll left.
+   4. `TestPayloadLeftoversDoNotFail`: matches, `Unused` set, not in the JSON.
+10. Wiki `Situation-payload.md`: both fields, a "Leftover rolls and picks" part, the runner.
+11. ADR 034: no drift.

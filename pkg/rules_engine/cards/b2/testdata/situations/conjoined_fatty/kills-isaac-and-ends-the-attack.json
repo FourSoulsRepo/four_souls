@@ -6,11 +6,11 @@
     "players": [{"character": "isaac"}, {"character": "cain"}],
     "active": 0,
     "monsters": ["conjoined_fatty"],
-    "rolls": [1, 6, 6, 6, 6]
+    "rolls": [1]
   },
   "steps": [
     {"player": 0, "kind": "attack", "choices": ["conjoined_fatty"],
      "expect": {"allowed": true, "events": [{"kind": "died", "player": 0}]}}
   ],
-  "expect": {"allowed": true, "active": 1, "monsters": [{"card": "conjoined_fatty", "dead": false}]}
+  "expect": {"allowed": true, "active": 1, "monsters": [{"card": "conjoined_fatty", "dead": false}], "resolved_rolls": [1]}
 }
