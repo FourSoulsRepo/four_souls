@@ -1498,9 +1498,99 @@ Ideas: TS-13, LR-04, R-03.
    1. `lootRoomTable` folded into `roomTable`; `testCharacter` is `testStartingItem`.
 15. `cardgen -report` unchanged.
 
-### [ ] 24.26 Bulk: r other
+### [x] 24.26 Bulk: r other
 
 1. Goal: r test files with no card kind (about 55 tests).
+2. Counts (2026-11-25): 27 tests looked at.
+   1. 22 in files of no card: attack target order 3, Golden Trinket 11, reprints 1, room step 6.
+   2. Golden Trinket: `golden_trinket_bum`, `_counters`, `_eve`, `gained_tap` (Glitch too).
+   3. 5 of a card kind no family had: One-Use Treasure.
+   4. Mama Mega, Pageant Boy, R Key (2), The Clicker.
+   5. So fewer than 55: the count was taken before 24.21-24.25.
+   6. Not looked at again: Go tests reported "stays Go" before.
+3. Moved: 23 tests, as 23 new files and one file extended; their Go tests are gone.
+   1. TestRagMegaResolvesBeforeTheAttackRoll, TestDogmaResolvesBeforeTheAttackRoll.
+   2. TestAngelicInterventionCancelsBeforeAnyRoll: a check in `cancels-an-attack-on-the-deck.json`.
+   3. TestGoldOnBumFriendAndTechX, TestGainCentsWithGoldOnBumBo, TestCountersDontMix.
+   4. TestBumBoStaticsOnGoldenTrinket: 2 files, 10 levels and none (owner answer 11).
+   5. TestGoldOnBumBoNoLevel, TestTwoGoldCountersBothGained, TestEveGoldenTrinketLine.
+   6. TestChargedBabyRechargesGoldenTrinket, TestDeathDeactivatesGoldenTrinket.
+   7. TestGlitchGainedTapIsRechargeable: `glitch/its-gained-tap-can-be-spent-and-recharged.json`.
+   8. TestCurseOfImpulseDeactivatesGoldenTrinket: cross-set (fsp2 Curse of Impulse).
+   9. It is `cards/testdata/situations/interactions/curse-of-impulse-golden-trinket.json`.
+   10. TestRoomStep, TestDiceRoomIsNotTheRoomStep: r `interactions/`, after the rooms.
+   11. TestRoomStepNeedsADeath, TestOnlyTheActivePlayerUsesRooms, TestSocialGoalsStaysTillFourGoals.
+   12. TestMamaMega, TestPageantBoy, TestRKey, TestRKeyEntersDeactivated.
+4. Where the rule tests went: all in the r tree, the rule in `source`.
+   1. Rooms, Golden Trinket, Rag Mega, Dogma are r cards, so none is base-set only.
+   2. One rule, one card: the card's folder (Blessing Of Greed, Social Goals, Blood Donation).
+   3. Several r rooms: `interactions/blessing-of-greed-dice-room-5.json`.
+   4. Also `interactions/dice-room-3-spider-webs-blessing-of-greed.json`.
+   5. b2 cards beside an r card are props: the r card's folder (Charged Baby, Bomb!).
+5. Split: 1. TestTheClicker.
+   1. The file checks the items, the damage, the charged character, the discard.
+   2. The character card and `CharactersOutside` stay Go: TestTheClickerCharacterIsSamson.
+   3. No check names a character card; Samson and Isaac have the same stats.
+6. Stayed Go whole: 3.
+   1. Skipped for an open question: TestGainCentsReplacementGained (Q-27).
+   2. Real game start, decks counted: TestReprintWithoutItsSet (ADR 034 1.6).
+   3. Game start and views: TestRoomsOption (1.5, 1.6).
+7. Needed a format change: 0.
+8. Engine state or API in Go, said by a game action in the file:
+   1. `AbilitiesOf` counts (4, 3): the last ability refused by R-ABIL-07, the next by R-ABIL-08.
+   2. R-ABIL-08: "has no such activated ability"; R-ABIL-07: it is there, its cost unpaid.
+   3. `PlayerATK` with set counters: `setup.counters`, ATK at the target question.
+   4. Also the first attack roll: a 2 resolves as 4 on the Leech with 10 levels, a 3 as 3 with none.
+   5. `KillPlayer`: Isaac's or Eve's own Bomb! on 2 or 1 damage left; the penalty's choice.
+   6. `DiscardToHand` (Eve's line): Hallowed Ground on her next turn, 3 counters in setup.
+   7. `Deactivatable` (Glitch): Cain's Bomb! kills the Capricious; Glitch stays charged.
+   8. `Rechargeable`: Lil Battery offers Glitch and `ask.cancel` once it is spent.
+   9. `FirstAttackRoll`: a `throw` step stops at the first roll; `resolved` the trigger, no roll yet.
+   10. Angelic Intervention: no `dice_rolled` event for Isaac.
+   11. A direct `G.Apply` room use: the use on `setup.stack`, Isaac 1 damage, `priority` 1.
+9. Drafts: 18 of 24 files kept the dumped setup and steps.
+   1. The `setup` helper's 6 Clotty and 6 Book Of Sin: only named tops kept.
+   2. Loot and monster tops named: Bum Friend, Charged Baby, Mama Mega, R Key, room steps.
+   3. No step in the draft: Bum-Bo!'s statics (2), an attack added.
+   4. Rebuilt with game actions: Golden Trinket's death, Eve's line, Glitch, the room use.
+   5. One-step drafts became `action` (8).
+   6. A throw step splits the attack: Rag Mega, Dogma.
+10. Checks added from the card text (owner answer 8):
+   1. Rag Mega, Dogma: the discard before the roll, the roll, the kill.
+   2. Golden Trinket: the counters on each item, the trinket spent, the deck top.
+   3. Bum-Bo!'s statics: the kill, the slot's refill, no damage.
+   4. Charged Baby: the roll's Loot 1, A Penny! in hand.
+   5. Death penalty: Breakfast and Bomb! in their discards; the Sack and character spent.
+   6. Eve's line: Hallowed Ground's counters, the loot discard, Eve back on her turn.
+   7. Room step: the Fly's 1¢ and refill, the monster discard, Dice Room!!!!! in the slot.
+   8. Blessing Of Greed: Cain gains 3¢ when it stays or comes in the end phase.
+   9. Dice Room!!!: Spider Webs does not deactivate Isaac's character (R-TURN-18).
+   10. Social Goals: its kill and roll-a-6 goal counters, no goal completed.
+   11. Mama Mega: both `died`, the refills, the Pooter's loot discarded by the penalty.
+   12. R Key: the souls in the monster discard, Bomb! discarded, 3 A Penny! each.
+   13. Pageant Boy, R Key, The Clicker, Mama Mega: in the treasure discard.
+   14. The Clicker: The D6 not in a discard (R-ABIL-18).
+11. Go tests that did not check what they claimed: 1.
+   1. TestTheClicker: "charged (Q-18)" passed either way; Isaac's character was charged.
+   2. The file starts it spent; the new one comes in charged.
+12. Refusals: rules from the rules text.
+   1. A gained ↷ on a spent Golden Trinket: R-ABIL-07 fits (with R-ABIL-10), as 24.18.
+   2. Tech X's "Remove 3 counters" with 2 or 1: R-ABIL-07 fits.
+   3. An ability past the trinket's last: R-ABIL-08 fits, as The Revenant (24.22).
+   4. Cain's room use on Isaac's turn: R-CARD-33 fits.
+13. Open owner questions in two files (Q-27, Q-28).
+   1. `golden_trinket/a-dime-levels-bum-bo-not-it.json`: the trinket gets no levels (Q-27 (a)).
+   2. `golden_trinket/bum-friend-and-tech-x-share-its-one-tap.json`: one tap (Q-28 (a)).
+   3. Both cite the question; ADR 034 9.3 says a `Q-` source is resolved.
+   4. `open-questions.md` Q-27, Q-28, Q-29 name the files.
+14. Every file failed with each expected value changed, then passed.
+   1. An in-memory run changed each `expect` leaf: 791 changes.
+   2. Only changes that drop a check entry or say another true thing passed (64).
+   3. E.g. a player index to another player with the same values.
+15. No rules bug found.
+16. Helpers removed, no use left: `inDiscard`, `me`, `handHas`, `settleAny`, `hurt`.
+   1. Also `room`, `sackFirst`.
+17. `cardgen -report` unchanged.
 
 ### [ ] 24.27 Bulk: challenge
 
